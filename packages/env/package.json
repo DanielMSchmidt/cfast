@@ -15,13 +15,15 @@
     "build": "tsup src/index.ts --format esm --dts",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@cloudflare/workers-types": ">=4"
   },
   "devDependencies": {
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.0.18"
   }
 }
