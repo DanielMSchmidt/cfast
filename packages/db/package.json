@@ -1,0 +1,30 @@
+{
+  "name": "@cfast/db",
+  "version": "0.0.1",
+  "description": "Permission-aware Drizzle queries for Cloudflare D1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=0.35"
+  },
+  "dependencies": {
+    "@cfast/permissions": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5.7"
+  }
+}

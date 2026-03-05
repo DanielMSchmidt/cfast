@@ -1,0 +1,23 @@
+{
+  "name": "create-cfast",
+  "version": "0.0.1",
+  "description": "Scaffold a fully wired Cloudflare Workers + React Router project with cfast",
+  "type": "module",
+  "bin": {
+    "create-cfast": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "prompts": "^2",
+    "kolorist": "^1"
+  },
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5.7"
+  }
+}

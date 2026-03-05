@@ -1,0 +1,38 @@
+{
+  "name": "@cfast/admin",
+  "version": "0.0.1",
+  "description": "Auto-generated admin UI from your Drizzle schema with role management and impersonation",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19",
+    "drizzle-orm": ">=0.35"
+  },
+  "dependencies": {
+    "@cfast/actions": "workspace:*",
+    "@cfast/auth": "workspace:*",
+    "@cfast/db": "workspace:*",
+    "@cfast/forms": "workspace:*",
+    "@cfast/pagination": "workspace:*",
+    "@cfast/permissions": "workspace:*",
+    "@cfast/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5.7"
+  }
+}

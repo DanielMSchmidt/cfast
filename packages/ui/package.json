@@ -1,0 +1,42 @@
+{
+  "name": "@cfast/ui",
+  "version": "0.0.1",
+  "description": "Permission-aware React components with UI library plugins",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./joy": {
+      "import": "./dist/joy.js",
+      "types": "./dist/joy.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/joy.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/joy.ts --format esm --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19",
+    "@mui/joy": ">=5.0.0-beta.0"
+  },
+  "peerDependenciesMeta": {
+    "@mui/joy": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@cfast/permissions": "workspace:*",
+    "@cfast/actions": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5.7"
+  }
+}

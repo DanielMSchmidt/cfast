@@ -1,0 +1,1 @@
+// @cfast/email/console provider
