@@ -1,6 +1,16 @@
-import type { Schema, ParsedEnv, BindingDef, EnvironmentDefaults, EnvironmentName } from "./types";
+import type { Schema, ParsedEnv, BindingDef, EnvironmentName } from "./types";
 import { EnvError } from "./errors";
 import { validateBinding } from "./validators";
+
+const VALID_ENVIRONMENTS: ReadonlySet<string> = new Set([
+  "development",
+  "staging",
+  "production",
+]);
+
+function isEnvironmentName(value: string): value is EnvironmentName {
+  return VALID_ENVIRONMENTS.has(value);
+}
 
 type Env<S extends Schema> = {
   init(rawEnv: Record<string, unknown>): void;
@@ -13,7 +23,7 @@ function resolveDefault(
 ): string | undefined {
   if (def.type !== "var" || def.default === undefined) return undefined;
   if (typeof def.default === "string") return def.default;
-  return (def.default as EnvironmentDefaults)[environment];
+  return def.default[environment];
 }
 
 export function defineEnv<S extends Schema>(schema: S): Env<S> {
@@ -23,11 +33,21 @@ export function defineEnv<S extends Schema>(schema: S): Env<S> {
     init(rawEnv: Record<string, unknown>) {
       if (cached !== null) return;
 
-      const environment = (
+      const rawEnvironment =
         typeof rawEnv["ENVIRONMENT"] === "string"
           ? rawEnv["ENVIRONMENT"]
-          : "development"
-      ) as EnvironmentName;
+          : "development";
+
+      if (!isEnvironmentName(rawEnvironment)) {
+        throw new EnvError([
+          {
+            key: "ENVIRONMENT",
+            message: `Invalid environment '${rawEnvironment}'. Must be one of: development, staging, production.`,
+          },
+        ]);
+      }
+
+      const environment: EnvironmentName = rawEnvironment;
 
       const errors: { key: string; message: string }[] = [];
       const result: Record<string, unknown> = {};

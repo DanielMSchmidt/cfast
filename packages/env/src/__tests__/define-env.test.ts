@@ -115,6 +115,13 @@ describe("defineEnv", () => {
       });
       expect(() => env.init({ ENVIRONMENT: "development" })).toThrow(EnvError);
     });
+
+    it("rejects invalid ENVIRONMENT values", () => {
+      const env = defineEnv({
+        APP_URL: { type: "var", default: "http://localhost" },
+      });
+      expect(() => env.init({ ENVIRONMENT: "test" })).toThrow(EnvError);
+    });
   });
 
   describe("validate callback", () => {
@@ -123,7 +130,7 @@ describe("defineEnv", () => {
         LOG_LEVEL: {
           type: "var",
           default: "info",
-          validate: (v) => ["debug", "info", "warn", "error"].includes(v),
+          validate: (v: string) => ["debug", "info", "warn", "error"].includes(v),
         },
       });
       env.init({});
@@ -134,7 +141,7 @@ describe("defineEnv", () => {
       const env = defineEnv({
         LOG_LEVEL: {
           type: "var",
-          validate: (v) => ["debug", "info", "warn", "error"].includes(v),
+          validate: (v: string) => ["debug", "info", "warn", "error"].includes(v),
         },
       });
       expect(() => env.init({ LOG_LEVEL: "verbose" })).toThrow(EnvError);

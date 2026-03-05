@@ -1,9 +1,12 @@
-type D1Database = { prepare: Function; dump: Function; batch: Function; exec: Function };
-type KVNamespace = { get: Function; put: Function; delete: Function; list: Function };
-type R2Bucket = { put: Function; get: Function; head: Function; delete: Function; list: Function };
-type Queue = { send: Function; sendBatch: Function };
-type DurableObjectNamespace = { get: Function; idFromName: Function; idFromString: Function; newUniqueId: Function };
-type Fetcher = { fetch: Function };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFn = (...args: any[]) => any;
+
+type D1Database = { prepare: AnyFn; dump: AnyFn; batch: AnyFn; exec: AnyFn };
+type KVNamespace = { get: AnyFn; put: AnyFn; delete: AnyFn; list: AnyFn };
+type R2Bucket = { put: AnyFn; get: AnyFn; head: AnyFn; delete: AnyFn; list: AnyFn };
+type Queue = { send: AnyFn; sendBatch: AnyFn };
+type DurableObjectNamespace = { get: AnyFn; idFromName: AnyFn; idFromString: AnyFn; newUniqueId: AnyFn };
+type Fetcher = { fetch: AnyFn };
 
 export type BindingTypeMap = {
   d1: D1Database;
