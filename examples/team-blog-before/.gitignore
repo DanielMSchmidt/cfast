@@ -1,0 +1,21 @@
+.DS_Store
+.env
+/node_modules/
+*.tsbuildinfo
+
+# React Router
+/.react-router/
+/build/
+
+# Cloudflare
+.mf
+.wrangler
+.dev.vars*
+worker-configuration.d.ts
+
+# Test artifacts
+.tmp-*.sql
+.e2e-state.json
+/test-results/
+/playwright-report/
+
