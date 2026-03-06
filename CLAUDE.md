@@ -66,6 +66,7 @@ Use the custom agents in `.claude/agents/` for quality checks. Spawn them with t
 | `package-boundary.md` | Haiku | After changing dependencies between packages or adding exports |
 | `readme-sync.md` | Sonnet | After implementing features to verify code matches documented API |
 | `deps-checker.md` | Haiku | After adding/changing dependencies or periodically to check freshness |
+| `example-sync.md` | Sonnet | After implementing/changing any @cfast/* package — verifies `examples/team-blog-after` uses the latest APIs |
 
 ## Commands
 
