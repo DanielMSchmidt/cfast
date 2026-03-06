@@ -15,7 +15,8 @@
     "build": "tsup src/index.ts --format esm --dts",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "drizzle-orm": ">=0.35"
@@ -24,7 +25,9 @@
     "@cfast/permissions": "workspace:*"
   },
   "devDependencies": {
+    "drizzle-orm": "^0.44.0",
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.0.18"
   }
 }
