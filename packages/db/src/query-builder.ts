@@ -47,7 +47,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
 
       return {
         permissions,
-        async run(params: Record<string, unknown>): Promise<unknown[]> {
+        async run(_params: Record<string, unknown>): Promise<unknown[]> {
           if (!config.unsafe) {
             checkOperationPermissions(config.permissions, config.user, permissions);
           }
@@ -79,7 +79,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
 
       return {
         permissions,
-        async run(params: Record<string, unknown>): Promise<unknown | undefined> {
+        async run(_params: Record<string, unknown>): Promise<unknown | undefined> {
           if (!config.unsafe) {
             checkOperationPermissions(config.permissions, config.user, permissions);
           }

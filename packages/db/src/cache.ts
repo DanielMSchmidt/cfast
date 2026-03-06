@@ -119,7 +119,7 @@ export function createCacheManager(config: CacheConfig): CacheManager {
     async set(
       key: string,
       value: unknown,
-      tableName: string,
+      _tableName: string,
       options?: QueryCacheOptions,
     ): Promise<void> {
       if (options === false) return;

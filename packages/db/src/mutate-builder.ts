@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
 import { and, or } from "drizzle-orm";
-import type { Permissions, PermissionDescriptor, DrizzleTable, PermissionAction, Grant } from "@cfast/permissions";
+import type { Permissions, PermissionDescriptor, DrizzleTable, PermissionAction } from "@cfast/permissions";
 import { resolvePermissionFilters, checkOperationPermissions } from "./permissions";
 import type { Operation } from "./types";
 
