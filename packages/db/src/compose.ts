@@ -8,7 +8,11 @@ function deduplicateDescriptors(
   const result: PermissionDescriptor[] = [];
 
   for (const d of descriptors) {
-    const key = `${d.action}:${(d.table as { _: { name: string } })._.name}`;
+    const tableName = (d.table as any)._?.name
+      ?? (d.table as any)[Symbol.for("drizzle:Name")]
+      ?? (d.table as any)[Symbol.for("drizzle:BaseName")]
+      ?? "unknown";
+    const key = `${d.action}:${tableName}`;
     if (!seen.has(key)) {
       seen.add(key);
       result.push(d);
