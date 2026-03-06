@@ -13,7 +13,7 @@ Every Cloudflare Worker has bindings: D1 databases, KV namespaces, R2 buckets, s
 - **Zero runtime overhead on the hot path.** Validation runs once at initialization. After that, it's just a typed object.
 - **Works with wrangler.toml.** The schema mirrors the structure of your wrangler config so there's no mental translation layer.
 
-## Planned API
+## API
 
 ```typescript
 import { defineEnv } from "@cfast/env";
@@ -34,10 +34,12 @@ const env = defineEnv({
 // In your Worker:
 export default {
   async fetch(request, rawEnv) {
-    const { DB, MAILGUN_API_KEY, APP_URL } = env.parse(rawEnv);
+    env.init(rawEnv); // Validates once at startup, no-ops on subsequent calls
+    const { DB, MAILGUN_API_KEY, APP_URL } = env.get();
     //       ^-- D1Database        ^-- string     ^-- string
-    // If DB is missing, this threw at startup with:
-    // "CFast: Missing required D1 binding 'DB'. Check your wrangler.toml."
+    // If DB is missing, init() threw with:
+    // "@cfast/env: 1 binding error(s):
+    //   - DB: Missing required D1 binding 'DB'. Check your wrangler.toml."
   },
 };
 ```
@@ -65,6 +67,7 @@ APP_URL: {
 Other cfast packages accept the parsed env object directly. No adapter code needed:
 
 ```typescript
-const { DB } = env.parse(rawEnv);
+env.init(rawEnv);
+const { DB } = env.get();
 const db = createDb(DB); // @cfast/db knows this is D1Database
 ```

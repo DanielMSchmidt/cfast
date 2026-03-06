@@ -109,8 +109,9 @@ describe("validateBinding", () => {
       expect(result).toEqual({ key: "APP_URL", message: expect.stringContaining("Missing") });
     });
 
-    it("passes when missing but has default", () => {
-      expect(validateBinding("APP_URL", { type: "var", default: "http://localhost" }, undefined)).toBeUndefined();
+    it("fails when missing even with default (defaults are resolved by caller)", () => {
+      const result = validateBinding("APP_URL", { type: "var", default: "http://localhost" }, undefined);
+      expect(result).toEqual({ key: "APP_URL", message: expect.stringContaining("Missing") });
     });
 
     it("fails when validate returns false", () => {

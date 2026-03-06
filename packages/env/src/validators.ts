@@ -35,9 +35,9 @@ export function validateBinding(
 ): EnvValidationError | undefined {
   const label = BINDING_LABELS[def.type] ?? def.type;
 
+  // For var bindings, defaults must be resolved by the caller before calling validateBinding.
   if (def.type === "var") {
     if (value === undefined || value === null) {
-      if (def.default !== undefined) return undefined;
       return { key, message: `Missing required variable '${key}'. Check your wrangler.toml.` };
     }
     if (typeof value !== "string") {
