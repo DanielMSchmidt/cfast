@@ -1,5 +1,5 @@
 import { describe, it, expectTypeOf } from "vitest";
-import type { Operation, Db, DbConfig } from "../types";
+import type { Operation, Db } from "../types";
 
 describe("types", () => {
   it("Operation has permissions and run", () => {

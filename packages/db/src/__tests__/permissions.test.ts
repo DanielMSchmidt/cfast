@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { ForbiddenError } from "@cfast/permissions";
 import { resolvePermissionFilters, checkOperationPermissions } from "../permissions";
-import { testPermissions, posts, comments, auditLogs } from "./helpers";
+import { testPermissions, posts } from "./helpers";
 import type { TestUser } from "./helpers";
 
 describe("resolvePermissionFilters", () => {
@@ -49,7 +48,7 @@ describe("checkOperationPermissions", () => {
       checkOperationPermissions(testPermissions, user, [
         { action: "create", table: posts },
       ]),
-    ).toThrow(ForbiddenError);
+    ).toThrow("cannot create");
   });
 
   it("does not throw when role has permission", () => {
