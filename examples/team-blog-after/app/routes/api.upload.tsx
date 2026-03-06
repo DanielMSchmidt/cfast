@@ -1,10 +1,9 @@
 import type { ActionFunctionArgs } from "react-router";
-import type { Env } from "~/env";
 import { requireUser } from "~/auth.helpers.server";
 import { nanoid } from "nanoid";
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   const formData = await request.formData();

@@ -6,7 +6,6 @@ import Table from "@mui/joy/Table";
 import Stack from "@mui/joy/Stack";
 import Chip from "@mui/joy/Chip";
 import Box from "@mui/joy/Box";
-import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { users, posts, comments, roles } from "~/db/schema";
@@ -15,7 +14,7 @@ import { redirect } from "react-router";
 import { RoleChip } from "~/components/RoleChip";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {

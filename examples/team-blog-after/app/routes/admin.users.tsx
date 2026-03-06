@@ -6,7 +6,6 @@ import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
-import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { users, roles } from "~/db/schema";
@@ -15,7 +14,7 @@ import { RoleChip } from "~/components/RoleChip";
 import { Pagination } from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {

@@ -14,7 +14,6 @@ import Card from "@mui/joy/Card";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
-import type { Env } from "~/env";
 import { requireUser } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { users, passkeys } from "~/db/schema";
@@ -24,7 +23,7 @@ import { Header } from "~/components/Header";
 import { authClient } from "~/auth.client";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
   const db = createDbClient(env.DB);
 
@@ -41,7 +40,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
   const db = createDbClient(env.DB);
   const formData = await request.formData();

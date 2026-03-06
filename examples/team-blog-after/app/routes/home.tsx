@@ -4,7 +4,6 @@ import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
-import type { Env } from "~/env";
 import { getUser } from "~/auth.helpers.server";
 import { hasAnyRole } from "~/permissions";
 import { createDbClient } from "~/db/client";
@@ -15,7 +14,7 @@ import { PostCard } from "~/components/PostCard";
 import { Pagination } from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await getUser(request, env);
   const db = createDbClient(env.DB);
 

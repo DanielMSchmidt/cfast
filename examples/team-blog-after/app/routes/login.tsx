@@ -9,12 +9,11 @@ import Stack from "@mui/joy/Stack";
 import Alert from "@mui/joy/Alert";
 import Divider from "@mui/joy/Divider";
 import Box from "@mui/joy/Box";
-import type { Env } from "~/env";
 import { getUser } from "~/auth.helpers.server";
 import { authClient } from "~/auth.client";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await getUser(request, env);
   if (user) throw redirect("/");
   return {};

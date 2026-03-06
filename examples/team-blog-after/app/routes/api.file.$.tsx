@@ -1,8 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
-import type { Env } from "~/env";
 
 export async function loader({ params, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const key = params["*"];
 
   if (!key) {

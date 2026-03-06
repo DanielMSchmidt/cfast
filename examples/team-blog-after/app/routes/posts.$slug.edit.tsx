@@ -12,7 +12,6 @@ import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
 import AspectRatio from "@mui/joy/AspectRatio";
 import Box from "@mui/joy/Box";
-import type { Env } from "~/env";
 import { requireUser, hasAnyRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { posts, auditLogs } from "~/db/schema";
@@ -31,7 +30,7 @@ function generateSlug(title: string): string {
 }
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
   const db = createDbClient(env.DB);
 
@@ -52,7 +51,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
   const db = createDbClient(env.DB);
 

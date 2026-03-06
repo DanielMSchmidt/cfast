@@ -15,6 +15,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@cfast/env": "workspace:*",
     "@better-auth/drizzle-adapter": "1.5.3",
     "@better-auth/passkey": "1.5.3",
     "@emotion/react": "^11.14.0",

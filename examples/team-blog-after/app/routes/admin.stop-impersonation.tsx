@@ -1,6 +1,5 @@
 import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
-import type { Env } from "~/env";
 import { getUser } from "~/auth.helpers.server";
 import { createAuth } from "~/auth.server";
 import { createDbClient } from "~/db/client";
@@ -8,7 +7,7 @@ import { impersonationLogs } from "~/db/schema";
 import { eq, and, isNull } from "drizzle-orm";
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await getUser(request, env);
 
   if (!user) {

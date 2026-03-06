@@ -12,7 +12,6 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import type { Env } from "~/env";
 import { getUser, requireUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
 import type { AuthUser } from "~/permissions";
@@ -25,7 +24,7 @@ import { CommentItem } from "~/components/CommentItem";
 import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await getUser(request, env);
   const db = createDbClient(env.DB);
 
@@ -100,7 +99,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const db = createDbClient(env.DB);
   const formData = await request.formData();
   const _action = formData.get("_action") as string;

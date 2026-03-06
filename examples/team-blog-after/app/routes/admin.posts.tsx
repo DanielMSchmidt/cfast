@@ -10,7 +10,6 @@ import Tabs from "@mui/joy/Tabs";
 import Tab from "@mui/joy/Tab";
 import TabList from "@mui/joy/TabList";
 import Box from "@mui/joy/Box";
-import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { posts, users, auditLogs } from "~/db/schema";
@@ -20,7 +19,7 @@ import { Pagination } from "~/components/Pagination";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {
@@ -69,7 +68,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {

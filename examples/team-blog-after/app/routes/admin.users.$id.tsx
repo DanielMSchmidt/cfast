@@ -10,7 +10,6 @@ import Chip from "@mui/joy/Chip";
 import Stack from "@mui/joy/Stack";
 import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
-import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import type { UserRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
@@ -20,7 +19,7 @@ import { nanoid } from "nanoid";
 import { RoleChip } from "~/components/RoleChip";
 
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {
@@ -74,7 +73,7 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, context, params }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {

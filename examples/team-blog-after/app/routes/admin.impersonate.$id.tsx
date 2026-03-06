@@ -1,6 +1,5 @@
 import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
-import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createAuth } from "~/auth.server";
 import { createDbClient } from "~/db/client";
@@ -8,7 +7,7 @@ import { impersonationLogs } from "~/db/schema";
 import { nanoid } from "nanoid";
 
 export async function action({ request, context, params }: ActionFunctionArgs) {
-  const env = context.cloudflare.env as Env;
+  const env = context.cloudflare.env;
   const user = await requireUser(request, env);
 
   if (!hasRole(user, "admin")) {
