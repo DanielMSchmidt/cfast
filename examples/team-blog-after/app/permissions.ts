@@ -1,4 +1,5 @@
 import { definePermissions, grant } from "@cfast/permissions";
+import type { WhereClause } from "@cfast/permissions";
 import { eq } from "drizzle-orm";
 import { posts, comments } from "./db/schema";
 
@@ -24,10 +25,12 @@ export type AuthUser = {
 // For now, both coexist during migration.
 // ---------------------------------------------------------------------------
 
-const roles = ["reader", "author", "editor", "admin"] as const;
+type Where = WhereClause<AuthUser>;
 
-export const permissions = definePermissions<typeof roles, AuthUser>({
-  roles,
+const appRoles = ["reader", "author", "editor", "admin"] as const;
+
+export const permissions = definePermissions({
+  roles: appRoles,
   hierarchy: {
     author: ["reader"],
     editor: ["author"],
@@ -35,23 +38,23 @@ export const permissions = definePermissions<typeof roles, AuthUser>({
   },
   grants: {
     reader: [
-      grant<AuthUser>("read", posts, { where: (_cols, _user) => eq(posts.published, true) }),
-      grant<AuthUser>("read", comments),
+      grant("read", posts, { where: (() => eq(posts.published, true)) as Where }),
+      grant("read", comments),
     ],
     author: [
-      grant<AuthUser>("create", posts),
-      grant<AuthUser>("update", posts, { where: (_cols, user) => eq(posts.authorId, user.id) }),
-      grant<AuthUser>("delete", posts, { where: (_cols, user) => eq(posts.authorId, user.id) }),
-      grant<AuthUser>("create", comments),
-      grant<AuthUser>("delete", comments, { where: (_cols, user) => eq(comments.authorId, user.id) }),
+      grant("create", posts),
+      grant("update", posts, { where: ((_cols, user) => eq(posts.authorId, user.id)) as Where }),
+      grant("delete", posts, { where: ((_cols, user) => eq(posts.authorId, user.id)) as Where }),
+      grant("create", comments),
+      grant("delete", comments, { where: ((_cols, user) => eq(comments.authorId, user.id)) as Where }),
     ],
     editor: [
-      grant<AuthUser>("read", posts), // unrestricted — sees unpublished too
-      grant<AuthUser>("update", posts), // can update any post
-      grant<AuthUser>("delete", comments), // can delete any comment
+      grant("read", posts),
+      grant("update", posts),
+      grant("delete", comments),
     ],
     admin: [
-      grant<AuthUser>("manage", "all"),
+      grant("manage", "all"),
     ],
   },
 });
