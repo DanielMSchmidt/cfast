@@ -48,6 +48,14 @@ describe("defineEnv", () => {
         expect((e as EnvError).errors).toHaveLength(2);
       }
     });
+
+    it("can retry after a failed init", () => {
+      const env = defineEnv({ DB: { type: "d1" } });
+      expect(() => env.init({})).toThrow(EnvError);
+      const db = fakeD1();
+      env.init({ DB: db });
+      expect(env.get().DB).toBe(db);
+    });
   });
 
   describe("get", () => {
@@ -121,6 +129,20 @@ describe("defineEnv", () => {
         APP_URL: { type: "var", default: "http://localhost" },
       });
       expect(() => env.init({ ENVIRONMENT: "test" })).toThrow(EnvError);
+    });
+
+    it("falls back to development when ENVIRONMENT is not a string", () => {
+      const env = defineEnv({
+        APP_URL: {
+          type: "var",
+          default: {
+            development: "http://localhost:8787",
+            production: "https://myapp.com",
+          },
+        },
+      });
+      env.init({ ENVIRONMENT: 42 });
+      expect(env.get().APP_URL).toBe("http://localhost:8787");
     });
   });
 

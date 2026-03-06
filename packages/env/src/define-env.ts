@@ -86,6 +86,7 @@ export function defineEnv<S extends Schema>(schema: S): Env<S> {
         throw new EnvError(errors);
       }
 
+      // Safe: every key in schema has been validated and assigned to result
       cached = result as ParsedEnv<S>;
     },
 
