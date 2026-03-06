@@ -1,10 +1,26 @@
-import type { Grant, Permissions, PermissionsConfig } from "./types";
+import type { DrizzleTable, Grant, GrantFn, Permissions, PermissionsConfig, WhereClause, PermissionAction } from "./types";
 
-export function definePermissions<
-  TRoles extends readonly string[],
-  TUser = unknown,
->(config: PermissionsConfig<TRoles, TUser>): Permissions<TRoles, TUser> {
-  const { roles, grants, hierarchy } = config;
+function createGrantFn<TUser>(): GrantFn<TUser> {
+  return (
+    action: PermissionAction,
+    subject: DrizzleTable | "all",
+    options?: { where?: (columns: Record<string, unknown>, user: TUser) => any },
+  ): Grant => ({
+    action,
+    subject,
+    where: options?.where as WhereClause | undefined,
+  });
+}
+
+function buildPermissions<TRoles extends readonly string[]>(
+  config: PermissionsConfig<TRoles>,
+): Permissions<TRoles> {
+  const { roles, hierarchy } = config;
+
+  const grants =
+    typeof config.grants === "function"
+      ? config.grants(createGrantFn())
+      : config.grants;
 
   const resolvedGrants = resolveHierarchy(roles, grants, hierarchy);
 
@@ -15,19 +31,34 @@ export function definePermissions<
   };
 }
 
-function resolveHierarchy<TRoles extends readonly string[], TUser>(
+export function definePermissions<TRoles extends readonly string[]>(
+  config: PermissionsConfig<TRoles>,
+): Permissions<TRoles>;
+export function definePermissions<TUser>(): <
+  TRoles extends readonly string[],
+>(
+  config: PermissionsConfig<TRoles, TUser>,
+) => Permissions<TRoles>;
+export function definePermissions(config?: any): any {
+  if (config === undefined) {
+    return (c: any) => buildPermissions(c);
+  }
+  return buildPermissions(config);
+}
+
+function resolveHierarchy<TRoles extends readonly string[]>(
   roles: TRoles,
-  grants: Record<string, Grant<TUser>[]>,
+  grants: Record<string, Grant[]>,
   hierarchy?: Partial<Record<string, string[]>>,
-): Record<string, Grant<TUser>[]> {
+): Record<string, Grant[]> {
   if (!hierarchy) {
     return { ...grants };
   }
 
-  const resolved: Record<string, Grant<TUser>[]> = {};
+  const resolved: Record<string, Grant[]> = {};
   const resolving = new Set<string>();
 
-  function resolve(role: string): Grant<TUser>[] {
+  function resolve(role: string): Grant[] {
     if (resolved[role]) return resolved[role];
 
     if (resolving.has(role)) {

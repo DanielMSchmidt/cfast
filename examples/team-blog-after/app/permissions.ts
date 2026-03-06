@@ -1,5 +1,4 @@
-import { definePermissions, grant } from "@cfast/permissions";
-import type { WhereClause } from "@cfast/permissions";
+import { definePermissions } from "@cfast/permissions";
 import { eq } from "drizzle-orm";
 import { posts, comments } from "./db/schema";
 
@@ -25,28 +24,26 @@ export type AuthUser = {
 // For now, both coexist during migration.
 // ---------------------------------------------------------------------------
 
-type Where = WhereClause<AuthUser>;
-
 const appRoles = ["reader", "author", "editor", "admin"] as const;
 
-export const permissions = definePermissions({
+export const permissions = definePermissions<AuthUser>()({
   roles: appRoles,
   hierarchy: {
     author: ["reader"],
     editor: ["author"],
     admin: ["editor"],
   },
-  grants: {
+  grants: (grant) => ({
     reader: [
-      grant("read", posts, { where: (() => eq(posts.published, true)) as Where }),
+      grant("read", posts, { where: () => eq(posts.published, true) }),
       grant("read", comments),
     ],
     author: [
       grant("create", posts),
-      grant("update", posts, { where: ((_cols, user) => eq(posts.authorId, user.id)) as Where }),
-      grant("delete", posts, { where: ((_cols, user) => eq(posts.authorId, user.id)) as Where }),
+      grant("update", posts, { where: (_cols, user) => eq(posts.authorId, user.id) }),
+      grant("delete", posts, { where: (_cols, user) => eq(posts.authorId, user.id) }),
       grant("create", comments),
-      grant("delete", comments, { where: ((_cols, user) => eq(comments.authorId, user.id)) as Where }),
+      grant("delete", comments, { where: (_cols, user) => eq(comments.authorId, user.id) }),
     ],
     editor: [
       grant("read", posts),
@@ -56,7 +53,7 @@ export const permissions = definePermissions({
     admin: [
       grant("manage", "all"),
     ],
-  },
+  }),
 });
 
 // ---------------------------------------------------------------------------

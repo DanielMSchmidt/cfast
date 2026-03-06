@@ -1,15 +1,10 @@
-import type { Table } from "drizzle-orm";
-import type { PermissionAction, Grant, WhereClause } from "./types";
+import type { DrizzleTable, PermissionAction, Grant, WhereClause } from "./types";
 
-type GrantOptions<TUser = unknown> = {
-  where?: WhereClause<TUser>;
-};
-
-export function grant<TUser = unknown>(
+export function grant(
   action: PermissionAction,
-  subject: Table | "all",
-  options?: GrantOptions<TUser>,
-): Grant<TUser> {
+  subject: DrizzleTable | "all",
+  options?: { where?: WhereClause },
+): Grant {
   return {
     action,
     subject,

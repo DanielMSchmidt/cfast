@@ -1,4 +1,9 @@
-import type { Table, SQL } from "drizzle-orm";
+// Minimal structural types for Drizzle.
+// Using Drizzle's `Table`/`SQL` classes directly causes protected/private
+// property mismatches across compilation contexts. These duck types avoid
+// the issue while still accepting any Drizzle table or SQL expression.
+export type DrizzleTable = { _: { name: string } };
+export type DrizzleSQL = { getSQL(): unknown };
 
 export type PermissionAction = "read" | "create" | "update" | "delete" | "manage";
 
@@ -6,20 +11,26 @@ export type CrudAction = Exclude<PermissionAction, "manage">;
 
 export const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", "delete"] as const;
 
-export type WhereClause<TUser = unknown> = (
+export type WhereClause = (
   columns: Record<string, unknown>,
-  user: TUser,
-) => SQL | undefined;
+  user: any,
+) => DrizzleSQL | undefined;
 
-export type Grant<TUser = unknown> = {
+export type Grant = {
   action: PermissionAction;
-  subject: Table | "all";
-  where?: WhereClause<TUser>;
+  subject: DrizzleTable | "all";
+  where?: WhereClause;
 };
+
+export type GrantFn<TUser> = (
+  action: PermissionAction,
+  subject: DrizzleTable | "all",
+  options?: { where?: (columns: Record<string, unknown>, user: TUser) => DrizzleSQL | undefined },
+) => Grant;
 
 export type PermissionDescriptor = {
   action: PermissionAction;
-  table: Table;
+  table: DrizzleTable;
 };
 
 export type PermissionCheckResult = {
@@ -33,15 +44,16 @@ export type PermissionsConfig<
   TUser = unknown,
 > = {
   roles: TRoles;
-  grants: Record<TRoles[number], Grant<TUser>[]>;
+  grants:
+    | Record<TRoles[number], Grant[]>
+    | ((grant: GrantFn<TUser>) => Record<TRoles[number], Grant[]>);
   hierarchy?: Partial<Record<TRoles[number], TRoles[number][]>>;
 };
 
 export type Permissions<
   TRoles extends readonly string[] = readonly string[],
-  TUser = unknown,
 > = {
   roles: TRoles;
-  grants: Record<TRoles[number], Grant<TUser>[]>;
-  resolvedGrants: Record<TRoles[number], Grant<TUser>[]>;
+  grants: Record<TRoles[number], Grant[]>;
+  resolvedGrants: Record<TRoles[number], Grant[]>;
 };

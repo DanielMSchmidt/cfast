@@ -6,7 +6,9 @@ export { CRUD_ACTIONS } from "./types";
 export type {
   PermissionAction,
   CrudAction,
+  DrizzleTable,
   Grant,
+  GrantFn,
   WhereClause,
   PermissionDescriptor,
   PermissionCheckResult,

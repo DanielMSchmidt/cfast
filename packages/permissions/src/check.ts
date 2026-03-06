@@ -1,5 +1,5 @@
-import type { Table } from "drizzle-orm";
 import type {
+  DrizzleTable,
   Grant,
   PermissionAction,
   PermissionCheckResult,
@@ -8,9 +8,8 @@ import type {
 } from "./types";
 import { CRUD_ACTIONS } from "./types";
 
-function getTableName(table: Table): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (table as any)._?.name ?? "unknown";
+function getTableName(table: DrizzleTable): string {
+  return table._?.name ?? "unknown";
 }
 
 function grantMatchesAction(
@@ -23,8 +22,8 @@ function grantMatchesAction(
 }
 
 function grantMatchesTable(
-  grantSubject: Table | "all",
-  requiredTable: Table,
+  grantSubject: DrizzleTable | "all",
+  requiredTable: DrizzleTable,
 ): boolean {
   if (grantSubject === "all") return true;
   return grantSubject === requiredTable;
@@ -33,7 +32,7 @@ function grantMatchesTable(
 function hasGrantFor(
   grants: Grant[],
   action: PermissionAction,
-  table: Table,
+  table: DrizzleTable,
 ): boolean {
   return grants.some(
     (g) =>
@@ -42,7 +41,7 @@ function hasGrantFor(
   );
 }
 
-function hasManagePermission(grants: Grant[], table: Table): boolean {
+function hasManagePermission(grants: Grant[], table: DrizzleTable): boolean {
   if (hasGrantFor(grants, "manage", table)) return true;
   return CRUD_ACTIONS.every((action) => hasGrantFor(grants, action, table));
 }

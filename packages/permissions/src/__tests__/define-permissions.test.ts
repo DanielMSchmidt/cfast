@@ -21,6 +21,30 @@ describe("definePermissions", () => {
       expect(perms.grants.user).toHaveLength(2);
     });
 
+    it("accepts grants as a callback (curried form)", () => {
+      type TestUser = { id: string };
+      const perms = definePermissions<TestUser>()({
+        roles: ["anonymous", "user"] as const,
+        grants: (g) => ({
+          anonymous: [g("read", posts)],
+          user: [
+            g("read", posts),
+            g("create", posts, {
+              where: (_cols, user) => {
+                // user should be typed as TestUser
+                void user.id;
+                return undefined;
+              },
+            }),
+          ],
+        }),
+      });
+
+      expect(perms.roles).toEqual(["anonymous", "user"]);
+      expect(perms.grants.anonymous).toHaveLength(1);
+      expect(perms.grants.user).toHaveLength(2);
+    });
+
     it("resolvedGrants equals grants when there is no hierarchy", () => {
       const perms = definePermissions({
         roles: ["anonymous", "user"] as const,

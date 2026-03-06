@@ -1,20 +1,19 @@
-import type { Table } from "drizzle-orm";
-import type { PermissionAction, PermissionDescriptor } from "./types";
+import type { DrizzleTable, PermissionAction, PermissionDescriptor } from "./types";
 
-function getTableName(table: Table): string {
-  return (table as any)._?.name ?? "unknown";
+function getTableName(table: DrizzleTable): string {
+  return table._?.name ?? "unknown";
 }
 
 type ForbiddenErrorOptions = {
   action: PermissionAction;
-  table: Table;
+  table: DrizzleTable;
   role: string;
   descriptors?: PermissionDescriptor[];
 };
 
 export class ForbiddenError extends Error {
   readonly action: PermissionAction;
-  readonly table: Table;
+  readonly table: DrizzleTable;
   readonly role: string;
   readonly descriptors: PermissionDescriptor[];
 
