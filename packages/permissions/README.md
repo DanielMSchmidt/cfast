@@ -22,6 +22,7 @@ Creates a permission configuration that can be shared between `@cfast/db` (serve
 
 ```typescript
 import { definePermissions, grant } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
 import { posts, comments, users, auditLogs } from "./schema";
 
 export const permissions = definePermissions({
@@ -29,17 +30,17 @@ export const permissions = definePermissions({
 
   grants: {
     anonymous: [
-      grant("read", posts, { where: (post) => post.published === true }),
+      grant("read", posts, { where: (post) => eq(post.published, true) }),
       grant("read", comments),
     ],
 
     user: [
-      grant("read", posts, { where: (post) => post.published === true }),
+      grant("read", posts, { where: (post) => eq(post.published, true) }),
       grant("create", posts),
-      grant("update", posts, { where: (post, user) => post.authorId === user.id }),
-      grant("delete", posts, { where: (post, user) => post.authorId === user.id }),
+      grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("delete", posts, { where: (post, user) => eq(post.authorId, user.id) }),
       grant("create", comments),
-      grant("delete", comments, { where: (comment, user) => comment.authorId === user.id }),
+      grant("delete", comments, { where: (comment, user) => eq(comment.authorId, user.id) }),
     ],
 
     editor: [
@@ -63,7 +64,7 @@ export const permissions = definePermissions({
 |---|---|---|
 | `roles` | `readonly string[]` | All roles in your application, declared with `as const` for type inference. |
 | `grants` | `Record<Role, Grant[]>` | A map from role to an array of `grant()` calls. Every role must be represented. |
-| `hierarchy` | `Record<Role, Role[]>` | Optional. Declares which roles inherit from which. See [Role Hierarchy](#role-hierarchy). |
+| `hierarchy` | `Partial<Record<Role, Role[]>>` | Optional. Declares which roles inherit from which. Not every role needs an entry. See [Role Hierarchy](#role-hierarchy). |
 
 **Returns:** A `Permissions` object that you pass to `createDb()` and can import on the client.
 
@@ -77,7 +78,7 @@ Declares that a role can perform `action` on `subject`, optionally restricted by
 |---|---|---|
 | `action` | `"read" \| "create" \| "update" \| "delete" \| "manage"` | The operation being permitted. `"manage"` is shorthand for all four CRUD actions. |
 | `subject` | `Table \| "all"` | A Drizzle table reference, or `"all"` to apply to every table. |
-| `options.where` | `(row, user) => SQL` | Optional. A Drizzle filter expression that restricts which rows this grant applies to. Compiles to a SQL `WHERE` clause at query time. |
+| `options.where` | `(columns, user) => SQL \| undefined` | Optional. A Drizzle filter expression that restricts which rows this grant applies to. Compiles to a SQL `WHERE` clause at query time. |
 
 **Action semantics:**
 
@@ -145,14 +146,14 @@ updatePost.permissions;
 // No postId needed to know this requires "update" on "posts"
 ```
 
-### `checkPermissions(user, permissions, descriptors)`
+### `checkPermissions(role, permissions, descriptors)`
 
-Checks whether a user satisfies a set of permission descriptors. Returns a result object with details about which permissions passed and which failed.
+Checks whether a role satisfies a set of permission descriptors. Returns a result object with details about which permissions passed and which failed.
 
 ```typescript
 import { checkPermissions } from "@cfast/permissions";
 
-const result = checkPermissions(currentUser, permissions, [
+const result = checkPermissions("user", permissions, [
   { action: "update", table: posts },
   { action: "create", table: auditLogs },
 ]);
@@ -216,7 +217,7 @@ export const permissions = definePermissions({
 1. A role's effective grants = its own grants + all grants from roles it inherits from (recursively).
 2. When multiple grants apply to the same action+table, their `where` clauses are `OR`'d. This means a more permissive grant always wins — if an editor inherits `read posts WHERE published = true` from user but also has `read posts` (no filter), the editor sees all posts.
 3. `grant("manage", "all")` on any role in the hierarchy means that role can do everything. Period.
-4. Circular hierarchies are a TypeScript error (the `hierarchy` type is constrained to prevent cycles).
+4. Circular hierarchies are detected at runtime and throw an `Error` (e.g., `"Circular role hierarchy detected: 'editor' inherits from itself"`).
 
 ### `ForbiddenError`
 
@@ -238,7 +239,26 @@ try {
 }
 ```
 
-`ForbiddenError` extends a shared cfast error base class. It is JSON-serializable so it can cross the server/client boundary in action responses.
+`ForbiddenError` extends `Error`. It has a `toJSON()` method, making it JSON-serializable so it can cross the server/client boundary in action responses.
+
+### `CRUD_ACTIONS`
+
+A readonly array of the four CRUD action strings, useful for iteration:
+
+```typescript
+import { CRUD_ACTIONS } from "@cfast/permissions";
+
+CRUD_ACTIONS; // ["read", "create", "update", "delete"]
+```
+
+### Client Entrypoint
+
+Import from `@cfast/permissions/client` in client bundles to avoid pulling in server-only code (like `definePermissions`, `grant`, and `checkPermissions`). The client entrypoint exports only types and the `ForbiddenError` class:
+
+```typescript
+import { ForbiddenError } from "@cfast/permissions/client";
+import type { PermissionAction, CrudAction, PermissionDescriptor, PermissionCheckResult } from "@cfast/permissions/client";
+```
 
 ## How Permissions Flow Through the System
 
