@@ -40,6 +40,7 @@ The form infers input types from Drizzle column types:
 | `timestamp` | Date picker |
 | `enum` | Select dropdown |
 | Foreign key | Async select with search |
+| `@cfast/storage` filetype | File upload (see [File Upload Fields](#file-upload-fields)) |
 
 ### Customizing Fields
 
@@ -60,6 +61,34 @@ Override individual fields while keeping defaults for the rest:
   }}
   exclude={["createdAt", "updatedAt"]}
   onSubmit={handleSubmit}
+/>
+```
+
+### Type Safety
+
+Both `fields` and `exclude` are type-checked against the table's columns. Misspelled or non-existent column names are compile-time errors:
+
+```typescript
+<AutoForm
+  table={posts}
+  fields={{
+    titel: { label: "Title" },  // Type error: 'titel' does not exist in posts columns
+  }}
+  exclude={["cretedAt"]}        // Type error: 'cretedAt' does not exist in posts columns
+/>
+```
+
+The `fields` prop is typed as `Partial<Record<keyof typeof posts._.columns, FieldConfig>>`, so autocomplete shows all valid column names. The `exclude` prop is typed as `Array<keyof typeof posts._.columns>`.
+
+When using `exclude`, the excluded columns are removed from the `fields` type as well — you can't customize a field you've excluded:
+
+```typescript
+<AutoForm
+  table={posts}
+  exclude={["createdAt"]}
+  fields={{
+    createdAt: { label: "Created" },  // Type error: 'createdAt' is excluded
+  }}
 />
 ```
 
@@ -106,6 +135,45 @@ Validation rules are derived from the schema:
 />
 ```
 
+### File Upload Fields
+
+When a field references a `@cfast/storage` filetype, AutoForm renders a file upload input with client-side validation, progress tracking, and preview — powered by `useUpload` from `@cfast/storage/client`.
+
+```typescript
+import { storage } from "./storage";
+
+<AutoForm
+  table={posts}
+  mode="create"
+  fields={{
+    coverImage: {
+      upload: storage.postImages,
+      // Inherits accept and maxSize from the storage schema
+      // Shows drag-and-drop zone, progress bar, and preview
+    },
+  }}
+  onSubmit={handleSubmit}
+/>
+```
+
+The upload field:
+- Validates file type and size on the client before uploading (from the storage schema's `accept` and `maxSize`)
+- Shows upload progress via `useUpload`
+- Stores the resulting storage key in the form value
+- In edit mode, displays the existing file with an option to replace
+
+For multiple files:
+
+```typescript
+fields={{
+  attachments: {
+    upload: storage.documents,
+    multiple: true,
+    maxFiles: 5,
+  },
+}}
+```
+
 ### UI Library Plugins
 
 The core is headless. Rendering is delegated to plugins:
@@ -145,6 +213,8 @@ export const myPlugin = createFormPlugin({
 ├── Field type mapping (column type → input type)
 ├── Validation derivation (NOT NULL → required, varchar(n) → maxLength)
 ├── Foreign key resolution (detects relations for async selects)
+├── File upload integration (delegates to @cfast/storage/client)
+├── Type-safe fields/exclude (compile-time column name checking)
 └── Plugin API (createFormPlugin)
 
 @cfast/forms/joy (MUI Joy UI plugin)

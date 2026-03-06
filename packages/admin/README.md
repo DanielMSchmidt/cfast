@@ -106,7 +106,7 @@ createAdmin({
         row: [
           {
             label: "Publish",
-            action: publishPostAction, // from @cfast/permissions
+            action: publishPostAction, // from @cfast/actions
             // Automatically hidden if the admin can't perform this action
           },
         ],
@@ -145,7 +145,7 @@ createAdmin({
 
 - **Schema introspection:** Reads your Drizzle schema to generate list views, forms, and navigation
 - **Forms:** Uses `@cfast/ui` AutoForm for create/edit views
-- **Permissions:** Uses `@cfast/db` guarded queries for all data access
+- **Permissions:** Uses `@cfast/db` Operations for all data access — every CRUD operation is permission-checked via `.run()`
 - **Auth:** Uses `@cfast/auth` for user management, role assignment, and impersonation
 - **Routing:** Renders inside a React Router route, uses nested routing for table/detail views
 
