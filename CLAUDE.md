@@ -33,6 +33,13 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - Errors are typed, not strings. Each package defines its own error classes extending a shared base.
 - Options objects over positional arguments. Required fields are top-level, optional config goes in an `options` object.
 
+### Dependencies
+- Always use **caret ranges** (`^x.y.z`) for dependency versions, not pinned versions (e.g. `^7.12.0` not `7.12.0`).
+- Exception: paired packages that must match exactly (e.g. `react-router` + `@react-router/dev`) — pin both and add a `// pinned: must match @react-router/dev` comment.
+- When adding a dependency, check `pnpm outdated` first and use the latest version.
+- The same dependency across multiple packages must use the same version range.
+- Never use `*`, `>=`, or bare version numbers without `^`.
+
 ### Code Style
 - Strict TypeScript. No `any`, no `as` casts except at the Workers env boundary (which `@cfast/env` eliminates).
 - Prefer `type` over `interface` for public API types (they compose better).
@@ -58,6 +65,7 @@ Use the custom agents in `.claude/agents/` for quality checks. Spawn them with t
 | `workers-compat.md` | Haiku | After adding deps or writing code that might use Node.js APIs |
 | `package-boundary.md` | Haiku | After changing dependencies between packages or adding exports |
 | `readme-sync.md` | Sonnet | After implementing features to verify code matches documented API |
+| `deps-checker.md` | Haiku | After adding/changing dependencies or periodically to check freshness |
 
 ## Commands
 
