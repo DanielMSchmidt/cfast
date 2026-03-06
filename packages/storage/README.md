@@ -77,7 +77,12 @@ export async function action({ request, context }) {
   // result: { key: "posts/123/abc-photo.jpg", size: 483210, type: "image/jpeg", url: "..." }
 
   // Save reference in your database
-  await db.guarded(postImages).insert({
+  const saveRef = db.insert(postImages).values({
+    postId: sql.placeholder("postId"),
+    storageKey: sql.placeholder("storageKey"),
+    size: sql.placeholder("size"),
+  });
+  await saveRef.run({
     postId: "123",
     storageKey: result.key,
     size: result.size,
@@ -192,20 +197,43 @@ const response = await storage.serve("postImages", key, {
 
 ### Permission Integration
 
-File operations respect `@cfast/permissions`:
+File uploads are typically triggered by actions, and the action's operations carry the permission requirements. The storage layer itself doesn't check permissions — it handles bytes. The permission gate happens before the upload starts:
 
 ```typescript
-export const storage = defineStorage({
-  postImages: filetype({
-    bucket: "UPLOADS",
-    accept: ["image/*"],
-    maxSize: "10mb",
-    key: (file, ctx) => `posts/${ctx.input.postId}/${file.name}`,
-    // Permission check: user must be able to update the post to upload images to it
-    permissions: (ctx) => [ctx.can("update", posts, { id: ctx.input.postId })],
-  }),
+const uploadPostImage = createAction({
+  input: { postId: "" as string },
+
+  operations: (db, input, ctx) => {
+    // The update permission on posts gates the upload
+    const checkAccess = db.query(posts).findFirst({
+      where: eq(posts.id, sql.placeholder("postId")),
+    });
+
+    const saveRef = db.insert(postImages).values({
+      postId: sql.placeholder("postId"),
+      storageKey: sql.placeholder("storageKey"),
+      size: sql.placeholder("size"),
+    });
+
+    return compose([checkAccess, saveRef], async (doCheck, doSave) => {
+      await doCheck({ postId: input.postId });
+      const result = await storage.handle("postImages", ctx.request, {
+        env: ctx.env,
+        user: ctx.user,
+        input: { postId: input.postId },
+      });
+      await doSave({
+        postId: input.postId,
+        storageKey: result.key,
+        size: result.size,
+      });
+      return { url: result.url };
+    });
+  },
 });
 ```
+
+The action's `.permissions` includes both `read` on `posts` and `create` on `postImages`, so the client can check `permitted` before showing the upload UI.
 
 ### Lifecycle Hooks
 

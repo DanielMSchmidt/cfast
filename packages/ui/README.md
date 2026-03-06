@@ -6,7 +6,7 @@
 
 ## Design Goals
 
-- **Permissions in, UI out.** Components consume the permission system. Developers don't manually check `can("edit", post)` in JSX. They pass an action, and the component figures it out.
+- **Permissions in, UI out.** Components consume actions from `@cfast/actions`. Actions carry their permission requirements via operations. The component reads `permitted` and adapts — no manual checking in JSX.
 - **UI library plugins.** The core is headless. Ship with a MUI Joy UI plugin. Add others without touching the core.
 - **Minimal surface area.** This package does one thing: permission-aware component wrappers. Forms are in `@cfast/forms`. Pagination is in `@cfast/pagination`. Admin is in `@cfast/admin`.
 
@@ -48,19 +48,22 @@ The behavior is configurable:
 
 ### Permission Gate
 
-Conditionally render any content based on permissions:
+Conditionally render content based on an action's permissions:
 
 ```typescript
 import { PermissionGate } from "@cfast/ui";
+import { editPost, manageSettings } from "~/actions";
 
-<PermissionGate can="update" on={posts} subject={post}>
+<PermissionGate action={editPost} input={{ postId }}>
   <EditButton />
 </PermissionGate>
 
-<PermissionGate can="manage" on="all" fallback={<UpgradePrompt />}>
+<PermissionGate action={manageSettings} fallback={<UpgradePrompt />}>
   <AdminPanel />
 </PermissionGate>
 ```
+
+`PermissionGate` uses `useAction()` internally — it reads the server-precomputed `permitted` boolean. No permission descriptors are evaluated on the client.
 
 ### UI Library Plugins
 
@@ -92,8 +95,7 @@ export const myPlugin = createUIPlugin({
 
 ```
 @cfast/ui (headless core)
-├── Permission introspection (reads from @cfast/permissions)
-├── Action introspection (reads from @cfast/actions)
+├── Action introspection (reads permitted/invisible from @cfast/actions)
 ├── PermissionGate component
 └── Plugin API (createUIPlugin)
 

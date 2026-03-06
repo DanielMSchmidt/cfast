@@ -72,6 +72,7 @@ Use the custom agents in `.claude/agents/` for quality checks. Spawn them with t
 ```bash
 pnpm build          # Build all packages
 pnpm dev            # Dev mode (watch)
+pnpm test           # Run unit tests (vitest via turbo)
 pnpm typecheck      # Type-check all packages
 pnpm lint           # Lint all packages
 ```

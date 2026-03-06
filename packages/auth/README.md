@@ -239,7 +239,8 @@ await auth.setRoles(userId, ["editor", "moderator"]);
 export async function loader({ request }) {
   const user = await auth.requireUser(request);
   // user.roles -> ["editor"]
-  // This user object is what @cfast/permissions uses for can() checks
+  // This user object feeds into createDb({ user }) — it determines
+  // which permission grants apply to every Operation
 }
 ```
 
@@ -299,6 +300,31 @@ createAuth({
 ```
 
 Server code stays out of client bundles. The `/plugin` entrypoint is only used in `react-router.config.ts` (build-time). The `/schema` entrypoint lets `@cfast/db` include auth tables in migrations without importing the full auth package.
+
+## Integration
+
+The auth → db → operations flow:
+
+```typescript
+// In a React Router loader:
+export async function loader({ request, context }) {
+  const user = await auth.requireUser(request);
+
+  const db = createDb({
+    d1: context.env.DB,
+    schema,
+    permissions,
+    user, // ← from auth. Determines which grants apply to every Operation.
+  });
+
+  // Operations now check permissions against this user's roles automatically
+  const posts = db.query(postsTable).findMany();
+  const results = await posts.run({}); // permission filters applied based on user.roles
+  return { user, posts: results };
+}
+```
+
+Changing a user's role (via `auth.setRole`) immediately affects which Operations they can run. No cache to clear, no separate sync step — the next `createDb({ user })` call picks up the new roles.
 
 ## Schema
 

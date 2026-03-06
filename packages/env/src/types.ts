@@ -1,13 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyFn = (...args: any[]) => any;
-
-type D1Database = { prepare: AnyFn; dump: AnyFn; batch: AnyFn; exec: AnyFn };
-type KVNamespace = { get: AnyFn; put: AnyFn; delete: AnyFn; list: AnyFn };
-type R2Bucket = { put: AnyFn; get: AnyFn; head: AnyFn; delete: AnyFn; list: AnyFn };
-type Queue = { send: AnyFn; sendBatch: AnyFn };
-type DurableObjectNamespace = { get: AnyFn; idFromName: AnyFn; idFromString: AnyFn; newUniqueId: AnyFn };
-type Fetcher = { fetch: AnyFn };
-
+// Uses the global types from @cloudflare/workers-types (peer dependency).
+// Consumers must have @cloudflare/workers-types installed for full type safety.
+// The package builds with these as ambient globals provided by the peer dep.
 export type BindingTypeMap = {
   d1: D1Database;
   kv: KVNamespace;
