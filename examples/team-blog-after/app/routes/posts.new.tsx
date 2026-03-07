@@ -11,7 +11,8 @@ import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
 import { requireUser, hasAnyRole } from "~/auth.helpers.server";
-import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
+import { compose } from "@cfast/db";
 import { posts, auditLogs } from "~/db/schema";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
@@ -42,7 +43,6 @@ export async function action({ request, context }: ActionFunctionArgs) {
     throw redirect("/");
   }
 
-  const db = createDbClient(env.DB);
   const formData = await request.formData();
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim() ?? "";
@@ -57,26 +57,37 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return { error: "Title must contain at least one valid character." };
   }
 
+  const cfDb = createCfDb(env.DB, user);
+
   const postId = nanoid();
 
-  await db.insert(posts).values({
-    id: postId,
-    title,
-    slug,
-    content,
-    excerpt,
-    authorId: user.id,
-    published: false,
-  });
+  const op = compose(
+    [
+      cfDb.insert(posts).values({
+        id: postId,
+        title,
+        slug,
+        content,
+        excerpt,
+        authorId: user.id,
+        published: false,
+      }),
+      cfDb.insert(auditLogs).values({
+        id: nanoid(),
+        userId: user.id,
+        action: "post.created",
+        targetType: "post",
+        targetId: postId,
+        metadata: JSON.stringify({ title, slug }),
+      }),
+    ],
+    async (runInsertPost, runInsertAudit) => {
+      await runInsertPost({});
+      await runInsertAudit({});
+    },
+  );
 
-  await db.insert(auditLogs).values({
-    id: nanoid(),
-    userId: user.id,
-    action: "post.created",
-    targetType: "post",
-    targetId: postId,
-    metadata: JSON.stringify({ title, slug }),
-  });
+  await op.run({});
 
   return redirect(`/posts/${slug}/edit`);
 }
