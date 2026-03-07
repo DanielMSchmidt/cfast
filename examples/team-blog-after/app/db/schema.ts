@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -106,3 +107,43 @@ export const auditLogs = sqliteTable("audit_logs", {
   metadata: text("metadata"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().$defaultFn(() => new Date()),
 });
+
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+  comments: many(comments),
+  roles: many(roles),
+}));
+
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  author: one(users, { fields: [posts.authorId], references: [users.id] }),
+  comments: many(comments),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, { fields: [comments.postId], references: [posts.id] }),
+  author: one(users, { fields: [comments.authorId], references: [users.id] }),
+}));
+
+export const rolesRelations = relations(roles, ({ one }) => ({
+  user: one(users, { fields: [roles.userId], references: [users.id] }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, { fields: [accounts.userId], references: [users.id] }),
+}));
+
+export const passkeysRelations = relations(passkeys, ({ one }) => ({
+  user: one(users, { fields: [passkeys.userId], references: [users.id] }),
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  user: one(users, { fields: [auditLogs.userId], references: [users.id] }),
+}));
+
+export const impersonationLogsRelations = relations(impersonationLogs, ({ one }) => ({
+  admin: one(users, { fields: [impersonationLogs.adminId], references: [users.id] }),
+}));
