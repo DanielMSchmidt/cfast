@@ -12,6 +12,8 @@ import TabList from "@mui/joy/TabList";
 import Box from "@mui/joy/Box";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
+import { compose } from "@cfast/db";
 import { posts, users, auditLogs } from "~/db/schema";
 import { eq, desc, count, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -96,16 +98,27 @@ export async function action({ request, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(post.coverImageKey);
     }
 
-    await db.delete(posts).where(eq(posts.id, postId));
+    const cfDb = createCfDb(env.DB, user);
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "delete_post",
-      targetType: "post",
-      targetId: postId,
-      metadata: JSON.stringify({ title: post.title }),
-    });
+    const op = compose(
+      [
+        cfDb.unsafe().delete(posts).where(eq(posts.id, postId)),
+        cfDb.unsafe().insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "delete_post",
+          targetType: "post",
+          targetId: postId,
+          metadata: JSON.stringify({ title: post.title }),
+        }),
+      ],
+      async (runDelete, runAudit) => {
+        await runDelete({});
+        await runAudit({});
+      },
+    );
+
+    await op.run({});
 
     return { success: "Post deleted successfully" };
   }

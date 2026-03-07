@@ -2,7 +2,7 @@ import type { ActionFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createAuth } from "~/auth.server";
-import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
 import { impersonationLogs } from "~/db/schema";
 import { nanoid } from "nanoid";
 
@@ -28,12 +28,12 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
     { expirationTtl: 3600 }
   );
 
-  const db = createDbClient(env.DB);
-  await db.insert(impersonationLogs).values({
+  const cfDb = createCfDb(env.DB, user);
+  await cfDb.unsafe().insert(impersonationLogs).values({
     id: nanoid(),
     adminId: user.id,
     targetUserId: targetUserId,
-  });
+  }).run({});
 
   throw redirect("/");
 }

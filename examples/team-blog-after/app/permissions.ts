@@ -18,10 +18,9 @@ export type AuthUser = {
 // ---------------------------------------------------------------------------
 // Declarative permission definitions (source of truth)
 // ---------------------------------------------------------------------------
-// These definePermissions + grant declarations are the source of truth for
-// what each role is allowed to do. Once @cfast/db is implemented, these will
-// power the Operations layer and replace the hasRole/hasAnyRole checks below.
-// For now, both coexist during migration.
+// These definePermissions + grant declarations power the @cfast/db Operations
+// layer. When a route calls cfDb.insert(posts).values(...).run({}), the
+// permissions are checked against these grants automatically.
 // ---------------------------------------------------------------------------
 
 const appRoles = ["reader", "author", "editor", "admin"] as const;
@@ -58,9 +57,11 @@ export const permissions = definePermissions<AuthUser>()({
 });
 
 // ---------------------------------------------------------------------------
-// Legacy role helpers (kept for backward compatibility during migration)
+// Role helpers for UI logic
 // ---------------------------------------------------------------------------
-// Routes still use these until @cfast/db provides the Operations layer.
+// Used in loaders/components to show/hide UI elements (e.g. "New Post" button)
+// and for page-level access guards (e.g. admin layout redirect).
+// These do NOT enforce data-level permissions — that's @cfast/db's job.
 // ---------------------------------------------------------------------------
 
 export function hasRole(user: AuthUser, role: UserRole): boolean {

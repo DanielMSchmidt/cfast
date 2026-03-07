@@ -16,6 +16,7 @@ import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
 import { requireUser } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
 import { users, passkeys } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -42,7 +43,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 export async function action({ request, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
   const user = await requireUser(request, env);
-  const db = createDbClient(env.DB);
   const formData = await request.formData();
   const _action = formData.get("_action") as string;
 
@@ -52,10 +52,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return { error: "Name is required.", action: "updateProfile" };
     }
 
-    await db
-      .update(users)
-      .set({ name, updatedAt: new Date() })
-      .where(eq(users.id, user.id));
+    const cfDb = createCfDb(env.DB, user);
+    await cfDb.unsafe().update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, user.id)).run({});
 
     return { success: true, action: "updateProfile" };
   }
@@ -89,10 +87,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     const avatarUrl = `/api/file/${key}`;
 
-    await db
-      .update(users)
-      .set({ avatarUrl, updatedAt: new Date() })
-      .where(eq(users.id, user.id));
+    const cfDb = createCfDb(env.DB, user);
+    await cfDb.unsafe().update(users).set({ avatarUrl, updatedAt: new Date() }).where(eq(users.id, user.id)).run({});
 
     return { success: true, action: "uploadAvatar" };
   }
@@ -103,10 +99,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(key);
     }
 
-    await db
-      .update(users)
-      .set({ avatarUrl: null, updatedAt: new Date() })
-      .where(eq(users.id, user.id));
+    const cfDb = createCfDb(env.DB, user);
+    await cfDb.unsafe().update(users).set({ avatarUrl: null, updatedAt: new Date() }).where(eq(users.id, user.id)).run({});
 
     return { success: true, action: "removeAvatar" };
   }

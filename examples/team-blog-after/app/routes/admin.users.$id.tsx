@@ -13,6 +13,8 @@ import Box from "@mui/joy/Box";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import type { UserRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
+import { compose } from "@cfast/db";
 import { users, roles, posts, auditLogs } from "~/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -101,21 +103,32 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
       return { error: "User already has this role" };
     }
 
-    await db.insert(roles).values({
-      id: nanoid(),
-      userId: params.id!,
-      role: role as "admin" | "editor" | "author",
-      grantedBy: user.id,
-    });
+    const cfDb = createCfDb(env.DB, user);
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "assign_role",
-      targetType: "user",
-      targetId: params.id!,
-      metadata: JSON.stringify({ role }),
-    });
+    const op = compose(
+      [
+        cfDb.unsafe().insert(roles).values({
+          id: nanoid(),
+          userId: params.id!,
+          role: role as "admin" | "editor" | "author",
+          grantedBy: user.id,
+        }),
+        cfDb.unsafe().insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "assign_role",
+          targetType: "user",
+          targetId: params.id!,
+          metadata: JSON.stringify({ role }),
+        }),
+      ],
+      async (runInsertRole, runAuditLog) => {
+        await runInsertRole({});
+        await runAuditLog({});
+      },
+    );
+
+    await op.run({});
 
     return { success: `Role "${role}" assigned successfully` };
   }
@@ -133,16 +146,27 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
       return { error: "Role not found" };
     }
 
-    await db.delete(roles).where(eq(roles.id, roleId));
+    const cfDb = createCfDb(env.DB, user);
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "revoke_role",
-      targetType: "user",
-      targetId: params.id!,
-      metadata: JSON.stringify({ role: existingRole.role }),
-    });
+    const op = compose(
+      [
+        cfDb.unsafe().delete(roles).where(eq(roles.id, roleId)),
+        cfDb.unsafe().insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "revoke_role",
+          targetType: "user",
+          targetId: params.id!,
+          metadata: JSON.stringify({ role: existingRole.role }),
+        }),
+      ],
+      async (runDeleteRole, runAuditLog) => {
+        await runDeleteRole({});
+        await runAuditLog({});
+      },
+    );
+
+    await op.run({});
 
     return { success: `Role "${existingRole.role}" revoked successfully` };
   }

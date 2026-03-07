@@ -14,6 +14,8 @@ import AspectRatio from "@mui/joy/AspectRatio";
 import Box from "@mui/joy/Box";
 import { requireUser, hasAnyRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
+import { compose } from "@cfast/db";
 import { posts, auditLogs } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -61,13 +63,6 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   const post = await db.select().from(posts).where(eq(posts.slug, slug)).get();
   if (!post) throw new Response("Not Found", { status: 404 });
 
-  // Permission: author of post or editor/admin
-  const isAuthor = user.id === post.authorId;
-  const isEditorOrAdmin = hasAnyRole(user, ["editor", "admin"]);
-  if (!isAuthor && !isEditorOrAdmin) {
-    throw new Response("Forbidden", { status: 403 });
-  }
-
   const formData = await request.formData();
   const _action = formData.get("_action") as string;
 
@@ -85,25 +80,33 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       return { error: "Title must contain at least one valid character.", action: "update" };
     }
 
-    await db
-      .update(posts)
-      .set({
-        title,
-        slug: newSlug,
-        content,
-        excerpt,
-        updatedAt: new Date(),
-      })
-      .where(eq(posts.id, post.id));
+    const cfDb = createCfDb(env.DB, user);
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "post.updated",
-      targetType: "post",
-      targetId: post.id,
-      metadata: JSON.stringify({ title, oldSlug: post.slug, newSlug }),
-    });
+    const op = compose(
+      [
+        cfDb.update(posts).set({
+          title,
+          slug: newSlug,
+          content,
+          excerpt,
+          updatedAt: new Date(),
+        }).where(eq(posts.id, post.id)),
+        cfDb.insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "post.updated",
+          targetType: "post",
+          targetId: post.id,
+          metadata: JSON.stringify({ title, oldSlug: post.slug, newSlug }),
+        }),
+      ],
+      async (runUpdate, runAudit) => {
+        await runUpdate({});
+        await runAudit({});
+      },
+    );
+
+    await op.run({});
 
     // Redirect to new slug if it changed
     if (newSlug !== post.slug) {
@@ -142,10 +145,8 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(post.coverImageKey);
     }
 
-    await db
-      .update(posts)
-      .set({ coverImageKey: key, updatedAt: new Date() })
-      .where(eq(posts.id, post.id));
+    const cfDb = createCfDb(env.DB, user);
+    await cfDb.update(posts).set({ coverImageKey: key, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
 
     return { success: true, action: "uploadCover" };
   }
@@ -155,10 +156,8 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(post.coverImageKey);
     }
 
-    await db
-      .update(posts)
-      .set({ coverImageKey: null, updatedAt: new Date() })
-      .where(eq(posts.id, post.id));
+    const cfDb = createCfDb(env.DB, user);
+    await cfDb.update(posts).set({ coverImageKey: null, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
 
     return { success: true, action: "removeCover" };
   }
