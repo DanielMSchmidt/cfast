@@ -37,6 +37,7 @@ export const permissions = definePermissions<AuthUser>()({
     reader: [
       grant("read", posts, { where: () => eq(posts.published, true) }),
       grant("read", comments),
+      grant("create", comments),
     ],
     author: [
       grant("create", posts),

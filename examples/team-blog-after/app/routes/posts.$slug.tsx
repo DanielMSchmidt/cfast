@@ -22,6 +22,8 @@ import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
 import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
+import { createCfDb } from "~/db/cfast.server";
+import { compose } from "@cfast/db";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -112,45 +114,54 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
 
   if (_action === "delete") {
     const user = await requireUser(request, env);
-    const isAuthor = user.id === post.authorId;
-    const isAdmin = hasRole(user, "admin");
-    if (!isAuthor && !isAdmin) {
-      throw new Response("Forbidden", { status: 403 });
-    }
+    const cfDb = createCfDb(env.DB, user);
 
-    await db.delete(posts).where(eq(posts.id, post.id));
+    const op = compose(
+      [
+        cfDb.delete(posts).where(eq(posts.id, post.id)),
+        cfDb.insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "post.deleted",
+          targetType: "post",
+          targetId: post.id,
+          metadata: JSON.stringify({ title: post.title, slug: post.slug }),
+        }),
+      ],
+      async (runDelete, runAudit) => {
+        await runDelete({});
+        await runAudit({});
+      },
+    );
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "post.deleted",
-      targetType: "post",
-      targetId: post.id,
-      metadata: JSON.stringify({ title: post.title, slug: post.slug }),
-    });
+    await op.run({});
 
     return redirect("/");
   }
 
   if (_action === "publish") {
     const user = await requireUser(request, env);
-    if (!hasAnyRole(user, ["editor", "admin"])) {
-      throw new Response("Forbidden", { status: 403 });
-    }
+    const cfDb = createCfDb(env.DB, user);
 
-    await db
-      .update(posts)
-      .set({ published: true, publishedAt: new Date(), updatedAt: new Date() })
-      .where(eq(posts.id, post.id));
+    const op = compose(
+      [
+        cfDb.update(posts).set({ published: true, publishedAt: new Date(), updatedAt: new Date() }).where(eq(posts.id, post.id)),
+        cfDb.insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "post.published",
+          targetType: "post",
+          targetId: post.id,
+          metadata: JSON.stringify({ title: post.title }),
+        }),
+      ],
+      async (runUpdate, runAudit) => {
+        await runUpdate({});
+        await runAudit({});
+      },
+    );
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "post.published",
-      targetType: "post",
-      targetId: post.id,
-      metadata: JSON.stringify({ title: post.title }),
-    });
+    await op.run({});
 
     await sendPostPublishedEmail(env, {
       title: post.title,
@@ -163,23 +174,27 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
 
   if (_action === "unpublish") {
     const user = await requireUser(request, env);
-    if (!hasAnyRole(user, ["editor", "admin"])) {
-      throw new Response("Forbidden", { status: 403 });
-    }
+    const cfDb = createCfDb(env.DB, user);
 
-    await db
-      .update(posts)
-      .set({ published: false, updatedAt: new Date() })
-      .where(eq(posts.id, post.id));
+    const op = compose(
+      [
+        cfDb.update(posts).set({ published: false, updatedAt: new Date() }).where(eq(posts.id, post.id)),
+        cfDb.insert(auditLogs).values({
+          id: nanoid(),
+          userId: user.id,
+          action: "post.unpublished",
+          targetType: "post",
+          targetId: post.id,
+          metadata: JSON.stringify({ title: post.title }),
+        }),
+      ],
+      async (runUpdate, runAudit) => {
+        await runUpdate({});
+        await runAudit({});
+      },
+    );
 
-    await db.insert(auditLogs).values({
-      id: nanoid(),
-      userId: user.id,
-      action: "post.unpublished",
-      targetType: "post",
-      targetId: post.id,
-      metadata: JSON.stringify({ title: post.title }),
-    });
+    await op.run({});
 
     return { success: true, action: "unpublish" };
   }
@@ -196,12 +211,14 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       return { error: "Comment content cannot be empty.", action: "comment" };
     }
 
-    await db.insert(comments).values({
+    const cfDb = createCfDb(env.DB, user);
+
+    await cfDb.insert(comments).values({
       id: nanoid(),
       postId: post.id,
       authorId: user.id,
       content,
-    });
+    }).run({});
 
     await sendNewCommentEmail(
       env,
@@ -218,16 +235,9 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
     const commentId = formData.get("commentId") as string;
     if (!commentId) throw new Response("Bad Request", { status: 400 });
 
-    const comment = await db.select().from(comments).where(eq(comments.id, commentId)).get();
-    if (!comment) throw new Response("Not Found", { status: 404 });
+    const cfDb = createCfDb(env.DB, user);
 
-    const isCommentAuthor = user.id === comment.authorId;
-    const isEditorOrAdmin = hasAnyRole(user, ["editor", "admin"]);
-    if (!isCommentAuthor && !isEditorOrAdmin) {
-      throw new Response("Forbidden", { status: 403 });
-    }
-
-    await db.delete(comments).where(eq(comments.id, commentId));
+    await cfDb.delete(comments).where(eq(comments.id, commentId)).run({});
 
     return { success: true, action: "deleteComment" };
   }
