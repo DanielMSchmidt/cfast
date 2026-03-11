@@ -29,7 +29,7 @@ export async function multipartUpload(
   });
 
   try {
-    const parts = await uploadParts(upload, stream, options);
+    const parts = await uploadPartsStreaming(upload, stream, options);
     await upload.complete(parts);
     return { key };
   } catch (e) {
@@ -42,7 +42,7 @@ export async function multipartUpload(
   }
 }
 
-async function uploadParts(
+async function uploadPartsStreaming(
   upload: R2MultipartUpload,
   stream: ReadableStream<Uint8Array>,
   options: { partSize: number; concurrency: number },
@@ -51,48 +51,46 @@ async function uploadParts(
   const parts: R2UploadedPart[] = [];
   let partNumber = 1;
   let buffer = new Uint8Array(0);
-
-  // Collect parts from stream
-  const partBuffers: Uint8Array[] = [];
+  const pending: Array<Promise<R2UploadedPart>> = [];
 
   while (true) {
     const { value, done } = await reader.read();
 
     if (value) {
-      // Append to buffer
       const newBuffer = new Uint8Array(buffer.length + value.length);
       newBuffer.set(buffer);
       newBuffer.set(value, buffer.length);
       buffer = newBuffer;
     }
 
-    // Flush complete parts
+    // Upload complete parts as they become available
     while (buffer.length >= options.partSize) {
-      partBuffers.push(buffer.slice(0, options.partSize));
+      const partData = buffer.slice(0, options.partSize);
       buffer = buffer.slice(options.partSize);
+      const pn = partNumber++;
+
+      pending.push(upload.uploadPart(pn, partData));
+
+      // Drain when we hit concurrency limit
+      if (pending.length >= options.concurrency) {
+        const result = await pending.shift()!;
+        parts.push(result);
+      }
     }
 
     if (done) {
-      // Flush remaining buffer as final part
+      // Upload remaining buffer as final part
       if (buffer.length > 0) {
-        partBuffers.push(buffer);
+        const pn = partNumber++;
+        pending.push(upload.uploadPart(pn, buffer));
       }
       break;
     }
   }
 
-  // Upload parts with concurrency limit
-  for (let i = 0; i < partBuffers.length; i += options.concurrency) {
-    const batch = partBuffers.slice(i, i + options.concurrency);
-    const batchResults = await Promise.all(
-      batch.map((partData, batchIndex) => {
-        const pn = partNumber + batchIndex;
-        return upload.uploadPart(pn, partData);
-      }),
-    );
-    parts.push(...batchResults);
-    partNumber += batch.length;
-  }
+  // Wait for all remaining pending uploads
+  const remaining = await Promise.all(pending);
+  parts.push(...remaining);
 
   // Sort parts by number (R2 requires ordered parts)
   parts.sort((a, b) => a.partNumber - b.partNumber);
@@ -104,10 +102,16 @@ export async function replaceExisting(
   bucket: R2Bucket,
   prefix: string,
 ): Promise<void> {
-  const listed = await bucket.list({ prefix });
+  let cursor: string | undefined;
 
-  if (listed.objects.length === 0) return;
+  do {
+    const listed = await bucket.list({ prefix, cursor });
 
-  const keys = listed.objects.map((obj) => obj.key);
-  await bucket.delete(keys);
+    if (listed.objects.length > 0) {
+      const keys = listed.objects.map((obj) => obj.key);
+      await bucket.delete(keys);
+    }
+
+    cursor = listed.truncated ? listed.cursor : undefined;
+  } while (cursor);
 }

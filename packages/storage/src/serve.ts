@@ -35,7 +35,7 @@ const DURATION_UNITS: Record<string, number> = {
 };
 
 function parseDuration(duration: string): number {
-  const match = duration.match(/^(-?\d+(?:\.\d+)?)\s*(s|m|h|d)$/);
+  const match = duration.match(/^(\d+(?:\.\d+)?)\s*(s|m|h|d)$/);
   if (!match) {
     throw new Error(`Invalid duration format: "${duration}". Expected format: "1h", "30m", "7d", etc.`);
   }
