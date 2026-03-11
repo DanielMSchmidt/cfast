@@ -124,6 +124,30 @@ describe("createUIPlugin", () => {
       );
     });
 
+    it("does not submit when disabled button is clicked", () => {
+      const mockSubmit = vi.fn();
+      mockUseActionStatus.mockReturnValue({
+        permitted: false,
+        invisible: false,
+        reason: "Missing editor role",
+        submit: mockSubmit,
+        pending: false,
+        data: undefined,
+        error: undefined,
+      });
+
+      render(
+        <plugin.ActionButton action={descriptor} actionName="publish">
+          Publish
+        </plugin.ActionButton>,
+      );
+
+      const button = screen.getByRole("button", { name: "Publish" });
+      // Force click even though disabled
+      fireEvent.click(button);
+      expect(mockSubmit).not.toHaveBeenCalled();
+    });
+
     it("calls submit on click when permitted", () => {
       const mockSubmit = vi.fn();
       mockUseActionStatus.mockReturnValue({
