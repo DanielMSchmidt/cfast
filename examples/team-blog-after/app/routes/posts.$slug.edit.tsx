@@ -128,7 +128,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       }
 
       const result = await storage.handle("postCovers", request, {
-        env: env as unknown as Record<string, unknown>,
+        env,
         user: { id: ctx.user.id },
         input: { postId: post.id },
       });

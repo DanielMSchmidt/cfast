@@ -13,7 +13,7 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
   const storageName = key.startsWith("avatars/") ? "avatars" : "postCovers";
 
   return storage.serve(storageName, key, {
-    env: env as unknown as Record<string, unknown>,
+    env,
     headers: {
       "Cache-Control": "public, max-age=31536000, immutable",
     },

@@ -33,7 +33,7 @@ export type KeyContext<TInput = Record<string, unknown>> = {
 };
 
 export type HandleContext<TInput = Record<string, unknown>> = {
-  env: Record<string, unknown>;
+  env: object;
   user: { id: string; [key: string]: unknown };
   input?: TInput;
 };
@@ -63,12 +63,12 @@ export type ClientFiletypeConfig = {
 export type ClientStorageConfig = Record<string, ClientFiletypeConfig>;
 
 export type SignedUrlOptions = {
-  env: Record<string, unknown>;
+  env: object;
   expiresIn: string;
 };
 
 export type ServeOptions = {
-  env: Record<string, unknown>;
+  env: object;
   headers?: Record<string, string>;
 };
 
@@ -82,6 +82,6 @@ export type StorageInstance<T extends StorageSchema> = {
   serve: (name: keyof T & string, key: string, options: ServeOptions) => Promise<Response>;
   getPublicUrl: (name: keyof T & string, key: string) => string;
   getSignedUrl: (name: keyof T & string, key: string, options: SignedUrlOptions) => Promise<string>;
-  verifySignedUrl: (url: string, options: { env: Record<string, unknown> }) => Promise<boolean>;
+  verifySignedUrl: (url: string, options: { env: object }) => Promise<boolean>;
   clientConfig: () => ClientStorageConfig;
 };

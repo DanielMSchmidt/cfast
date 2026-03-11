@@ -23,7 +23,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
   try {
     const result = await storage.handle(storageName, request, {
-      env: env as unknown as Record<string, unknown>,
+      env,
       user: { id: user.id },
       input:
         type === "cover"
