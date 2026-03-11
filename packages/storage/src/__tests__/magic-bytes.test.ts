@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { detectMimeType, SIGNATURES } from "../magic-bytes.js";
+import { detectMimeType, SIGNATURES, type MagicSignature } from "../magic-bytes.js";
 
 describe("SIGNATURES", () => {
   it("has entries for common image types", () => {
-    expect(SIGNATURES.some((s) => s.mime === "image/jpeg")).toBe(true);
-    expect(SIGNATURES.some((s) => s.mime === "image/png")).toBe(true);
-    expect(SIGNATURES.some((s) => s.mime === "image/webp")).toBe(true);
-    expect(SIGNATURES.some((s) => s.mime === "image/gif")).toBe(true);
-    expect(SIGNATURES.some((s) => s.mime === "application/pdf")).toBe(true);
+    expect(SIGNATURES.some((s: MagicSignature) => s.mime === "image/jpeg")).toBe(true);
+    expect(SIGNATURES.some((s: MagicSignature) => s.mime === "image/png")).toBe(true);
+    expect(SIGNATURES.some((s: MagicSignature) => s.mime === "image/webp")).toBe(true);
+    expect(SIGNATURES.some((s: MagicSignature) => s.mime === "image/gif")).toBe(true);
+    expect(SIGNATURES.some((s: MagicSignature) => s.mime === "application/pdf")).toBe(true);
   });
 });
 
