@@ -19,6 +19,8 @@ import { posts, users, comments } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
+import { ActionButton } from "@cfast/ui/joy";
+import { postActionsClient } from "~/actions/posts.client";
 import { composeActions } from "~/actions.server";
 import {
   deletePost,
@@ -272,41 +274,32 @@ export default function PostDetail() {
             </Button>
           )}
           {canPublish && !post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="publishPost" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="title" value={post.title} />
-              <input type="hidden" name="slug" value={post.slug} />
-              <input type="hidden" name="authorId" value={post.authorId} />
-              <Button type="submit" color="success" variant="soft" size="sm">
-                Publish
-              </Button>
-            </Form>
+            <ActionButton
+              action={postActionsClient}
+              actionName="publishPost"
+              input={{ postId: post.id, title: post.title, slug: post.slug, authorId: post.authorId }}
+            >
+              Publish
+            </ActionButton>
           )}
           {canPublish && post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="unpublishPost" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="title" value={post.title} />
-              <Button type="submit" color="warning" variant="soft" size="sm">
-                Unpublish
-              </Button>
-            </Form>
+            <ActionButton
+              action={postActionsClient}
+              actionName="unpublishPost"
+              input={{ postId: post.id, title: post.title }}
+            >
+              Unpublish
+            </ActionButton>
           )}
           {canDelete && (
-            <Form method="post" onSubmit={(e) => {
-              if (!confirm("Are you sure you want to delete this post?")) {
-                e.preventDefault();
-              }
-            }}>
-              <input type="hidden" name="_action" value="deletePost" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="title" value={post.title} />
-              <input type="hidden" name="slug" value={post.slug} />
-              <Button type="submit" color="danger" variant="soft" size="sm">
-                Delete
-              </Button>
-            </Form>
+            <ActionButton
+              action={postActionsClient}
+              actionName="deletePost"
+              input={{ postId: post.id, title: post.title, slug: post.slug }}
+              confirmation="Are you sure you want to delete this post?"
+            >
+              Delete
+            </ActionButton>
           )}
         </Stack>
 

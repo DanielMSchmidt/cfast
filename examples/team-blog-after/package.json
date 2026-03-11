@@ -23,6 +23,7 @@
     "@cfast/db": "workspace:*",
     "@cfast/email": "workspace:*",
     "@cfast/permissions": "workspace:*",
+    "@cfast/ui": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/joy": "^5.0.0-beta.51",
