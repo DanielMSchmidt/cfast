@@ -28,7 +28,7 @@ function buildMutatePermissionFilter(
   action: PermissionAction,
 ): unknown {
   if (config.unsafe || !config.user) return undefined;
-  const filters = resolvePermissionFilters(config.grants, config.user, action, config.table);
+  const filters = resolvePermissionFilters(config.grants, action, config.table);
   if (filters.length === 0) return undefined;
   const columns = config.table as Record<string, unknown>;
   const clauses = filters.map((fn) => fn(columns, config.user!));

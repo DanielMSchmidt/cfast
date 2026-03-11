@@ -9,14 +9,11 @@ import type {
 } from "@cfast/permissions";
 import { CRUD_ACTIONS } from "@cfast/permissions";
 
-type User = { id: string };
-
 export function resolvePermissionFilters(
   grants: Grant[],
-  user: User,
   action: PermissionAction,
   table: DrizzleTable,
-): Array<(columns: Record<string, unknown>, user: User) => unknown> {
+): Array<(columns: Record<string, unknown>, user: { id: string }) => unknown> {
   const matching = grants.filter((g) => {
     const actionMatch = g.action === action || g.action === "manage";
     const tableMatch = g.subject === "all" || g.subject === table;
@@ -31,7 +28,7 @@ export function resolvePermissionFilters(
   // Return all where clause functions
   return matching
     .filter((g): g is Grant & { where: NonNullable<Grant["where"]> } => !!g.where)
-    .map((g) => g.where as (columns: Record<string, unknown>, user: User) => unknown);
+    .map((g) => g.where as (columns: Record<string, unknown>, user: { id: string }) => unknown);
 }
 
 function grantMatchesAction(

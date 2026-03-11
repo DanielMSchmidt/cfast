@@ -27,7 +27,7 @@ function buildPermissionFilter(
   table: DrizzleTable,
 ): unknown {
   if (config.unsafe || !config.user) return undefined;
-  const filters = resolvePermissionFilters(config.grants, config.user, "read", table);
+  const filters = resolvePermissionFilters(config.grants, "read", table);
   if (filters.length === 0) return undefined;
 
   const columns = table as Record<string, unknown>;
