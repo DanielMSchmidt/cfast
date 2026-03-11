@@ -6,19 +6,27 @@ import Button from "@mui/joy/Button";
 import Chip from "@mui/joy/Chip";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import Tabs from "@mui/joy/Tabs";
-import Tab from "@mui/joy/Tab";
-import TabList from "@mui/joy/TabList";
 import Box from "@mui/joy/Box";
 import { requireAuthContext, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
-import { compose } from "@cfast/db";
-import { posts, users, auditLogs } from "~/db/schema";
-import { eq, desc, count, and } from "drizzle-orm";
+import { compose, parseOffsetParams } from "@cfast/db";
+import type { OffsetPage } from "@cfast/db";
+import { useOffsetPagination } from "@cfast/pagination";
+import { posts, auditLogs } from "~/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { Pagination } from "~/components/Pagination";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
+
+type PostItem = {
+  id: string;
+  title: string;
+  slug: string;
+  published: boolean;
+  coverImageKey: string | null;
+  createdAt: Date;
+  author: { name: string } | null;
+};
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -28,12 +36,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     throw redirect("/");
   }
 
-  const db = createDbClient(env.DB);
+  const cfDb = createCfDb(env.DB, ctx);
+  const params = parseOffsetParams(request, { defaultLimit: 20, maxLimit: 50 });
   const url = new URL(request.url);
-  const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
-  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
   const status = url.searchParams.get("status") ?? "all";
-  const offset = (page - 1) * limit;
 
   const statusCondition =
     status === "published"
@@ -42,31 +48,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         ? eq(posts.published, false)
         : undefined;
 
-  const postList = await db
-    .select({
-      id: posts.id,
-      title: posts.title,
-      slug: posts.slug,
-      published: posts.published,
-      coverImageKey: posts.coverImageKey,
-      createdAt: posts.createdAt,
-      authorName: users.name,
-    })
-    .from(posts)
-    .leftJoin(users, eq(posts.authorId, users.id))
-    .where(statusCondition)
-    .orderBy(desc(posts.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const result = await cfDb.query(posts).paginate(params, {
+    where: statusCondition,
+    orderBy: desc(posts.createdAt),
+    with: { author: { columns: { name: true } } },
+  }).run({}) as OffsetPage<unknown>;
 
-  const totalResult = await db
-    .select({ total: count() })
-    .from(posts)
-    .where(statusCondition)
-    .get();
-  const total = totalResult?.total ?? 0;
-
-  return { posts: postList, total, page, limit, status };
+  return { ...result, status };
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -127,16 +115,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminPosts() {
-  const { posts: postList, total, page, limit, status } =
-    useLoaderData<typeof loader>();
+  const { items: postList, total, totalPages, currentPage, goToPage } =
+    useOffsetPagination<PostItem>();
+  const { status } = useLoaderData() as { status: string };
   const actionData = useActionData<typeof action>();
-  const totalPages = Math.ceil(total / limit);
 
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [deletePostTitle, setDeletePostTitle] = useState<string>("");
-
-  const baseUrl =
-    status !== "all" ? `/admin/posts?status=${status}` : "/admin/posts";
 
   return (
     <Stack spacing={3}>
@@ -217,7 +202,7 @@ export default function AdminPosts() {
             {postList.map((post) => (
               <tr key={post.id}>
                 <td>{post.title}</td>
-                <td>{post.authorName ?? "Unknown"}</td>
+                <td>{post.author?.name ?? "Unknown"}</td>
                 <td>
                   <Chip
                     size="sm"
@@ -282,7 +267,47 @@ export default function AdminPosts() {
         </Table>
       </Box>
 
-      <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
+      {totalPages > 1 && (
+        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 3 }}>
+          <Button
+            variant="outlined"
+            color="neutral"
+            size="sm"
+            disabled={currentPage <= 1}
+            onClick={() => goToPage(currentPage - 1)}
+          >
+            Previous
+          </Button>
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            const maxVisible = 5;
+            let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            const end = Math.min(totalPages, start + maxVisible - 1);
+            start = Math.max(1, end - maxVisible + 1);
+            const page = start + i;
+            if (page > totalPages) return null;
+            return (
+              <Button
+                key={page}
+                variant={page === currentPage ? "solid" : "outlined"}
+                color={page === currentPage ? "primary" : "neutral"}
+                size="sm"
+                onClick={() => goToPage(page)}
+              >
+                {page}
+              </Button>
+            );
+          })}
+          <Button
+            variant="outlined"
+            color="neutral"
+            size="sm"
+            disabled={currentPage >= totalPages}
+            onClick={() => goToPage(currentPage + 1)}
+          >
+            Next
+          </Button>
+        </Stack>
+      )}
 
       <ConfirmDialog
         open={deletePostId !== null}
