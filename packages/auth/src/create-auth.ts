@@ -94,8 +94,8 @@ export function createAuth(config: AuthConfig) {
           },
           grants,
         };
-      } catch {
-        // If Better Auth throws (e.g., tables don't exist yet), return anonymous
+      } catch (err) {
+        console.error("[cfast/auth] createContext error:", err);
         return { user: null, grants: anonymousGrants };
       }
     }

@@ -39,8 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # team-blog-after skipped: @cfast/auth session handling needs fixing first
-        example: [team-blog-before]
+        example: [team-blog-before, team-blog-after]
     steps:
       - uses: actions/checkout@v4
 
