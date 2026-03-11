@@ -83,6 +83,7 @@ export type PaginateOptions = {
   where?: unknown;
   orderBy?: unknown;
   cursorColumns?: unknown[];
+  orderDirection?: "asc" | "desc";
   with?: Record<string, unknown>;
   cache?: QueryCacheOptions;
 };

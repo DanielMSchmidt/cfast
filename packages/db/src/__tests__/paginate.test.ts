@@ -38,6 +38,12 @@ describe("parseCursorParams", () => {
     const result = parseCursorParams(req);
     expect(result).toEqual({ type: "cursor", cursor: null, limit: 1 });
   });
+
+  it("falls back to defaultLimit for non-numeric limit", () => {
+    const req = new Request("https://example.com/posts?limit=abc");
+    const result = parseCursorParams(req);
+    expect(result).toEqual({ type: "cursor", cursor: null, limit: 20 });
+  });
 });
 
 describe("parseOffsetParams", () => {

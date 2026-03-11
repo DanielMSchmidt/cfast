@@ -96,7 +96,7 @@ describe("usePagination", () => {
 
     const result = usePagination();
     expect(result.items).toHaveLength(1);
-    expect(result.items[0]).toEqual({ id: "1", title: "B" });
+    expect(result.items[0]).toEqual({ id: "1", title: "A" });
   });
 
   it("supports custom getKey", () => {

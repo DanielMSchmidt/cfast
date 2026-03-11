@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, type RefObject } from "react";
 import { usePagination } from "./use-pagination";
 import type { UsePaginationOptions } from "./use-pagination";
 
@@ -8,7 +8,7 @@ export type UseInfiniteScrollOptions<T> = UsePaginationOptions<T> & {
 
 export type UseInfiniteScrollResult<T> = {
   items: T[];
-  sentinelRef: React.RefObject<Element | null>;
+  sentinelRef: RefObject<Element | null>;
   hasMore: boolean;
   isLoading: boolean;
 };
