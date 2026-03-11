@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import type { UseFormReturn } from "react-hook-form";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { introspectTable } from "./introspect";
-import { buildResolver } from "./resolver";
+import { createResolver } from "./resolver";
 import type { FieldConfig, FieldDefinition, FormPlugin } from "./types";
 
 type AutoFormProps = {
@@ -51,8 +51,8 @@ export function createAutoForm(plugin: FormPlugin) {
     }, [allFields, exclude, fieldOverrides]);
 
     const resolver = useMemo(
-      () => buildResolver(visibleFields),
-      [visibleFields],
+      () => createResolver(visibleFields, fieldOverrides),
+      [visibleFields, fieldOverrides],
     );
 
     const defaultValues = useMemo(() => {

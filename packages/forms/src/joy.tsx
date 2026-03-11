@@ -92,4 +92,3 @@ const joyPlugin = createFormPlugin({
 });
 
 export const AutoForm = createAutoForm(joyPlugin);
-export { joyPlugin };
