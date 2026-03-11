@@ -40,7 +40,7 @@ export function createMockFormDataRequest(
   actionUrl = "/upload",
 ): Request {
   const formData = new FormData();
-  const blob = new Blob([file.content], { type: file.type });
+  const blob = new Blob([file.content.buffer as ArrayBuffer], { type: file.type });
   formData.append("file", blob, file.name);
   return new Request(`http://localhost${actionUrl}`, {
     method: "POST",
