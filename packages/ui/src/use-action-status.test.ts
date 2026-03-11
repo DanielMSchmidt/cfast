@@ -113,4 +113,33 @@ describe("useActionStatus", () => {
     result.current.submit();
     expect(mockSubmit).toHaveBeenCalledWith({ postId: "123" });
   });
+
+  it("throws when action name is not in descriptor", () => {
+    mockUseActions.mockReturnValue({
+      publish: () => ({
+        permitted: true,
+        invisible: false,
+        reason: null,
+        submit: vi.fn(),
+        pending: false,
+        data: undefined,
+        error: undefined,
+      }),
+      delete: () => ({
+        permitted: false,
+        invisible: true,
+        reason: null,
+        submit: vi.fn(),
+        pending: false,
+        data: undefined,
+        error: undefined,
+      }),
+    });
+
+    expect(() =>
+      renderHook(() =>
+        useActionStatus(descriptor, "nonexistent"),
+      ),
+    ).toThrow('Action "nonexistent" not found in descriptor');
+  });
 });
