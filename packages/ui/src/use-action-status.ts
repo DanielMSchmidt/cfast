@@ -1,6 +1,6 @@
 import { useActions } from "@cfast/actions/client";
 import type { ActionHookResult } from "@cfast/actions/client";
-import type { ClientDescriptor, Serializable } from "./types.js";
+import type { ClientDescriptor, Serializable } from "@cfast/actions";
 
 export function useActionStatus<TDescriptor extends ClientDescriptor>(
   descriptor: TDescriptor,
