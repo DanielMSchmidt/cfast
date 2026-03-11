@@ -22,6 +22,7 @@ export type AuthenticatedContext = {
 
 export type AuthConfig = {
   permissions: Permissions;
+  schema?: Record<string, unknown>;
   passkeys?: { rpName: string; rpId: string };
   magicLink?: {
     sendMagicLink: (params: { email: string; url: string }) => Promise<void>;

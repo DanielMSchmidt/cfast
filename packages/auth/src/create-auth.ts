@@ -41,8 +41,6 @@ export function createAuth(config: AuthConfig) {
 
   return function initAuth(env: AuthEnvConfig): AuthInstance {
     const roleManager = createRoleManager(env.d1);
-    const db = drizzle(env.d1);
-
     const plugins = [];
 
     if (config.magicLink) {
@@ -57,7 +55,11 @@ export function createAuth(config: AuthConfig) {
 
     const auth = betterAuth({
       baseURL: env.appUrl,
-      database: drizzleAdapter(db, { provider: "sqlite", usePlural: true }),
+      database: drizzleAdapter(drizzle(env.d1), {
+        provider: "sqlite",
+        usePlural: true,
+        ...(config.schema ? { schema: config.schema } : {}),
+      }),
       emailAndPassword: { enabled: true },
       plugins,
       ...(expiresIn !== undefined ? { session: { expiresIn } } : {}),
