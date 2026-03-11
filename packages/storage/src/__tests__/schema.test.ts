@@ -39,7 +39,7 @@ describe("filetype", () => {
       bucket: "UPLOADS",
       accept: ["image/jpeg", "image/png"],
       maxSize: "2mb",
-      key: (file) => `images/${file.name}`,
+      key: (file: { name: string; extension: string }) => `images/${file.name}`,
     });
 
     expect(config.bucket).toBe("UPLOADS");
@@ -56,7 +56,7 @@ describe("filetype", () => {
       bucket: "DOCS",
       accept: ["application/pdf"],
       maxSize: "50mb",
-      key: (file) => file.name,
+      key: (file: { name: string; extension: string }) => file.name,
       uploadable: false,
       replace: true,
       multipartThreshold: "20mb",
