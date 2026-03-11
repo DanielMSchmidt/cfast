@@ -1,5 +1,5 @@
 import type { FieldErrors, FieldValues, Resolver } from "react-hook-form";
-import type { FieldDefinition } from "./types";
+import type { FieldConfig, FieldDefinition } from "./types";
 
 function validateField(
   field: FieldDefinition,
@@ -52,8 +52,9 @@ function validateField(
   return undefined;
 }
 
-export function buildResolver(
+export function createResolver(
   fields: FieldDefinition[],
+  fieldOverrides?: Partial<Record<string, FieldConfig>>,
 ): Resolver<FieldValues> {
   return async (values) => {
     const errors: FieldErrors<FieldValues> = {};
@@ -66,6 +67,17 @@ export function buildResolver(
       if (error) {
         hasErrors = true;
         errors[field.name] = { type: "validation", message: error };
+        continue;
+      }
+
+      // Run per-field custom validator from field overrides
+      const customValidate = fieldOverrides?.[field.name]?.validate;
+      if (customValidate && value !== undefined && value !== null && value !== "") {
+        const customError = customValidate(value);
+        if (customError) {
+          hasErrors = true;
+          errors[field.name] = { type: "custom", message: customError };
+        }
       }
     }
 
