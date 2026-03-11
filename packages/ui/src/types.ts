@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import type { ClientDescriptor, ActionPermissionStatus } from "@cfast/actions";
+import type { ClientDescriptor, ActionPermissionStatus, Serializable } from "@cfast/actions";
 
 // --- Plugin System ---
 
@@ -379,7 +379,7 @@ export type BulkAction = {
 export type ActionButtonProps = {
   action: ClientDescriptor;
   actionName?: string;
-  input?: Record<string, unknown>;
+  input?: Record<string, Serializable>;
   children: ReactNode;
   whenForbidden?: WhenForbidden;
   confirmation?: string | ConfirmOptions;
@@ -394,7 +394,7 @@ export type ActionButtonProps = {
 export type PermissionGateProps = {
   action: ClientDescriptor;
   actionName?: string;
-  input?: Record<string, unknown>;
+  input?: Record<string, Serializable>;
   children: ReactNode;
   fallback?: ReactNode;
 };
