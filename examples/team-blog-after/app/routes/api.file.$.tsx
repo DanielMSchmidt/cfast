@@ -1,4 +1,5 @@
 import type { LoaderFunctionArgs } from "react-router";
+import { storage } from "~/storage.server";
 
 export async function loader({ params, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -8,22 +9,13 @@ export async function loader({ params, context }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const object = await env.UPLOADS.get(key);
+  // Determine the storage type from the key prefix
+  const storageName = key.startsWith("avatars/") ? "avatars" : "postCovers";
 
-  if (!object) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  const headers = new Headers();
-  headers.set(
-    "Content-Type",
-    object.httpMetadata?.contentType ?? "application/octet-stream"
-  );
-  headers.set("Cache-Control", "public, max-age=31536000, immutable");
-  headers.set("ETag", object.httpEtag);
-
-  return new Response(object.body as ReadableStream, {
-    status: 200,
-    headers,
+  return storage.serve(storageName, key, {
+    env: env as unknown as Record<string, unknown>,
+    headers: {
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
   });
 }

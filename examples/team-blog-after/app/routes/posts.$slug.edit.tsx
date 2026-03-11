@@ -19,6 +19,8 @@ import { compose } from "@cfast/db";
 import { posts, auditLogs } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { StorageError } from "@cfast/storage";
+import { storage } from "~/storage.server";
 import { Header } from "~/components/Header";
 
 function generateSlug(title: string): string {
@@ -63,7 +65,9 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   const post = await db.select().from(posts).where(eq(posts.slug, slug)).get();
   if (!post) throw new Response("Not Found", { status: 404 });
 
-  const formData = await request.formData();
+  // Clone request so storage.handle can read the original body
+  const clonedRequest = request.clone();
+  const formData = await clonedRequest.formData();
   const _action = formData.get("_action") as string;
 
   if (_action === "update") {
@@ -117,38 +121,28 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   if (_action === "uploadCover") {
-    const file = formData.get("cover") as File | null;
-    if (!file || file.size === 0) {
-      return { error: "No file selected.", action: "uploadCover" };
+    try {
+      // Delete old cover if exists
+      if (post.coverImageKey) {
+        await env.UPLOADS.delete(post.coverImageKey);
+      }
+
+      const result = await storage.handle("postCovers", request, {
+        env: env as unknown as Record<string, unknown>,
+        user: { id: ctx.user.id },
+        input: { postId: post.id },
+      });
+
+      const cfDb = createCfDb(env.DB, ctx);
+      await cfDb.update(posts).set({ coverImageKey: result.key, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
+
+      return { success: true, action: "uploadCover" };
+    } catch (e) {
+      if (e instanceof StorageError) {
+        return { error: e.detail, action: "uploadCover" };
+      }
+      throw e;
     }
-
-    // Validate MIME type
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      return { error: "Only JPEG, PNG, and WebP images are allowed.", action: "uploadCover" };
-    }
-
-    // Validate size (10MB max)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return { error: "File size must be under 10MB.", action: "uploadCover" };
-    }
-
-    const key = `covers/${post.id}/${nanoid()}-${file.name}`;
-
-    await env.UPLOADS.put(key, file.stream(), {
-      httpMetadata: { contentType: file.type },
-    });
-
-    // Delete old cover if exists
-    if (post.coverImageKey) {
-      await env.UPLOADS.delete(post.coverImageKey);
-    }
-
-    const cfDb = createCfDb(env.DB, ctx);
-    await cfDb.update(posts).set({ coverImageKey: key, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
-
-    return { success: true, action: "uploadCover" };
   }
 
   if (_action === "removeCover") {
