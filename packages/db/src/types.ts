@@ -50,6 +50,43 @@ export type FindManyOptions = {
 
 export type FindFirstOptions = Omit<FindManyOptions, "limit" | "offset">;
 
+// --- Pagination ---
+
+export type CursorParams = {
+  type: "cursor";
+  cursor: string | null;
+  limit: number;
+};
+
+export type OffsetParams = {
+  type: "offset";
+  page: number;
+  limit: number;
+};
+
+export type PaginateParams = CursorParams | OffsetParams;
+
+export type CursorPage<T> = {
+  items: T[];
+  nextCursor: string | null;
+};
+
+export type OffsetPage<T> = {
+  items: T[];
+  total: number;
+  page: number;
+  totalPages: number;
+};
+
+export type PaginateOptions = {
+  columns?: Record<string, boolean>;
+  where?: unknown;
+  orderBy?: unknown;
+  cursorColumns?: unknown[];
+  with?: Record<string, unknown>;
+  cache?: QueryCacheOptions;
+};
+
 // --- Db type ---
 
 export type Db = {
@@ -67,6 +104,8 @@ export type Db = {
 export type QueryBuilder = {
   findMany: (options?: FindManyOptions) => Operation<unknown[]>;
   findFirst: (options?: FindFirstOptions) => Operation<unknown | undefined>;
+  paginate: ((params: CursorParams, options: PaginateOptions & { cursorColumns: unknown[] }) => Operation<CursorPage<unknown>>) &
+    ((params: OffsetParams, options?: PaginateOptions) => Operation<OffsetPage<unknown>>);
 };
 
 export type InsertBuilder = {
