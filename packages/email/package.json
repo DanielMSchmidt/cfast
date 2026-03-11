@@ -30,6 +30,11 @@
     "react": "^19.0.0",
     "@react-email/components": "^1.0.0"
   },
+  "peerDependenciesMeta": {
+    "@react-email/components": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@react-email/render": "^2.0.0"
   },
