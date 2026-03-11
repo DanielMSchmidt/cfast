@@ -1,9 +1,6 @@
 import type { ReactNode, ComponentType } from "react";
 import type { ClientDescriptor, Serializable } from "@cfast/actions";
 
-// Re-export for consumer convenience
-export type { ClientDescriptor, Serializable };
-
 // --- Plugin component contracts ---
 
 export type ButtonRenderProps = {
