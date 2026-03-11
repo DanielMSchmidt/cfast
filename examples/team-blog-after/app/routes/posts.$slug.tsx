@@ -14,7 +14,6 @@ import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
 import { getUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
-import type { AuthUser } from "~/permissions";
 import { createDbClient } from "~/db/client";
 import { posts, users, comments } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
