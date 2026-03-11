@@ -1,15 +1,15 @@
 import { drizzle } from "drizzle-orm/d1";
 import { and, or } from "drizzle-orm";
-import type { Permissions, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
+import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
 import { resolvePermissionFilters, checkOperationPermissions } from "./permissions";
 import type { Operation, FindManyOptions, FindFirstOptions } from "./types";
 
-type User = { id: string; role: string };
+type User = { id: string };
 
 type QueryBuilderConfig = {
   d1: D1Database;
   schema: Record<string, unknown>;
-  permissions: Permissions;
+  grants: Grant[];
   user: User | null;
   table: DrizzleTable;
   unsafe: boolean;
@@ -27,7 +27,7 @@ function buildPermissionFilter(
   table: DrizzleTable,
 ): unknown {
   if (config.unsafe || !config.user) return undefined;
-  const filters = resolvePermissionFilters(config.permissions, config.user, "read", table);
+  const filters = resolvePermissionFilters(config.grants, config.user, "read", table);
   if (filters.length === 0) return undefined;
 
   const columns = table as Record<string, unknown>;
@@ -49,7 +49,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
         permissions,
         async run(_params: Record<string, unknown>): Promise<unknown[]> {
           if (!config.unsafe) {
-            checkOperationPermissions(config.permissions, config.user, permissions);
+            checkOperationPermissions(config.grants, permissions);
           }
 
           if (!tableKey) throw new Error("Table not found in schema");
@@ -81,7 +81,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
         permissions,
         async run(_params: Record<string, unknown>): Promise<unknown | undefined> {
           if (!config.unsafe) {
-            checkOperationPermissions(config.permissions, config.user, permissions);
+            checkOperationPermissions(config.grants, permissions);
           }
 
           if (!tableKey) throw new Error("Table not found in schema");

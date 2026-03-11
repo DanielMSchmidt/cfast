@@ -1,25 +1,22 @@
 import {
-  checkPermissions,
   ForbiddenError,
 } from "@cfast/permissions";
 import type {
-  Permissions,
   PermissionDescriptor,
   PermissionAction,
   DrizzleTable,
   Grant,
 } from "@cfast/permissions";
+import { CRUD_ACTIONS } from "@cfast/permissions";
 
-type User = { id: string; role: string };
+type User = { id: string };
 
 export function resolvePermissionFilters(
-  permissions: Permissions,
+  grants: Grant[],
   user: User,
   action: PermissionAction,
   table: DrizzleTable,
 ): Array<(columns: Record<string, unknown>, user: User) => unknown> {
-  const grants = permissions.resolvedGrants[user.role] ?? [];
-
   const matching = grants.filter((g) => {
     const actionMatch = g.action === action || g.action === "manage";
     const tableMatch = g.subject === "all" || g.subject === table;
@@ -37,23 +34,62 @@ export function resolvePermissionFilters(
     .map((g) => g.where as (columns: Record<string, unknown>, user: User) => unknown);
 }
 
+function grantMatchesAction(
+  grantAction: PermissionAction,
+  requiredAction: PermissionAction,
+): boolean {
+  if (grantAction === requiredAction) return true;
+  if (grantAction === "manage") return true;
+  return false;
+}
+
+function grantMatchesTable(
+  grantSubject: DrizzleTable | "all",
+  requiredTable: DrizzleTable,
+): boolean {
+  if (grantSubject === "all") return true;
+  return grantSubject === requiredTable;
+}
+
+function hasGrantFor(
+  grants: Grant[],
+  action: PermissionAction,
+  table: DrizzleTable,
+): boolean {
+  return grants.some(
+    (g) =>
+      grantMatchesAction(g.action, action) &&
+      grantMatchesTable(g.subject, table),
+  );
+}
+
+function hasManagePermission(grants: Grant[], table: DrizzleTable): boolean {
+  if (hasGrantFor(grants, "manage", table)) return true;
+  return CRUD_ACTIONS.every((action) => hasGrantFor(grants, action, table));
+}
+
 export function checkOperationPermissions(
-  permissions: Permissions,
-  user: User | null,
+  grants: Grant[],
   descriptors: PermissionDescriptor[],
 ): void {
   if (descriptors.length === 0) return;
 
-  const role = user?.role ?? "anonymous";
-  const result = checkPermissions(role, permissions, descriptors);
+  for (const descriptor of descriptors) {
+    let permitted: boolean;
 
-  if (!result.permitted) {
-    const first = result.denied[0];
-    throw new ForbiddenError({
-      action: first.action,
-      table: first.table,
-      role,
-      descriptors: result.denied,
-    });
+    if (descriptor.action === "manage") {
+      permitted = hasManagePermission(grants, descriptor.table);
+    } else {
+      permitted = hasGrantFor(grants, descriptor.action, descriptor.table);
+    }
+
+    if (!permitted) {
+      throw new ForbiddenError({
+        action: descriptor.action,
+        table: descriptor.table,
+        role: "unknown",
+        descriptors: [descriptor],
+      });
+    }
   }
 }

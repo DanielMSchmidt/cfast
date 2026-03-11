@@ -1,17 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { createQueryBuilder } from "../query-builder";
-import { testPermissions, posts, schema, createMockD1 } from "./helpers";
-import type { TestUser } from "./helpers";
+import { posts, schema, createMockD1, grantsForRole } from "./helpers";
 
 describe("QueryBuilder", () => {
   describe("findMany", () => {
     it("returns an Operation with correct permissions", () => {
-      const user: TestUser = { id: "user-1", role: "editor" };
       const qb = createQueryBuilder({
         d1: createMockD1(),
         schema,
-        permissions: testPermissions,
-        user,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
         table: posts,
         unsafe: false,
       });
@@ -22,12 +20,11 @@ describe("QueryBuilder", () => {
     });
 
     it("returns empty permissions when unsafe", () => {
-      const user: TestUser = { id: "user-1", role: "editor" };
       const qb = createQueryBuilder({
         d1: createMockD1(),
         schema,
-        permissions: testPermissions,
-        user,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
         table: posts,
         unsafe: true,
       });
@@ -39,12 +36,11 @@ describe("QueryBuilder", () => {
 
   describe("findFirst", () => {
     it("returns an Operation with correct permissions", () => {
-      const user: TestUser = { id: "user-1", role: "user" };
       const qb = createQueryBuilder({
         d1: createMockD1(),
         schema,
-        permissions: testPermissions,
-        user,
+        grants: grantsForRole("user"),
+        user: { id: "user-1" },
         table: posts,
         unsafe: false,
       });
@@ -54,12 +50,11 @@ describe("QueryBuilder", () => {
     });
 
     it("returns empty permissions when unsafe", () => {
-      const user: TestUser = { id: "user-1", role: "user" };
       const qb = createQueryBuilder({
         d1: createMockD1(),
         schema,
-        permissions: testPermissions,
-        user,
+        grants: grantsForRole("user"),
+        user: { id: "user-1" },
         table: posts,
         unsafe: true,
       });

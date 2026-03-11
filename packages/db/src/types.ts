@@ -1,4 +1,4 @@
-import type { Permissions, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
+import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
 
 // --- Operation ---
 
@@ -31,8 +31,8 @@ export type QueryCacheOptions =
 export type DbConfig = {
   d1: D1Database;
   schema: Record<string, DrizzleTable>;
-  permissions: Permissions;
-  user: { id: string; role: string } | null;
+  grants: Grant[];
+  user: { id: string } | null;
   cache?: CacheConfig | false;
 };
 

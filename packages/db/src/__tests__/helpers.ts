@@ -1,4 +1,5 @@
-import { definePermissions, grant } from "@cfast/permissions";
+import { definePermissions, grant, resolveGrants } from "@cfast/permissions";
+import type { Grant } from "@cfast/permissions";
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
@@ -28,7 +29,7 @@ export const auditLogs = sqliteTable("audit_logs", {
 
 export const schema = { posts, comments, auditLogs };
 
-export type TestUser = { id: string; role: string };
+export type TestUser = { id: string };
 
 export const testPermissions = definePermissions({
   roles: ["anonymous", "user", "editor", "admin"] as const,
@@ -59,6 +60,10 @@ export const testPermissions = definePermissions({
     admin: [grant("manage", "all")],
   },
 });
+
+export function grantsForRole(role: string): Grant[] {
+  return resolveGrants(testPermissions, [role]);
+}
 
 // Minimal D1 mock that records calls
 export function createMockD1(): D1Database & { _calls: Array<{ sql: string; params: unknown[] }> } {

@@ -1,15 +1,15 @@
 import { describe, it, expect } from "vitest";
 import { createDb } from "../create-db";
 import { compose } from "../compose";
-import { testPermissions, posts, auditLogs, schema, createMockD1 } from "./helpers";
+import { posts, auditLogs, schema, createMockD1, grantsForRole } from "./helpers";
 
 describe("integration: permission enforcement", () => {
   it("anonymous cannot create posts", async () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "anon", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "anon" },
       cache: false,
     });
 
@@ -22,8 +22,8 @@ describe("integration: permission enforcement", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "user" },
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
       cache: false,
     });
 
@@ -35,8 +35,8 @@ describe("integration: permission enforcement", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "anon", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "anon" },
       cache: false,
     });
 
@@ -48,8 +48,8 @@ describe("integration: permission enforcement", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "editor-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
       cache: false,
     });
 
@@ -61,8 +61,8 @@ describe("integration: permission enforcement", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "admin-1", role: "admin" },
+      grants: grantsForRole("admin"),
+      user: { id: "admin-1" },
       cache: false,
     });
 
@@ -82,8 +82,8 @@ describe("integration: permission enforcement", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "anon", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "anon" },
       cache: false,
     });
 
@@ -96,8 +96,8 @@ describe("integration: permission enforcement", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "anon", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "anon" },
       cache: false,
     });
 
@@ -112,8 +112,8 @@ describe("integration: compose", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "editor-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
       cache: false,
     });
 
@@ -138,8 +138,8 @@ describe("integration: compose", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "editor-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
       cache: false,
     });
 
@@ -164,8 +164,8 @@ describe("integration: batch", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "editor-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
       cache: false,
     });
 
@@ -182,8 +182,8 @@ describe("integration: batch", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "editor-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
       cache: false,
     });
 
@@ -198,20 +198,20 @@ describe("integration: batch", () => {
 });
 
 describe("integration: null user", () => {
-  it("null user treated as anonymous", async () => {
+  it("null user treated as having no grants", async () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
+      grants: [],
       user: null,
       cache: false,
     });
 
-    // anonymous can read posts (with filter)
+    // no grants means read will fail permission check
     const readOp = db.query(posts).findMany();
     expect(readOp.permissions).toEqual([{ action: "read", table: posts }]);
 
-    // anonymous cannot create
+    // no grants means cannot create
     await expect(
       db.insert(posts).values({ title: "Nope", authorId: "x" }).run({}),
     ).rejects.toThrow();

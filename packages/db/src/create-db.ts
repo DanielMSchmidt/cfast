@@ -42,7 +42,7 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
       return createQueryBuilder({
         d1: config.d1,
         schema: config.schema,
-        permissions: config.permissions,
+        grants: config.grants,
         user: config.user,
         table,
         unsafe: isUnsafe,
@@ -53,7 +53,7 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
       return createInsertBuilder({
         d1: config.d1,
         schema: config.schema,
-        permissions: config.permissions,
+        grants: config.grants,
         user: config.user,
         table,
         unsafe: isUnsafe,
@@ -65,7 +65,7 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
       return createUpdateBuilder({
         d1: config.d1,
         schema: config.schema,
-        permissions: config.permissions,
+        grants: config.grants,
         user: config.user,
         table,
         unsafe: isUnsafe,
@@ -77,7 +77,7 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
       return createDeleteBuilder({
         d1: config.d1,
         schema: config.schema,
-        permissions: config.permissions,
+        grants: config.grants,
         user: config.user,
         table,
         unsafe: isUnsafe,

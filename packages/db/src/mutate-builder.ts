@@ -1,15 +1,15 @@
 import { drizzle } from "drizzle-orm/d1";
 import { and, or } from "drizzle-orm";
-import type { Permissions, PermissionDescriptor, DrizzleTable, PermissionAction } from "@cfast/permissions";
+import type { Grant, PermissionDescriptor, DrizzleTable, PermissionAction } from "@cfast/permissions";
 import { resolvePermissionFilters, checkOperationPermissions } from "./permissions";
 import type { Operation } from "./types";
 
-type User = { id: string; role: string };
+type User = { id: string };
 
 type MutateBuilderConfig = {
   d1: D1Database;
   schema: Record<string, unknown>;
-  permissions: Permissions;
+  grants: Grant[];
   user: User | null;
   table: DrizzleTable;
   unsafe: boolean;
@@ -28,7 +28,7 @@ function buildMutatePermissionFilter(
   action: PermissionAction,
 ): unknown {
   if (config.unsafe || !config.user) return undefined;
-  const filters = resolvePermissionFilters(config.permissions, config.user, action, config.table);
+  const filters = resolvePermissionFilters(config.grants, config.user, action, config.table);
   if (filters.length === 0) return undefined;
   const columns = config.table as Record<string, unknown>;
   const clauses = filters.map((fn) => fn(columns, config.user!));
@@ -55,7 +55,7 @@ export function createInsertBuilder(config: MutateBuilderConfig) {
         permissions,
         async run(_params: Record<string, unknown>): Promise<void> {
           if (!config.unsafe) {
-            checkOperationPermissions(config.permissions, config.user, permissions);
+            checkOperationPermissions(config.grants, permissions);
           }
           await db.insert(config.table as any).values(values).run();
           config.onMutate?.(tableName);
@@ -65,7 +65,7 @@ export function createInsertBuilder(config: MutateBuilderConfig) {
             permissions,
             async run(_params: Record<string, unknown>): Promise<unknown> {
               if (!config.unsafe) {
-                checkOperationPermissions(config.permissions, config.user, permissions);
+                checkOperationPermissions(config.grants, permissions);
               }
               const result = await db
                 .insert(config.table as any)
@@ -96,7 +96,7 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
             permissions,
             async run(_params: Record<string, unknown>): Promise<void> {
               if (!config.unsafe) {
-                checkOperationPermissions(config.permissions, config.user, permissions);
+                checkOperationPermissions(config.grants, permissions);
               }
               const permFilter = buildMutatePermissionFilter(config, "update");
               const combinedWhere = combineWhere(condition, permFilter);
@@ -108,7 +108,7 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
                 permissions,
                 async run(_params: Record<string, unknown>): Promise<unknown> {
                   if (!config.unsafe) {
-                    checkOperationPermissions(config.permissions, config.user, permissions);
+                    checkOperationPermissions(config.grants, permissions);
                   }
                   const permFilter = buildMutatePermissionFilter(config, "update");
                   const combinedWhere = combineWhere(condition, permFilter);
@@ -142,7 +142,7 @@ export function createDeleteBuilder(config: MutateBuilderConfig) {
         permissions,
         async run(_params: Record<string, unknown>): Promise<void> {
           if (!config.unsafe) {
-            checkOperationPermissions(config.permissions, config.user, permissions);
+            checkOperationPermissions(config.grants, permissions);
           }
           const permFilter = buildMutatePermissionFilter(config, "delete");
           const combinedWhere = combineWhere(condition, permFilter);
@@ -154,7 +154,7 @@ export function createDeleteBuilder(config: MutateBuilderConfig) {
             permissions,
             async run(_params: Record<string, unknown>): Promise<unknown> {
               if (!config.unsafe) {
-                checkOperationPermissions(config.permissions, config.user, permissions);
+                checkOperationPermissions(config.grants, permissions);
               }
               const permFilter = buildMutatePermissionFilter(config, "delete");
               const combinedWhere = combineWhere(condition, permFilter);

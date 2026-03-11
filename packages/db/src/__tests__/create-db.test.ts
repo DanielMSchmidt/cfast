@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { createDb } from "../create-db";
-import { testPermissions, posts, auditLogs, schema, createMockD1 } from "./helpers";
+import { posts, auditLogs, schema, createMockD1, grantsForRole } from "./helpers";
 
 describe("createDb", () => {
   it("returns a Db instance with all methods", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     expect(typeof db.query).toBe("function");
@@ -25,8 +25,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     const qb = db.query(posts);
@@ -38,8 +38,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     const op = db.query(posts).findMany();
@@ -50,8 +50,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "user" },
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
     });
 
     const op = db.insert(posts).values({ title: "Hello" });
@@ -62,8 +62,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     const op = db.update(posts).set({ published: true }).where(undefined);
@@ -74,8 +74,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     const op = db.delete(posts).where(undefined);
@@ -86,8 +86,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "user-1" },
     });
 
     const unsafeDb = db.unsafe();
@@ -99,8 +99,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     const op1 = db.insert(posts).values({ title: "Post 1" });
@@ -117,8 +117,8 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
     });
 
     const op1 = db.insert(posts).values({ title: "Post 1" });
@@ -132,7 +132,7 @@ describe("createDb", () => {
     const db = createDb({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
+      grants: [],
       user: null,
       cache: false,
     });

@@ -1,16 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "../mutate-builder";
-import { testPermissions, posts, schema, createMockD1 } from "./helpers";
-import type { TestUser } from "./helpers";
+import { posts, schema, createMockD1, grantsForRole } from "./helpers";
 
 describe("InsertBuilder", () => {
   it("returns Operation with create permission", () => {
-    const user: TestUser = { id: "user-1", role: "user" };
     const builder = createInsertBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user,
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
     });
@@ -21,12 +19,11 @@ describe("InsertBuilder", () => {
   });
 
   it("returning() returns Operation with create permission", () => {
-    const user: TestUser = { id: "user-1", role: "user" };
     const builder = createInsertBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user,
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
     });
@@ -40,8 +37,8 @@ describe("InsertBuilder", () => {
     const builder = createInsertBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: true,
     });
@@ -54,8 +51,8 @@ describe("InsertBuilder", () => {
     const builder = createInsertBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "user" },
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
       onMutate,
@@ -68,12 +65,11 @@ describe("InsertBuilder", () => {
 
 describe("UpdateBuilder", () => {
   it("returns Operation with update permission", () => {
-    const user: TestUser = { id: "user-1", role: "editor" };
     const builder = createUpdateBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
     });
@@ -83,12 +79,11 @@ describe("UpdateBuilder", () => {
   });
 
   it("returning() preserves permissions", () => {
-    const user: TestUser = { id: "user-1", role: "editor" };
     const builder = createUpdateBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
     });
@@ -101,8 +96,8 @@ describe("UpdateBuilder", () => {
     const builder = createUpdateBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "anonymous" },
+      grants: grantsForRole("anonymous"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: true,
     });
@@ -113,12 +108,11 @@ describe("UpdateBuilder", () => {
 
 describe("DeleteBuilder", () => {
   it("returns Operation with delete permission", () => {
-    const user: TestUser = { id: "user-1", role: "editor" };
     const builder = createDeleteBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
     });
@@ -131,8 +125,8 @@ describe("DeleteBuilder", () => {
     const builder = createDeleteBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: true,
     });
@@ -144,8 +138,8 @@ describe("DeleteBuilder", () => {
     const builder = createDeleteBuilder({
       d1: createMockD1(),
       schema,
-      permissions: testPermissions,
-      user: { id: "user-1", role: "editor" },
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
       table: posts,
       unsafe: false,
     });
