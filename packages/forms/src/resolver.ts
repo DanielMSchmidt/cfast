@@ -1,15 +1,5 @@
+import type { FieldErrors, FieldValues, Resolver } from "react-hook-form";
 import type { FieldDefinition } from "./types";
-
-export type ResolverResult = {
-  values: Record<string, unknown>;
-  errors: Record<string, { type: string; message: string }>;
-};
-
-export type Resolver = (
-  values: Record<string, unknown>,
-  context: unknown,
-  options: never,
-) => Promise<ResolverResult>;
 
 function validateField(
   field: FieldDefinition,
@@ -62,22 +52,33 @@ function validateField(
   return undefined;
 }
 
-export function buildResolver(fields: FieldDefinition[]): Resolver {
+export function buildResolver(
+  fields: FieldDefinition[],
+): Resolver<FieldValues> {
   return async (values) => {
-    const errors: Record<string, { type: string; message: string }> = {};
+    const errors: FieldErrors<FieldValues> = {};
+    let hasErrors = false;
 
     for (const field of fields) {
       const value = values[field.name];
       const error = validateField(field, value);
 
       if (error) {
+        hasErrors = true;
         errors[field.name] = { type: "validation", message: error };
       }
     }
 
+    if (hasErrors) {
+      return {
+        values: {} as Record<string, never>,
+        errors,
+      };
+    }
+
     return {
-      values: Object.keys(errors).length === 0 ? values : {},
-      errors,
+      values,
+      errors: {} as Record<string, never>,
     };
   };
 }
