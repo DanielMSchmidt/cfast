@@ -8,7 +8,7 @@ export function StorageProvider({
   children,
 }: {
   config: ClientStorageConfig;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   return <StorageContext.Provider value={config}>{children}</StorageContext.Provider>;
 }
