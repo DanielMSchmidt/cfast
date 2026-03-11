@@ -84,7 +84,6 @@ export function checkOperationPermissions(
       throw new ForbiddenError({
         action: descriptor.action,
         table: descriptor.table,
-        role: "unknown",
         descriptors: [descriptor],
       });
     }

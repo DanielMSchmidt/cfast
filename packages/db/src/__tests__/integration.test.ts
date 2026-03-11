@@ -15,7 +15,7 @@ describe("integration: permission enforcement", () => {
 
     const op = db.insert(posts).values({ title: "Hack", authorId: "anon" });
     expect(op.permissions).toEqual([{ action: "create", table: posts }]);
-    await expect(op.run({})).rejects.toThrow("cannot create");
+    await expect(op.run({})).rejects.toThrow("Cannot create");
   });
 
   it("user can create posts", async () => {
@@ -41,7 +41,7 @@ describe("integration: permission enforcement", () => {
     });
 
     const op = db.delete(posts).where(undefined);
-    await expect(op.run({})).rejects.toThrow("cannot delete");
+    await expect(op.run({})).rejects.toThrow("Cannot delete");
   });
 
   it("editor can delete posts", async () => {

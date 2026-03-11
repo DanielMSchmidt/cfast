@@ -46,7 +46,7 @@ describe("checkOperationPermissions", () => {
       checkOperationPermissions(grantsForRole("anonymous"), [
         { action: "create", table: posts },
       ]),
-    ).toThrow("cannot create");
+    ).toThrow("Cannot create");
   });
 
   it("does not throw when role has permission", () => {
