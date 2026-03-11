@@ -11,7 +11,7 @@ export function createAuth(config: AuthConfig) {
   return function initAuth(env: AuthEnvConfig): AuthInstance {
     const roleManager = createRoleManager(env.d1);
 
-    async function createContext(request: Request): Promise<AuthContext> {
+    async function createContext(_request: Request): Promise<AuthContext> {
       // TODO: Better Auth session lookup goes here (Task 4).
       // For now, always return anonymous context since Better Auth isn't wired yet.
       return {
