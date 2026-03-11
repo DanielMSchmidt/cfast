@@ -104,8 +104,10 @@ export type Db = {
 export type QueryBuilder = {
   findMany: (options?: FindManyOptions) => Operation<unknown[]>;
   findFirst: (options?: FindFirstOptions) => Operation<unknown | undefined>;
-  paginate: ((params: CursorParams, options: PaginateOptions & { cursorColumns: unknown[] }) => Operation<CursorPage<unknown>>) &
-    ((params: OffsetParams, options?: PaginateOptions) => Operation<OffsetPage<unknown>>);
+  paginate: (
+    params: CursorParams | OffsetParams,
+    options?: PaginateOptions & { cursorColumns?: unknown[] },
+  ) => Operation<CursorPage<unknown>> | Operation<OffsetPage<unknown>>;
 };
 
 export type InsertBuilder = {
