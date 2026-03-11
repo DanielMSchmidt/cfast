@@ -1,30 +1,39 @@
-export async function parseInput(request: Request): Promise<Record<string, unknown>> {
+type ParsedBody = {
+  actionName: string | null;
+  input: Record<string, unknown>;
+};
+
+async function parseBody(request: Request): Promise<ParsedBody> {
   const contentType = request.headers.get("Content-Type") ?? "";
 
   if (contentType.includes("application/json")) {
     const body = await request.clone().json() as Record<string, unknown>;
     const { _action, ...input } = body;
-    return input;
+    return { actionName: typeof _action === "string" ? _action : null, input };
   }
 
   // formData (url-encoded or multipart)
   const formData = await request.clone().formData();
-  const entries: Record<string, unknown> = {};
+  const input: Record<string, unknown> = {};
+  let actionName: string | null = null;
+
   for (const [key, value] of formData.entries()) {
-    if (key === "_action") continue;
-    entries[key] = value;
+    if (key === "_action") {
+      actionName = typeof value === "string" ? value : null;
+    } else {
+      input[key] = value;
+    }
   }
-  return entries;
+
+  return { actionName, input };
+}
+
+export async function parseInput(request: Request): Promise<Record<string, unknown>> {
+  const { input } = await parseBody(request);
+  return input;
 }
 
 export async function extractActionName(request: Request): Promise<string | null> {
-  const contentType = request.headers.get("Content-Type") ?? "";
-
-  if (contentType.includes("application/json")) {
-    const body = await request.clone().json() as Record<string, unknown>;
-    return (body._action as string) ?? null;
-  }
-
-  const formData = await request.clone().formData();
-  return formData.get("_action") as string | null;
+  const { actionName } = await parseBody(request);
+  return actionName;
 }

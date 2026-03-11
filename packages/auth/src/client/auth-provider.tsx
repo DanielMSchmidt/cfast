@@ -21,6 +21,14 @@ export function AuthProvider({
   );
 }
 
+function useAuthContext(hookName: string): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (ctx === null) {
+    throw new Error(`${hookName} must be used within an <AuthProvider>`);
+  }
+  return ctx;
+}
+
 /**
  * Access the current user from the nearest AuthProvider.
  * Returns `AuthUser | null` — null when not authenticated.
@@ -28,20 +36,12 @@ export function AuthProvider({
  * Must be used within an `<AuthProvider>`.
  */
 export function useCurrentUser(): AuthUser | null {
-  const ctx = useContext(AuthContext);
-  if (ctx === null) {
-    throw new Error("useCurrentUser must be used within an <AuthProvider>");
-  }
-  return ctx.user;
+  return useAuthContext("useCurrentUser").user;
 }
 
 /**
  * Access the login path configured in the nearest AuthProvider.
  */
 export function useLoginPath(): string {
-  const ctx = useContext(AuthContext);
-  if (ctx === null) {
-    throw new Error("useLoginPath must be used within an <AuthProvider>");
-  }
-  return ctx.loginPath;
+  return useAuthContext("useLoginPath").loginPath;
 }

@@ -1,8 +1,5 @@
 import type { DrizzleTable, PermissionAction, PermissionDescriptor } from "./types";
-
-function getTableName(table: DrizzleTable): string {
-  return table._?.name ?? "unknown";
-}
+import { getTableName } from "./types";
 
 type ForbiddenErrorOptions = {
   action: PermissionAction;

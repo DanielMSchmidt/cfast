@@ -1,4 +1,4 @@
-import type { Schema, ParsedEnv, BindingDef, EnvironmentName } from "./types";
+import type { Schema, ParsedEnv, BindingDef, EnvironmentName, EnvValidationError } from "./types";
 import { EnvError } from "./errors";
 import { validateBinding } from "./validators";
 
@@ -47,17 +47,15 @@ export function defineEnv<S extends Schema>(schema: S): Env<S> {
         ]);
       }
 
-      const environment: EnvironmentName = rawEnvironment;
-
-      const errors: { key: string; message: string }[] = [];
+      const errors: EnvValidationError[] = [];
       const result: Record<string, unknown> = {};
 
       for (const [key, def] of Object.entries(schema)) {
         let value = rawEnv[key];
 
         // Apply defaults for var bindings
-        if (value === undefined || value === null) {
-          const defaultValue = resolveDefault(def, environment);
+        if (value == null) {
+          const defaultValue = resolveDefault(def, rawEnvironment);
           if (defaultValue !== undefined) {
             value = defaultValue;
           } else if (
@@ -68,7 +66,7 @@ export function defineEnv<S extends Schema>(schema: S): Env<S> {
             // Environment-aware default with no matching key for this environment
             errors.push({
               key,
-              message: `Missing required variable '${key}'. No default for environment '${environment}'.`,
+              message: `Missing required variable '${key}'. No default for environment '${rawEnvironment}'.`,
             });
             continue;
           }

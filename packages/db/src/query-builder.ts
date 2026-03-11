@@ -1,10 +1,9 @@
 import { drizzle } from "drizzle-orm/d1";
-import { and, or } from "drizzle-orm";
-import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
-import { resolvePermissionFilters, checkOperationPermissions } from "./permissions";
+import type { Grant, DrizzleTable } from "@cfast/permissions";
+import { checkOperationPermissions } from "./permissions";
+import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
+import type { User } from "./utils";
 import type { Operation, FindManyOptions, FindFirstOptions } from "./types";
-
-type User = { id: string };
 
 type QueryBuilderConfig = {
   d1: D1Database;
@@ -22,17 +21,38 @@ function getTableKey(schema: Record<string, unknown>, table: DrizzleTable): stri
   return undefined;
 }
 
-function buildPermissionFilter(
+function buildQueryOperation<TResult>(
   config: QueryBuilderConfig,
-  table: DrizzleTable,
-): unknown {
-  if (config.unsafe || !config.user) return undefined;
-  const filters = resolvePermissionFilters(config.grants, "read", table);
-  if (filters.length === 0) return undefined;
+  db: ReturnType<typeof drizzle>,
+  tableKey: string,
+  method: "findMany" | "findFirst",
+  options?: FindManyOptions | FindFirstOptions,
+): Operation<TResult> {
+  const permissions = makePermissions(config.unsafe, "read", config.table);
 
-  const columns = table as Record<string, unknown>;
-  const clauses = filters.map((fn) => fn(columns, config.user!));
-  return clauses.length === 1 ? clauses[0] : or(...(clauses as [any, ...any[]]));
+  return {
+    permissions,
+    async run(_params: Record<string, unknown>): Promise<TResult> {
+      if (!config.unsafe) {
+        checkOperationPermissions(config.grants, permissions);
+      }
+
+      const permFilter = buildPermissionFilter(
+        config.grants, "read", config.table, config.user, config.unsafe,
+      );
+      const userWhere = options?.where;
+      const combinedWhere = combineWhere(userWhere, permFilter);
+
+      const queryOptions: Record<string, unknown> = { ...options };
+      if (combinedWhere) {
+        queryOptions.where = combinedWhere;
+      }
+      delete queryOptions.cache;
+
+      const result = await (db.query as any)[tableKey][method](queryOptions);
+      return (method === "findFirst" ? result ?? undefined : result) as TResult;
+    },
+  };
 }
 
 export function createQueryBuilder(config: QueryBuilderConfig) {
@@ -41,67 +61,23 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
 
   return {
     findMany(options?: FindManyOptions): Operation<unknown[]> {
-      const permissions: PermissionDescriptor[] = config.unsafe
-        ? []
-        : [{ action: "read" as const, table: config.table }];
-
-      return {
-        permissions,
-        async run(_params: Record<string, unknown>): Promise<unknown[]> {
-          if (!config.unsafe) {
-            checkOperationPermissions(config.grants, permissions);
-          }
-
-          if (!tableKey) throw new Error("Table not found in schema");
-
-          const permFilter = buildPermissionFilter(config, config.table);
-          const userWhere = options?.where;
-          const combinedWhere = permFilter && userWhere
-            ? and(userWhere as any, permFilter as any)
-            : (permFilter ?? userWhere) as any;
-
-          const queryOptions: Record<string, unknown> = { ...options };
-          if (combinedWhere) {
-            queryOptions.where = combinedWhere;
-          }
-          delete queryOptions.cache; // cache is not a Drizzle option
-
-          const result = await (db.query as any)[tableKey].findMany(queryOptions);
-          return result;
-        },
-      };
+      if (!tableKey) {
+        return {
+          permissions: makePermissions(config.unsafe, "read", config.table),
+          async run(): Promise<unknown[]> { throw new Error("Table not found in schema"); },
+        };
+      }
+      return buildQueryOperation<unknown[]>(config, db, tableKey, "findMany", options);
     },
 
     findFirst(options?: FindFirstOptions): Operation<unknown | undefined> {
-      const permissions: PermissionDescriptor[] = config.unsafe
-        ? []
-        : [{ action: "read" as const, table: config.table }];
-
-      return {
-        permissions,
-        async run(_params: Record<string, unknown>): Promise<unknown | undefined> {
-          if (!config.unsafe) {
-            checkOperationPermissions(config.grants, permissions);
-          }
-
-          if (!tableKey) throw new Error("Table not found in schema");
-
-          const permFilter = buildPermissionFilter(config, config.table);
-          const userWhere = options?.where;
-          const combinedWhere = permFilter && userWhere
-            ? and(userWhere as any, permFilter as any)
-            : (permFilter ?? userWhere) as any;
-
-          const queryOptions: Record<string, unknown> = { ...options };
-          if (combinedWhere) {
-            queryOptions.where = combinedWhere;
-          }
-          delete queryOptions.cache;
-
-          const result = await (db.query as any)[tableKey].findFirst(queryOptions);
-          return result ?? undefined;
-        },
-      };
+      if (!tableKey) {
+        return {
+          permissions: makePermissions(config.unsafe, "read", config.table),
+          async run(): Promise<unknown | undefined> { throw new Error("Table not found in schema"); },
+        };
+      }
+      return buildQueryOperation<unknown | undefined>(config, db, tableKey, "findFirst", options);
     },
   };
 }

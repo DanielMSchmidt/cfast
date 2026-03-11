@@ -5,6 +5,10 @@
 export type DrizzleTable = { _: { name: string } };
 export type DrizzleSQL = { getSQL(): unknown };
 
+export function getTableName(table: DrizzleTable): string {
+  return table._?.name ?? "unknown";
+}
+
 export type PermissionAction = "read" | "create" | "update" | "delete" | "manage";
 
 export type CrudAction = Exclude<PermissionAction, "manage">;

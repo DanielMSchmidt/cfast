@@ -18,13 +18,9 @@ import type { AuthInstance } from "./types";
  * ```
  */
 export function createAuthRouteHandlers(getAuth: () => AuthInstance) {
-  async function loader({ request }: { request: Request }) {
+  function handleRequest({ request }: { request: Request }) {
     return getAuth().handler(request);
   }
 
-  async function action({ request }: { request: Request }) {
-    return getAuth().handler(request);
-  }
-
-  return { loader, action };
+  return { loader: handleRequest, action: handleRequest };
 }

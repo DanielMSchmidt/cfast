@@ -1,16 +1,5 @@
-import type { DrizzleTable, Grant, GrantFn, Permissions, PermissionsConfig, WhereClause, PermissionAction } from "./types";
-
-function createGrantFn<TUser>(): GrantFn<TUser> {
-  return (
-    action: PermissionAction,
-    subject: DrizzleTable | "all",
-    options?: { where?: (columns: Record<string, unknown>, user: TUser) => any },
-  ): Grant => ({
-    action,
-    subject,
-    where: options?.where as WhereClause | undefined,
-  });
-}
+import type { Grant, GrantFn, Permissions, PermissionsConfig } from "./types";
+import { grant } from "./grant";
 
 function buildPermissions<TRoles extends readonly string[]>(
   config: PermissionsConfig<TRoles>,
@@ -19,7 +8,7 @@ function buildPermissions<TRoles extends readonly string[]>(
 
   const grants =
     typeof config.grants === "function"
-      ? config.grants(createGrantFn())
+      ? config.grants(grant as GrantFn<unknown>)
       : config.grants;
 
   const resolvedGrants = resolveHierarchy(roles, grants, hierarchy);

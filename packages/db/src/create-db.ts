@@ -1,27 +1,9 @@
-import type { DrizzleTable, PermissionDescriptor } from "@cfast/permissions";
+import type { DrizzleTable } from "@cfast/permissions";
 import { createQueryBuilder } from "./query-builder";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "./mutate-builder";
 import { createCacheManager, type CacheManager } from "./cache";
+import { deduplicateDescriptors } from "./utils";
 import type { Db, DbConfig, Operation } from "./types";
-
-function deduplicateDescriptors(
-  descriptors: PermissionDescriptor[],
-): PermissionDescriptor[] {
-  const seen = new Set<string>();
-  const result: PermissionDescriptor[] = [];
-  for (const d of descriptors) {
-    const tableName = (d.table as any)._?.name
-      ?? (d.table as any)[Symbol.for("drizzle:Name")]
-      ?? (d.table as any)[Symbol.for("drizzle:BaseName")]
-      ?? "unknown";
-    const key = `${d.action}:${tableName}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push(d);
-    }
-  }
-  return result;
-}
 
 export function createDb(config: DbConfig): Db {
   return buildDb(config, false);
