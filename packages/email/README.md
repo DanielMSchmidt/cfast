@@ -2,36 +2,32 @@
 
 **Send emails from Cloudflare Workers. Write them with react-email. Swap providers with a plugin.**
 
-Cloudflare Workers can't use SMTP. Most email libraries assume Node.js. `@cfast/email` is a Workers-native email client that renders templates with [react-email](https://react.email) and sends them through a pluggable provider backend. Ships with Mailgun. The plugin API makes it straightforward to add Resend, SES, Postmark, or your own provider later.
+Cloudflare Workers can't use SMTP. Most email libraries assume Node.js. `@cfast/email` is a Workers-native email client that renders templates with [react-email](https://react.email) and sends them through a pluggable provider backend. Ships with Mailgun and a console provider for development.
 
-## Design Goals
-
-- **Workers-native.** Uses `fetch`, not SMTP. No Node.js polyfills needed.
-- **react-email first.** Templates are React components. Type-safe props. Preview in development. Render to HTML at send time.
-- **Plugin-based providers.** The core handles rendering and the send API. Delivery is delegated to a provider plugin. Ships with Mailgun; more providers coming.
-- **Integrated with @cfast/auth.** Auth emails (magic links, passkey confirmations) use this package under the hood. You override them with the same react-email components.
-
-## Planned API
-
-### Setup
+## Setup
 
 ```typescript
+// app/email.server.ts
 import { createEmailClient } from "@cfast/email";
 import { mailgun } from "@cfast/email/mailgun";
+import { env } from "~/env";
 
-const email = createEmailClient({
-  provider: mailgun({
-    apiKey: env.MAILGUN_API_KEY,
-    domain: "mail.myapp.com",
-  }),
-  from: "MyApp <hello@myapp.com>",
+export const email = createEmailClient({
+  provider: mailgun(() => ({
+    apiKey: env.get().MAILGUN_API_KEY,
+    domain: env.get().MAILGUN_DOMAIN,
+  })),
+  from: () => `MyApp <noreply@${env.get().MAILGUN_DOMAIN}>`,
 });
 ```
 
-### Sending Emails
+Both `provider` config and `from` use getter functions — they're called lazily at send time, which is the Workers-friendly pattern for accessing env bindings.
+
+## Sending Emails
 
 ```typescript
-import { WelcomeEmail } from "./emails/welcome";
+import { email } from "~/email.server";
+import { WelcomeEmail } from "~/email/templates/welcome";
 
 await email.send({
   to: "user@example.com",
@@ -40,17 +36,30 @@ await email.send({
 });
 ```
 
-### Writing Templates
+The client renders the React element to HTML and plain text via `@react-email/render`, then delegates delivery to the provider.
 
-Templates are react-email components:
+### `send(options)`
+
+| Field | Type | Description |
+|---|---|---|
+| `to` | `string` | Recipient address |
+| `subject` | `string` | Email subject |
+| `react` | `ReactElement` | react-email component to render |
+| `from?` | `string` | Override default sender |
+
+Returns `Promise<{ id: string }>`.
+
+## Writing Templates
+
+Templates are React components. Any valid `ReactElement` works — you can use `@react-email/components` for structure or plain JSX:
 
 ```tsx
-// emails/welcome.tsx
+// email/templates/welcome.tsx
 import { Html, Head, Body, Text, Link } from "@react-email/components";
 
-interface WelcomeEmailProps {
+type WelcomeEmailProps = {
   name: string;
-}
+};
 
 export function WelcomeEmail({ name }: WelcomeEmailProps) {
   return (
@@ -58,7 +67,7 @@ export function WelcomeEmail({ name }: WelcomeEmailProps) {
       <Head />
       <Body>
         <Text>Hi {name},</Text>
-        <Text>Welcome to MyApp. Get started by creating your first project.</Text>
+        <Text>Welcome to MyApp.</Text>
         <Link href="https://myapp.com/dashboard">Go to Dashboard</Link>
       </Body>
     </Html>
@@ -66,128 +75,109 @@ export function WelcomeEmail({ name }: WelcomeEmailProps) {
 }
 ```
 
-### Auth Email Overrides
+## Providers
 
-`@cfast/auth` ships with default email templates. Override them:
-
-```typescript
-import { MagicLinkEmail } from "./emails/magic-link";
-
-const auth = createAuth({
-  // ...
-  email, // Pass your @cfast/email client — auth uses whatever provider you configured
-  templates: {
-    magicLink: MagicLinkEmail,  // Your react-email component
-    // Default templates are used for anything you don't override
-  },
-});
-```
-
-### Batch Sending
+### Mailgun
 
 ```typescript
-await email.sendBatch([
-  { to: "a@example.com", subject: "Update", react: <UpdateEmail /> },
-  { to: "b@example.com", subject: "Update", react: <UpdateEmail /> },
-]);
-// Delegates to Mailgun's batch API for efficiency
+import { mailgun } from "@cfast/email/mailgun";
+
+const provider = mailgun(() => ({
+  apiKey: env.get().MAILGUN_API_KEY,
+  domain: env.get().MAILGUN_DOMAIN,
+}));
 ```
 
-### Development Mode
+Sends via Mailgun's HTTP API using `fetch` and `FormData`. Config getter is called at send time.
 
-In development, a built-in `console` provider logs emails and serves previews locally:
+### Console (Development)
 
 ```typescript
 import { console as consoleDev } from "@cfast/email/console";
 
-const email = createEmailClient({
-  provider: consoleDev({ previewUrl: "http://localhost:8787/__email" }),
-  from: "MyApp <hello@myapp.com>",
-});
+const provider = consoleDev();
 ```
+
+Logs email details to console. Returns `{ id: "console-{uuid}" }`. Useful for local development without sending real emails.
 
 ```
 [cfast/email] Email sent (dev mode):
+  ID: console-a1b2c3d4-...
   To: user@example.com
+  From: MyApp <noreply@mail.myapp.com>
   Subject: Welcome to MyApp
-  Preview: http://localhost:8787/__email/preview/1
+  HTML: 1234 chars
 ```
 
-### Multi-Provider Fallback
+### Custom Providers
 
-Send through a primary provider, fall back to a secondary on failure:
-
-```typescript
-import { withFallback } from "@cfast/email";
-
-const email = createEmailClient({
-  provider: withFallback(primaryProvider, fallbackProvider),
-  from: "MyApp <hello@myapp.com>",
-});
-```
-
-### Creating a Provider Plugin
-
-A provider is a single function. The contract is intentionally minimal so adding a new one is ~30 lines:
+A provider is a plain object matching the `EmailProvider` type:
 
 ```typescript
-import { defineProvider } from "@cfast/email";
-import type { EmailProvider } from "@cfast/email";
+import type { EmailProvider, EmailMessage } from "@cfast/email";
+import { EmailDeliveryError } from "@cfast/email";
 
-export function myProvider(config: MyConfig): EmailProvider {
-  return defineProvider({
-    name: "my-provider",
+const myProvider: EmailProvider = {
+  name: "my-provider",
 
-    async send(message) {
-      // message.to, message.from, message.subject
-      // message.html — already rendered from react-email
-      // message.text — auto-generated plain text fallback
-      const response = await fetch("https://api.myprovider.com/send", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${config.apiKey}` },
-        body: JSON.stringify({
-          to: message.to,
-          from: message.from,
-          subject: message.subject,
-          html: message.html,
-          text: message.text,
-        }),
+  async send(message: EmailMessage): Promise<{ id: string }> {
+    const response = await fetch("https://api.myprovider.com/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        to: message.to,
+        from: message.from,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new EmailDeliveryError(await response.text(), {
+        provider: "my-provider",
+        statusCode: response.status,
+        response: await response.text(),
       });
+    }
 
-      if (!response.ok) {
-        throw new EmailDeliveryError(await response.text());
-      }
+    const data = await response.json();
+    return { id: data.id };
+  },
+};
+```
 
-      return { id: (await response.json()).messageId };
-    },
+## Error Handling
 
-    // Optional: batch API for efficient bulk sending
-    async sendBatch(messages) {
-      // Default: parallel send() calls
-    },
-  });
+Providers throw `EmailDeliveryError` on delivery failures:
+
+```typescript
+import { EmailDeliveryError } from "@cfast/email";
+
+try {
+  await email.send({ to, subject, react: <Template /> });
+} catch (error) {
+  if (error instanceof EmailDeliveryError) {
+    console.error(error.provider);    // "mailgun"
+    console.error(error.statusCode);  // 401
+    console.error(error.response);    // "Unauthorized"
+  }
 }
 ```
 
-## Shipped Providers
+The client does not catch — callers decide whether to fire-and-forget or handle errors.
 
-| Provider | Status |
-|---|---|
-| Mailgun | Shipped |
-| Console (dev) | Shipped |
-| Resend | Planned |
-| AWS SES | Planned |
-| Postmark | Planned |
-
-## Architecture
+## Package Exports
 
 ```
-@cfast/email (core)
-├── createEmailClient()         — send API, template rendering
-├── defineProvider()            — plugin contract
-├── withFallback()              — multi-provider composition
-└── react-email rendering       — JSX → HTML + plain text
-
-@cfast/email/mailgun            — Mailgun HTTP API plugin
-@cfast/email/console            — Dev mode: console log + preview server
+@cfast/email         → createEmailClient, EmailDeliveryError, types
+@cfast/email/mailgun → mailgun
+@cfast/email/console → console
 ```
+
+## Future (not in v1)
+
+- `sendBatch(messages[])` — batch API for bulk sending
+- `withFallback(primary, secondary)` — multi-provider failover
+- `@cfast/auth` integration — override auth email templates with react-email components
+- Additional providers: Resend, AWS SES, Postmark
