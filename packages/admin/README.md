@@ -6,12 +6,24 @@
 
 You add one route to your React Router app, and you have an admin panel.
 
+## Why This Exists
+
+Building an admin panel is the same work every time: list pages, detail pages, create/edit forms, user management, role assignment. The structure is always the same — only the schema changes.
+
+`@cfast/admin` automates the schema → configuration step. It reads your Drizzle tables, infers column types, and generates the configuration for `@cfast/ui` components. The actual rendering is delegated entirely to `@cfast/ui` — admin doesn't have its own component library.
+
+This means:
+- Apps that don't use the admin panel still get `<ListView>`, `<DetailView>`, and `<DataTable>` from `@cfast/ui`
+- Custom admin overrides use the same components as the rest of the app
+- Admin stays thin and focused on auto-generation
+
 ## Design Goals
 
 - **One route, full admin.** Mount the admin at `/admin` and you're done. Every table, every relationship, every action.
-- **Permission-aware by default.** The admin panel uses `@cfast/db` under the hood. Admins see everything. Moderators see what moderators see. The admin UI doesn't bypass your permission system. It uses it.
+- **Permission-aware by default.** The admin panel uses `@cfast/db` under the hood. Admins see everything. Moderators see what moderators see. The admin UI doesn't bypass your permission system — it uses it.
 - **User management built in.** View users, assign roles, revoke roles, impersonate users. Integrated with `@cfast/auth`.
 - **Customizable, not locked in.** Override any view, any field, any action. But the default is good enough to ship.
+- **UI delegated to `@cfast/ui`.** Admin generates configuration. `@cfast/ui/joy` renders it.
 
 ## Planned API
 
@@ -79,8 +91,8 @@ createAdmin({
 ```
 
 The admin automatically provides:
-- **User list** with search and filters
-- **User detail** page with profile info and activity
+- **User list** with search and filters (via `@cfast/ui`'s `<ListView>`)
+- **User detail** page with profile info and activity (via `@cfast/ui`'s `<DetailView>`)
 - **Role assignment** panel (respects `roleGrants` from `@cfast/auth`)
 - **Impersonation** button (for authorized roles) - starts an impersonation session via `@cfast/auth`
 
@@ -88,7 +100,7 @@ The admin automatically provides:
 
 When an admin impersonates a user:
 
-1. The admin panel shows a banner: "Viewing as user@example.com"
+1. The admin panel shows a banner via `@cfast/ui`'s `<ImpersonationBanner>`
 2. The rest of the app behaves as that user (same session, same permissions)
 3. A floating button lets the admin end impersonation at any time
 4. All impersonation events are logged to an audit table
@@ -141,12 +153,36 @@ createAdmin({
 
 ## How It Works
 
-`@cfast/admin` composes the other cfast packages:
+`@cfast/admin` is a thin layer that does two things:
 
-- **Schema introspection:** Reads your Drizzle schema to generate list views, forms, and navigation
-- **Forms:** Uses `@cfast/ui` AutoForm for create/edit views
-- **Permissions:** Uses `@cfast/db` Operations for all data access — every CRUD operation is permission-checked via `.run()`
-- **Auth:** Uses `@cfast/auth` for user management, role assignment, and impersonation
-- **Routing:** Renders inside a React Router route, uses nested routing for table/detail views
+1. **Schema introspection** — reads your Drizzle schema to generate configuration: which columns to show, which fields to use in forms, which relations to resolve, which actions to offer
+2. **Configuration → UI components** — passes that configuration to `@cfast/ui` components for rendering
+
+The rendering stack:
+
+| Admin generates config for... | Which renders via... |
+|---|---|
+| Table list pages | `@cfast/ui`'s `<ListView>` |
+| Record detail pages | `@cfast/ui`'s `<DetailView>` |
+| Create/edit forms | `@cfast/forms`' `<AutoForm>` |
+| Navigation sidebar | `@cfast/ui`'s `<AppShell>` |
+| Data tables | `@cfast/ui`'s `<DataTable>` |
+| Filters | `@cfast/ui`'s `<FilterBar>` |
+| Action buttons | `@cfast/ui`'s `<ActionButton>` |
+| Bulk actions | `@cfast/ui`'s `<BulkActionBar>` |
+| User role display | `@cfast/ui`'s `<RoleBadge>` |
+| Impersonation UI | `@cfast/ui`'s `<ImpersonationBanner>` |
+
+Admin does **not** contain its own component library. If you want to customize how a list page looks, you override it with `@cfast/ui` components — the same components you'd use anywhere else in your app.
+
+## Integration
+
+- **`@cfast/ui`** — All rendering. Admin generates configuration, UI renders pixels.
+- **`@cfast/db`** — All data access. Every CRUD operation goes through permission-checked Operations via `.run()`.
+- **`@cfast/auth`** — User management, role assignment, and impersonation.
+- **`@cfast/forms`** — Create/edit forms via `<AutoForm>`.
+- **`@cfast/actions`** — Custom row and table actions, permission-aware.
+- **`@cfast/permissions`** — The admin respects the permission system. An editor role in the admin sees what editors see.
+- **`@cfast/pagination`** — List views paginate via `@cfast/pagination` hooks.
 
 The admin is not a separate app. It's a React Router route that uses the same database, same permissions, same auth as the rest of your application.
