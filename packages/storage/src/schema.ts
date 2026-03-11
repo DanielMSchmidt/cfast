@@ -74,6 +74,7 @@ export function defineStorage<T extends StorageSchema>(schema: T): StorageInstan
     clientConfig: (): ClientStorageConfig => {
       const config: ClientStorageConfig = {};
       for (const [name, ft] of Object.entries(schema)) {
+        if (ft.uploadable === false) continue;
         config[name] = {
           accept: ft.accept,
           maxSize: ft.maxSize,
