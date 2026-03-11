@@ -22,14 +22,24 @@
   "scripts": {
     "build": "tsup src/index.ts src/mailgun.ts src/console.ts --format esm --dts",
     "dev": "tsup src/index.ts src/mailgun.ts src/console.ts --format esm --dts --watch",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/"
   },
   "peerDependencies": {
-    "@react-email/components": ">=0.0.20"
+    "react": "^19.0.0",
+    "@react-email/components": "^1.0.0"
+  },
+  "dependencies": {
+    "@react-email/render": "^2.0.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260305.1",
+    "@react-email/components": "^1.0.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.0.18"
   }
 }

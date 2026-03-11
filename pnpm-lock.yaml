@@ -342,16 +342,31 @@ importers:
 
   packages/email:
     dependencies:
-      '@react-email/components':
-        specifier: '>=0.0.20'
-        version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@react-email/render':
+        specifier: ^2.0.0
+        version: 2.0.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
     devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20260305.1
+        version: 4.20260305.1
+      '@react-email/components':
+        specifier: ^1.0.0
+        version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
+      react:
+        specifier: ^19.0.0
+        version: 19.2.4
       tsup:
         specifier: ^8
         version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)
       typescript:
         specifier: ^5.7
         version: 5.9.3
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))
 
   packages/env:
     devDependencies:
