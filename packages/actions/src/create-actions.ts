@@ -70,7 +70,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
       return operation.run({});
     };
 
-    const loader = <TLoaderData extends Serializable>(
+    const loader = <TLoaderData extends Record<string, Serializable>>(
       loaderFn: (args: RequestArgs) => Promise<TLoaderData>,
     ) => {
       return async (
@@ -132,7 +132,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
       return actions[actionName].action(args);
     };
 
-    const composedLoader = <TLoaderData extends Serializable>(
+    const composedLoader = <TLoaderData extends Record<string, Serializable>>(
       loaderFn: (args: RequestArgs) => Promise<TLoaderData>,
     ) => {
       return async (

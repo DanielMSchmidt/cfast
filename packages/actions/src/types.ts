@@ -1,5 +1,5 @@
 import type { Db, Operation } from "@cfast/db";
-import type { Grant, PermissionDescriptor } from "@cfast/permissions";
+import type { Grant } from "@cfast/permissions";
 
 // --- Serializable ---
 
@@ -63,7 +63,7 @@ export type ClientDescriptor = {
 
 export type ActionDefinition<TInput, TResult, TUser> = {
   action: (args: RequestArgs) => Promise<TResult>;
-  loader: <TLoaderData extends Serializable>(
+  loader: <TLoaderData extends Record<string, Serializable>>(
     loaderFn: (args: RequestArgs) => Promise<TLoaderData>,
   ) => (args: RequestArgs) => Promise<TLoaderData & { _actionPermissions: ActionPermissionsMap }>;
   client: ClientDescriptor;
@@ -75,7 +75,7 @@ export type ActionDefinition<TInput, TResult, TUser> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ComposedActions<TActions extends Record<string, ActionDefinition<any, any, any>>> = {
   action: (args: RequestArgs) => Promise<unknown>;
-  loader: <TLoaderData extends Serializable>(
+  loader: <TLoaderData extends Record<string, Serializable>>(
     loaderFn: (args: RequestArgs) => Promise<TLoaderData>,
   ) => (args: RequestArgs) => Promise<TLoaderData & { _actionPermissions: ActionPermissionsMap }>;
   client: ClientDescriptor;
