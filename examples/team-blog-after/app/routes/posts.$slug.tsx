@@ -1,5 +1,5 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, Form, Link, useFetcher, redirect } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
+import { useLoaderData, useActionData, Form, Link, useFetcher } from "react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
@@ -12,18 +12,22 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import { getUser, requireAuthContext } from "~/auth.helpers.server";
+import { getUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
 import type { AuthUser } from "~/permissions";
 import { createDbClient } from "~/db/client";
-import { posts, users, comments, auditLogs } from "~/db/schema";
+import { posts, users, comments } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
-import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
-import { createCfDb } from "~/db/cfast.server";
-import { compose } from "@cfast/db";
+import { composeActions } from "~/actions.server";
+import {
+  deletePost,
+  publishPost,
+  unpublishPost,
+  addComment,
+  deleteComment,
+} from "~/actions/posts";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -100,150 +104,15 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   };
 }
 
-export async function action({ request, params, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env;
-  const db = createDbClient(env.DB);
-  const formData = await request.formData();
-  const _action = formData.get("_action") as string;
+const composed = composeActions({
+  deletePost,
+  publishPost,
+  unpublishPost,
+  addComment,
+  deleteComment,
+});
 
-  const slug = params.slug;
-  if (!slug) throw new Response("Not Found", { status: 404 });
-
-  const post = await db.select().from(posts).where(eq(posts.slug, slug)).get();
-  if (!post) throw new Response("Not Found", { status: 404 });
-
-  if (_action === "delete") {
-    const ctx = await requireAuthContext(request);
-    const cfDb = createCfDb(env.DB, ctx);
-
-    const op = compose(
-      [
-        cfDb.delete(posts).where(eq(posts.id, post.id)),
-        cfDb.insert(auditLogs).values({
-          id: nanoid(),
-          userId: ctx.user.id,
-          action: "post.deleted",
-          targetType: "post",
-          targetId: post.id,
-          metadata: JSON.stringify({ title: post.title, slug: post.slug }),
-        }),
-      ],
-      async (runDelete, runAudit) => {
-        await runDelete({});
-        await runAudit({});
-      },
-    );
-
-    await op.run({});
-
-    return redirect("/");
-  }
-
-  if (_action === "publish") {
-    const ctx = await requireAuthContext(request);
-    const cfDb = createCfDb(env.DB, ctx);
-
-    const op = compose(
-      [
-        cfDb.update(posts).set({ published: true, publishedAt: new Date(), updatedAt: new Date() }).where(eq(posts.id, post.id)),
-        cfDb.insert(auditLogs).values({
-          id: nanoid(),
-          userId: ctx.user.id,
-          action: "post.published",
-          targetType: "post",
-          targetId: post.id,
-          metadata: JSON.stringify({ title: post.title }),
-        }),
-      ],
-      async (runUpdate, runAudit) => {
-        await runUpdate({});
-        await runAudit({});
-      },
-    );
-
-    await op.run({});
-
-    await sendPostPublishedEmail(env, {
-      title: post.title,
-      slug: post.slug,
-      authorId: post.authorId,
-    });
-
-    return { success: true, action: "publish" };
-  }
-
-  if (_action === "unpublish") {
-    const ctx = await requireAuthContext(request);
-    const cfDb = createCfDb(env.DB, ctx);
-
-    const op = compose(
-      [
-        cfDb.update(posts).set({ published: false, updatedAt: new Date() }).where(eq(posts.id, post.id)),
-        cfDb.insert(auditLogs).values({
-          id: nanoid(),
-          userId: ctx.user.id,
-          action: "post.unpublished",
-          targetType: "post",
-          targetId: post.id,
-          metadata: JSON.stringify({ title: post.title }),
-        }),
-      ],
-      async (runUpdate, runAudit) => {
-        await runUpdate({});
-        await runAudit({});
-      },
-    );
-
-    await op.run({});
-
-    return { success: true, action: "unpublish" };
-  }
-
-  if (_action === "comment") {
-    const ctx = await requireAuthContext(request);
-
-    if (!post.published) {
-      throw new Response("Cannot comment on unpublished posts", { status: 400 });
-    }
-
-    const content = (formData.get("content") as string)?.trim();
-    if (!content) {
-      return { error: "Comment content cannot be empty.", action: "comment" };
-    }
-
-    const cfDb = createCfDb(env.DB, ctx);
-
-    await cfDb.insert(comments).values({
-      id: nanoid(),
-      postId: post.id,
-      authorId: ctx.user.id,
-      content,
-    }).run({});
-
-    await sendNewCommentEmail(
-      env,
-      { id: post.id, title: post.title, slug: post.slug, authorId: post.authorId },
-      { name: ctx.user.name },
-      content
-    );
-
-    return { success: true, action: "comment" };
-  }
-
-  if (_action === "deleteComment") {
-    const ctx = await requireAuthContext(request);
-    const commentId = formData.get("commentId") as string;
-    if (!commentId) throw new Response("Bad Request", { status: 400 });
-
-    const cfDb = createCfDb(env.DB, ctx);
-
-    await cfDb.delete(comments).where(eq(comments.id, commentId)).run({});
-
-    return { success: true, action: "deleteComment" };
-  }
-
-  throw new Response("Bad Request", { status: 400 });
-}
+export const action = composed.action;
 
 function getInitials(name: string): string {
   return name
@@ -333,7 +202,10 @@ function useInfiniteComments(
 export default function PostDetail() {
   const { post, author, comments: initialComments, nextCursor, user } =
     useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<typeof action>() as
+    | { success: boolean; action: string }
+    | { error: string; action: string }
+    | undefined;
 
   const { allComments, hasMore, isLoadingMore, sentinelRef } = useInfiniteComments(
     initialComments,
@@ -402,7 +274,11 @@ export default function PostDetail() {
           )}
           {canPublish && !post.published && (
             <Form method="post">
-              <input type="hidden" name="_action" value="publish" />
+              <input type="hidden" name="_action" value="publishPost" />
+              <input type="hidden" name="postId" value={post.id} />
+              <input type="hidden" name="title" value={post.title} />
+              <input type="hidden" name="slug" value={post.slug} />
+              <input type="hidden" name="authorId" value={post.authorId} />
               <Button type="submit" color="success" variant="soft" size="sm">
                 Publish
               </Button>
@@ -410,7 +286,9 @@ export default function PostDetail() {
           )}
           {canPublish && post.published && (
             <Form method="post">
-              <input type="hidden" name="_action" value="unpublish" />
+              <input type="hidden" name="_action" value="unpublishPost" />
+              <input type="hidden" name="postId" value={post.id} />
+              <input type="hidden" name="title" value={post.title} />
               <Button type="submit" color="warning" variant="soft" size="sm">
                 Unpublish
               </Button>
@@ -422,7 +300,10 @@ export default function PostDetail() {
                 e.preventDefault();
               }
             }}>
-              <input type="hidden" name="_action" value="delete" />
+              <input type="hidden" name="_action" value="deletePost" />
+              <input type="hidden" name="postId" value={post.id} />
+              <input type="hidden" name="title" value={post.title} />
+              <input type="hidden" name="slug" value={post.slug} />
               <Button type="submit" color="danger" variant="soft" size="sm">
                 Delete
               </Button>
@@ -446,7 +327,12 @@ export default function PostDetail() {
               </Alert>
             )}
             <Form method="post" onSubmit={() => setCommentContent("")}>
-              <input type="hidden" name="_action" value="comment" />
+              <input type="hidden" name="_action" value="addComment" />
+              <input type="hidden" name="postId" value={post.id} />
+              <input type="hidden" name="postTitle" value={post.title} />
+              <input type="hidden" name="postSlug" value={post.slug} />
+              <input type="hidden" name="postAuthorId" value={post.authorId} />
+              <input type="hidden" name="postPublished" value={String(post.published)} />
               <Stack spacing={2}>
                 <Textarea
                   name="content"
