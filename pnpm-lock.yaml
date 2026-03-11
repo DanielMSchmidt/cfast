@@ -470,19 +470,31 @@ importers:
       '@mui/joy':
         specifier: '>=5.0.0-beta.0'
         version: 5.0.0-beta.52(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+    devDependencies:
+      '@testing-library/react':
+        specifier: ^16.3.0
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.14
       react:
-        specifier: '>=19'
+        specifier: ^19.0.0
         version: 19.2.4
       react-dom:
-        specifier: '>=19'
+        specifier: ^19.0.0
         version: 19.2.4(react@19.2.4)
-    devDependencies:
+      react-router:
+        specifier: ^7.6.0
+        version: 7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       tsup:
         specifier: ^8
         version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)
       typescript:
         specifier: ^5.7
         version: 5.9.3
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))
 
 packages:
 
