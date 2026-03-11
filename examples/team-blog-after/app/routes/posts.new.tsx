@@ -1,14 +1,7 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, Form, redirect } from "react-router";
-import { useState } from "react";
+import { useLoaderData, useActionData, useSubmit, redirect } from "react-router";
 import Container from "@mui/joy/Container";
-import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import Button from "@mui/joy/Button";
-import Input from "@mui/joy/Input";
-import Textarea from "@mui/joy/Textarea";
-import FormControl from "@mui/joy/FormControl";
-import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
 import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
 import { createCfDb } from "~/db/cfast.server";
@@ -16,6 +9,7 @@ import { compose } from "@cfast/db";
 import { posts, auditLogs } from "~/db/schema";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
+import { AutoForm } from "@cfast/forms/joy";
 
 function generateSlug(title: string): string {
   return title
@@ -94,9 +88,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 export default function NewPost() {
   const { user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [title, setTitle] = useState("");
-  const [excerpt, setExcerpt] = useState("");
-  const [content, setContent] = useState("");
+  const submit = useSubmit();
 
   return (
     <>
@@ -112,46 +104,20 @@ export default function NewPost() {
           </Alert>
         )}
 
-        <Form method="post">
-          <Stack spacing={3}>
-            <FormControl required>
-              <FormLabel>Title</FormLabel>
-              <Input
-                name="title"
-                placeholder="Enter post title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                size="lg"
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Excerpt</FormLabel>
-              <Textarea
-                name="excerpt"
-                placeholder="A brief summary of your post..."
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
-                minRows={2}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel>Content</FormLabel>
-              <Textarea
-                name="content"
-                placeholder="Write your post content..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                minRows={12}
-              />
-            </FormControl>
-
-            <Button type="submit" size="lg" sx={{ alignSelf: "flex-start" }}>
-              Create Post
-            </Button>
-          </Stack>
-        </Form>
+        <AutoForm
+          table={posts}
+          mode="create"
+          exclude={["id", "slug", "authorId", "published", "publishedAt", "coverImageKey", "createdAt", "updatedAt"]}
+          onSubmit={async (values) => {
+            const formData = new FormData();
+            for (const [key, value] of Object.entries(values)) {
+              if (value != null) {
+                formData.set(key, String(value));
+              }
+            }
+            submit(formData, { method: "POST" });
+          }}
+        />
       </Container>
     </>
   );

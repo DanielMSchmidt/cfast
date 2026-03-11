@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { v } from "@cfast/forms";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -70,7 +71,7 @@ export const roles = sqliteTable("roles", {
 
 export const posts = sqliteTable("posts", {
   id: text("id").primaryKey(),
-  title: text("title").notNull(),
+  title: v(text("title").notNull(), { minLength: 1, maxLength: 200 }),
   slug: text("slug").notNull().unique(),
   content: text("content").notNull().default(""),
   excerpt: text("excerpt"),
