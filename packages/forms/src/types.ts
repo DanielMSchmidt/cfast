@@ -54,6 +54,8 @@ export type FormPluginComponents = {
 export type FormWrapperProps = {
   onSubmit: (e: React.FormEvent) => void;
   children: React.ReactNode;
+  method?: string;
+  formRef?: React.RefObject<HTMLFormElement | null>;
 };
 
 export type SubmitButtonProps = {

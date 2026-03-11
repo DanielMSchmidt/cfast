@@ -64,9 +64,9 @@ function JoyCheckbox({ name, label, error, register }: FieldComponentProps) {
   );
 }
 
-function JoyFormWrapper({ onSubmit, children }: FormWrapperProps) {
+function JoyFormWrapper({ onSubmit, children, method, formRef }: FormWrapperProps) {
   return (
-    <Box component="form" onSubmit={onSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <Box component="form" onSubmit={onSubmit} method={method} ref={formRef} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {children}
     </Box>
   );

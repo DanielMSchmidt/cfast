@@ -1,8 +1,12 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, useSubmit, redirect } from "react-router";
+import { useLoaderData, useActionData, redirect } from "react-router";
 import Container from "@mui/joy/Container";
 import Typography from "@mui/joy/Typography";
 import Alert from "@mui/joy/Alert";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import FormHelperText from "@mui/joy/FormHelperText";
+import Textarea from "@mui/joy/Textarea";
 import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
 import { createCfDb } from "~/db/cfast.server";
 import { compose } from "@cfast/db";
@@ -10,6 +14,7 @@ import { posts, auditLogs } from "~/db/schema";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { AutoForm } from "@cfast/forms/joy";
+import type { FieldComponentProps } from "@cfast/forms";
 
 function generateSlug(title: string): string {
   return title
@@ -85,10 +90,19 @@ export async function action({ request, context }: ActionFunctionArgs) {
   return redirect(`/posts/${slug}/edit`);
 }
 
+function TextareaField({ name, label, placeholder, required, error, register }: FieldComponentProps) {
+  return (
+    <FormControl required={required} error={!!error}>
+      <FormLabel>{label}</FormLabel>
+      <Textarea {...register(name)} placeholder={placeholder} minRows={name === "content" ? 12 : 2} />
+      {error && <FormHelperText>{error}</FormHelperText>}
+    </FormControl>
+  );
+}
+
 export default function NewPost() {
   const { user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const submit = useSubmit();
 
   return (
     <>
@@ -108,14 +122,9 @@ export default function NewPost() {
           table={posts}
           mode="create"
           exclude={["id", "slug", "authorId", "published", "publishedAt", "coverImageKey", "createdAt", "updatedAt"]}
-          onSubmit={async (values) => {
-            const formData = new FormData();
-            for (const [key, value] of Object.entries(values)) {
-              if (value != null) {
-                formData.set(key, String(value));
-              }
-            }
-            submit(formData, { method: "POST" });
+          fields={{
+            content: { component: TextareaField },
+            excerpt: { component: TextareaField },
           }}
         />
       </Container>

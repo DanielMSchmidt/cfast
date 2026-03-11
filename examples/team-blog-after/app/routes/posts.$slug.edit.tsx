@@ -8,6 +8,10 @@ import Input from "@mui/joy/Input";
 import Alert from "@mui/joy/Alert";
 import AspectRatio from "@mui/joy/AspectRatio";
 import Box from "@mui/joy/Box";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import FormHelperText from "@mui/joy/FormHelperText";
+import Textarea from "@mui/joy/Textarea";
 import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
@@ -17,6 +21,7 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { AutoForm } from "@cfast/forms/joy";
+import type { FieldComponentProps } from "@cfast/forms";
 
 function generateSlug(title: string): string {
   return title
@@ -162,6 +167,16 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   throw new Response("Bad Request", { status: 400 });
 }
 
+function TextareaField({ name, label, placeholder, required, error, register }: FieldComponentProps) {
+  return (
+    <FormControl required={required} error={!!error}>
+      <FormLabel>{label}</FormLabel>
+      <Textarea {...register(name)} placeholder={placeholder} minRows={name === "content" ? 12 : 2} />
+      {error && <FormHelperText>{error}</FormHelperText>}
+    </FormControl>
+  );
+}
+
 export default function EditPost() {
   const { post, user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
@@ -193,6 +208,10 @@ export default function EditPost() {
             mode="edit"
             data={post}
             exclude={["id", "slug", "authorId", "published", "publishedAt", "coverImageKey", "createdAt", "updatedAt"]}
+            fields={{
+              content: { component: TextareaField },
+              excerpt: { component: TextareaField },
+            }}
             onSubmit={async (values) => {
               const formData = new FormData();
               formData.set("_action", "update");

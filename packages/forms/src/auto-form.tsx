@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { UseFormReturn } from "react-hook-form";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
@@ -10,7 +10,7 @@ type AutoFormProps = {
   table: SQLiteTable;
   mode: "create" | "edit";
   data?: Record<string, unknown>;
-  onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
+  onSubmit?: (values: Record<string, unknown>) => void | Promise<void>;
   fields?: Partial<Record<string, FieldConfig>>;
   exclude?: string[];
   form?: UseFormReturn<Record<string, unknown>>;
@@ -74,15 +74,32 @@ export function createAutoForm(plugin: FormPlugin) {
 
     const form = externalForm ?? internalForm;
 
-    const handleSubmit = form.handleSubmit(async (values) => {
-      await onSubmit(values);
+    const formRef = useRef<HTMLFormElement>(null);
+    const validatedRef = useRef(false);
+
+    const rhfHandleSubmit = form.handleSubmit(async (values) => {
+      if (onSubmit) {
+        await onSubmit(values);
+      } else {
+        // Re-submit the form natively so React Router can intercept it
+        validatedRef.current = true;
+        formRef.current?.requestSubmit();
+      }
     });
+
+    const onFormSubmit = (e: React.FormEvent) => {
+      if (validatedRef.current) {
+        validatedRef.current = false;
+        return; // Let native submission go through
+      }
+      rhfHandleSubmit(e);
+    };
 
     const FormWrapper = plugin.components.form;
     const SubmitButton = plugin.components.submitButton;
 
     return (
-      <FormWrapper onSubmit={handleSubmit}>
+      <FormWrapper onSubmit={onFormSubmit} method="post" formRef={formRef}>
         {visibleFields.map((field) => {
           const override = fieldOverrides?.[field.name];
           const Component = override?.component ?? getComponentForField(plugin, field);
