@@ -119,7 +119,7 @@ describe("single action .action() handler", () => {
     expect(result).toEqual(expectedResult);
   });
 
-  it("consumes the request body (formData) during action execution", async () => {
+  it("clones the request so the original body is not consumed", async () => {
     const { createAction } = createActions({ getContext: makeGetContext() });
     const def = createAction((_db, _input: { title: string }, _ctx) =>
       createMockOperation({ ok: true }),
@@ -128,9 +128,9 @@ describe("single action .action() handler", () => {
     const request = createFormDataRequest({ title: "test" });
     await def.action({ request, params: {} });
 
-    // After action reads formData, the original request body is consumed
-    // This verifies the implementation reads the body
-    await expect(request.formData()).rejects.toThrow();
+    // parseInput clones before reading, so the original body is still available
+    const formData = await request.formData();
+    expect(formData.get("title")).toBe("test");
   });
 });
 

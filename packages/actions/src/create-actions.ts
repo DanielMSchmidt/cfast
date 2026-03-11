@@ -1,6 +1,7 @@
 import type { Db, Operation } from "@cfast/db";
 import type { Grant, PermissionDescriptor } from "@cfast/permissions";
 
+import { extractActionName, parseInput } from "./parse-input.js";
 import type {
   ActionContext,
   ActionDefinition,
@@ -64,8 +65,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
 
     const action = async (args: RequestArgs): Promise<TResult> => {
       const ctx = await config.getContext(args);
-      const formData = await args.request.formData();
-      const input = Object.fromEntries(formData.entries()) as TInput;
+      const input = await parseInput(args.request) as TInput;
       const operation = operationsFn(ctx.db, input, ctx);
       return operation.run({});
     };
@@ -120,8 +120,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
     const actionNames = Object.keys(actions);
 
     const composedAction = async (args: RequestArgs): Promise<unknown> => {
-      const formData = await args.request.clone().formData();
-      const actionName = formData.get("_action") as string;
+      const actionName = await extractActionName(args.request);
 
       if (!actionName || !(actionName in actions)) {
         throw new Error(
