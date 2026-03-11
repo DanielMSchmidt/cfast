@@ -54,6 +54,9 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 ### Example App
 - After implementing or changing any `@cfast/*` package, update `examples/team-blog-after` to use the latest APIs. The example app must always reflect current package usage.
 
+### Pull Requests
+- Before creating a PR, run `/simplify` on the changes to review for reuse, quality, and efficiency.
+
 ### README-Driven Development
 - Each package README is the spec. Read it before implementing. Update it if the implementation diverges.
 - New features start as README additions, not code.
