@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
-import type { Grant, PermissionDescriptor, DrizzleTable, PermissionAction } from "@cfast/permissions";
+import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions, getTableName } from "./utils";
 import type { User } from "./utils";

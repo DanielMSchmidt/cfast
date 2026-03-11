@@ -3,7 +3,7 @@ import { definePermissions } from "../define-permissions";
 import { grant } from "../grant";
 
 const posts = { _: { name: "posts" } } as any;
-const comments = { _: { name: "comments" } } as any;
+const _comments = { _: { name: "comments" } } as any;
 
 describe("definePermissions", () => {
   describe("basic (no hierarchy)", () => {

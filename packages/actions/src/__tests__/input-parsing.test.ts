@@ -132,7 +132,7 @@ describe("composed action dispatches from JSON", () => {
 
   it("single action parses JSON input correctly", async () => {
     const operationsFn = vi.fn(
-      (_db: Db, input: { title: string; tags: string[] }, _ctx: ActionContext<{ id: string }>) =>
+      (_db: Db, _input: { title: string; tags: string[] }, _ctx: ActionContext<{ id: string }>) =>
         createMockOperation({ id: "new-1" }),
     );
 

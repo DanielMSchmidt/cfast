@@ -1,6 +1,7 @@
 {
   "name": "cfast",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
@@ -10,8 +11,11 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
     "turbo": "^2",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "typescript-eslint": "^8.57.0"
   },
   "packageManager": "pnpm@10.17.1",
   "engines": {

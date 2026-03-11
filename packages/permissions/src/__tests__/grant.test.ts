@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { grant } from "../grant";
 
 const posts = { _: { name: "posts" } } as any;
-const comments = { _: { name: "comments" } } as any;
+const _comments = { _: { name: "comments" } } as any;
 
 describe("grant", () => {
   it("creates a grant with action and subject", () => {

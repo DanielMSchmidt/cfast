@@ -31,7 +31,7 @@ describe("createActions", () => {
       getContext: makeGetContext(),
     });
 
-    const def = createAction((db, _input: { title: string }, _ctx) => ({
+    const def = createAction((_db, _input: { title: string }, _ctx) => ({
       permissions: [{ action: "create" as const, table: mockTable }],
       run: async () => ({ id: "1" }),
     }));
@@ -72,7 +72,7 @@ describe("createActions", () => {
 
 describe("single action .action() handler", () => {
   it("parses formData input and passes it to operationsFn", async () => {
-    const operationsFn = vi.fn((_db: Db, input: { title: string }, _ctx: ActionContext<{ id: string }>) =>
+    const operationsFn = vi.fn((_db: Db, _input: { title: string }, _ctx: ActionContext<{ id: string }>) =>
       createMockOperation({ id: "new-1" }),
     );
 
