@@ -467,10 +467,19 @@ importers:
       '@cfast/permissions':
         specifier: workspace:*
         version: link:../permissions
-      '@mui/joy':
-        specifier: '>=5.0.0-beta.0'
-        version: 5.0.0-beta.52(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
     devDependencies:
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
+      '@emotion/styled':
+        specifier: ^11.14.1
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
+      '@mui/joy':
+        specifier: ^5.0.0-beta.52
+        version: 5.0.0-beta.52(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@mui/material':
+        specifier: ^6.5.0
+        version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@testing-library/react':
         specifier: ^16.3.0
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
