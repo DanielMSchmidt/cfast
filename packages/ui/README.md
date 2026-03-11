@@ -2,15 +2,15 @@
 
 **Permission-aware React components. The button knows what the user can do.**
 
-`@cfast/ui` connects the permission system to the component layer. Its headline feature: a button that wraps an action. The action declares what permissions it needs (via `@cfast/actions` + `@cfast/permissions`). The button automatically hides itself if the user lacks all permissions, disables itself if permissions are partially missing, and renders normally if everything checks out. The developer writes zero permission-checking UI code.
+`@cfast/ui` connects the permission system to the component layer. Its headline feature: a button that wraps an action. The action declares what permissions it needs (via `@cfast/actions` + `@cfast/permissions`). The button automatically hides itself if the user lacks all permissions (`invisible`), disables itself with a tooltip if permissions are partially missing, and renders normally if everything checks out. The developer writes zero permission-checking UI code.
 
 ## Design Goals
 
-- **Permissions in, UI out.** Components consume actions from `@cfast/actions`. Actions carry their permission requirements via operations. The component reads `permitted` and adapts — no manual checking in JSX.
+- **Permissions in, UI out.** Components consume action descriptors from `@cfast/actions`. The component reads `permitted`/`invisible` and adapts — no manual checking in JSX.
 - **UI library plugins.** The core is headless. Ship with a MUI Joy UI plugin. Add others without touching the core.
 - **Minimal surface area.** This package does one thing: permission-aware component wrappers. Forms are in `@cfast/forms`. Pagination is in `@cfast/pagination`. Admin is in `@cfast/admin`.
 
-## Planned API
+## API
 
 ### Permission-Aware Action Button
 
@@ -21,11 +21,11 @@ import { publishPostAction } from "./actions";
 function PostToolbar({ postId }) {
   return (
     <ActionButton
-      action={publishPostAction}
+      action={publishPostAction.client}
+      actionName="publishPost"
       input={{ postId }}
       // That's it. The button:
-      // - Checks if the user can perform all of publishPostAction's required permissions
-      // - Hides itself if the user has no relation to this action at all
+      // - Hides itself if the user has zero permissions (invisible)
       // - Disables itself with a tooltip if permissions are partial
       // - Submits the action when clicked
     >
@@ -39,7 +39,8 @@ The behavior is configurable:
 
 ```typescript
 <ActionButton
-  action={deletePostAction}
+  action={deletePostAction.client}
+  actionName="deletePost"
   input={{ postId }}
   whenForbidden="hide"     // "hide" | "disable" | "show" (default: "disable")
   confirmation="Are you sure?"
@@ -54,16 +55,32 @@ Conditionally render content based on an action's permissions:
 import { PermissionGate } from "@cfast/ui";
 import { editPost, manageSettings } from "~/actions";
 
-<PermissionGate action={editPost} input={{ postId }}>
+<PermissionGate action={editPost.client} actionName="editPost" input={{ postId }}>
   <EditButton />
 </PermissionGate>
 
-<PermissionGate action={manageSettings} fallback={<UpgradePrompt />}>
+<PermissionGate action={manageSettings.client} actionName="manageSettings" fallback={<UpgradePrompt />}>
   <AdminPanel />
 </PermissionGate>
 ```
 
-`PermissionGate` uses `useAction()` internally — it reads the server-precomputed `permitted` boolean. No permission descriptors are evaluated on the client.
+`PermissionGate` uses `useActionStatus()` internally — it reads the server-precomputed `permitted` boolean. No permission descriptors are evaluated on the client.
+
+### useActionStatus
+
+Lower-level hook for custom permission-aware components:
+
+```typescript
+import { useActionStatus } from "@cfast/ui";
+
+function CustomButton({ descriptor }) {
+  const status = useActionStatus(descriptor, "publish", { postId });
+  // status: { permitted, invisible, reason, submit, pending, data, error }
+
+  if (status.invisible) return null;
+  return <button onClick={status.submit} disabled={!status.permitted}>Go</button>;
+}
+```
 
 ### UI Library Plugins
 
@@ -83,19 +100,19 @@ Creating a plugin:
 import { createUIPlugin } from "@cfast/ui";
 
 export const myPlugin = createUIPlugin({
-  components: {
-    button: MyButton,
-    tooltip: MyTooltip,
-    confirmDialog: MyConfirmDialog,
-  },
+  Button: MyButton,
+  Tooltip: MyTooltip,
+  ConfirmDialog: MyConfirmDialog,
 });
+
+// myPlugin.ActionButton is now a permission-aware button using your components
 ```
 
 ## Architecture
 
 ```
 @cfast/ui (headless core)
-├── Action introspection (reads permitted/invisible from @cfast/actions)
+├── useActionStatus hook (wraps useActions from @cfast/actions/client)
 ├── PermissionGate component
 └── Plugin API (createUIPlugin)
 
