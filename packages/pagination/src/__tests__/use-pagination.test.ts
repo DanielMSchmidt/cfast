@@ -13,6 +13,7 @@ vi.mock("react-router", () => ({
 vi.mock("react", () => ({
   useRef: (val: unknown) => ({ current: val }),
   useCallback: (fn: Function) => fn,
+  useMemo: (fn: Function) => fn(),
   useState: (init: unknown) => {
     const state = typeof init === "function" ? (init as Function)() : init;
     return [state, vi.fn()];

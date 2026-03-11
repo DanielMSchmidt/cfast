@@ -107,7 +107,7 @@ export type QueryBuilder = {
   findFirst: (options?: FindFirstOptions) => Operation<unknown | undefined>;
   paginate: (
     params: CursorParams | OffsetParams,
-    options?: PaginateOptions & { cursorColumns?: unknown[] },
+    options?: PaginateOptions,
   ) => Operation<CursorPage<unknown>> | Operation<OffsetPage<unknown>>;
 };
 

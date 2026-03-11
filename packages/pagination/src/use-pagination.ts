@@ -1,5 +1,5 @@
 import { useLoaderData, useFetcher, useLocation } from "react-router";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 
 type CursorPageData = {
   items: unknown[];
@@ -46,12 +46,10 @@ export function usePagination<T = unknown>(
   ) => string | number;
 
   const [pages, setPages] = useState<CursorPageData[]>(() => [loaderData]);
-  const lastCursorRef = useRef<string | null>(loaderData.nextCursor);
 
   // Reset when route changes (new loader data)
   useEffect(() => {
     setPages([loaderData]);
-    lastCursorRef.current = loaderData.nextCursor;
   }, [loaderData, location.pathname, location.search]);
 
   // Append fetcher results
@@ -62,25 +60,24 @@ export function usePagination<T = unknown>(
         if (last?.nextCursor === fetcher.data?.nextCursor) return prev;
         return [...prev, fetcher.data!];
       });
-      lastCursorRef.current = fetcher.data.nextCursor;
     }
   }, [fetcher.data, fetcher.state]);
 
-  const allItems = deduplicateItems(
-    pages.flatMap((p) => p.items) as T[],
-    getKey,
+  const allItems = useMemo(
+    () => deduplicateItems(pages.flatMap((p) => p.items) as T[], getKey),
+    [pages, getKey],
   );
 
-  const hasMore = lastCursorRef.current != null;
+  const lastCursor = pages[pages.length - 1]?.nextCursor ?? null;
+  const hasMore = lastCursor != null;
   const isLoading = fetcher.state !== "idle";
 
   const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return;
-    const cursor = lastCursorRef.current;
     const params = new URLSearchParams(location.search);
-    params.set("cursor", cursor!);
+    params.set("cursor", lastCursor!);
     fetcher.load(`${location.pathname}?${params.toString()}`);
-  }, [isLoading, hasMore, location.pathname, location.search, fetcher]);
+  }, [isLoading, hasMore, lastCursor, location.pathname, location.search, fetcher]);
 
   return { items: allItems, loadMore, hasMore, isLoading };
 }
