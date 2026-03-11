@@ -1,10 +1,9 @@
 import { drizzle } from "drizzle-orm/d1";
-import { and, or } from "drizzle-orm";
 import type { Grant, PermissionDescriptor, DrizzleTable, PermissionAction } from "@cfast/permissions";
-import { resolvePermissionFilters, checkOperationPermissions } from "./permissions";
+import { checkOperationPermissions } from "./permissions";
+import { buildPermissionFilter, combineWhere, makePermissions, getTableName } from "./utils";
+import type { User } from "./utils";
 import type { Operation } from "./types";
-
-type User = { id: string };
 
 type MutateBuilderConfig = {
   d1: D1Database;
@@ -16,115 +15,78 @@ type MutateBuilderConfig = {
   onMutate?: (tableName: string) => void;
 };
 
-function makePermissions(
+function checkIfNeeded(config: MutateBuilderConfig, grants: Grant[], permissions: PermissionDescriptor[]): void {
+  if (!config.unsafe) {
+    checkOperationPermissions(grants, permissions);
+  }
+}
+
+function buildMutationWithReturning(
   config: MutateBuilderConfig,
-  action: PermissionAction,
-): PermissionDescriptor[] {
-  return config.unsafe ? [] : [{ action, table: config.table }];
-}
-
-function buildMutatePermissionFilter(
-  config: MutateBuilderConfig,
-  action: PermissionAction,
-): unknown {
-  if (config.unsafe || !config.user) return undefined;
-  const filters = resolvePermissionFilters(config.grants, action, config.table);
-  if (filters.length === 0) return undefined;
-  const columns = config.table as Record<string, unknown>;
-  const clauses = filters.map((fn) => fn(columns, config.user!));
-  return clauses.length === 1 ? clauses[0] : or(...(clauses as [any, ...any[]]));
-}
-
-function combineWhere(userCondition: unknown, permFilter: unknown): unknown {
-  if (permFilter && userCondition) return and(userCondition as any, permFilter as any);
-  return (permFilter ?? userCondition) as any;
-}
-
-function getTableName(table: DrizzleTable): string {
-  return (table as any)._?.name ?? (table as any)[Symbol.for("drizzle:Name")] ?? "unknown";
+  permissions: PermissionDescriptor[],
+  tableName: string,
+  execute: (returning: boolean) => Promise<unknown>,
+): Operation<void> & { returning: () => Operation<unknown> } {
+  return {
+    permissions,
+    async run(_params: Record<string, unknown>): Promise<void> {
+      checkIfNeeded(config, config.grants, permissions);
+      await execute(false);
+      config.onMutate?.(tableName);
+    },
+    returning() {
+      return {
+        permissions,
+        async run(_params: Record<string, unknown>): Promise<unknown> {
+          checkIfNeeded(config, config.grants, permissions);
+          const result = await execute(true);
+          config.onMutate?.(tableName);
+          return result;
+        },
+      };
+    },
+  };
 }
 
 export function createInsertBuilder(config: MutateBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
-  const permissions = makePermissions(config, "create");
+  const permissions = makePermissions(config.unsafe, "create", config.table);
   const tableName = getTableName(config.table);
 
   return {
     values(values: Record<string, unknown>) {
-      const base: Operation<void> & { returning: () => Operation<unknown> } = {
-        permissions,
-        async run(_params: Record<string, unknown>): Promise<void> {
-          if (!config.unsafe) {
-            checkOperationPermissions(config.grants, permissions);
-          }
-          await db.insert(config.table as any).values(values).run();
-          config.onMutate?.(tableName);
-        },
-        returning() {
-          return {
-            permissions,
-            async run(_params: Record<string, unknown>): Promise<unknown> {
-              if (!config.unsafe) {
-                checkOperationPermissions(config.grants, permissions);
-              }
-              const result = await db
-                .insert(config.table as any)
-                .values(values)
-                .returning()
-                .get();
-              config.onMutate?.(tableName);
-              return result;
-            },
-          };
-        },
-      };
-      return base;
+      return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
+        const query = db.insert(config.table as any).values(values);
+        if (returning) {
+          return query.returning().get();
+        }
+        await query.run();
+      });
     },
   };
 }
 
 export function createUpdateBuilder(config: MutateBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
-  const permissions = makePermissions(config, "update");
+  const permissions = makePermissions(config.unsafe, "update", config.table);
   const tableName = getTableName(config.table);
 
   return {
     set(values: Record<string, unknown>) {
       return {
         where(condition: unknown) {
-          const base: Operation<void> & { returning: () => Operation<unknown> } = {
-            permissions,
-            async run(_params: Record<string, unknown>): Promise<void> {
-              if (!config.unsafe) {
-                checkOperationPermissions(config.grants, permissions);
-              }
-              const permFilter = buildMutatePermissionFilter(config, "update");
-              const combinedWhere = combineWhere(condition, permFilter);
-              await db.update(config.table as any).set(values).where(combinedWhere as any).run();
-              config.onMutate?.(tableName);
-            },
-            returning() {
-              return {
-                permissions,
-                async run(_params: Record<string, unknown>): Promise<unknown> {
-                  if (!config.unsafe) {
-                    checkOperationPermissions(config.grants, permissions);
-                  }
-                  const permFilter = buildMutatePermissionFilter(config, "update");
-                  const combinedWhere = combineWhere(condition, permFilter);
-                  const result = await db
-                    .update(config.table as any)
-                    .set(values)
-                    .where(combinedWhere as any)
-                    .returning()
-                    .get();
-                  config.onMutate?.(tableName);
-                  return result;
-                },
-              };
-            },
-          };
-          return base;
+          const permFilter = buildPermissionFilter(
+            config.grants, "update", config.table, config.user, config.unsafe,
+          );
+          const combinedWhere = combineWhere(condition, permFilter);
+
+          return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
+            const query = db.update(config.table as any).set(values).where(combinedWhere as any);
+            if (returning) {
+              return query.returning().get();
+            }
+            await query.run();
+          });
         },
       };
     },
@@ -133,43 +95,23 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
 
 export function createDeleteBuilder(config: MutateBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
-  const permissions = makePermissions(config, "delete");
+  const permissions = makePermissions(config.unsafe, "delete", config.table);
   const tableName = getTableName(config.table);
 
   return {
     where(condition: unknown) {
-      const base: Operation<void> & { returning: () => Operation<unknown> } = {
-        permissions,
-        async run(_params: Record<string, unknown>): Promise<void> {
-          if (!config.unsafe) {
-            checkOperationPermissions(config.grants, permissions);
-          }
-          const permFilter = buildMutatePermissionFilter(config, "delete");
-          const combinedWhere = combineWhere(condition, permFilter);
-          await db.delete(config.table as any).where(combinedWhere as any).run();
-          config.onMutate?.(tableName);
-        },
-        returning() {
-          return {
-            permissions,
-            async run(_params: Record<string, unknown>): Promise<unknown> {
-              if (!config.unsafe) {
-                checkOperationPermissions(config.grants, permissions);
-              }
-              const permFilter = buildMutatePermissionFilter(config, "delete");
-              const combinedWhere = combineWhere(condition, permFilter);
-              const result = await db
-                .delete(config.table as any)
-                .where(combinedWhere as any)
-                .returning()
-                .get();
-              config.onMutate?.(tableName);
-              return result;
-            },
-          };
-        },
-      };
-      return base;
+      const permFilter = buildPermissionFilter(
+        config.grants, "delete", config.table, config.user, config.unsafe,
+      );
+      const combinedWhere = combineWhere(condition, permFilter);
+
+      return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
+        const query = db.delete(config.table as any).where(combinedWhere as any);
+        if (returning) {
+          return query.returning().get();
+        }
+        await query.run();
+      });
     },
   };
 }

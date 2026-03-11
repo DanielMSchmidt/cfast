@@ -1,10 +1,8 @@
-import { definePermissions, grant } from "@cfast/permissions";
-
 // Minimal D1 mock that records calls and can return configurable results
 export function createMockD1(): D1Database & { _calls: Array<{ sql: string; params: unknown[] }> } {
   const calls: Array<{ sql: string; params: unknown[] }> = [];
 
-  let nextResults: unknown[] = [];
+  const nextResults: unknown[] = [];
 
   const mockResults = () => ({
     results: nextResults,
@@ -34,15 +32,5 @@ export function createMockD1(): D1Database & { _calls: Array<{ sql: string; para
     batch: async (stmts: unknown[]) => stmts.map(() => mockResults()),
     dump: async () => new ArrayBuffer(0),
     exec: async () => ({ count: 0, duration: 0 }),
-  } as any;
+  } as unknown as D1Database & { _calls: Array<{ sql: string; params: unknown[] }> };
 }
-
-// Simple test permissions for auth tests
-export const testPermissions = definePermissions({
-  roles: ["anonymous", "user", "admin"] as const,
-  grants: {
-    anonymous: [],
-    user: [grant("read", "all")],
-    admin: [grant("manage", "all")],
-  },
-});

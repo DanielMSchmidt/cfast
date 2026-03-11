@@ -4,8 +4,10 @@ import type { EmailClient, EmailClientConfig, SendOptions } from "./types.js";
 export function createEmailClient(config: EmailClientConfig): EmailClient {
   return {
     async send(options: SendOptions): Promise<{ id: string }> {
-      const html = await render(options.react);
-      const text = await render(options.react, { plainText: true });
+      const [html, text] = await Promise.all([
+        render(options.react),
+        render(options.react, { plainText: true }),
+      ]);
 
       const from =
         options.from ??

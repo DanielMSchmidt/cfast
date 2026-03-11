@@ -1,47 +1,34 @@
 import type {
-  DrizzleTable,
   Grant,
   PermissionAction,
   PermissionCheckResult,
   PermissionDescriptor,
   Permissions,
 } from "./types";
-import { CRUD_ACTIONS } from "./types";
+import { CRUD_ACTIONS, getTableName } from "./types";
 
-function getTableName(table: DrizzleTable): string {
-  return table._?.name ?? "unknown";
-}
-
-function grantMatchesAction(
-  grantAction: PermissionAction,
-  requiredAction: PermissionAction,
+function grantMatches(
+  g: Grant,
+  action: PermissionAction,
+  table: PermissionDescriptor["table"],
 ): boolean {
-  if (grantAction === requiredAction) return true;
-  if (grantAction === "manage") return true;
-  return false;
-}
-
-function grantMatchesTable(
-  grantSubject: DrizzleTable | "all",
-  requiredTable: DrizzleTable,
-): boolean {
-  if (grantSubject === "all") return true;
-  return grantSubject === requiredTable;
+  const actionOk = g.action === action || g.action === "manage";
+  const subjectOk = g.subject === "all" || g.subject === table;
+  return actionOk && subjectOk;
 }
 
 function hasGrantFor(
   grants: Grant[],
   action: PermissionAction,
-  table: DrizzleTable,
+  table: PermissionDescriptor["table"],
 ): boolean {
-  return grants.some(
-    (g) =>
-      grantMatchesAction(g.action, action) &&
-      grantMatchesTable(g.subject, table),
-  );
+  return grants.some((g) => grantMatches(g, action, table));
 }
 
-function hasManagePermission(grants: Grant[], table: DrizzleTable): boolean {
+function hasManagePermission(
+  grants: Grant[],
+  table: PermissionDescriptor["table"],
+): boolean {
   if (hasGrantFor(grants, "manage", table)) return true;
   return CRUD_ACTIONS.every((action) => hasGrantFor(grants, action, table));
 }

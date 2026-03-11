@@ -29,8 +29,8 @@ export function resolveGrants(
   type GroupKey = string;
   const groups = new Map<GroupKey, { action: Grant["action"]; subject: Grant["subject"]; wheres: Array<Grant["where"]> }>();
 
-  // We need a way to create unique keys for action+subject pairs
-  // where subject identity is by reference. Use a WeakMap for table references.
+  // Create unique keys for action+subject pairs using reference identity.
+  // A regular Map is needed since "all" is a string (not valid for WeakMap).
   const subjectIds = new Map<Grant["subject"], number>();
   let nextId = 0;
 

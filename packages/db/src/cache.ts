@@ -145,25 +145,19 @@ export function createCacheManager(config: CacheConfig): CacheManager {
             },
           }),
         );
-
-        if (typeof options === "object" && options?.tags) {
-          for (const tag of options.tags) {
-            if (!tagToKeys.has(tag)) tagToKeys.set(tag, new Set());
-            tagToKeys.get(tag)!.add(key);
-          }
-        }
       }
 
       if (config.backend === "kv" && config.kv) {
         await config.kv.put(key, JSON.stringify(value), {
           expirationTtl: ttl,
         });
+      }
 
-        if (typeof options === "object" && options?.tags) {
-          for (const tag of options.tags) {
-            if (!tagToKeys.has(tag)) tagToKeys.set(tag, new Set());
-            tagToKeys.get(tag)!.add(key);
-          }
+      // Track tags for invalidation (works for both backends)
+      if (typeof options === "object" && options?.tags) {
+        for (const tag of options.tags) {
+          if (!tagToKeys.has(tag)) tagToKeys.set(tag, new Set());
+          tagToKeys.get(tag)!.add(key);
         }
       }
     },

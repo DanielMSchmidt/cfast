@@ -1,6 +1,6 @@
-import type { BindingDef, EnvValidationError } from "./types";
+import type { BindingDef, BindingType, EnvValidationError } from "./types";
 
-const BINDING_LABELS: Record<string, string> = {
+const BINDING_LABELS: Record<BindingType, string> = {
   d1: "D1",
   kv: "KV",
   r2: "R2",
@@ -33,11 +33,11 @@ export function validateBinding(
   def: BindingDef,
   value: unknown,
 ): EnvValidationError | undefined {
-  const label = BINDING_LABELS[def.type] ?? def.type;
+  const label = BINDING_LABELS[def.type];
 
   // For var bindings, defaults must be resolved by the caller before calling validateBinding.
   if (def.type === "var") {
-    if (value === undefined || value === null) {
+    if (value == null) {
       return { key, message: `Missing required variable '${key}'. Check your wrangler.toml.` };
     }
     if (typeof value !== "string") {
@@ -50,7 +50,7 @@ export function validateBinding(
   }
 
   if (def.type === "secret") {
-    if (value === undefined || value === null) {
+    if (value == null) {
       return { key, message: `Missing required secret '${key}'. Check your wrangler.toml.` };
     }
     if (typeof value !== "string") {
@@ -63,7 +63,7 @@ export function validateBinding(
   }
 
   // Object bindings: d1, kv, r2, queue, durable-object, service
-  if (value === undefined || value === null) {
+  if (value == null) {
     return { key, message: `Missing required ${label} binding '${key}'. Check your wrangler.toml.` };
   }
 
