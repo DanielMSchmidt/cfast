@@ -19,7 +19,7 @@ describe("createAuth", () => {
     expect(typeof auth.setRole).toBe("function");
     expect(typeof auth.setRoles).toBe("function");
     expect(typeof auth.removeRole).toBe("function");
-    expect(auth.api).toBeNull();
+    expect(auth.api).not.toBeNull();
   });
 
   describe("createContext", () => {

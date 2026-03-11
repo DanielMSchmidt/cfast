@@ -23,6 +23,9 @@ export type AuthenticatedContext = {
 export type AuthConfig = {
   permissions: Permissions;
   passkeys?: { rpName: string; rpId: string };
+  magicLink?: {
+    sendMagicLink: (params: { email: string; url: string }) => Promise<void>;
+  };
   session?: { expiresIn?: string };
   redirects?: { afterLogin?: string; loginPath?: string };
   anonymousRoles?: string[];
@@ -41,6 +44,6 @@ export type AuthInstance = {
   setRole: (userId: string, role: string) => Promise<void>;
   setRoles: (userId: string, roles: string[]) => Promise<void>;
   removeRole: (userId: string, role: string) => Promise<void>;
-  /** Better Auth API handler — wired in Task 4 */
-  api: null;
+  /** The underlying Better Auth instance for handling auth API routes */
+  api: unknown;
 };
