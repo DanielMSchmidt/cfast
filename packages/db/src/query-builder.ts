@@ -5,17 +5,8 @@ import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
 import type { User } from "./utils";
 import { decodeCursor, encodeCursor, buildCursorWhere } from "./paginate";
-import type {
-  Operation,
-  FindManyOptions,
-  FindFirstOptions,
-  CursorParams,
-  OffsetParams,
-  CursorPage,
-  OffsetPage,
-  PaginateOptions,
-  QueryBuilder,
-} from "./types";
+import type { Operation, FindManyOptions, FindFirstOptions, CursorPage, OffsetPage, PaginateOptions } from "./types";
+import type { CursorParams, OffsetParams } from "./types";
 
 type QueryBuilderConfig = {
   d1: D1Database;
@@ -92,10 +83,10 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
       return buildQueryOperation<unknown | undefined>(config, db, tableKey, "findFirst", options);
     },
 
-    paginate: ((
+    paginate(
       params: CursorParams | OffsetParams,
       options?: PaginateOptions & { cursorColumns?: unknown[] },
-    ): Operation<CursorPage<unknown>> | Operation<OffsetPage<unknown>> => {
+    ): Operation<CursorPage<unknown>> | Operation<OffsetPage<unknown>> {
       const permissions = makePermissions(config.unsafe, "read", config.table);
 
       if (params.type === "cursor") {
@@ -192,6 +183,6 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
           };
         },
       };
-    }) as QueryBuilder["paginate"],
+    },
   };
 }
