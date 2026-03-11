@@ -2,46 +2,43 @@
 
 **Cursor-based, offset-based pagination and infinite scroll for React Router.**
 
-Cursor-based pagination, offset-based pagination, infinite scroll, "load more" buttons. Every app needs at least one of these. React Router gives you the primitives but not the patterns. You end up parsing search params, managing accumulated pages, wiring up intersection observers, and handling race conditions. Every time.
-
-`@cfast/router` provides type-safe loader helpers and client hooks for all of these. Same loader, swap the hook to switch between "load more" button and infinite scroll.
+Server-side helpers live in `@cfast/db` (param parsing, query building). This package provides the client-side React hooks that consume paginated loader data.
 
 ## Design Goals
 
 - **Pagination that works with D1.** Cursor-based and offset-based pagination with type-safe helpers for both loader and component.
-- **Infinite loading done right.** Accumulates pages on the client, triggers loading on scroll or button click, handles race conditions and stale data.
-- **Loader + hook pairs.** Each pattern has a server-side helper (parse params, apply to query) and a client-side hook (consume data, manage state). They're designed together.
-- **No opinion on permissions or actions.** This package is purely about data fetching patterns. Use `@cfast/actions` for multi-action routes.
+- **Infinite loading done right.** Accumulates pages on the client, triggers loading on scroll or button click, deduplicates items to handle data changes during scrolling.
+- **Loader + hook pairs.** Server-side helpers in `@cfast/db`, client-side hooks here. Same loader, swap the hook to switch between "load more" and infinite scroll.
+- **No opinion on permissions or actions.** This package is purely about data fetching patterns.
 
-## Planned API
+## Cursor-Based Pagination
 
-### Cursor-Based Pagination
+### Loader (server)
 
 ```typescript
-import { paginate } from "@cfast/router";
+import { parseCursorParams } from "@cfast/db";
 
-// In your loader:
 export async function loader({ request }) {
-  const page = paginate.parseParams(request, {
+  const page = parseCursorParams(request, {
     defaultLimit: 20,
     maxLimit: 100,
   });
 
-  const { items, nextCursor } = await paginate.query(
-    db.query(posts).findMany({
+  const result = await db.query(posts)
+    .paginate(page, {
       orderBy: desc(posts.createdAt),
-    }),
-    page,
-  );
+      cursorColumns: [posts.createdAt, posts.id],
+    })
+    .run({});
 
-  return { items, nextCursor };
+  return result; // { items, nextCursor }
 }
 ```
 
-In the component with a "load more" button:
+### Load More Button (client)
 
 ```typescript
-import { usePagination } from "@cfast/router";
+import { usePagination } from "@cfast/pagination";
 
 function PostList() {
   const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
@@ -59,12 +56,12 @@ function PostList() {
 }
 ```
 
-### Infinite Scroll
+### Infinite Scroll (client)
 
 Same loader, different hook:
 
 ```typescript
-import { useInfiniteScroll } from "@cfast/router";
+import { useInfiniteScroll } from "@cfast/pagination";
 
 function PostFeed() {
   const { items, sentinelRef, isLoading, hasMore } = useInfiniteScroll<Post>();
@@ -72,7 +69,6 @@ function PostFeed() {
   return (
     <div>
       {items.map((post) => <PostCard key={post.id} post={post} />)}
-      {/* When this element becomes visible, the next page loads */}
       <div ref={sentinelRef} />
       {isLoading && <Spinner />}
     </div>
@@ -80,30 +76,67 @@ function PostFeed() {
 }
 ```
 
-### Offset-Based Pagination
+## Offset-Based Pagination
 
-For traditional page-number navigation:
+### Loader (server)
 
 ```typescript
-// Loader:
-export async function loader({ request }) {
-  const page = paginate.parseParams(request, { type: "offset", defaultLimit: 20 });
-  const { items, total } = await paginate.queryOffset(
-    db.query(posts).findMany({ orderBy: desc(posts.createdAt) }),
-    page,
-  );
-  return { items, total, ...page };
-}
+import { parseOffsetParams } from "@cfast/db";
 
-// Component:
+export async function loader({ request }) {
+  const page = parseOffsetParams(request, { defaultLimit: 20 });
+
+  const result = await db.query(posts)
+    .paginate(page, {
+      orderBy: desc(posts.createdAt),
+    })
+    .run({});
+
+  return result; // { items, total, page, totalPages }
+}
+```
+
+### Component (client)
+
+```typescript
+import { useOffsetPagination } from "@cfast/pagination";
+
 function PostList() {
-  const { items, totalPages, currentPage, PageLinks } = useOffsetPagination<Post>();
+  const { items, totalPages, currentPage, goToPage } = useOffsetPagination<Post>();
 
   return (
     <div>
       {items.map((post) => <PostCard key={post.id} post={post} />)}
-      <PageLinks />
+      <div>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button key={i + 1} onClick={() => goToPage(i + 1)} disabled={currentPage === i + 1}>
+            {i + 1}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 ```
+
+## API Reference
+
+### Server (`@cfast/db`)
+
+- **`parseCursorParams(request, options?)`** — Parses `?cursor=X&limit=Y`. Returns `CursorParams`.
+- **`parseOffsetParams(request, options?)`** — Parses `?page=X&limit=Y`. Returns `OffsetParams`.
+- **`db.query(table).paginate(params, options)`** — Returns `Operation<CursorPage>` or `Operation<OffsetPage>` depending on params type.
+
+Options: `{ defaultLimit?: number, maxLimit?: number }` (defaults: 20, 100).
+
+### Client (`@cfast/pagination`)
+
+- **`usePagination<T>(options?)`** — Load-more pattern. Returns `{ items, loadMore, hasMore, isLoading }`.
+- **`useInfiniteScroll<T>(options?)`** — Intersection observer pattern. Returns `{ items, sentinelRef, hasMore, isLoading }`.
+- **`useOffsetPagination<T>()`** — Page navigation. Returns `{ items, total, totalPages, currentPage, goToPage }`.
+
+Hook options: `{ getKey?: (item: T) => string | number }` (defaults to `item.id`). `useInfiniteScroll` also accepts `rootMargin` (default: `"200px"`).
+
+## Cursor Encoding
+
+Cursors are opaque base64-encoded JSON containing the values of the `cursorColumns` for the last item. Clients cannot tamper with or depend on the cursor format.

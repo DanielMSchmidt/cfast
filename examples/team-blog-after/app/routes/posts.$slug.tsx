@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, Form, Link, useFetcher } from "react-router";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useLoaderData, useActionData, Form, Link } from "react-router";
+import { useState } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
@@ -12,11 +12,15 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import { getUser } from "~/auth.helpers.server";
+import { getAuthContext } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
 import { createDbClient } from "~/db/client";
+import { createCfDb } from "~/db/cfast.server";
+import { parseCursorParams } from "@cfast/db";
+import type { CursorPage } from "@cfast/db";
+import { useInfiniteScroll } from "@cfast/pagination";
 import { posts, users, comments } from "~/db/schema";
-import { eq, desc, and, lt } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
 import { composeActions } from "~/actions.server";
@@ -28,9 +32,17 @@ import {
   deleteComment,
 } from "~/actions/posts";
 
+type CommentType = {
+  id: string;
+  content: string;
+  createdAt: Date;
+  author: { id: string; name: string; avatarUrl: string | null };
+};
+
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await getUser(request);
+  const authCtx = await getAuthContext(request);
+  const user = authCtx.user;
   const db = createDbClient(env.DB);
 
   const slug = params.slug;
@@ -52,53 +64,25 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   // Get author info
   const author = await db.select().from(users).where(eq(users.id, post.authorId)).get();
 
-  // Cursor-based comments: get URL cursor param
-  const url = new URL(request.url);
-  const cursor = url.searchParams.get("cursor");
+  // Cursor-based comments using @cfast/db pagination
+  const cursorParams = parseCursorParams(request, { defaultLimit: 20 });
+  const cfDb = createCfDb(env.DB, authCtx);
 
-  let commentQuery = db
-    .select({
-      id: comments.id,
-      content: comments.content,
-      createdAt: comments.createdAt,
-      authorId: comments.authorId,
-      authorName: users.name,
-      authorAvatarUrl: users.avatarUrl,
-    })
-    .from(comments)
-    .leftJoin(users, eq(comments.authorId, users.id))
-    .where(
-      cursor
-        ? and(eq(comments.postId, post.id), lt(comments.id, cursor))
-        : eq(comments.postId, post.id)
-    )
-    .orderBy(desc(comments.createdAt))
-    .limit(21);
-
-  const rawComments = await commentQuery;
-
-  const hasMore = rawComments.length > 20;
-  const displayComments = rawComments.slice(0, 20);
-  const nextCursor = hasMore ? displayComments[displayComments.length - 1].id : null;
-
-  const formattedComments = displayComments.map((c) => ({
-    id: c.id,
-    content: c.content,
-    createdAt: c.createdAt,
-    author: {
-      id: c.authorId,
-      name: c.authorName ?? "Unknown",
-      avatarUrl: c.authorAvatarUrl ?? null,
-    },
-  }));
+  const commentResult = await cfDb.query(comments).paginate(cursorParams, {
+    where: eq(comments.postId, post.id),
+    orderBy: desc(comments.createdAt),
+    cursorColumns: [comments.id],
+    orderDirection: "desc",
+    with: { author: { columns: { id: true, name: true, avatarUrl: true } } },
+  }).run({}) as CursorPage<unknown>;
 
   return {
     post,
     author: author
       ? { id: author.id, name: author.name, avatarUrl: author.avatarUrl }
       : { id: post.authorId, name: "Unknown", avatarUrl: null },
-    comments: formattedComments,
-    nextCursor,
+    items: commentResult.items,
+    nextCursor: commentResult.nextCursor,
     user,
   };
 }
@@ -130,87 +114,15 @@ function formatDate(date: Date | string): string {
   });
 }
 
-function useInfiniteComments(
-  initialComments: Array<{
-    id: string;
-    content: string;
-    createdAt: Date;
-    author: { id: string; name: string; avatarUrl: string | null };
-  }>,
-  initialCursor: string | null,
-  slug: string
-) {
-  const [allComments, setAllComments] = useState(initialComments);
-  const [cursor, setCursor] = useState(initialCursor);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const fetcher = useFetcher();
-  const loadingRef = useRef(false);
-
-  // Reset when initial data changes (e.g. after action)
-  useEffect(() => {
-    setAllComments(initialComments);
-    setCursor(initialCursor);
-  }, [initialComments, initialCursor]);
-
-  // Process fetcher data when it arrives
-  useEffect(() => {
-    if (fetcher.data && loadingRef.current) {
-      const data = fetcher.data as {
-        comments: typeof initialComments;
-        nextCursor: string | null;
-      };
-      setAllComments((prev) => [...prev, ...data.comments]);
-      setCursor(data.nextCursor);
-      setIsLoadingMore(false);
-      loadingRef.current = false;
-    }
-  }, [fetcher.data]);
-
-  const loadMore = useCallback(() => {
-    if (!cursor || isLoadingMore || loadingRef.current) return;
-    setIsLoadingMore(true);
-    loadingRef.current = true;
-    fetcher.load(`/posts/${slug}?cursor=${cursor}`);
-  }, [cursor, isLoadingMore, slug, fetcher]);
-
-  const hasMore = cursor !== null;
-
-  // Intersection observer for infinite scroll
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const sentinelRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (observerRef.current) observerRef.current.disconnect();
-      if (!node || !hasMore) return;
-
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-            loadMore();
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observerRef.current.observe(node);
-    },
-    [hasMore, isLoadingMore, loadMore]
-  );
-
-  return { allComments, hasMore, isLoadingMore, loadMore, sentinelRef };
-}
-
 export default function PostDetail() {
-  const { post, author, comments: initialComments, nextCursor, user } =
-    useLoaderData<typeof loader>();
+  const { post, author, user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as
     | { success: boolean; action: string }
     | { error: string; action: string }
     | undefined;
 
-  const { allComments, hasMore, isLoadingMore, sentinelRef } = useInfiniteComments(
-    initialComments,
-    nextCursor,
-    post.slug
-  );
+  const { items: allComments, sentinelRef, hasMore, isLoading: isLoadingMore } =
+    useInfiniteScroll<CommentType>();
 
   const [commentContent, setCommentContent] = useState("");
 
