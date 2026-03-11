@@ -17,17 +17,18 @@ export function createUIPlugin(components: UIPluginComponents) {
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     const handleClick = useCallback(() => {
+      if (!status.permitted && whenForbidden !== "show") return;
       if (confirmation) {
         setConfirmOpen(true);
       } else {
         status.submit();
       }
-    }, [confirmation, status]);
+    }, [confirmation, status.submit, status.permitted, whenForbidden]);
 
     const handleConfirm = useCallback(() => {
       setConfirmOpen(false);
       status.submit();
-    }, [status]);
+    }, [status.submit]);
 
     const handleCancel = useCallback(() => {
       setConfirmOpen(false);
