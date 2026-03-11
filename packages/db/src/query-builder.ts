@@ -105,8 +105,9 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
             );
 
             const cursorValues = decodeCursor(params.cursor);
+            const direction = options?.orderDirection ?? "desc";
             const cursorWhere = cursorValues
-              ? buildCursorWhere(cursorColumns, cursorValues)
+              ? buildCursorWhere(cursorColumns, cursorValues, direction)
               : undefined;
 
             const userWhere = options?.where;
@@ -169,6 +170,9 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
           const countQueryOptions: Record<string, unknown> = {};
           if (combinedWhere) countQueryOptions.where = combinedWhere;
 
+          // TODO: Drizzle relational queries don't support COUNT(*).
+          // This fetches all matching rows to derive total, which is slow for large tables.
+          // Replace with raw SELECT COUNT(*) when a clean abstraction is available.
           const [items, allRows] = await Promise.all([
             (db.query as any)[tableKey].findMany(queryOptions) as Promise<unknown[]>,
             (db.query as any)[tableKey].findMany(countQueryOptions) as Promise<unknown[]>,

@@ -1,4 +1,4 @@
-import { and, or, lt, eq } from "drizzle-orm";
+import { and, or, lt, gt, eq } from "drizzle-orm";
 import type { Column, SQL } from "drizzle-orm";
 import type { CursorParams, OffsetParams } from "./types";
 
@@ -6,6 +6,12 @@ type PaginationOptions = {
   defaultLimit?: number;
   maxLimit?: number;
 };
+
+function parseIntParam(raw: string | null, fallback: number): number {
+  if (raw == null) return fallback;
+  const n = Number(raw);
+  return Number.isNaN(n) ? fallback : n;
+}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -20,8 +26,7 @@ export function parseCursorParams(
 
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
-  const limitParam = url.searchParams.get("limit");
-  const limit = limitParam ? clamp(Number(limitParam), 1, maxLimit) : defaultLimit;
+  const limit = clamp(parseIntParam(url.searchParams.get("limit"), defaultLimit), 1, maxLimit);
 
   return { type: "cursor", cursor, limit };
 }
@@ -34,11 +39,8 @@ export function parseOffsetParams(
   const maxLimit = options?.maxLimit ?? 100;
 
   const url = new URL(request.url);
-  const pageParam = url.searchParams.get("page");
-  const limitParam = url.searchParams.get("limit");
-
-  const page = pageParam ? Math.max(Number(pageParam), 1) : 1;
-  const limit = limitParam ? clamp(Number(limitParam), 1, maxLimit) : defaultLimit;
+  const page = Math.max(parseIntParam(url.searchParams.get("page"), 1), 1);
+  const limit = clamp(parseIntParam(url.searchParams.get("limit"), defaultLimit), 1, maxLimit);
 
   return { type: "offset", page, limit };
 }
@@ -70,20 +72,24 @@ export function decodeCursor(cursor: string | null): unknown[] | null {
 export function buildCursorWhere(
   cursorColumns: Column[],
   cursorValues: unknown[],
+  direction: "asc" | "desc" = "desc",
 ): SQL | undefined {
+  const compare = direction === "desc" ? lt : gt;
+
   if (cursorColumns.length === 1) {
-    return lt(cursorColumns[0], cursorValues[0]);
+    return compare(cursorColumns[0], cursorValues[0]);
   }
 
   // Tuple comparison expansion:
-  // (col1 < v1) OR (col1 = v1 AND col2 < v2) OR (col1 = v1 AND col2 = v2 AND col3 < v3) ...
+  // desc: (col1 < v1) OR (col1 = v1 AND col2 < v2) ...
+  // asc:  (col1 > v1) OR (col1 = v1 AND col2 > v2) ...
   const conditions: SQL[] = [];
   for (let i = 0; i < cursorColumns.length; i++) {
     const eqParts: SQL[] = [];
     for (let j = 0; j < i; j++) {
       eqParts.push(eq(cursorColumns[j], cursorValues[j]));
     }
-    eqParts.push(lt(cursorColumns[i], cursorValues[i]));
+    eqParts.push(compare(cursorColumns[i], cursorValues[i]));
     conditions.push(and(...eqParts)!);
   }
 

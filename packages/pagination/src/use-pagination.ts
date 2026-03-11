@@ -27,7 +27,10 @@ function deduplicateItems<T>(
 ): T[] {
   const seen = new Map<string | number, T>();
   for (const item of items) {
-    seen.set(getKey(item), item);
+    const key = getKey(item);
+    if (!seen.has(key)) {
+      seen.set(key, item);
+    }
   }
   return Array.from(seen.values());
 }
@@ -49,7 +52,7 @@ export function usePagination<T = unknown>(
   useEffect(() => {
     setPages([loaderData]);
     lastCursorRef.current = loaderData.nextCursor;
-  }, [location.pathname, location.search]);
+  }, [loaderData, location.pathname, location.search]);
 
   // Append fetcher results
   useEffect(() => {
