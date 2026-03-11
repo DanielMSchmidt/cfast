@@ -13,7 +13,7 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 
 ## Packages
 
-`@cfast/env`, `@cfast/permissions`, `@cfast/auth`, `@cfast/db`, `@cfast/storage`, `@cfast/actions`, `@cfast/ui`, `@cfast/forms`, `@cfast/pagination`, `@cfast/admin`, `@cfast/email`, `create-cfast`. Each has a README.md with the full vision and planned API — read it before touching the package.
+`@cfast/core`, `@cfast/env`, `@cfast/permissions`, `@cfast/auth`, `@cfast/db`, `@cfast/storage`, `@cfast/actions`, `@cfast/ui`, `@cfast/forms`, `@cfast/pagination`, `@cfast/admin`, `@cfast/email`, `create-cfast`. Each has a README.md with the full vision and planned API — read it before touching the package.
 
 ## Rules
 
@@ -23,7 +23,7 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - All code must run in the Workers runtime. If unsure, check the Cloudflare Workers docs.
 
 ### Package Boundaries
-- No circular dependencies. Dependency flow: `env` and `permissions` are leaves. `db`, `auth`, `actions`, `storage` depend on `permissions`. `ui` depends on `permissions` + `actions`. `forms` and `pagination` are independent. `admin` composes everything.
+- No circular dependencies. Dependency flow: `env` and `permissions` are leaves. `core` depends on `env` + `permissions` (other packages integrate via plugins). `db`, `auth`, `actions`, `storage` depend on `permissions`. `ui` depends on `permissions` + `actions`. `forms` and `pagination` are independent. `admin` composes everything.
 - Server-only code must never end up in client bundles. Use separate entrypoints (`/client` exports) when a package has both server and client code.
 - Keep packages small. If a package does two unrelated things, split it.
 
@@ -41,7 +41,7 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - Never use `*`, `>=`, or bare version numbers without `^`.
 
 ### Code Style
-- Strict TypeScript. No `any`, no `as` casts except at the Workers env boundary (which `@cfast/env` eliminates).
+- Strict TypeScript. No `any`, no `as` casts except at the Workers env boundary (which `@cfast/env` eliminates). Never introduce new `any` types — use `unknown` and narrow instead.
 - Prefer `type` over `interface` for public API types (they compose better).
 - No classes in public APIs unless there's a strong reason. Prefer functions and plain objects.
 - Named exports only. No default exports except in route files (React Router convention).
@@ -50,6 +50,9 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - Test against D1/SQLite, not Postgres. Use `miniflare` or `wrangler dev` for integration tests.
 - Unit tests for pure logic (permissions, validation). Integration tests for DB/auth/storage.
 - Every public API function needs at least one test.
+
+### Example App
+- After implementing or changing any `@cfast/*` package, update `examples/team-blog-after` to use the latest APIs. The example app must always reflect current package usage.
 
 ### README-Driven Development
 - Each package README is the spec. Read it before implementing. Update it if the implementation diverges.
