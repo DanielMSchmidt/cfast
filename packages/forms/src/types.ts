@@ -1,4 +1,5 @@
 import type React from "react";
+import type { UseFormRegister, FieldValues } from "react-hook-form";
 
 export type ValidationRules = {
   minLength?: number;
@@ -38,7 +39,7 @@ export type FieldComponentProps = {
   required: boolean;
   error?: string;
   enumValues?: string[];
-  register: unknown;
+  register: UseFormRegister<FieldValues>;
 };
 
 export type FormPluginComponents = {

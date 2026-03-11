@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
-import type { UseFormReturn, Resolver as RHFResolver } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { introspectTable } from "./introspect";
 import { buildResolver } from "./resolver";
@@ -51,7 +51,7 @@ export function createAutoForm(plugin: FormPlugin) {
     }, [allFields, exclude, fieldOverrides]);
 
     const resolver = useMemo(
-      () => buildResolver(visibleFields) as RHFResolver<Record<string, unknown>>,
+      () => buildResolver(visibleFields),
       [visibleFields],
     );
 

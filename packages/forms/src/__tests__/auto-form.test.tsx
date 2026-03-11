@@ -8,32 +8,29 @@ import type { FieldComponentProps, FormWrapperProps, SubmitButtonProps } from ".
 
 // Minimal test plugin using native HTML elements
 function TestTextInput({ name, label, required, error, register }: FieldComponentProps) {
-  const reg = register as ReturnType<import("react-hook-form").UseFormRegister<Record<string, unknown>>>;
   return (
     <div>
       <label htmlFor={name}>{label}</label>
-      <input id={name} {...reg(name)} aria-required={required} />
+      <input id={name} {...register(name)} aria-required={required} />
       {error && <span role="alert">{error}</span>}
     </div>
   );
 }
 
 function TestNumberInput({ name, label, register }: FieldComponentProps) {
-  const reg = register as ReturnType<import("react-hook-form").UseFormRegister<Record<string, unknown>>>;
   return (
     <div>
       <label htmlFor={name}>{label}</label>
-      <input id={name} type="number" {...reg(name, { valueAsNumber: true })} />
+      <input id={name} type="number" {...register(name, { valueAsNumber: true })} />
     </div>
   );
 }
 
 function TestSelect({ name, label, enumValues, register }: FieldComponentProps) {
-  const reg = register as ReturnType<import("react-hook-form").UseFormRegister<Record<string, unknown>>>;
   return (
     <div>
       <label htmlFor={name}>{label}</label>
-      <select id={name} {...reg(name)}>
+      <select id={name} {...register(name)}>
         {enumValues?.map((val) => (
           <option key={val} value={val}>{val}</option>
         ))}
@@ -43,11 +40,10 @@ function TestSelect({ name, label, enumValues, register }: FieldComponentProps) 
 }
 
 function TestCheckbox({ name, label, register }: FieldComponentProps) {
-  const reg = register as ReturnType<import("react-hook-form").UseFormRegister<Record<string, unknown>>>;
   return (
     <div>
       <label htmlFor={name}>{label}</label>
-      <input id={name} type="checkbox" {...reg(name)} />
+      <input id={name} type="checkbox" {...register(name)} />
     </div>
   );
 }
