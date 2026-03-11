@@ -6,9 +6,10 @@ import { createMockD1 } from "./helpers";
 // Mock better-auth and drizzle-orm so we can test without a real D1 database
 const { mockGetSession, mockBetterAuth } = vi.hoisted(() => {
   const mockGetSession = vi.fn();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockBetterAuth = vi.fn((_opts: any) => ({
+  const mockHandler = vi.fn();
+  const mockBetterAuth = vi.fn((_opts: Record<string, unknown>) => ({
     api: { getSession: mockGetSession },
+    handler: mockHandler,
   }));
   return { mockGetSession, mockBetterAuth };
 });
@@ -279,5 +280,12 @@ describe("createAuth", () => {
 
     expect(auth.api).toBeDefined();
     expect(auth.api).not.toBeNull();
+  });
+
+  it("exposes a handler function", () => {
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({ d1: createMockD1(), appUrl: "https://example.com" });
+
+    expect(typeof auth.handler).toBe("function");
   });
 });

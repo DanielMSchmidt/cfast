@@ -1,14 +1,15 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { createAuth } from "~/auth.server";
+import { initAuth } from "~/auth.setup.server";
+import { env } from "~/env";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const auth = createAuth(env);
+  const e = context.cloudflare.env;
+  const auth = initAuth({ d1: e.DB, appUrl: e.APP_URL });
   return auth.handler(request);
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env;
-  const auth = createAuth(env);
+  const e = context.cloudflare.env;
+  const auth = initAuth({ d1: e.DB, appUrl: e.APP_URL });
   return auth.handler(request);
 }

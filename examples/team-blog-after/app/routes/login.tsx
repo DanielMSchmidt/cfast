@@ -12,9 +12,8 @@ import Box from "@mui/joy/Box";
 import { getUser } from "~/auth.helpers.server";
 import { authClient } from "~/auth.client";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const user = await getUser(request, env);
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await getUser(request);
   if (user) throw redirect("/");
   return {};
 }

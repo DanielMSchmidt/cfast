@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const user = await requireUser(request);
 
   const formData = await request.formData();
   const file = formData.get("file") as File | null;

@@ -10,7 +10,7 @@ import Tabs from "@mui/joy/Tabs";
 import Tab from "@mui/joy/Tab";
 import TabList from "@mui/joy/TabList";
 import Box from "@mui/joy/Box";
-import { requireUser, hasRole } from "~/auth.helpers.server";
+import { requireAuthContext, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
 import { compose } from "@cfast/db";
@@ -22,9 +22,9 @@ import { ConfirmDialog } from "~/components/ConfirmDialog";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
 
-  if (!hasRole(user, "admin")) {
+  if (!hasRole(ctx.user, "admin")) {
     throw redirect("/");
   }
 
@@ -71,9 +71,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
 
-  if (!hasRole(user, "admin")) {
+  if (!hasRole(ctx.user, "admin")) {
     throw redirect("/");
   }
 
@@ -98,14 +98,14 @@ export async function action({ request, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(post.coverImageKey);
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
         cfDb.unsafe().delete(posts).where(eq(posts.id, postId)),
         cfDb.unsafe().insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "delete_post",
           targetType: "post",
           targetId: postId,

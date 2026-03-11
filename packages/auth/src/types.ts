@@ -44,6 +44,8 @@ export type AuthInstance = {
   setRole: (userId: string, role: string) => Promise<void>;
   setRoles: (userId: string, roles: string[]) => Promise<void>;
   removeRole: (userId: string, role: string) => Promise<void>;
-  /** The underlying Better Auth instance for handling auth API routes */
+  /** Handle auth API requests (forwards to Better Auth) */
+  handler: (request: Request) => Promise<Response>;
+  /** The underlying Better Auth instance */
   api: unknown;
 };

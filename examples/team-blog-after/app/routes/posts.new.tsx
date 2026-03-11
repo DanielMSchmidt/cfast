@@ -10,7 +10,7 @@ import Textarea from "@mui/joy/Textarea";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
-import { requireUser, hasAnyRole } from "~/auth.helpers.server";
+import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
 import { createCfDb } from "~/db/cfast.server";
 import { compose } from "@cfast/db";
 import { posts, auditLogs } from "~/db/schema";
@@ -27,19 +27,18 @@ function generateSlug(title: string): string {
     .replace(/^-|-$/g, "");
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
-  if (!hasAnyRole(user, ["admin", "editor", "author"])) {
+export async function loader({ request }: LoaderFunctionArgs) {
+  const ctx = await requireAuthContext(request);
+  if (!hasAnyRole(ctx.user, ["admin", "editor", "author"])) {
     throw redirect("/");
   }
-  return { user };
+  return { user: ctx.user };
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
-  if (!hasAnyRole(user, ["admin", "editor", "author"])) {
+  const ctx = await requireAuthContext(request);
+  if (!hasAnyRole(ctx.user, ["admin", "editor", "author"])) {
     throw redirect("/");
   }
 
@@ -57,7 +56,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return { error: "Title must contain at least one valid character." };
   }
 
-  const cfDb = createCfDb(env.DB, user);
+  const cfDb = createCfDb(env.DB, ctx);
 
   const postId = nanoid();
 
@@ -69,12 +68,12 @@ export async function action({ request, context }: ActionFunctionArgs) {
         slug,
         content,
         excerpt,
-        authorId: user.id,
+        authorId: ctx.user.id,
         published: false,
       }),
       cfDb.insert(auditLogs).values({
         id: nanoid(),
-        userId: user.id,
+        userId: ctx.user.id,
         action: "post.created",
         targetType: "post",
         targetId: postId,

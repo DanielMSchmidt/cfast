@@ -12,7 +12,7 @@ import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
 import AspectRatio from "@mui/joy/AspectRatio";
 import Box from "@mui/joy/Box";
-import { requireUser, hasAnyRole } from "~/auth.helpers.server";
+import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
 import { compose } from "@cfast/db";
@@ -33,7 +33,7 @@ function generateSlug(title: string): string {
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
   const db = createDbClient(env.DB);
 
   const slug = params.slug;
@@ -43,18 +43,18 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   if (!post) throw new Response("Not Found", { status: 404 });
 
   // Permission: author of post or editor/admin
-  const isAuthor = user.id === post.authorId;
-  const isEditorOrAdmin = hasAnyRole(user, ["editor", "admin"]);
+  const isAuthor = ctx.user.id === post.authorId;
+  const isEditorOrAdmin = hasAnyRole(ctx.user, ["editor", "admin"]);
   if (!isAuthor && !isEditorOrAdmin) {
     throw new Response("Forbidden", { status: 403 });
   }
 
-  return { post, user };
+  return { post, user: ctx.user };
 }
 
 export async function action({ request, params, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
   const db = createDbClient(env.DB);
 
   const slug = params.slug;
@@ -80,7 +80,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       return { error: "Title must contain at least one valid character.", action: "update" };
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
@@ -93,7 +93,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
         }).where(eq(posts.id, post.id)),
         cfDb.insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "post.updated",
           targetType: "post",
           targetId: post.id,
@@ -145,7 +145,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(post.coverImageKey);
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
     await cfDb.update(posts).set({ coverImageKey: key, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
 
     return { success: true, action: "uploadCover" };
@@ -156,7 +156,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       await env.UPLOADS.delete(post.coverImageKey);
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
     await cfDb.update(posts).set({ coverImageKey: null, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
 
     return { success: true, action: "removeCover" };

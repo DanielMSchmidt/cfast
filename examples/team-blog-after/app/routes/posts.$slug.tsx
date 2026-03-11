@@ -12,7 +12,7 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import { getUser, requireUser } from "~/auth.helpers.server";
+import { getUser, requireAuthContext } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
 import type { AuthUser } from "~/permissions";
 import { createDbClient } from "~/db/client";
@@ -27,7 +27,7 @@ import { compose } from "@cfast/db";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await getUser(request, env);
+  const user = await getUser(request);
   const db = createDbClient(env.DB);
 
   const slug = params.slug;
@@ -113,15 +113,15 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   if (!post) throw new Response("Not Found", { status: 404 });
 
   if (_action === "delete") {
-    const user = await requireUser(request, env);
-    const cfDb = createCfDb(env.DB, user);
+    const ctx = await requireAuthContext(request);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
         cfDb.delete(posts).where(eq(posts.id, post.id)),
         cfDb.insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "post.deleted",
           targetType: "post",
           targetId: post.id,
@@ -140,15 +140,15 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   if (_action === "publish") {
-    const user = await requireUser(request, env);
-    const cfDb = createCfDb(env.DB, user);
+    const ctx = await requireAuthContext(request);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
         cfDb.update(posts).set({ published: true, publishedAt: new Date(), updatedAt: new Date() }).where(eq(posts.id, post.id)),
         cfDb.insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "post.published",
           targetType: "post",
           targetId: post.id,
@@ -173,15 +173,15 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   if (_action === "unpublish") {
-    const user = await requireUser(request, env);
-    const cfDb = createCfDb(env.DB, user);
+    const ctx = await requireAuthContext(request);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
         cfDb.update(posts).set({ published: false, updatedAt: new Date() }).where(eq(posts.id, post.id)),
         cfDb.insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "post.unpublished",
           targetType: "post",
           targetId: post.id,
@@ -200,7 +200,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   if (_action === "comment") {
-    const user = await requireUser(request, env);
+    const ctx = await requireAuthContext(request);
 
     if (!post.published) {
       throw new Response("Cannot comment on unpublished posts", { status: 400 });
@@ -211,19 +211,19 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       return { error: "Comment content cannot be empty.", action: "comment" };
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
 
     await cfDb.insert(comments).values({
       id: nanoid(),
       postId: post.id,
-      authorId: user.id,
+      authorId: ctx.user.id,
       content,
     }).run({});
 
     await sendNewCommentEmail(
       env,
       { id: post.id, title: post.title, slug: post.slug, authorId: post.authorId },
-      { name: user.name },
+      { name: ctx.user.name },
       content
     );
 
@@ -231,11 +231,11 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   }
 
   if (_action === "deleteComment") {
-    const user = await requireUser(request, env);
+    const ctx = await requireAuthContext(request);
     const commentId = formData.get("commentId") as string;
     if (!commentId) throw new Response("Bad Request", { status: 400 });
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
 
     await cfDb.delete(comments).where(eq(comments.id, commentId)).run({});
 

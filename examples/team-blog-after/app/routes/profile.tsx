@@ -14,7 +14,7 @@ import Card from "@mui/joy/Card";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
-import { requireUser } from "~/auth.helpers.server";
+import { requireAuthContext } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
 import { users, passkeys } from "~/db/schema";
@@ -25,7 +25,7 @@ import { authClient } from "~/auth.client";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
   const db = createDbClient(env.DB);
 
   const userPasskeys = await db
@@ -35,14 +35,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       createdAt: passkeys.createdAt,
     })
     .from(passkeys)
-    .where(eq(passkeys.userId, user.id));
+    .where(eq(passkeys.userId, ctx.user.id));
 
-  return { user, passkeys: userPasskeys };
+  return { user: ctx.user, passkeys: userPasskeys };
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
   const formData = await request.formData();
   const _action = formData.get("_action") as string;
 
@@ -52,8 +52,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return { error: "Name is required.", action: "updateProfile" };
     }
 
-    const cfDb = createCfDb(env.DB, user);
-    await cfDb.unsafe().update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, user.id)).run({});
+    const cfDb = createCfDb(env.DB, ctx);
+    await cfDb.unsafe().update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, ctx.user.id)).run({});
 
     return { success: true, action: "updateProfile" };
   }
@@ -74,33 +74,33 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return { error: "File size must be under 2MB.", action: "uploadAvatar" };
     }
 
-    const key = `avatars/${user.id}/${nanoid()}-${file.name}`;
+    const key = `avatars/${ctx.user.id}/${nanoid()}-${file.name}`;
 
     await env.UPLOADS.put(key, file.stream(), {
       httpMetadata: { contentType: file.type },
     });
 
-    if (user.avatarUrl && !user.avatarUrl.startsWith("http")) {
-      const oldKey = user.avatarUrl.replace("/api/file/", "");
+    if (ctx.user.avatarUrl && !ctx.user.avatarUrl.startsWith("http")) {
+      const oldKey = ctx.user.avatarUrl!.replace("/api/file/", "");
       await env.UPLOADS.delete(oldKey);
     }
 
     const avatarUrl = `/api/file/${key}`;
 
-    const cfDb = createCfDb(env.DB, user);
-    await cfDb.unsafe().update(users).set({ avatarUrl, updatedAt: new Date() }).where(eq(users.id, user.id)).run({});
+    const cfDb = createCfDb(env.DB, ctx);
+    await cfDb.unsafe().update(users).set({ avatarUrl, updatedAt: new Date() }).where(eq(users.id, ctx.user.id)).run({});
 
     return { success: true, action: "uploadAvatar" };
   }
 
   if (_action === "removeAvatar") {
-    if (user.avatarUrl && !user.avatarUrl.startsWith("http")) {
-      const key = user.avatarUrl.replace("/api/file/", "");
+    if (ctx.user.avatarUrl && !ctx.user.avatarUrl.startsWith("http")) {
+      const key = ctx.user.avatarUrl!.replace("/api/file/", "");
       await env.UPLOADS.delete(key);
     }
 
-    const cfDb = createCfDb(env.DB, user);
-    await cfDb.unsafe().update(users).set({ avatarUrl: null, updatedAt: new Date() }).where(eq(users.id, user.id)).run({});
+    const cfDb = createCfDb(env.DB, ctx);
+    await cfDb.unsafe().update(users).set({ avatarUrl: null, updatedAt: new Date() }).where(eq(users.id, ctx.user.id)).run({});
 
     return { success: true, action: "removeAvatar" };
   }

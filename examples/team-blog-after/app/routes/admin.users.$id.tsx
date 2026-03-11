@@ -10,7 +10,7 @@ import Chip from "@mui/joy/Chip";
 import Stack from "@mui/joy/Stack";
 import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
-import { requireUser, hasRole } from "~/auth.helpers.server";
+import { requireAuthContext, hasRole } from "~/auth.helpers.server";
 import type { UserRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
@@ -22,9 +22,9 @@ import { RoleChip } from "~/components/RoleChip";
 
 export async function loader({ request, context, params }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
 
-  if (!hasRole(user, "admin")) {
+  if (!hasRole(ctx.user, "admin")) {
     throw redirect("/");
   }
 
@@ -76,9 +76,9 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
 
 export async function action({ request, context, params }: ActionFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const ctx = await requireAuthContext(request);
 
-  if (!hasRole(user, "admin")) {
+  if (!hasRole(ctx.user, "admin")) {
     throw redirect("/");
   }
 
@@ -103,7 +103,7 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
       return { error: "User already has this role" };
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
@@ -111,11 +111,11 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
           id: nanoid(),
           userId: params.id!,
           role: role as "admin" | "editor" | "author",
-          grantedBy: user.id,
+          grantedBy: ctx.user.id,
         }),
         cfDb.unsafe().insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "assign_role",
           targetType: "user",
           targetId: params.id!,
@@ -146,14 +146,14 @@ export async function action({ request, context, params }: ActionFunctionArgs) {
       return { error: "Role not found" };
     }
 
-    const cfDb = createCfDb(env.DB, user);
+    const cfDb = createCfDb(env.DB, ctx);
 
     const op = compose(
       [
         cfDb.unsafe().delete(roles).where(eq(roles.id, roleId)),
         cfDb.unsafe().insert(auditLogs).values({
           id: nanoid(),
-          userId: user.id,
+          userId: ctx.user.id,
           action: "revoke_role",
           targetType: "user",
           targetId: params.id!,

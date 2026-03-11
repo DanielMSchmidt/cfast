@@ -124,6 +124,7 @@ export function createAuth(config: AuthConfig) {
       setRole: roleManager.setRole,
       setRoles: roleManager.setRoles,
       removeRole: roleManager.removeRole,
+      handler: (request: Request) => auth.handler(request),
       api: auth,
     };
   };

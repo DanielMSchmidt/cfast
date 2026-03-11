@@ -10,9 +10,8 @@ import Box from "@mui/joy/Box";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { ImpersonationBanner } from "~/components/ImpersonationBanner";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await requireUser(request);
 
   if (!hasRole(user, "admin")) {
     throw redirect("/");

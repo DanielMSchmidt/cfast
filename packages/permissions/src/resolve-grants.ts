@@ -1,4 +1,4 @@
-import { or } from "drizzle-orm";
+import { or, type SQLWrapper } from "drizzle-orm";
 import type { Grant, Permissions } from "./types";
 
 /**
@@ -75,7 +75,7 @@ export function resolveGrants(
         // OR-merge all where clauses
         const merged: Grant["where"] = (columns, user) =>
           or(
-            ...(whereFns.map((fn) => fn(columns, user)) as [any, ...any[]]),
+            ...(whereFns.map((fn) => fn(columns, user)) as (SQLWrapper | undefined)[]),
           );
 
         result.push({

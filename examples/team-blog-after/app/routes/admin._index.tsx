@@ -15,7 +15,7 @@ import { RoleChip } from "~/components/RoleChip";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await requireUser(request, env);
+  const user = await requireUser(request);
 
   if (!hasRole(user, "admin")) {
     throw redirect("/");

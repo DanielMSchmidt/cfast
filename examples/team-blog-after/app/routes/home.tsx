@@ -15,7 +15,7 @@ import { Pagination } from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
-  const user = await getUser(request, env);
+  const user = await getUser(request);
   const db = createDbClient(env.DB);
 
   const url = new URL(request.url);

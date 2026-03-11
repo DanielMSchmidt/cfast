@@ -17,6 +17,7 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.5.3",
     "@better-auth/passkey": "^1.5.3",
+    "@cfast/auth": "workspace:*",
     "@cfast/env": "workspace:*",
     "@cfast/db": "workspace:*",
     "@cfast/permissions": "workspace:*",
