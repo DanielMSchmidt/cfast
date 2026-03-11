@@ -1,6 +1,7 @@
 import { count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import type { Column, SQL } from "drizzle-orm";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Grant, DrizzleTable } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
@@ -161,7 +162,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
 
           const countQuery = db
             .select({ count: count() })
-            .from(config.table as any)
+            .from(config.table as SQLiteTable)
             .$dynamic();
           if (combinedWhere) countQuery.where(combinedWhere as SQL);
 
