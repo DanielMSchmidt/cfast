@@ -5,6 +5,8 @@ import {
   encodeCursor,
   decodeCursor,
 } from "../paginate";
+import { createQueryBuilder } from "../query-builder";
+import { posts, schema, createMockD1, grantsForRole } from "./helpers";
 
 describe("parseCursorParams", () => {
   it("parses cursor and limit from URL", () => {
@@ -85,5 +87,77 @@ describe("cursor encoding", () => {
   it("returns null for null/invalid cursor", () => {
     expect(decodeCursor(null)).toBeNull();
     expect(decodeCursor("not-valid-base64-json!!!")).toBeNull();
+  });
+});
+
+describe("QueryBuilder.paginate", () => {
+  it("returns an Operation with read permissions for cursor params", () => {
+    const qb = createQueryBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: false,
+    });
+
+    const op = qb.paginate(
+      { type: "cursor", cursor: null, limit: 10 },
+      { cursorColumns: [posts.id] },
+    );
+    expect(op.permissions).toEqual([{ action: "read", table: posts }]);
+    expect(typeof op.run).toBe("function");
+  });
+
+  it("returns an Operation with read permissions for offset params", () => {
+    const qb = createQueryBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: false,
+    });
+
+    const op = qb.paginate(
+      { type: "offset", page: 1, limit: 10 },
+    );
+    expect(op.permissions).toEqual([{ action: "read", table: posts }]);
+    expect(typeof op.run).toBe("function");
+  });
+
+  it("returns empty permissions when unsafe", () => {
+    const qb = createQueryBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: true,
+    });
+
+    const op = qb.paginate(
+      { type: "cursor", cursor: null, limit: 10 },
+      { cursorColumns: [posts.id] },
+    );
+    expect(op.permissions).toEqual([]);
+  });
+
+  it("throws when table not found in schema", async () => {
+    const unknownTable = posts; // use posts but with empty schema
+    const qb = createQueryBuilder({
+      d1: createMockD1(),
+      schema: {},
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      table: unknownTable,
+      unsafe: true,
+    });
+
+    const op = qb.paginate(
+      { type: "cursor", cursor: null, limit: 10 },
+      { cursorColumns: [posts.id] },
+    );
+    await expect(op.run({})).rejects.toThrow("Table not found in schema");
   });
 });
