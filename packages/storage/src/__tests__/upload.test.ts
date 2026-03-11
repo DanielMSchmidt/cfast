@@ -83,8 +83,9 @@ describe("replaceExisting", () => {
           { key: "avatars/user1/old-photo.jpg" } as R2Object,
           { key: "avatars/user1/older-photo.png" } as R2Object,
         ],
+        delimitedPrefixes: [],
         truncated: false,
-      } as R2Objects,
+      } as unknown as R2Objects,
     });
 
     await replaceExisting(bucket, "avatars/user1/");
@@ -98,7 +99,7 @@ describe("replaceExisting", () => {
 
   it("skips delete when no existing objects", async () => {
     const bucket = createMockR2Bucket({
-      listResult: { objects: [], truncated: false } as R2Objects,
+      listResult: { objects: [], delimitedPrefixes: [], truncated: false } as unknown as R2Objects,
     });
 
     await replaceExisting(bucket, "avatars/user2/");

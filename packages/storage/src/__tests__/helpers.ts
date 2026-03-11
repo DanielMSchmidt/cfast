@@ -20,7 +20,7 @@ export function createMockR2Bucket(options?: {
       const keyArr = Array.isArray(keys) ? keys : [keys];
       deleted.push(...keyArr);
     }),
-    list: vi.fn(async () => options?.listResult ?? { objects: [], truncated: false }),
+    list: vi.fn(async () => options?.listResult ?? { objects: [], delimitedPrefixes: [], truncated: false }),
     head: vi.fn(async () => null),
     createMultipartUpload: vi.fn(async (key: string) => ({
       key,
