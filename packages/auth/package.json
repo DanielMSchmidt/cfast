@@ -24,15 +24,20 @@
   },
   "peerDependencies": {
     "better-auth": ">=1",
-    "drizzle-orm": ">=0.35"
+    "drizzle-orm": ">=0.35",
+    "react": ">=18"
   },
   "dependencies": {
     "@cfast/permissions": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260305.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^19.0.0",
     "better-auth": "^1.2.0",
     "drizzle-orm": "^0.44.0",
+    "jsdom": "^28.1.0",
+    "react": "^19.0.0",
     "tsup": "^8",
     "typescript": "^5.7",
     "vitest": "^4.0.18"
