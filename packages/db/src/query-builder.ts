@@ -1,5 +1,6 @@
+import { count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import type { Column } from "drizzle-orm";
+import type { Column, SQL } from "drizzle-orm";
 import type { Grant, DrizzleTable } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
@@ -85,45 +86,51 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
 
     paginate(
       params: CursorParams | OffsetParams,
-      options?: PaginateOptions & { cursorColumns?: unknown[] },
+      options?: PaginateOptions,
     ): Operation<CursorPage<unknown>> | Operation<OffsetPage<unknown>> {
       const permissions = makePermissions(config.unsafe, "read", config.table);
+
+      function ensureTableKey(): string {
+        if (!tableKey) throw new Error("Table not found in schema");
+        return tableKey;
+      }
+
+      function checkAndBuildWhere(extraWhere?: unknown) {
+        if (!config.unsafe) {
+          checkOperationPermissions(config.grants, permissions);
+        }
+        const permFilter = buildPermissionFilter(
+          config.grants, "read", config.table, config.user, config.unsafe,
+        );
+        return combineWhere(combineWhere(options?.where, permFilter), extraWhere);
+      }
+
+      function buildBaseQueryOptions(where: unknown) {
+        const qo: Record<string, unknown> = {};
+        if (options?.columns) qo.columns = options.columns;
+        if (options?.orderBy) qo.orderBy = options.orderBy;
+        if (options?.with) qo.with = options.with;
+        if (where) qo.where = where;
+        return qo;
+      }
 
       if (params.type === "cursor") {
         const cursorColumns = (options?.cursorColumns ?? []) as Column[];
         return {
           permissions,
           async run(_params: Record<string, unknown>): Promise<CursorPage<unknown>> {
-            if (!tableKey) throw new Error("Table not found in schema");
-
-            if (!config.unsafe) {
-              checkOperationPermissions(config.grants, permissions);
-            }
-
-            const permFilter = buildPermissionFilter(
-              config.grants, "read", config.table, config.user, config.unsafe,
-            );
-
+            const key = ensureTableKey();
             const cursorValues = decodeCursor(params.cursor);
             const direction = options?.orderDirection ?? "desc";
             const cursorWhere = cursorValues
               ? buildCursorWhere(cursorColumns, cursorValues, direction)
               : undefined;
 
-            const userWhere = options?.where;
-            const combinedWhere = combineWhere(
-              combineWhere(userWhere, permFilter),
-              cursorWhere,
-            );
-
-            const queryOptions: Record<string, unknown> = {};
-            if (options?.columns) queryOptions.columns = options.columns;
-            if (options?.orderBy) queryOptions.orderBy = options.orderBy;
-            if (options?.with) queryOptions.with = options.with;
-            if (combinedWhere) queryOptions.where = combinedWhere;
+            const combinedWhere = checkAndBuildWhere(cursorWhere);
+            const queryOptions = buildBaseQueryOptions(combinedWhere);
             queryOptions.limit = params.limit + 1;
 
-            const rows = await (db.query as any)[tableKey].findMany(queryOptions) as unknown[];
+            const rows = await (db.query as any)[key].findMany(queryOptions) as unknown[];
             const hasMore = rows.length > params.limit;
             const items = hasMore ? rows.slice(0, params.limit) : rows;
 
@@ -146,39 +153,24 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
       return {
         permissions,
         async run(_params: Record<string, unknown>): Promise<OffsetPage<unknown>> {
-          if (!tableKey) throw new Error("Table not found in schema");
-
-          if (!config.unsafe) {
-            checkOperationPermissions(config.grants, permissions);
-          }
-
-          const permFilter = buildPermissionFilter(
-            config.grants, "read", config.table, config.user, config.unsafe,
-          );
-
-          const userWhere = options?.where;
-          const combinedWhere = combineWhere(userWhere, permFilter);
-
-          const queryOptions: Record<string, unknown> = {};
-          if (options?.columns) queryOptions.columns = options.columns;
-          if (options?.orderBy) queryOptions.orderBy = options.orderBy;
-          if (options?.with) queryOptions.with = options.with;
-          if (combinedWhere) queryOptions.where = combinedWhere;
+          const key = ensureTableKey();
+          const combinedWhere = checkAndBuildWhere();
+          const queryOptions = buildBaseQueryOptions(combinedWhere);
           queryOptions.limit = params.limit;
           queryOptions.offset = (params.page - 1) * params.limit;
 
-          const countQueryOptions: Record<string, unknown> = {};
-          if (combinedWhere) countQueryOptions.where = combinedWhere;
+          const countQuery = db
+            .select({ count: count() })
+            .from(config.table as any)
+            .$dynamic();
+          if (combinedWhere) countQuery.where(combinedWhere as SQL);
 
-          // TODO: Drizzle relational queries don't support COUNT(*).
-          // This fetches all matching rows to derive total, which is slow for large tables.
-          // Replace with raw SELECT COUNT(*) when a clean abstraction is available.
-          const [items, allRows] = await Promise.all([
-            (db.query as any)[tableKey].findMany(queryOptions) as Promise<unknown[]>,
-            (db.query as any)[tableKey].findMany(countQueryOptions) as Promise<unknown[]>,
+          const [items, countResult] = await Promise.all([
+            (db.query as any)[key].findMany(queryOptions) as Promise<unknown[]>,
+            countQuery,
           ]);
 
-          const total = allRows.length;
+          const total = countResult[0]?.count ?? 0;
           return {
             items,
             total,

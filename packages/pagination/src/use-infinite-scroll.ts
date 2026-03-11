@@ -18,6 +18,8 @@ export function useInfiniteScroll<T = unknown>(
 ): UseInfiniteScrollResult<T> {
   const { items, loadMore, hasMore, isLoading } = usePagination<T>(options);
   const sentinelRef = useRef<Element | null>(null);
+  const loadMoreRef = useRef(loadMore);
+  loadMoreRef.current = loadMore;
   const rootMargin = options?.rootMargin ?? "200px";
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export function useInfiniteScroll<T = unknown>(
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          loadMore();
+          loadMoreRef.current();
         }
       },
       { rootMargin },
@@ -35,7 +37,7 @@ export function useInfiniteScroll<T = unknown>(
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loadMore, rootMargin]);
+  }, [hasMore, rootMargin]);
 
   return { items, sentinelRef, hasMore, isLoading };
 }
