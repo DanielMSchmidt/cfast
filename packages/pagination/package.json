@@ -15,7 +15,8 @@
     "build": "tsup src/index.ts --format esm --dts",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "react": ">=19",
@@ -23,7 +24,12 @@
     "react-router": ">=7"
   },
   "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.6.0",
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.0.18"
   }
 }
