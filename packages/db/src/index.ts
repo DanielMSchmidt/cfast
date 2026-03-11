@@ -1,5 +1,6 @@
 export { createDb } from "./create-db";
 export { compose } from "./compose";
+export { parseCursorParams, parseOffsetParams } from "./paginate";
 export type {
   Operation,
   Db,
