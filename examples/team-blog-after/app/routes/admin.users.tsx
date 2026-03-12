@@ -10,7 +10,7 @@ import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { users, roles } from "~/db/schema";
 import { eq, like, or, count, desc, sql } from "drizzle-orm";
-import { RoleChip } from "~/components/RoleChip";
+import { RoleBadge } from "@cfast/ui/joy";
 import { Pagination } from "~/components/Pagination";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -129,9 +129,9 @@ export default function AdminUsers() {
                 <td>
                   <Stack direction="row" spacing={0.5} flexWrap="wrap">
                     {u.roles.map((role) => (
-                      <RoleChip key={role} role={role} />
+                      <RoleBadge key={role} role={role} />
                     ))}
-                    {u.roles.length === 0 && <RoleChip role="reader" />}
+                    {u.roles.length === 0 && <RoleBadge role="reader" />}
                   </Stack>
                 </td>
                 <td>

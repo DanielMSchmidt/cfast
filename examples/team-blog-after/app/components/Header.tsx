@@ -2,26 +2,17 @@ import { Link } from "react-router";
 import Sheet from "@mui/joy/Sheet";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
-import Avatar from "@mui/joy/Avatar";
 import Dropdown from "@mui/joy/Dropdown";
 import Menu from "@mui/joy/Menu";
 import MenuItem from "@mui/joy/MenuItem";
 import MenuButton from "@mui/joy/MenuButton";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
+import { AvatarWithInitials } from "@cfast/ui/joy";
 import type { AuthUser } from "~/permissions";
 import { hasAnyRole } from "~/permissions";
 import { authClient } from "~/auth.client";
 import { ImpersonationBanner } from "./ImpersonationBanner";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 export function Header({ user }: { user: AuthUser | null }) {
   return (
@@ -76,9 +67,7 @@ export function Header({ user }: { user: AuthUser | null }) {
                 slots={{ root: IconButton }}
                 slotProps={{ root: { variant: "plain", size: "sm" } }}
               >
-                <Avatar src={user.avatarUrl ?? undefined} size="sm">
-                  {getInitials(user.name)}
-                </Avatar>
+                <AvatarWithInitials src={user.avatarUrl} name={user.name} size="sm" />
               </MenuButton>
               <Menu placement="bottom-end" size="sm">
                 <MenuItem component={Link} to="/profile">

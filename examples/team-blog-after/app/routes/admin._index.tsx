@@ -11,7 +11,7 @@ import { createDbClient } from "~/db/client";
 import { users, posts, comments, roles } from "~/db/schema";
 import { eq, desc, count, sql } from "drizzle-orm";
 import { redirect } from "react-router";
-import { RoleChip } from "~/components/RoleChip";
+import { RoleBadge } from "@cfast/ui/joy";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -207,9 +207,9 @@ export default function AdminDashboard() {
                 <td>
                   <Stack direction="row" spacing={0.5}>
                     {u.roles.map((role) => (
-                      <RoleChip key={role} role={role} />
+                      <RoleBadge key={role} role={role} />
                     ))}
-                    {u.roles.length === 0 && <RoleChip role="reader" />}
+                    {u.roles.length === 0 && <RoleBadge role="reader" />}
                   </Stack>
                 </td>
                 <td>

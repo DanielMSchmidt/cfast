@@ -10,6 +10,12 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
+import { createUIPlugin, UIPluginProvider, ConfirmProvider } from "@cfast/ui";
+import { ConfirmDialog } from "@cfast/ui/joy";
+
+const plugin = createUIPlugin({
+  components: { confirmDialog: ConfirmDialog },
+});
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -23,7 +29,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <CssVarsProvider>
           <CssBaseline />
-          {children}
+          <UIPluginProvider plugin={plugin}>
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
+          </UIPluginProvider>
         </CssVarsProvider>
         <ScrollRestoration />
         <Scripts />
