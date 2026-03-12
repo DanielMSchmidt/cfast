@@ -137,8 +137,10 @@ function SortHeader({
 }) {
   const isActive = currentSort === column;
   const nextOrder = isActive && currentOrder === "asc" ? "desc" : "asc";
-  const separator = baseUrl.includes("?") ? "&" : "?";
-  const href = `${baseUrl}${separator}sort=${column}&order=${nextOrder}`;
+  const url = new URL(baseUrl, "http://localhost");
+  url.searchParams.set("sort", column);
+  url.searchParams.set("order", nextOrder);
+  const href = `${url.pathname}?${url.searchParams.toString()}`;
 
   return (
     <th>
