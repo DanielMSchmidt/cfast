@@ -16,15 +16,16 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/joy.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/joy.ts --format esm --dts --watch",
+    "build": "tsup src/index.ts src/joy.tsx --format esm --dts",
+    "dev": "tsup src/index.ts src/joy.tsx --format esm --dts --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run"
   },
   "peerDependencies": {
+    "@mui/joy": ">=5.0.0-beta.0",
     "react": ">=19",
-    "react-dom": ">=19",
-    "@mui/joy": ">=5.0.0-beta.0"
+    "react-dom": ">=19"
   },
   "peerDependenciesMeta": {
     "@mui/joy": {
@@ -32,11 +33,21 @@
     }
   },
   "dependencies": {
-    "@cfast/permissions": "workspace:*",
-    "@cfast/actions": "workspace:*"
+    "@cfast/actions": "workspace:*",
+    "@cfast/permissions": "workspace:*"
   },
   "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/joy": "^5.0.0-beta.52",
+    "@mui/material": "^6.5.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.6.0",
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.0.18"
   }
 }
