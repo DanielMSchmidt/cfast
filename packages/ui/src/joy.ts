@@ -25,6 +25,10 @@ export { DropZone } from "./joy/drop-zone.js";
 export { ImagePreview } from "./joy/image-preview.js";
 export { FileList } from "./joy/file-list.js";
 
+// Composite views
+export { ListView } from "./joy/list-view.js";
+export { DetailView } from "./joy/detail-view.js";
+
 // Utilities
 export { AvatarWithInitials } from "./joy/avatar-with-initials.js";
 export { RoleBadge } from "./joy/role-badge.js";

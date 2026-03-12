@@ -23,3 +23,5 @@ export { useColumnInference } from "./hooks/use-column-inference.js";
 export { DropZone } from "./components/drop-zone.js";
 export { ImagePreview } from "./components/image-preview.js";
 export { FileList } from "./components/file-list.js";
+export { ListView } from "./components/list-view.js";
+export { DetailView } from "./components/detail-view.js";
