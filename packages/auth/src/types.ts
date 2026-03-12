@@ -36,6 +36,9 @@ export type AuthConfig = {
   impersonation?: {
     allowedRoles?: string[];
   };
+  templates?: {
+    magicLink?: (props: { url: string; email: string }) => string;
+  };
 };
 
 export type AuthEnvConfig = {
@@ -60,6 +63,11 @@ export type AuthInstance = {
   removeRole: (userId: string, role: string) => Promise<void>;
   impersonate: (adminUserId: string, targetUserId: string) => Promise<void>;
   stopImpersonating: (adminUserId: string) => Promise<void>;
+  /** Send a magic link email to the given address */
+  sendMagicLink: (params: {
+    email: string;
+    callbackURL?: string;
+  }) => Promise<void>;
   /** Handle auth API requests (forwards to Better Auth) */
   handler: (request: Request) => Promise<Response>;
   /** The underlying Better Auth instance */
