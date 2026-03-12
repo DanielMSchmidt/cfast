@@ -1,4 +1,5 @@
 import { createRequestHandler } from "react-router";
+import { app } from "../app/cfast.server";
 import { env } from "../app/env";
 
 declare module "react-router" {
@@ -19,6 +20,7 @@ const requestHandler = createRequestHandler(
 
 export default {
   async fetch(request: Request, rawEnv: Record<string, unknown>, ctx: ExecutionContext) {
+    app.init(rawEnv);
     env.init(rawEnv);
     return requestHandler(request, {
       cloudflare: { env: env.get(), ctx },

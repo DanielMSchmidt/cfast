@@ -1,13 +1,12 @@
 import { createActions } from "@cfast/actions";
-import { requireAuthContext } from "~/auth.helpers.server";
-import { createCfDb } from "~/db/cfast.server";
-import { env } from "~/env";
+import { app } from "~/cfast.server";
 
 export const { createAction, composeActions } = createActions({
   getContext: async ({ request }) => {
-    const e = env.get();
-    const ctx = await requireAuthContext(request);
-    const db = createCfDb(e.DB, ctx);
-    return { db, user: ctx.user, grants: ctx.grants };
+    const ctx = await app.context(request);
+    if (!ctx.auth.user) {
+      throw new Response(null, { status: 302, headers: { Location: "/login" } });
+    }
+    return { db: ctx.db.client, user: ctx.auth.user, grants: ctx.auth.grants };
   },
 });

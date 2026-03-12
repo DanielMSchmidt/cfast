@@ -41,6 +41,9 @@ importers:
       '@cfast/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@cfast/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@cfast/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -338,9 +341,18 @@ importers:
         specifier: workspace:*
         version: link:../permissions
     devDependencies:
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
       react:
         specifier: ^19.1.0
         version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
       tsup:
         specifier: ^8
         version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)
