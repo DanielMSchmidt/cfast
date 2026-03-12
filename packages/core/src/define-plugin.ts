@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type -- {} is the identity type for generic intersections in the plugin system */
 import type { ComponentType, ReactNode } from "react";
 
 import type { CfastPlugin, PluginSetupContext } from "./types";
