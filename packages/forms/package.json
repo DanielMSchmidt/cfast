@@ -16,16 +16,18 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/joy.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/joy.ts --format esm --dts --watch",
+    "build": "tsup src/index.ts src/joy.tsx --format esm --dts",
+    "dev": "tsup src/index.ts src/joy.tsx --format esm --dts --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run"
   },
   "peerDependencies": {
-    "react": ">=19",
-    "react-dom": ">=19",
-    "drizzle-orm": ">=0.35",
-    "@mui/joy": ">=5.0.0-beta.0"
+    "@mui/joy": "^5.0.0-beta.48",
+    "drizzle-orm": "^0.44.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.0.0"
   },
   "peerDependenciesMeta": {
     "@mui/joy": {
@@ -33,7 +35,21 @@
     }
   },
   "devDependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/joy": "^5.0.0-beta.48",
+    "@testing-library/jest-dom": "^6",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-orm": "^0.44.0",
+    "jsdom": "^28.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7",
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^4.0.18"
   }
 }
