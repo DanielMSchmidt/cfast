@@ -1,15 +1,11 @@
 import { and, or } from "drizzle-orm";
 import type { DrizzleTable, Grant, PermissionAction, PermissionDescriptor } from "@cfast/permissions";
+import { getTableName } from "@cfast/permissions";
 import { resolvePermissionFilters } from "./permissions";
 
 export type User = { id: string };
 
-export function getTableName(table: DrizzleTable): string {
-  return (table as any)._?.name
-    ?? (table as any)[Symbol.for("drizzle:Name")]
-    ?? (table as any)[Symbol.for("drizzle:BaseName")]
-    ?? "unknown";
-}
+export { getTableName };
 
 export function deduplicateDescriptors(
   descriptors: PermissionDescriptor[],

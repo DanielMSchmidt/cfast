@@ -3,7 +3,7 @@ export { grant } from "./grant";
 export { checkPermissions } from "./check";
 export { resolveGrants } from "./resolve-grants";
 export { ForbiddenError } from "./errors";
-export { CRUD_ACTIONS } from "./types";
+export { CRUD_ACTIONS, getTableName } from "./types";
 export type {
   PermissionAction,
   CrudAction,

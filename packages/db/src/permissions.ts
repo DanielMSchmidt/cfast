@@ -1,5 +1,6 @@
 import {
   ForbiddenError,
+  getTableName,
 } from "@cfast/permissions";
 import type {
   PermissionDescriptor,
@@ -16,7 +17,7 @@ export function resolvePermissionFilters(
 ): Array<(columns: Record<string, unknown>, user: { id: string }) => unknown> {
   const matching = grants.filter((g) => {
     const actionMatch = g.action === action || g.action === "manage";
-    const tableMatch = g.subject === "all" || g.subject === table;
+    const tableMatch = g.subject === "all" || g.subject === table || (typeof g.subject === "object" && getTableName(g.subject) === getTableName(table));
     return actionMatch && tableMatch;
   });
 
@@ -45,7 +46,8 @@ function grantMatchesTable(
   requiredTable: DrizzleTable,
 ): boolean {
   if (grantSubject === "all") return true;
-  return grantSubject === requiredTable;
+  if (grantSubject === requiredTable) return true;
+  return getTableName(grantSubject) === getTableName(requiredTable);
 }
 
 function hasGrantFor(

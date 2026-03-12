@@ -3,9 +3,10 @@ import { checkPermissions } from "../check";
 import { definePermissions } from "../define-permissions";
 import { grant } from "../grant";
 
-const posts = { _: { name: "posts" } } as any;
-const comments = { _: { name: "comments" } } as any;
-const auditLogs = { _: { name: "audit_logs" } } as any;
+const DRIZZLE_NAME = Symbol.for("drizzle:Name");
+const posts = { [DRIZZLE_NAME]: "posts" } as any;
+const comments = { [DRIZZLE_NAME]: "comments" } as any;
+const auditLogs = { [DRIZZLE_NAME]: "audit_logs" } as any;
 
 const permissions = definePermissions({
   roles: ["anonymous", "user", "editor", "admin"] as const,
@@ -125,5 +126,111 @@ describe("checkPermissions", () => {
     ]);
     // anonymous only has "read" on posts
     expect(result.permitted).toBe(false);
+  });
+});
+
+const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
+
+function mockTable(name: string) {
+  return { [DRIZZLE_NAME_SYMBOL]: name };
+}
+
+describe("checkPermissions — name-based table matching", () => {
+  it("matches grant subject and descriptor table by Drizzle name, not reference", () => {
+    // Two separate objects representing the same logical table
+    const postsForGrant = mockTable("posts");
+    const postsForDescriptor = mockTable("posts");
+    expect(postsForGrant).not.toBe(postsForDescriptor);
+
+    const perms = definePermissions({
+      roles: ["user"] as const,
+      grants: {
+        user: [grant("read", postsForGrant)],
+      },
+    });
+
+    const result = checkPermissions("user", perms, [
+      { action: "read", table: postsForDescriptor },
+    ]);
+    expect(result.permitted).toBe(true);
+    expect(result.denied).toEqual([]);
+  });
+
+  it("denies when table names differ, even if both are mock objects", () => {
+    const postsTable = mockTable("posts");
+    const commentsTable = mockTable("comments");
+
+    const perms = definePermissions({
+      roles: ["user"] as const,
+      grants: {
+        user: [grant("read", postsTable)],
+      },
+    });
+
+    const result = checkPermissions("user", perms, [
+      { action: "read", table: commentsTable },
+    ]);
+    expect(result.permitted).toBe(false);
+    expect(result.denied).toHaveLength(1);
+  });
+
+  it("matches with manage action across different object instances", () => {
+    const postsForGrant = mockTable("posts");
+    const postsForDescriptor = mockTable("posts");
+
+    const perms = definePermissions({
+      roles: ["admin"] as const,
+      grants: {
+        admin: [grant("manage", postsForGrant)],
+      },
+    });
+
+    const result = checkPermissions("admin", perms, [
+      { action: "read", table: postsForDescriptor },
+      { action: "create", table: postsForDescriptor },
+      { action: "update", table: postsForDescriptor },
+      { action: "delete", table: postsForDescriptor },
+    ]);
+    expect(result.permitted).toBe(true);
+  });
+
+  it("permits manage descriptor when all CRUD actions granted via name-match", () => {
+    const tblA = mockTable("items");
+    const tblB = mockTable("items");
+
+    const perms = definePermissions({
+      roles: ["editor"] as const,
+      grants: {
+        editor: [
+          grant("read", tblA),
+          grant("create", tblA),
+          grant("update", tblA),
+          grant("delete", tblA),
+        ],
+      },
+    });
+
+    const result = checkPermissions("editor", perms, [
+      { action: "manage", table: tblB },
+    ]);
+    expect(result.permitted).toBe(true);
+  });
+
+  it("reason messages include the table name from the descriptor", () => {
+    const tblForGrant = mockTable("posts");
+    const tblForDescriptor = mockTable("orders");
+
+    const perms = definePermissions({
+      roles: ["user"] as const,
+      grants: {
+        user: [grant("read", tblForGrant)],
+      },
+    });
+
+    const result = checkPermissions("user", perms, [
+      { action: "create", table: tblForDescriptor },
+    ]);
+    expect(result.permitted).toBe(false);
+    expect(result.reasons[0]).toContain("orders");
   });
 });

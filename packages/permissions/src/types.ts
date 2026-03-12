@@ -1,12 +1,14 @@
 // Minimal structural types for Drizzle.
-// Using Drizzle's `Table`/`SQL` classes directly causes protected/private
-// property mismatches across compilation contexts. These duck types avoid
-// the issue while still accepting any Drizzle table or SQL expression.
-export type DrizzleTable = { _: { name: string } };
+// Drizzle stores table metadata via Symbols (e.g. Symbol('drizzle:Name')).
+// We use a loose type to avoid importing drizzle-orm directly.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DrizzleTable = Record<string | symbol, any>;
 export type DrizzleSQL = { getSQL(): unknown };
 
+const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
+
 export function getTableName(table: DrizzleTable): string {
-  return table._?.name ?? "unknown";
+  return (table[DRIZZLE_NAME_SYMBOL] as string) ?? "unknown";
 }
 
 export type PermissionAction = "read" | "create" | "update" | "delete" | "manage";

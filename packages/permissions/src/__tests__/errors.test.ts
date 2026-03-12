@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ForbiddenError } from "../errors";
 
-const posts = { _: { name: "posts" } } as any;
+const posts = { [Symbol.for("drizzle:Name")]: "posts" } as any;
 
 describe("ForbiddenError", () => {
   it("is an instance of Error", () => {
