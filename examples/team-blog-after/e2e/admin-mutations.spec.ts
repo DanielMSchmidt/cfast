@@ -30,7 +30,7 @@ test.describe.serial("Role Management", () => {
     await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
   });
 
-  test("admin can revoke a role from a user", async ({ page, context }) => {
+  test("admin can assign and then revoke a role from a user", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
     await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
@@ -42,10 +42,12 @@ test.describe.serial("Role Management", () => {
     await page.waitForLoadState("networkidle");
     await expect(page.getByText('Role "author" added to user.')).toBeVisible();
 
-    // The chip has an "x" button to remove the role.
-    // Find the chip containing "author" and click its remove button.
-    const authorChip = page.locator('.MuiChip-root', { hasText: "author" }).first();
-    await authorChip.getByRole("button").click();
+    // The chip should now be visible after the mutation reload
+    await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
+
+    // The outer chip's endDecorator has an "x" button to remove the role.
+    // Use the endDecorator button within the chip that contains "author".
+    await page.locator('.MuiChip-endDecorator button', { hasText: "x" }).first().click();
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText('Role "author" removed from user.')).toBeVisible();
