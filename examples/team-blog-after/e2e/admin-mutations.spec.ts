@@ -46,8 +46,8 @@ test.describe.serial("Role Management", () => {
     await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
 
     // The outer chip's endDecorator has an "x" button to remove the role.
-    // Use the endDecorator button within the chip that contains "author".
-    await page.locator('.MuiChip-endDecorator button', { hasText: "x" }).first().click();
+    // Use getByRole("button") scoped to the chip action area.
+    await page.getByRole("button", { name: "x" }).click();
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText('Role "author" removed from user.')).toBeVisible();
