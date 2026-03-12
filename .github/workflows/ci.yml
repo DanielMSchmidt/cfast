@@ -12,10 +12,12 @@ concurrency:
 
 jobs:
   ci:
-    name: Typecheck & Lint
+    name: Build, Typecheck, Lint & Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
 
       - uses: pnpm/action-setup@v4
 
@@ -26,11 +28,17 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
 
-      - run: pnpm typecheck
-
-      - run: pnpm lint
+      - name: Build, typecheck, lint & test
+        run: >
+          pnpm turbo build typecheck lint test
+          ${{ github.event_name == 'pull_request' && '--filter=...[origin/main]' || '' }}
 
       - run: pnpm test
 
@@ -53,6 +61,13 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
 
       - run: pnpm build
 
