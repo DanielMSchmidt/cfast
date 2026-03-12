@@ -1,6 +1,6 @@
 import { createApp, definePlugin } from "@cfast/core";
 import { createDb } from "@cfast/db";
-import type { DrizzleTable, Grant } from "@cfast/permissions";
+import type { Grant } from "@cfast/permissions";
 import { envSchema } from "./env";
 import { initAuth } from "./auth.setup.server";
 import { permissions, type AuthUser } from "./permissions";
@@ -28,9 +28,10 @@ type AuthProvides = { auth: { user: AuthUser | null; grants: Grant[] } };
 const dbPlugin = definePlugin<AuthProvides>()({
   name: "db",
   setup(ctx) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = createDb({
       d1: ctx.env.DB as D1Database,
-      schema: schema as unknown as Record<string, DrizzleTable>,
+      schema: schema as unknown as Record<string, any>,
       grants: ctx.auth.grants,
       user: ctx.auth.user ? { id: ctx.auth.user.id } : null,
       cache: false,
