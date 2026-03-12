@@ -71,7 +71,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         authorId: ctx.user.id,
         published: false,
       }),
-      cfDb.insert(auditLogs).values({
+      cfDb.unsafe().insert(auditLogs).values({
         id: nanoid(),
         userId: ctx.user.id,
         action: "post.created",
