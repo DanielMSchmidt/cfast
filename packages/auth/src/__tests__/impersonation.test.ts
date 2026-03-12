@@ -10,7 +10,7 @@ describe("impersonation manager", () => {
     await mgr.impersonate("admin-1", "user-1");
 
     expect(d1._calls).toHaveLength(1);
-    expect(d1._calls[0].sql).toContain("INSERT INTO impersonation_log");
+    expect(d1._calls[0].sql).toContain("INSERT INTO impersonation_logs");
     expect(d1._calls[0].params).toContain("admin-1");
     expect(d1._calls[0].params).toContain("user-1");
   });
@@ -22,7 +22,7 @@ describe("impersonation manager", () => {
     await mgr.stopImpersonating("admin-1");
 
     expect(d1._calls).toHaveLength(1);
-    expect(d1._calls[0].sql).toContain("UPDATE impersonation_log");
+    expect(d1._calls[0].sql).toContain("UPDATE impersonation_logs");
     expect(d1._calls[0].sql).toContain("ended_at");
     expect(d1._calls[0].sql).toContain("ended_at IS NULL");
   });

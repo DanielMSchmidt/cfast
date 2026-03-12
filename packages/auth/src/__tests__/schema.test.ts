@@ -6,7 +6,7 @@ import {
   verifications,
   passkeys,
   roles,
-  impersonationLog,
+  impersonationLogs,
 } from "../schema";
 import { getTableName } from "drizzle-orm";
 
@@ -18,7 +18,7 @@ describe("auth schema", () => {
     expect(verifications).toBeDefined();
     expect(passkeys).toBeDefined();
     expect(roles).toBeDefined();
-    expect(impersonationLog).toBeDefined();
+    expect(impersonationLogs).toBeDefined();
   });
 
   it("uses correct table names", () => {
@@ -28,7 +28,7 @@ describe("auth schema", () => {
     expect(getTableName(verifications)).toBe("verifications");
     expect(getTableName(passkeys)).toBe("passkeys");
     expect(getTableName(roles)).toBe("roles");
-    expect(getTableName(impersonationLog)).toBe("impersonation_log");
+    expect(getTableName(impersonationLogs)).toBe("impersonation_logs");
   });
 
   it("users table has required columns", () => {
@@ -72,8 +72,8 @@ describe("auth schema", () => {
     expect(cols).toContain("role");
   });
 
-  it("impersonationLog has required audit columns", () => {
-    const cols = Object.keys(impersonationLog);
+  it("impersonationLogs has required audit columns", () => {
+    const cols = Object.keys(impersonationLogs);
     expect(cols).toContain("id");
     expect(cols).toContain("adminUserId");
     expect(cols).toContain("targetUserId");

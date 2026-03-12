@@ -6,7 +6,7 @@ export function createImpersonationManager(
   d1: D1Database,
   options?: ImpersonationManagerOptions,
 ) {
-  const table = options?.tableName ?? "impersonation_log";
+  const table = options?.tableName ?? "impersonation_logs";
 
   return {
     async impersonate(

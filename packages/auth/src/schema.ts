@@ -113,7 +113,7 @@ export const roles = sqliteTable("roles", {
  * Cfast impersonation audit trail.
  * Active impersonation: endedAt is null.
  */
-export const impersonationLog = sqliteTable("impersonation_log", {
+export const impersonationLogs = sqliteTable("impersonation_logs", {
   id: text("id").primaryKey(),
   adminUserId: text("admin_user_id")
     .notNull()
