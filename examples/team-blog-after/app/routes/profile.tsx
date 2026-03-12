@@ -14,6 +14,7 @@ import Card from "@mui/joy/Card";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
+import { useAuth } from "@cfast/auth/client";
 import { requireAuthContext } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
@@ -21,7 +22,6 @@ import { users, passkeys } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
-import { authClient } from "~/auth.client";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -120,6 +120,7 @@ function getInitials(name: string): string {
 export default function Profile() {
   const { user, passkeys: userPasskeys } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { registerPasskey, deletePasskey } = useAuth();
   const [name, setName] = useState(user.name);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeyError, setPasskeyError] = useState<string | null>(null);
@@ -130,13 +131,13 @@ export default function Profile() {
     setPasskeyError(null);
     setPasskeySuccess(null);
     try {
-      const result = await authClient.passkey.addPasskey();
+      const result = await registerPasskey();
       if (result?.error) {
         setPasskeyError(result.error.message ?? "Failed to add passkey.");
       } else {
         setPasskeySuccess("Passkey added successfully. Reload to see it in the list.");
       }
-    } catch (err) {
+    } catch {
       setPasskeyError("Failed to add passkey. Please try again.");
     } finally {
       setPasskeyLoading(false);
@@ -146,13 +147,13 @@ export default function Profile() {
   async function handleDeletePasskey(passkeyId: string) {
     if (!confirm("Are you sure you want to remove this passkey?")) return;
     try {
-      const result = await authClient.passkey.deletePasskey({ id: passkeyId });
+      const result = await deletePasskey(passkeyId);
       if (result?.error) {
         setPasskeyError(result.error.message ?? "Failed to remove passkey.");
       } else {
         window.location.reload();
       }
-    } catch (err) {
+    } catch {
       setPasskeyError("Failed to remove passkey.");
     }
   }
