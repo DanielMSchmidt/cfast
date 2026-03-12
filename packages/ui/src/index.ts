@@ -1,6 +1,10 @@
 // Plugin API
 export { createUIPlugin, UIPluginProvider, useUIPlugin, useComponent } from "./plugin.js";
 
+// Headless components
+export { PermissionGate } from "./components/permission-gate.js";
+export { ActionButton } from "./components/action-button.js";
+
 // Types
 export type {
   UIPlugin,
@@ -51,7 +55,6 @@ export type {
   BulkAction,
   ActionButtonProps,
   PermissionGateProps,
-  ActionStatusResult,
   FormStatusData,
   FormStatusProps,
   EmptyStateProps,

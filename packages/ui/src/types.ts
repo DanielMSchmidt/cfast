@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
-import type { ClientDescriptor, ActionPermissionStatus } from "@cfast/actions";
+import type { ClientDescriptor } from "@cfast/actions";
+import type { ActionHookResult } from "@cfast/actions/client";
 
 // --- Plugin System ---
 
@@ -376,37 +377,24 @@ export type BulkAction = {
 
 // --- ActionButton ---
 
+/** Props that ActionButton controls internally — not forwarded from the caller. */
+type ActionButtonControlledProps = "children" | "onClick" | "disabled" | "loading";
+
 export type ActionButtonProps = {
-  action: ClientDescriptor;
-  actionName?: string;
-  input?: Record<string, unknown>;
+  action: ActionHookResult;
   children: ReactNode;
   whenForbidden?: WhenForbidden;
   confirmation?: string | ConfirmOptions;
-  variant?: "solid" | "soft" | "outlined" | "plain";
-  color?: "primary" | "neutral" | "danger" | "success" | "warning";
-  size?: "sm" | "md" | "lg";
-  startDecorator?: ReactNode;
-};
+} & Omit<ButtonSlotProps, ActionButtonControlledProps>;
 
 // --- PermissionGate ---
 
 export type PermissionGateProps = {
-  action: ClientDescriptor;
-  actionName?: string;
-  input?: Record<string, unknown>;
+  action: ActionHookResult;
   children: ReactNode;
   fallback?: ReactNode;
 };
 
-// --- useActionStatus ---
-
-export type ActionStatusResult = ActionPermissionStatus & {
-  submit: () => void;
-  pending: boolean;
-  data: unknown;
-  error: unknown;
-};
 
 // --- FormStatus ---
 

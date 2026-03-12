@@ -6,6 +6,21 @@ import type {
   Serializable,
 } from "../types.js";
 
+/**
+ * Creates a ClientDescriptor for use in client code without importing
+ * server modules. The action names must match the keys passed to
+ * `composeActions` or the single action name from `createAction`.
+ */
+export function clientDescriptor(
+  actionNames: readonly string[],
+): ClientDescriptor {
+  return {
+    _brand: "ActionClientDescriptor",
+    actionNames,
+    permissionsKey: "_actionPermissions",
+  };
+}
+
 export type ActionHookResult = {
   permitted: boolean;
   invisible: boolean;
