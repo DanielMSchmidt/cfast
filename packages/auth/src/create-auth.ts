@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { resolveGrants } from "@cfast/permissions";
 import type { Grant } from "@cfast/permissions";
 import { createRoleManager } from "./roles";
+import { createImpersonationManager } from "./impersonation";
 import type {
   AuthConfig,
   AuthContext,
@@ -42,7 +43,9 @@ export function createAuth(config: AuthConfig) {
   return function initAuth(env: AuthEnvConfig): AuthInstance {
     const roleManager = createRoleManager(env.d1, {
       tableName: config.roleTableName,
+      roleGrants: config.roleGrants,
     });
+    const impersonationManager = createImpersonationManager(env.d1);
     const plugins = [];
 
     if (config.magicLink) {
@@ -78,6 +81,35 @@ export function createAuth(config: AuthConfig) {
         }
 
         const { user, session: _session } = sessionResult;
+
+        // Check for active impersonation
+        const impersonation =
+          await impersonationManager.getActiveImpersonation(user.id);
+
+        if (impersonation) {
+          // Fetch target user's roles and resolve grants as the target
+          let targetRoles = await roleManager.getRoles(
+            impersonation.targetUserId,
+          );
+          if (targetRoles.length === 0) {
+            targetRoles = config.defaultRoles ?? ["reader"];
+          }
+          const grants = resolveGrants(config.permissions, targetRoles);
+
+          return {
+            user: {
+              id: impersonation.targetUserId,
+              email: user.email,
+              name: user.name ?? "",
+              avatarUrl: user.image ?? null,
+              roles: targetRoles,
+              isImpersonating: true,
+              realUser: { id: user.id, name: user.name ?? "" },
+            },
+            grants,
+          };
+        }
+
         let roles = await roleManager.getRoles(user.id);
 
         if (roles.length === 0) {
@@ -121,6 +153,9 @@ export function createAuth(config: AuthConfig) {
       return ctx as AuthenticatedContext;
     }
 
+    const allowedImpersonationRoles =
+      config.impersonation?.allowedRoles ?? ["admin"];
+
     return {
       createContext,
       requireUser,
@@ -128,6 +163,20 @@ export function createAuth(config: AuthConfig) {
       setRole: roleManager.setRole,
       setRoles: roleManager.setRoles,
       removeRole: roleManager.removeRole,
+      impersonate: async (
+        adminUserId: string,
+        targetUserId: string,
+      ): Promise<void> => {
+        const adminRoles = await roleManager.getRoles(adminUserId);
+        const canImpersonate = adminRoles.some((r) =>
+          allowedImpersonationRoles.includes(r),
+        );
+        if (!canImpersonate) {
+          throw new Error("Not authorized to impersonate");
+        }
+        await impersonationManager.impersonate(adminUserId, targetUserId);
+      },
+      stopImpersonating: impersonationManager.stopImpersonating,
       handler: (request: Request) => auth.handler(request),
       api: auth,
     };
