@@ -43,6 +43,18 @@ vi.mock("./action-button.js", () => ({
   ),
 }));
 
+vi.mock("../hooks/use-action-status.js", () => ({
+  useActionStatus: () => ({
+    permitted: true,
+    invisible: false,
+    reason: null,
+    submit: vi.fn(),
+    pending: false,
+    optimisticData: null,
+    error: null,
+  }),
+}));
+
 vi.mock("react-router", () => ({
   useSearchParams: () => [new URLSearchParams()],
   useNavigate: () => vi.fn(),

@@ -5,6 +5,8 @@ import { FilterBar } from "./filter-bar.js";
 import { BulkActionBar } from "./bulk-action-bar.js";
 import { EmptyState } from "./empty-state.js";
 import { ActionButton } from "./action-button.js";
+import { useActionStatus } from "../hooks/use-action-status.js";
+import type { ClientDescriptor } from "@cfast/actions";
 import type { ListViewProps, BulkAction, ColumnShorthand } from "../types.js";
 
 /**
@@ -41,7 +43,7 @@ export function ListView<T = unknown>({
   }, []);
 
   const createButton = createAction
-    ? <ActionButton action={createAction} variant="solid" color="primary">{createLabel}</ActionButton>
+    ? <CreateButton action={createAction} label={createLabel} />
     : null;
 
   return (
@@ -118,4 +120,9 @@ export function ListView<T = unknown>({
       </div>
     </PageContainer>
   );
+}
+
+function CreateButton({ action, label }: { action: ClientDescriptor; label: string }) {
+  const status = useActionStatus(action);
+  return <ActionButton action={status} variant="solid" color="primary">{label}</ActionButton>;
 }
