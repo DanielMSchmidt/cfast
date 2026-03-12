@@ -29,7 +29,7 @@ test.describe("Admin Panel", () => {
     await loginAs(context, "admin");
     await page.goto("/admin?view=_users");
     await page.getByRole("link", { name: "View" }).first().click();
-    await expect(page.getByRole("heading", { name: "Roles" })).toBeVisible();
+    await expect(page.getByText("Roles", { exact: true })).toBeVisible();
   });
 
   test("shows posts list with status filter", async ({ page, context }) => {
