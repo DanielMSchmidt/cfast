@@ -165,7 +165,7 @@ describe("createApp", () => {
     it("action passes context and route args", async () => {
       const app = createApp({ env: envSchema, permissions });
       app.init({ API_KEY: "sk-test" });
-      const action = app.action(async (ctx, args) => {
+      const action = app.action(async (_ctx, args) => {
         return { method: args.request.method };
       });
       const result = await action({

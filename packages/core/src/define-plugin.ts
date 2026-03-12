@@ -5,26 +5,14 @@ import type { CfastPlugin, PluginSetupContext } from "./types";
 /**
  * Define a cfast plugin.
  *
- * Basic usage (no dependencies):
+ * No dependencies (types fully inferred):
  *   definePlugin({ name: "db", setup: () => ({ query: ... }) })
  *
- * With dependencies on prior plugins:
- *   definePlugin<{ auth: AuthProvides }>()({ name: "acl", setup: (ctx) => ... })
- *
- * The curried form is needed when specifying TRequires so that TProvides
- * can still be inferred from the setup return type.
+ * With dependencies (curried form for partial type inference):
+ *   definePlugin<AuthPluginProvides>()({ name: "acl", setup: (ctx) => ... })
  */
-export function definePlugin<TRequires>(): <
-  TName extends string,
-  TProvides,
-  TClient = {},
->(config: {
-  name: TName;
-  setup: (ctx: PluginSetupContext<TRequires>) => TProvides | Promise<TProvides>;
-  Provider?: ComponentType<{ children: ReactNode }>;
-  client?: TClient;
-}) => CfastPlugin<TName, Awaited<TProvides>, TRequires, TClient>;
 
+// Direct form: no dependencies, full inference
 export function definePlugin<
   TName extends string,
   TProvides,
@@ -36,13 +24,21 @@ export function definePlugin<
   client?: TClient;
 }): CfastPlugin<TName, Awaited<TProvides>, {}, TClient>;
 
-export function definePlugin(
-  config?: Record<string, unknown>,
-): unknown {
+// Curried form: specify TRequires, infer the rest
+export function definePlugin<TRequires>(): <
+  TName extends string,
+  TProvides,
+  TClient = {},
+>(config: {
+  name: TName;
+  setup: (ctx: PluginSetupContext<TRequires>) => TProvides | Promise<TProvides>;
+  Provider?: ComponentType<{ children: ReactNode }>;
+  client?: TClient;
+}) => CfastPlugin<TName, Awaited<TProvides>, TRequires, TClient>;
+
+export function definePlugin(config?: unknown): unknown {
   if (config === undefined) {
-    // Curried form: definePlugin<Requires>()(config)
-    return (innerConfig: Record<string, unknown>) => innerConfig;
+    return (innerConfig: unknown) => innerConfig;
   }
-  // Direct form: definePlugin(config)
   return config;
 }
