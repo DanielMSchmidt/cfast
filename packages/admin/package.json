@@ -19,9 +19,16 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@mui/joy": ">=5.0.0-beta.0",
     "react": ">=19",
     "react-dom": ">=19",
+    "react-router": ">=7",
     "drizzle-orm": ">=0.35"
+  },
+  "peerDependenciesMeta": {
+    "@mui/joy": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@cfast/actions": "workspace:*",
@@ -33,6 +40,15 @@
     "@cfast/ui": "workspace:*"
   },
   "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/joy": "^5.0.0-beta.52",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "drizzle-orm": "^0.44.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.12.0",
     "tsup": "^8",
     "typescript": "^5.7",
     "vitest": "^4.0.18"
