@@ -26,6 +26,21 @@ export { NavigationProgress } from "./components/navigation-progress.js";
 export { PageContainer } from "./components/page-container.js";
 export { AppShell, AppShellSidebar, AppShellHeader } from "./components/app-shell.js";
 export { UserMenu } from "./components/user-menu.js";
+export { DataTable } from "./components/data-table.js";
+export { FilterBar } from "./components/filter-bar.js";
+export { BulkActionBar } from "./components/bulk-action-bar.js";
+
+// File components
+export { DropZone } from "./components/drop-zone.js";
+export { ImagePreview } from "./components/image-preview.js";
+export { FileList } from "./components/file-list.js";
+
+// Composite views
+export { ListView } from "./components/list-view.js";
+export { DetailView } from "./components/detail-view.js";
+
+// Hooks — data
+export { useColumnInference } from "./hooks/use-column-inference.js";
 
 // Types
 export type {

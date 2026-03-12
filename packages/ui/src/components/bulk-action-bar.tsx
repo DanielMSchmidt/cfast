@@ -1,0 +1,65 @@
+import { useComponent } from "../plugin.js";
+import type { BulkAction } from "../types.js";
+
+type BulkActionBarProps = {
+  selectedCount: number;
+  actions: BulkAction[];
+  onAction: (action: BulkAction) => void;
+  onClearSelection: () => void;
+};
+
+/**
+ * Headless BulkActionBar — shown when rows are selected.
+ * Displays count + action buttons + clear selection.
+ */
+export function BulkActionBar({
+  selectedCount,
+  actions,
+  onAction,
+  onClearSelection,
+}: BulkActionBarProps) {
+  const Button = useComponent("button");
+
+  if (selectedCount === 0) return null;
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "8px 16px",
+        backgroundColor: "#f0f4ff",
+        borderRadius: "4px",
+        marginBottom: "8px",
+      }}
+    >
+      <span>{`${selectedCount} selected`}</span>
+      {actions.map((action) => {
+        const Icon = action.icon;
+        return (
+          <Button
+            key={action.label}
+            onClick={() => onAction(action)}
+            variant={"soft" as const}
+            size={"sm" as const}
+            startDecorator={Icon
+              ? <Icon className="bulk-action-icon" />
+              : undefined}
+          >
+            {action.label}
+          </Button>
+        );
+      })}
+      <Button
+        onClick={onClearSelection}
+        variant={"plain" as const}
+        size={"sm" as const}
+      >
+        Clear
+      </Button>
+    </div>
+  );
+}
+
+export type { BulkActionBarProps };

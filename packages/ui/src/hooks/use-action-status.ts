@@ -1,6 +1,5 @@
 import { useActions } from "@cfast/actions/client";
-import type { ClientDescriptor } from "@cfast/actions";
-import type { ActionHookResult } from "@cfast/actions/client";
+import type { ClientDescriptor, ActionHookResult } from "@cfast/actions/client";
 
 /**
  * Returns the status of the first action in a descriptor.
