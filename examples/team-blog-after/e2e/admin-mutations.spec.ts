@@ -14,7 +14,7 @@ test.describe.serial("Role Management", () => {
   }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
-    await page.goto(`/admin/users/${userIds.reader}`, { waitUntil: "networkidle" });
+    await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
 
     // MUI Joy Select uses a hidden input for form submission.
     // Directly set the value and submit to avoid hydration timing issues.
@@ -40,7 +40,7 @@ test.describe.serial("Role Management", () => {
   test("assigned role appears as a chip on the user detail page", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
-    await page.goto(`/admin/users/${userIds.reader}`);
+    await page.goto(`/admin?view=_users&id=${userIds.reader}`);
 
     // The "author" chip should now be visible in the Current Roles section
     const rolesSection = page.getByText("Current Roles").locator("..");
@@ -50,7 +50,7 @@ test.describe.serial("Role Management", () => {
   test("admin can revoke a role from a user", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
-    await page.goto(`/admin/users/${userIds.reader}`);
+    await page.goto(`/admin?view=_users&id=${userIds.reader}`);
 
     // The revoke form has hidden inputs with _action=revokeRole and roleId.
     // Submit the form directly since the "x" button inside MUI Chip's endDecorator
@@ -66,7 +66,7 @@ test.describe.serial("Role Management", () => {
 test.describe.serial("Admin Post Management", () => {
   test("admin can delete a post from the admin posts list", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/posts");
+    await page.goto("/admin?view=posts");
 
     // Find the post row and click its Delete button to open the ConfirmDialog
     const postRow = page.locator("tr", { hasText: publishedPost.title });
@@ -85,7 +85,7 @@ test.describe.serial("Admin Post Management", () => {
 
   test("deleted post disappears from the table", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/posts");
+    await page.goto("/admin?view=posts");
 
     await expect(page.getByText(publishedPost.title)).not.toBeVisible();
   });
@@ -94,7 +94,7 @@ test.describe.serial("Admin Post Management", () => {
 test.describe.serial("User Search", () => {
   test("admin can search users by name", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/users");
+    await page.goto("/admin?view=_users");
 
     await page.fill('input[name="search"]', "Editor");
     await page.click('button:has-text("Search")');
@@ -105,7 +105,7 @@ test.describe.serial("User Search", () => {
 
   test("search results filter correctly", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/users?search=Editor");
+    await page.goto("/admin?view=_users&search=Editor");
 
     // Only the editor user should be visible
     await expect(page.getByText("editor@example.com")).toBeVisible();
