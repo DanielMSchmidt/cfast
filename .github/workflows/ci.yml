@@ -19,6 +19,10 @@ jobs:
         with:
           fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
 
+      - name: Fetch main branch for turbo comparison
+        if: github.event_name == 'pull_request'
+        run: git fetch origin main
+
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
