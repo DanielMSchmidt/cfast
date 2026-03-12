@@ -245,24 +245,12 @@ importers:
 
   packages/admin:
     dependencies:
-      '@cfast/actions':
-        specifier: workspace:*
-        version: link:../actions
-      '@cfast/auth':
-        specifier: workspace:*
-        version: link:../auth
       '@cfast/db':
         specifier: workspace:*
         version: link:../db
       '@cfast/forms':
         specifier: workspace:*
         version: link:../forms
-      '@cfast/pagination':
-        specifier: workspace:*
-        version: link:../pagination
-      '@cfast/permissions':
-        specifier: workspace:*
-        version: link:../permissions
       '@cfast/ui':
         specifier: workspace:*
         version: link:../ui

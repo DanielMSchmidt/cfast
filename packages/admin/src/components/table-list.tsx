@@ -1,5 +1,5 @@
 import { type ReactElement, useState } from "react";
-import { Link, useSubmit } from "react-router";
+import { Link, useSubmit, useNavigate } from "react-router";
 import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
@@ -7,9 +7,9 @@ import Input from "@mui/joy/Input";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
-import Chip from "@mui/joy/Chip";
 import { useConfirm } from "@cfast/ui";
 import { buildAdminUrl } from "../utils.js";
+import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminColumnConfig } from "../types.js";
 
 type TableListProps = {
@@ -21,7 +21,7 @@ type TableListProps = {
   totalPages: number;
   columns: AdminColumnConfig[];
   searchable: string[];
-  sort: { column: string; direction: string };
+  sort: { column: string; direction: "asc" | "desc" };
   search: string;
   primaryKey: string;
   actionResult: AdminActionResult | undefined;
@@ -42,6 +42,7 @@ export function TableList({
   actionResult,
 }: TableListProps): ReactElement {
   const submit = useSubmit();
+  const navigate = useNavigate();
   const confirm = useConfirm();
   const [searchValue, setSearchValue] = useState(search);
 
@@ -67,10 +68,10 @@ export function TableList({
       table: tableName,
       page: 1,
       sort: sort.column,
-      direction: sort.direction as "asc" | "desc",
+      direction: sort.direction,
       search: searchValue,
     });
-    window.location.search = url.startsWith("?") ? url : "";
+    navigate({ search: url.startsWith("?") ? url : "" });
   }
 
   async function handleDelete(id: string): Promise<void> {
@@ -198,7 +199,7 @@ export function TableList({
                 table: tableName,
                 page: page - 1,
                 sort: sort.column,
-                direction: sort.direction as "asc" | "desc",
+                direction: sort.direction,
                 search,
               })}
               size="sm"
@@ -218,7 +219,7 @@ export function TableList({
                 table: tableName,
                 page: page + 1,
                 sort: sort.column,
-                direction: sort.direction as "asc" | "desc",
+                direction: sort.direction,
                 search,
               })}
               size="sm"
@@ -231,28 +232,6 @@ export function TableList({
       )}
     </Box>
   );
-}
-
-function ActionResultDisplay({ result }: { result: AdminActionResult | undefined }): ReactElement | null {
-  if (!result) return null;
-
-  if ("success" in result) {
-    return (
-      <Chip color="success" variant="soft" sx={{ mb: 2 }}>
-        {result.success}
-      </Chip>
-    );
-  }
-
-  if ("error" in result) {
-    return (
-      <Chip color="danger" variant="soft" sx={{ mb: 2 }}>
-        {result.error}
-      </Chip>
-    );
-  }
-
-  return null;
 }
 
 function formatCellValue(value: unknown): string {

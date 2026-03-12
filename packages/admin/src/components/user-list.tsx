@@ -1,5 +1,5 @@
 import { type ReactElement, useState } from "react";
-import { Link, useSubmit } from "react-router";
+import { Link, useSubmit, useNavigate } from "react-router";
 import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
@@ -7,9 +7,9 @@ import Input from "@mui/joy/Input";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
-import Chip from "@mui/joy/Chip";
 import { RoleBadge } from "@cfast/ui/joy";
 import { buildAdminUrl } from "../utils.js";
+import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminUser } from "../types.js";
 
 type UserListProps = {
@@ -32,6 +32,7 @@ export function UserList({
   actionResult,
 }: UserListProps): ReactElement {
   const submit = useSubmit();
+  const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState(search);
 
   function handleSearchSubmit(e: React.FormEvent): void {
@@ -41,7 +42,7 @@ export function UserList({
       page: 1,
       search: searchValue,
     });
-    window.location.search = url.startsWith("?") ? url : "";
+    navigate({ search: url.startsWith("?") ? url : "" });
   }
 
   function handleImpersonate(userId: string): void {
@@ -177,24 +178,3 @@ export function UserList({
   );
 }
 
-function ActionResultDisplay({ result }: { result: AdminActionResult | undefined }): ReactElement | null {
-  if (!result) return null;
-
-  if ("success" in result) {
-    return (
-      <Chip color="success" variant="soft" sx={{ mb: 2 }}>
-        {result.success}
-      </Chip>
-    );
-  }
-
-  if ("error" in result) {
-    return (
-      <Chip color="danger" variant="soft" sx={{ mb: 2 }}>
-        {result.error}
-      </Chip>
-    );
-  }
-
-  return null;
-}

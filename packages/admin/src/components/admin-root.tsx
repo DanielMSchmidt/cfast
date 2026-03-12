@@ -1,6 +1,7 @@
 import { type ReactElement } from "react";
-import { useLoaderData, useActionData } from "react-router";
+import { useLoaderData, useActionData, useSubmit } from "react-router";
 import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
 import Typography from "@mui/joy/Typography";
 import { ConfirmProvider } from "@cfast/ui";
 import type { AdminActionResult, AdminLoaderData, AdminTableMeta } from "../types.js";
@@ -97,15 +98,21 @@ function AdminContent({ data, actionResult, tableMetaMap }: AdminContentProps): 
 
     case "create": {
       const meta = tableMetaMap.get(data.tableName);
-      const primaryKey = meta?.primaryKey ?? "id";
+      if (!meta) {
+        return (
+          <Box sx={{ p: 4 }}>
+            <Typography color="danger">Table &ldquo;{data.tableName}&rdquo; not found in schema.</Typography>
+          </Box>
+        );
+      }
       return (
         <TableForm
           tableName={data.tableName}
           tableLabel={data.tableLabel}
           mode="create"
-          drizzleTable={meta?.drizzleTable as NonNullable<typeof meta>["drizzleTable"]}
+          drizzleTable={meta.drizzleTable}
           columns={data.columns}
-          primaryKey={primaryKey}
+          primaryKey={meta.primaryKey}
           actionResult={actionResult}
         />
       );
@@ -113,16 +120,22 @@ function AdminContent({ data, actionResult, tableMetaMap }: AdminContentProps): 
 
     case "edit": {
       const meta = tableMetaMap.get(data.tableName);
-      const primaryKey = meta?.primaryKey ?? "id";
+      if (!meta) {
+        return (
+          <Box sx={{ p: 4 }}>
+            <Typography color="danger">Table &ldquo;{data.tableName}&rdquo; not found in schema.</Typography>
+          </Box>
+        );
+      }
       return (
         <TableForm
           tableName={data.tableName}
           tableLabel={data.tableLabel}
           mode="edit"
-          drizzleTable={meta?.drizzleTable as NonNullable<typeof meta>["drizzleTable"]}
+          drizzleTable={meta.drizzleTable}
           item={data.item}
           columns={data.columns}
-          primaryKey={primaryKey}
+          primaryKey={meta.primaryKey}
           actionResult={actionResult}
         />
       );
@@ -169,6 +182,14 @@ function AdminContent({ data, actionResult, tableMetaMap }: AdminContentProps): 
  * Simple impersonation banner for when the admin is viewing as another user.
  */
 function ImpersonationBar({ user }: { user: AdminLoaderData["user"] }): ReactElement {
+  const submit = useSubmit();
+
+  function handleStopImpersonation(): void {
+    const formData = new FormData();
+    formData.set("_action", "stopImpersonation");
+    submit(formData, { method: "post" });
+  }
+
   return (
     <Box
       sx={{
@@ -176,13 +197,24 @@ function ImpersonationBar({ user }: { user: AdminLoaderData["user"] }): ReactEle
         color: "warning.softColor",
         py: 1,
         px: 3,
-        textAlign: "center",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 2,
       }}
     >
       <Typography level="body-sm" fontWeight="lg">
         Impersonating {user.name} ({user.email})
         {user.realUser && ` — logged in as ${user.realUser.name}`}
       </Typography>
+      <Button
+        size="sm"
+        variant="solid"
+        color="warning"
+        onClick={handleStopImpersonation}
+      >
+        Stop Impersonation
+      </Button>
     </Box>
   );
 }

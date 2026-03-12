@@ -11,6 +11,7 @@ import Option from "@mui/joy/Option";
 import Divider from "@mui/joy/Divider";
 import { RoleBadge, AvatarWithInitials } from "@cfast/ui/joy";
 import { buildAdminUrl } from "../utils.js";
+import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminUser } from "../types.js";
 
 type UserDetailProps = {
@@ -173,24 +174,3 @@ export function UserDetail({
   );
 }
 
-function ActionResultDisplay({ result }: { result: AdminActionResult | undefined }): ReactElement | null {
-  if (!result) return null;
-
-  if ("success" in result) {
-    return (
-      <Chip color="success" variant="soft" sx={{ mb: 2 }}>
-        {result.success}
-      </Chip>
-    );
-  }
-
-  if ("error" in result) {
-    return (
-      <Chip color="danger" variant="soft" sx={{ mb: 2 }}>
-        {result.error}
-      </Chip>
-    );
-  }
-
-  return null;
-}

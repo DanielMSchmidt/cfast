@@ -15,6 +15,8 @@ export type {
   UserManagementConfig,
   DashboardConfig,
   DashboardWidget,
+  DashboardStat,
+  RecentItem,
   AdminColumnConfig,
   AdminTableMeta,
   AdminLoaderData,

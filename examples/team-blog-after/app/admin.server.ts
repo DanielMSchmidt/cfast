@@ -194,7 +194,6 @@ const adminConfig = {
       { type: "recent" as const, table: "users", label: "Recent Users", limit: 5 },
     ],
   },
-  basePath: "/admin",
   requiredRole: "admin",
 };
 

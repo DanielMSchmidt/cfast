@@ -67,7 +67,6 @@ export type TableOverrides = {
 // --- User management ---
 
 export type UserManagementConfig = {
-  displayFields?: string[];
   assignableRoles?: string[];
 };
 
@@ -95,7 +94,6 @@ export type AdminConfig = {
   tables?: Record<string, TableOverrides>;
   users?: UserManagementConfig;
   dashboard?: DashboardConfig;
-  basePath?: string;
   requiredRole?: string;
 };
 
@@ -162,7 +160,7 @@ export type AdminLoaderData =
       totalPages: number;
       columns: AdminColumnConfig[];
       searchable: string[];
-      sort: { column: string; direction: string };
+      sort: { column: string; direction: "asc" | "desc" };
       search: string;
     }
   | {

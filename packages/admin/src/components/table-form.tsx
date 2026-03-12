@@ -3,10 +3,10 @@ import { Link, useSubmit } from "react-router";
 import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 import Stack from "@mui/joy/Stack";
-import Chip from "@mui/joy/Chip";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { AutoForm } from "@cfast/forms/joy";
 import { buildAdminUrl } from "../utils.js";
+import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminColumnConfig } from "../types.js";
 
 type TableFormProps = {
@@ -117,36 +117,3 @@ export function TableForm({
   );
 }
 
-function ActionResultDisplay({ result }: { result: AdminActionResult | undefined }): ReactElement | null {
-  if (!result) return null;
-
-  if ("success" in result) {
-    return (
-      <Chip color="success" variant="soft" sx={{ mb: 2 }}>
-        {result.success}
-      </Chip>
-    );
-  }
-
-  if ("error" in result) {
-    return (
-      <Chip color="danger" variant="soft" sx={{ mb: 2 }}>
-        {result.error}
-      </Chip>
-    );
-  }
-
-  if ("fieldErrors" in result) {
-    return (
-      <Box sx={{ mb: 2 }}>
-        {Object.entries(result.fieldErrors).map(([field, error]) => (
-          <Chip key={field} color="danger" variant="soft" sx={{ mr: 1, mb: 1 }}>
-            {field}: {error}
-          </Chip>
-        ))}
-      </Box>
-    );
-  }
-
-  return null;
-}

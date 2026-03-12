@@ -31,12 +31,8 @@
     }
   },
   "dependencies": {
-    "@cfast/actions": "workspace:*",
-    "@cfast/auth": "workspace:*",
     "@cfast/db": "workspace:*",
     "@cfast/forms": "workspace:*",
-    "@cfast/pagination": "workspace:*",
-    "@cfast/permissions": "workspace:*",
     "@cfast/ui": "workspace:*"
   },
   "devDependencies": {
