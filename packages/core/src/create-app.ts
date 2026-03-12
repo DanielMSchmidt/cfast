@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type -- {} is the identity type for generic intersections in the plugin system */
 import { defineEnv } from "@cfast/env";
 import type { Schema, ParsedEnv } from "@cfast/env";
 import type { Permissions } from "@cfast/permissions";
@@ -15,10 +14,10 @@ import { createCoreProvider } from "./client/provider";
 export function createApp<
   TSchema extends Schema,
   TPermissions extends Permissions,
->(config: CreateAppConfig<TSchema, TPermissions>): App<TSchema, TPermissions, {}, {}> {
+>(config: CreateAppConfig<TSchema, TPermissions>): App<TSchema, TPermissions, unknown, unknown> {
   const envInstance = defineEnv(config.env);
 
-  return buildApp<TSchema, TPermissions, {}, {}>(
+  return buildApp<TSchema, TPermissions, unknown, unknown>(
     envInstance,
     config.permissions,
     [],
@@ -103,7 +102,7 @@ function buildApp<
       TSchema,
       TPermissions,
       TPluginContext & { [K in TName]: TProvides },
-      TClientContext & (TClient extends {} ? { [K in TName]: TClient } : {})
+      TClientContext & (TClient extends object ? { [K in TName]: TClient } : unknown)
     > {
       if (pluginNames.has(plugin.name)) {
         throw new CfastConfigError(
@@ -115,7 +114,7 @@ function buildApp<
         TSchema,
         TPermissions,
         TPluginContext & { [K in TName]: TProvides },
-        TClientContext & (TClient extends {} ? { [K in TName]: TClient } : {})
+        TClientContext & (TClient extends object ? { [K in TName]: TClient } : unknown)
       >(envInstance, permissions, [...plugins, plugin as unknown as CfastPlugin]);
     },
 

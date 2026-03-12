@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type -- {} is the identity type for generic intersections in the plugin system */
 import type { ComponentType, ReactNode } from "react";
 
 import type { CfastPlugin, PluginSetupContext } from "./types";
@@ -17,19 +16,19 @@ import type { CfastPlugin, PluginSetupContext } from "./types";
 export function definePlugin<
   TName extends string,
   TProvides,
-  TClient = {},
+  TClient = unknown,
 >(config: {
   name: TName;
-  setup: (ctx: PluginSetupContext<{}>) => TProvides | Promise<TProvides>;
+  setup: (ctx: PluginSetupContext<unknown>) => TProvides | Promise<TProvides>;
   Provider?: ComponentType<{ children: ReactNode }>;
   client?: TClient;
-}): CfastPlugin<TName, Awaited<TProvides>, {}, TClient>;
+}): CfastPlugin<TName, Awaited<TProvides>, unknown, TClient>;
 
 // Curried form: specify TRequires, infer the rest
 export function definePlugin<TRequires>(): <
   TName extends string,
   TProvides,
-  TClient = {},
+  TClient = unknown,
 >(config: {
   name: TName;
   setup: (ctx: PluginSetupContext<TRequires>) => TProvides | Promise<TProvides>;

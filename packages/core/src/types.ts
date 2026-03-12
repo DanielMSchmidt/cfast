@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type -- {} is the identity type for generic intersections in the plugin system */
 import type { Schema, ParsedEnv } from "@cfast/env";
 import type { Permissions } from "@cfast/permissions";
 import type { ReactNode, ComponentType } from "react";
@@ -19,8 +18,8 @@ export type PluginSetupContext<TRequires> = {
 export type CfastPlugin<
   TName extends string = string,
   TProvides = unknown,
-  TRequires = {},
-  TClient = {},
+  TRequires = unknown,
+  TClient = unknown,
 > = {
   name: TName;
   setup: (
@@ -90,7 +89,7 @@ export type App<
     TSchema,
     TPermissions,
     TPluginContext & { [K in TName]: TProvides },
-    TClientContext & (TClient extends {} ? { [K in TName]: TClient } : {})
+    TClientContext & (TClient extends object ? { [K in TName]: TClient } : unknown)
   >;
   Provider: ComponentType<{ children: ReactNode }>;
   permissions: TPermissions;
