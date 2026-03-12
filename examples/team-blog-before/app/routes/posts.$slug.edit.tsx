@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form, redirect } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
@@ -19,6 +19,7 @@ import { posts, auditLogs } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
+import { useToast } from "~/components/ToastProvider";
 
 function generateSlug(title: string): string {
   return title
@@ -170,9 +171,29 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
 export default function EditPost() {
   const { post, user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { addToast } = useToast();
   const [title, setTitle] = useState(post.title);
   const [excerpt, setExcerpt] = useState(post.excerpt ?? "");
   const [content, setContent] = useState(post.content);
+
+  useEffect(() => {
+    if (!actionData) return;
+    if ("success" in actionData) {
+      switch (actionData.action) {
+        case "update":
+          addToast("Post updated successfully!");
+          break;
+        case "uploadCover":
+          addToast("Cover image uploaded!");
+          break;
+        case "removeCover":
+          addToast("Cover image removed.", "warning");
+          break;
+      }
+    } else if ("error" in actionData) {
+      addToast(actionData.error, "error");
+    }
+  }, [actionData, addToast]);
 
   return (
     <>

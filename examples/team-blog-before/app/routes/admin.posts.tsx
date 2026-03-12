@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form, Link, redirect } from "react-router";
 import Table from "@mui/joy/Table";
@@ -18,6 +18,7 @@ import { eq, desc, count, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Pagination } from "~/components/Pagination";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
+import { useToast } from "~/components/ToastProvider";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env as Env;
@@ -120,8 +121,18 @@ export default function AdminPosts() {
   const actionData = useActionData<typeof action>();
   const totalPages = Math.ceil(total / limit);
 
+  const { addToast } = useToast();
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [deletePostTitle, setDeletePostTitle] = useState<string>("");
+
+  useEffect(() => {
+    if (!actionData) return;
+    if ("success" in actionData) {
+      addToast("Post deleted successfully.");
+    } else if ("error" in actionData) {
+      addToast(actionData.error, "error");
+    }
+  }, [actionData, addToast]);
 
   const baseUrl =
     status !== "all" ? `/admin/posts?status=${status}` : "/admin/posts";

@@ -22,6 +22,7 @@ import { eq, desc, and, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
+import { useToast } from "~/components/ToastProvider";
 import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
@@ -332,7 +333,30 @@ export default function PostDetail() {
     post.slug
   );
 
+  const { addToast } = useToast();
   const [commentContent, setCommentContent] = useState("");
+
+  useEffect(() => {
+    if (!actionData) return;
+    if ("success" in actionData) {
+      switch (actionData.action) {
+        case "publish":
+          addToast("Post published successfully!");
+          break;
+        case "unpublish":
+          addToast("Post unpublished.", "warning");
+          break;
+        case "comment":
+          addToast("Comment posted!");
+          break;
+        case "deleteComment":
+          addToast("Comment deleted.", "warning");
+          break;
+      }
+    } else if ("error" in actionData) {
+      addToast(actionData.error, "error");
+    }
+  }, [actionData, addToast]);
 
   const isAuthor = user?.id === post.authorId;
   const isEditorOrAdmin = user ? hasAnyRole(user, ["editor", "admin"]) : false;
