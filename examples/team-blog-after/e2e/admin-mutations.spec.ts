@@ -34,7 +34,8 @@ test.describe.serial("Role Management", () => {
     await page.goto(`/admin?view=_users&id=${userIds.reader}`);
 
     // The "author" chip should now be visible in the Roles section
-    await expect(page.getByText("author")).toBeVisible();
+    // Use a specific selector to avoid matching the Select dropdown option
+    await expect(page.locator('.MuiChip-root', { hasText: "author" })).toBeVisible();
   });
 
   test("admin can revoke a role from a user", async ({ page, context }) => {
@@ -65,9 +66,8 @@ test.describe.serial("Admin Post Management", () => {
     await expect(page.getByText("Delete record")).toBeVisible();
     await expect(page.getByText("Are you sure you want to delete")).toBeVisible();
 
-    // Click Delete in the dialog (confirmLabel is "Delete")
-    // There are now multiple "Delete" buttons — the one in the dialog is in a Modal
-    await page.locator('[role="dialog"]').getByRole("button", { name: "Delete" }).click();
+    // Click Delete in the confirm dialog (role="alertdialog")
+    await page.locator('[role="alertdialog"]').getByRole("button", { name: "Delete" }).click();
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText("Deleted Posts record.")).toBeVisible();
