@@ -314,6 +314,28 @@ importers:
         specifier: ^4.0.18
         version: 4.0.18(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))
 
+  packages/core:
+    dependencies:
+      '@cfast/env':
+        specifier: workspace:*
+        version: link:../env
+      '@cfast/permissions':
+        specifier: workspace:*
+        version: link:../permissions
+    devDependencies:
+      react:
+        specifier: ^19.1.0
+        version: 19.2.4
+      tsup:
+        specifier: ^8
+        version: 8.5.1(postcss@8.5.8)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))
+
   packages/create-cfast:
     dependencies:
       kolorist:
