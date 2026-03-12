@@ -1,11 +1,13 @@
-import React, { createContext, type ReactNode, type ComponentType } from "react";
+import { createContext, type ReactNode, type ComponentType } from "react";
 import type { CfastPlugin } from "../types";
 
 export const CoreContext = createContext<Record<string, unknown> | null>(null);
 
+type ProviderComponent = ComponentType<{ children: ReactNode }>;
+
 export function createCoreProvider(
   plugins: Pick<CfastPlugin, "name" | "Provider" | "client">[],
-): ComponentType<{ children: ReactNode }> {
+): ProviderComponent {
   // Build client context value from plugins that have client exports
   const clientValue: Record<string, unknown> = {};
   for (const plugin of plugins) {
@@ -15,21 +17,19 @@ export function createCoreProvider(
   }
 
   // Collect providers in registration order
-  const providers = plugins
-    .filter(
-      (p): p is typeof p & { Provider: ComponentType<{ children: ReactNode }> } =>
-        p.Provider != null,
-    )
-    .map((p) => p.Provider);
+  const providers: ProviderComponent[] = [];
+  for (const p of plugins) {
+    if (p.Provider) {
+      providers.push(p.Provider);
+    }
+  }
 
   return function CfastProvider({ children }: { children: ReactNode }) {
     // Nest providers: first registered = outermost
     let tree = children;
     for (let i = providers.length - 1; i >= 0; i--) {
-      const P = providers[i];
-      if (P) {
-        tree = <P>{tree}</P>;
-      }
+      const P = providers[i] as ProviderComponent;
+      tree = <P>{tree}</P>;
     }
 
     return (
