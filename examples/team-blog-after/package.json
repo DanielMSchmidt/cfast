@@ -18,6 +18,7 @@
     "@better-auth/drizzle-adapter": "^1.5.3",
     "@better-auth/passkey": "^1.5.3",
     "@cfast/actions": "workspace:*",
+    "@cfast/admin": "workspace:*",
     "@cfast/auth": "workspace:*",
     "@cfast/env": "workspace:*",
     "@cfast/db": "workspace:*",
