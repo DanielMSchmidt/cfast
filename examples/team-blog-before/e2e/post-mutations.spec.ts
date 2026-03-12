@@ -14,9 +14,12 @@ test.describe.serial("Post Creation", () => {
 
   test("author creates a post via the form", async ({ page, context }) => {
     await loginAs(context, "author");
-    await page.goto("/posts/new");
+    await page.goto("/posts/new", { waitUntil: "networkidle" });
 
-    await page.fill('input[name="title"]', newPostTitle);
+    // Wait for MUI form to be interactive after hydration
+    const titleInput = page.locator('input[name="title"]');
+    await titleInput.waitFor({ state: "visible" });
+    await titleInput.fill(newPostTitle);
     await page.locator('textarea[name="excerpt"]').fill(newPostExcerpt);
     await page.locator('textarea[name="content"]').fill(newPostContent);
     await page.click('button[type="submit"]');
@@ -51,7 +54,7 @@ test.describe.serial("Post Editing", () => {
 
   test("author can edit own post title and content and save", async ({ page, context }) => {
     await loginAs(context, "author");
-    await page.goto(`/posts/${publishedPost.slug}/edit`);
+    await page.goto(`/posts/${publishedPost.slug}/edit`, { waitUntil: "networkidle" });
 
     await page.fill('input[name="title"]', updatedTitle);
     await page.locator('textarea[name="content"]').fill("Updated content for the post.");
@@ -133,7 +136,10 @@ test.describe.serial("Post Deletion", () => {
     context,
   }) => {
     await loginAs(context, "author");
-    await page.goto("/posts/my-test-post-from-playwright");
+    await page.goto("/posts/my-test-post-from-playwright", { waitUntil: "networkidle" });
+
+    // Wait for the post detail page to fully load
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("My Test Post From Playwright");
 
     // Handle the confirm dialog
     page.on("dialog", (dialog) => dialog.accept());
