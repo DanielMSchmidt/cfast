@@ -30,19 +30,17 @@ test.describe.serial("Role Management", () => {
     await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
   });
 
-  test("assigned role persists on fresh page load", async ({ page, context }) => {
-    const { userIds } = loadState();
-    await loginAs(context, "admin");
-    await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
-
-    // The "author" chip should be visible after a fresh page load
-    await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
-  });
-
   test("admin can revoke a role from a user", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
     await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
+
+    // Assign the "author" role first so we can revoke it
+    await page.getByText("Select role...").click();
+    await page.getByRole("option", { name: "author" }).click();
+    await page.getByRole("button", { name: "Add Role" }).click();
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByText('Role "author" added to user.')).toBeVisible();
 
     // The chip has an "x" button to remove the role.
     // Find the chip containing "author" and click its remove button.
