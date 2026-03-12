@@ -2,7 +2,7 @@ export function createRoleManager(d1: D1Database) {
   return {
     async getRoles(userId: string): Promise<string[]> {
       const stmt = d1.prepare(
-        "SELECT role FROM cfast_roles WHERE user_id = ?",
+        "SELECT role FROM roles WHERE user_id = ?",
       );
       const result = await stmt.bind(userId).all<{ role: string }>();
       return result.results.map((r) => r.role);
@@ -10,14 +10,14 @@ export function createRoleManager(d1: D1Database) {
 
     async setRole(userId: string, role: string): Promise<void> {
       const stmt = d1.prepare(
-        "INSERT OR IGNORE INTO cfast_roles (user_id, role) VALUES (?, ?)",
+        "INSERT OR IGNORE INTO roles (user_id, role) VALUES (?, ?)",
       );
       await stmt.bind(userId, role).run();
     },
 
     async setRoles(userId: string, roles: string[]): Promise<void> {
       const deleteStmt = d1
-        .prepare("DELETE FROM cfast_roles WHERE user_id = ?")
+        .prepare("DELETE FROM roles WHERE user_id = ?")
         .bind(userId);
 
       if (roles.length === 0) {
@@ -27,7 +27,7 @@ export function createRoleManager(d1: D1Database) {
 
       const insertStmts = roles.map((role) =>
         d1
-          .prepare("INSERT INTO cfast_roles (user_id, role) VALUES (?, ?)")
+          .prepare("INSERT INTO roles (user_id, role) VALUES (?, ?)")
           .bind(userId, role),
       );
 
@@ -36,7 +36,7 @@ export function createRoleManager(d1: D1Database) {
 
     async removeRole(userId: string, role: string): Promise<void> {
       const stmt = d1.prepare(
-        "DELETE FROM cfast_roles WHERE user_id = ? AND role = ?",
+        "DELETE FROM roles WHERE user_id = ? AND role = ?",
       );
       await stmt.bind(userId, role).run();
     },

@@ -11,7 +11,7 @@ describe("createRoleManager", () => {
 
     expect(d1._calls).toHaveLength(1);
     expect(d1._calls[0].sql).toBe(
-      "SELECT role FROM cfast_roles WHERE user_id = ?",
+      "SELECT role FROM roles WHERE user_id = ?",
     );
     expect(d1._calls[0].params).toEqual(["user-1"]);
   });
@@ -24,7 +24,7 @@ describe("createRoleManager", () => {
 
     expect(d1._calls).toHaveLength(1);
     expect(d1._calls[0].sql).toBe(
-      "INSERT OR IGNORE INTO cfast_roles (user_id, role) VALUES (?, ?)",
+      "INSERT OR IGNORE INTO roles (user_id, role) VALUES (?, ?)",
     );
     expect(d1._calls[0].params).toEqual(["user-1", "admin"]);
   });
@@ -39,19 +39,19 @@ describe("createRoleManager", () => {
 
     // First call: DELETE existing roles
     expect(d1._calls[0].sql).toBe(
-      "DELETE FROM cfast_roles WHERE user_id = ?",
+      "DELETE FROM roles WHERE user_id = ?",
     );
     expect(d1._calls[0].params).toEqual(["user-1"]);
 
     // Second call: INSERT editor
     expect(d1._calls[1].sql).toBe(
-      "INSERT INTO cfast_roles (user_id, role) VALUES (?, ?)",
+      "INSERT INTO roles (user_id, role) VALUES (?, ?)",
     );
     expect(d1._calls[1].params).toEqual(["user-1", "editor"]);
 
     // Third call: INSERT admin
     expect(d1._calls[2].sql).toBe(
-      "INSERT INTO cfast_roles (user_id, role) VALUES (?, ?)",
+      "INSERT INTO roles (user_id, role) VALUES (?, ?)",
     );
     expect(d1._calls[2].params).toEqual(["user-1", "admin"]);
   });
@@ -64,7 +64,7 @@ describe("createRoleManager", () => {
 
     expect(d1._calls).toHaveLength(1);
     expect(d1._calls[0].sql).toBe(
-      "DELETE FROM cfast_roles WHERE user_id = ?",
+      "DELETE FROM roles WHERE user_id = ?",
     );
   });
 
@@ -76,7 +76,7 @@ describe("createRoleManager", () => {
 
     expect(d1._calls).toHaveLength(1);
     expect(d1._calls[0].sql).toBe(
-      "DELETE FROM cfast_roles WHERE user_id = ? AND role = ?",
+      "DELETE FROM roles WHERE user_id = ? AND role = ?",
     );
     expect(d1._calls[0].params).toEqual(["user-1", "admin"]);
   });

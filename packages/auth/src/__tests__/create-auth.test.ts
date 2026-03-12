@@ -117,7 +117,7 @@ describe("createAuth", () => {
     const originalPrepare = d1.prepare;
     (d1 as unknown as Record<string, unknown>).prepare = (sql: string) => {
       const stmt = (originalPrepare as (sql: string) => unknown)(sql);
-      if (sql.includes("cfast_roles")) {
+      if (sql.includes("FROM roles")) {
         return {
           bind: () => ({
             all: async () => ({ results: [{ role: "editor" }] }),
