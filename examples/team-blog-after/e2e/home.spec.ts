@@ -32,8 +32,12 @@ test.describe("Home Page", () => {
     await page.goto("/", { waitUntil: "networkidle" });
     const link = page.getByRole("link", { name: /Getting Started with Cloudflare Workers/ });
     await link.waitFor({ state: "visible" });
-    // Wait for hydration: React Router's client-side navigation requires JS to be loaded
-    await page.waitForFunction(() => document.readyState === "complete");
+    // Wait for React hydration — document.readyState doesn't guarantee React is ready.
+    // React attaches internal fiber properties to DOM elements during hydration.
+    await page.waitForFunction(() => {
+      const el = document.querySelector('a[href*="/posts/"]');
+      return el != null && Object.keys(el).some(k => k.startsWith("__react"));
+    }, { timeout: 15000 });
     await link.click();
     await page.waitForURL(/\/posts\/getting-started-with-cloudflare-workers/, { timeout: 15000 });
   });
