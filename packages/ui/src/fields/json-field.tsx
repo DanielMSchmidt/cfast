@@ -1,4 +1,4 @@
-import { createElement, useState } from "react";
+import { useState } from "react";
 import type { JsonFieldProps } from "../types.js";
 
 export function JsonField({
@@ -8,7 +8,7 @@ export function JsonField({
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
 
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   const formatted = JSON.stringify(value, null, 2);
@@ -16,30 +16,32 @@ export function JsonField({
   if (isCollapsed) {
     const preview = JSON.stringify(value);
     const short = preview.length > 60 ? `${preview.slice(0, 60)}…` : preview;
-    return createElement(
-      "span",
-      null,
-      createElement("code", null, short),
-      " ",
-      createElement("button", {
-        onClick: () => setIsCollapsed(false),
-        style: { border: "none", background: "none", cursor: "pointer", color: "#666", fontSize: "12px" },
-      }, "expand"),
+    return (
+      <span>
+        <code>{short}</code>
+        {" "}
+        <button
+          onClick={() => setIsCollapsed(false)}
+          style={{ border: "none", background: "none", cursor: "pointer", color: "#666", fontSize: "12px" }}
+        >
+          expand
+        </button>
+      </span>
     );
   }
 
-  return createElement(
-    "pre",
-    {
-      style: {
+  return (
+    <pre
+      style={{
         margin: 0,
         fontSize: "13px",
         backgroundColor: "#f5f5f5",
         padding: "8px",
         borderRadius: "4px",
         overflow: "auto",
-      },
-    },
-    createElement("code", null, formatted),
+      }}
+    >
+      <code>{formatted}</code>
+    </pre>
   );
 }

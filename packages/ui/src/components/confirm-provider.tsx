@@ -1,4 +1,4 @@
-import { createElement, useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 import { ConfirmContext } from "../hooks/use-confirm.js";
 import { useComponent } from "../plugin.js";
@@ -36,21 +36,23 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     setState(null);
   }, []);
 
-  return createElement(
-    ConfirmContext.Provider,
-    { value: { confirm } },
-    children,
-    state
-      ? createElement(ConfirmDialog, {
-          open: true,
-          onClose: handleClose,
-          onConfirm: handleConfirm,
-          title: state.title,
-          description: state.description,
-          confirmLabel: state.confirmLabel,
-          cancelLabel: state.cancelLabel,
-          variant: state.variant,
-        })
-      : null,
+  return (
+    <ConfirmContext.Provider value={{ confirm }}>
+      {children}
+      {state
+        ? (
+            <ConfirmDialog
+              open
+              onClose={handleClose}
+              onConfirm={handleConfirm}
+              title={state.title}
+              description={state.description}
+              confirmLabel={state.confirmLabel}
+              cancelLabel={state.cancelLabel}
+              variant={state.variant}
+            />
+          )
+        : null}
+    </ConfirmContext.Provider>
   );
 }

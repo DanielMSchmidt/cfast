@@ -1,4 +1,4 @@
-import { createElement, useCallback, type ReactElement } from "react";
+import { useCallback, type ReactElement } from "react";
 import type { ReactNode } from "react";
 import { toast, Toaster } from "sonner";
 import { ToastContext } from "../hooks/use-toast.js";
@@ -26,10 +26,10 @@ export function ToastProvider({ children }: { children: ReactNode }): ReactEleme
     }
   }, []);
 
-  return createElement(
-    ToastContext.Provider,
-    { value: { show } },
-    children,
-    createElement(Toaster, { richColors: true, position: "bottom-right" }),
+  return (
+    <ToastContext.Provider value={{ show }}>
+      {children}
+      <Toaster richColors position="bottom-right" />
+    </ToastContext.Provider>
   );
 }

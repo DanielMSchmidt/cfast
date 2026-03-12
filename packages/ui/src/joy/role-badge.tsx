@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import Chip from "@mui/joy/Chip";
 import type { ColorPaletteProp } from "@mui/joy/styles";
 import type { RoleBadgeProps } from "../types.js";
@@ -21,10 +21,9 @@ export function RoleBadge({ role, colors }: RoleBadgeProps): ReactElement {
     : defaultColors;
   const chipColor = colorMap[role] ?? ("neutral" satisfies ColorPaletteProp);
 
-  return createElement(Chip, {
-    size: "sm",
-    variant: "soft",
-    color: chipColor,
-    children: role,
-  });
+  return (
+    <Chip size="sm" variant="soft" color={chipColor}>
+      {role}
+    </Chip>
+  );
 }

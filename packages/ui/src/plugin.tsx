@@ -1,4 +1,4 @@
-import { createContext, useContext, createElement } from "react";
+import { createContext, useContext } from "react";
 import type { UIPlugin, UIPluginComponents } from "./types.js";
 import { headlessDefaults } from "./headless-defaults.js";
 
@@ -17,7 +17,7 @@ export function UIPluginProvider({
   plugin: UIPlugin;
   children: React.ReactNode;
 }) {
-  return createElement(UIPluginContext.Provider, { value: plugin }, children);
+  return <UIPluginContext.Provider value={plugin}>{children}</UIPluginContext.Provider>;
 }
 
 export function useUIPlugin(): UIPlugin | null {

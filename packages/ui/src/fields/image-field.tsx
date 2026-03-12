@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { ImageFieldProps } from "../types.js";
 
 export function ImageField({
@@ -8,14 +7,16 @@ export function ImageField({
   alt = "",
 }: ImageFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
-  return createElement("img", {
-    src: value,
-    alt,
-    width,
-    height,
-    style: { objectFit: "cover" as const, borderRadius: "4px" },
-  });
+  return (
+    <img
+      src={value}
+      alt={alt}
+      width={width}
+      height={height}
+      style={{ objectFit: "cover" as const, borderRadius: "4px" }}
+    />
+  );
 }

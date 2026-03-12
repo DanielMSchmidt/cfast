@@ -1,4 +1,3 @@
-import { createElement, Fragment } from "react";
 import type { PermissionGateProps } from "../types.js";
 
 /**
@@ -20,8 +19,8 @@ export function PermissionGate({
   }
 
   if (!action.permitted) {
-    return fallback ? createElement(Fragment, null, fallback) : null;
+    return fallback ? <>{fallback}</> : null;
   }
 
-  return createElement(Fragment, null, children);
+  return <>{children}</>;
 }

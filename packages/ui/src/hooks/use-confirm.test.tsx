@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { createElement } from "react";
 import { useConfirm, ConfirmContext } from "./use-confirm.js";
 import type { ConfirmOptions } from "../types.js";
 
@@ -14,11 +13,11 @@ describe("useConfirm", () => {
   it("calls confirm from context and resolves", async () => {
     const mockConfirm = vi.fn().mockResolvedValue(true);
 
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-      createElement(ConfirmContext.Provider, {
-        value: { confirm: mockConfirm },
-        children,
-      });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ConfirmContext.Provider value={{ confirm: mockConfirm }}>
+        {children}
+      </ConfirmContext.Provider>
+    );
 
     const { result } = renderHook(() => useConfirm(), { wrapper });
 

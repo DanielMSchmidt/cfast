@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import LinearProgress from "@mui/joy/LinearProgress";
 import { useNavigation } from "react-router";
 
@@ -13,15 +13,17 @@ export function NavigationProgress(): ReactElement | null {
     return null;
   }
 
-  return createElement(LinearProgress, {
-    sx: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 9999,
-      "--LinearProgress-radius": "0px",
-      "--LinearProgress-thickness": "3px",
-    },
-  });
+  return (
+    <LinearProgress
+      sx={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9999,
+        "--LinearProgress-radius": "0px",
+        "--LinearProgress-thickness": "3px",
+      }}
+    />
+  );
 }

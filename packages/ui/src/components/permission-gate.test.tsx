@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { PermissionGate } from "./permission-gate.js";
 import type { ActionHookResult } from "@cfast/actions/client";
 
@@ -24,10 +23,9 @@ describe("PermissionGate", () => {
     const action = mockAction();
 
     render(
-      createElement(PermissionGate, {
-        action,
-        children: createElement("div", { "data-testid": "content" }, "Visible"),
-      }),
+      <PermissionGate action={action}>
+        <div data-testid="content">Visible</div>
+      </PermissionGate>,
     );
 
     expect(screen.getByTestId("content").textContent).toBe("Visible");
@@ -37,10 +35,9 @@ describe("PermissionGate", () => {
     const action = mockAction({ permitted: false, invisible: true });
 
     const { container } = render(
-      createElement(PermissionGate, {
-        action,
-        children: createElement("div", null, "Should not appear"),
-      }),
+      <PermissionGate action={action}>
+        <div>Should not appear</div>
+      </PermissionGate>,
     );
 
     expect(container.innerHTML).toBe("");
@@ -50,11 +47,12 @@ describe("PermissionGate", () => {
     const action = mockAction({ permitted: false, reason: "No permission" });
 
     render(
-      createElement(PermissionGate, {
-        action,
-        children: createElement("div", null, "Hidden"),
-        fallback: createElement("div", { "data-testid": "fallback" }, "Read only"),
-      }),
+      <PermissionGate
+        action={action}
+        fallback={<div data-testid="fallback">Read only</div>}
+      >
+        <div>Hidden</div>
+      </PermissionGate>,
     );
 
     expect(screen.queryByText("Hidden")).toBeNull();
@@ -65,10 +63,9 @@ describe("PermissionGate", () => {
     const action = mockAction({ permitted: false, reason: "No permission" });
 
     const { container } = render(
-      createElement(PermissionGate, {
-        action,
-        children: createElement("div", null, "Hidden"),
-      }),
+      <PermissionGate action={action}>
+        <div>Hidden</div>
+      </PermissionGate>,
     );
 
     expect(container.innerHTML).toBe("");

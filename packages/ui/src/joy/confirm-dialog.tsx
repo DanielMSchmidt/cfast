@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import Typography from "@mui/joy/Typography";
@@ -19,25 +19,24 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   variant = "default",
 }: ConfirmDialogSlotProps): ReactElement {
-  const dialog = createElement(
-    ModalDialog,
-    { variant: "outlined", role: "alertdialog", sx: { maxWidth: 400 } },
-    createElement(Typography, { level: "h4", children: title }),
-    description
-      ? createElement(Typography, { level: "body-md", sx: { mt: 1 }, children: description })
-      : null,
-    createElement(
-      Stack,
-      { direction: "row", spacing: 1, justifyContent: "flex-end", sx: { mt: 2 } },
-      createElement(Button, { variant: "plain", color: "neutral", onClick: onClose, children: cancelLabel }),
-      createElement(Button, {
-        variant: "solid",
-        color: variant === "danger" ? "danger" : "primary",
-        onClick: onConfirm,
-        children: confirmLabel,
-      }),
-    ),
+  const dialog = (
+    <ModalDialog variant="outlined" role="alertdialog" sx={{ maxWidth: 400 }}>
+      <Typography level="h4">{title}</Typography>
+      {description
+        ? <Typography level="body-md" sx={{ mt: 1 }}>{description}</Typography>
+        : null}
+      <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ mt: 2 }}>
+        <Button variant="plain" color="neutral" onClick={onClose}>{cancelLabel}</Button>
+        <Button
+          variant="solid"
+          color={variant === "danger" ? "danger" : "primary"}
+          onClick={onConfirm}
+        >
+          {confirmLabel}
+        </Button>
+      </Stack>
+    </ModalDialog>
   );
 
-  return createElement(Modal, { open, onClose, children: dialog });
+  return <Modal open={open} onClose={onClose}>{dialog}</Modal>;
 }

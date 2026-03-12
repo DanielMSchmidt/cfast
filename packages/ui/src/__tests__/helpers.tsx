@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { ReactNode } from "react";
 import type { ClientDescriptor } from "@cfast/actions";
 import { UIPluginProvider, createUIPlugin } from "../plugin.js";
@@ -12,7 +11,7 @@ export function withUIPlugin(
 ) {
   const plugin = createUIPlugin({ components });
   return function Wrapper({ children }: { children: ReactNode }) {
-    return createElement(UIPluginProvider, { plugin, children });
+    return <UIPluginProvider plugin={plugin}>{children}</UIPluginProvider>;
   };
 }
 
@@ -33,7 +32,7 @@ export function createMockDescriptor(actionNames: string[]): ClientDescriptor {
 export function withAll(...wrappers: Array<(props: { children: ReactNode }) => ReactNode>) {
   return function CombinedWrapper({ children }: { children: ReactNode }) {
     return wrappers.reduceRight(
-      (acc, Wrapper) => createElement(Wrapper as React.ComponentType<{ children: ReactNode }>, { children: acc }),
+      (acc, Wrapper) => <Wrapper>{acc}</Wrapper>,
       children as ReactNode,
     );
   };

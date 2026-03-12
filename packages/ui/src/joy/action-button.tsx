@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import JoyButton from "@mui/joy/Button";
 import type { ButtonProps as JoyButtonProps } from "@mui/joy/Button";
 import JoyTooltip from "@mui/joy/Tooltip";
@@ -40,24 +40,28 @@ export function ActionButton({
 
   const disabled = !action.permitted && whenForbidden === "disable";
 
-  const button = createElement(JoyButton, {
-    ...buttonProps,
-    onClick: () => action.submit(),
-    disabled,
-    loading: action.pending,
-    variant,
-    color,
-    size,
-    children,
-  });
+  const button = (
+    <JoyButton
+      {...buttonProps}
+      onClick={() => action.submit()}
+      disabled={disabled}
+      loading={action.pending}
+      variant={variant}
+      color={color}
+      size={size}
+    >
+      {children}
+    </JoyButton>
+  );
 
   // Wrap in tooltip if disabled with a reason
   if (disabled && action.reason) {
-    const wrapper = createElement("span", null, button);
-    return createElement(JoyTooltip, {
-      title: action.reason,
-      children: wrapper,
-    });
+    const wrapper = <span>{button}</span>;
+    return (
+      <JoyTooltip title={action.reason}>
+        {wrapper}
+      </JoyTooltip>
+    );
   }
 
   return button;

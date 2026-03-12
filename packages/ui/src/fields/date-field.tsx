@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { DateFieldProps } from "../types.js";
 
 const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
@@ -49,14 +48,14 @@ export function DateField({
   locale = "en",
 }: DateFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   const date = value instanceof Date ? value : new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return createElement("span", null, "Invalid date");
+    return <span>Invalid date</span>;
   }
 
-  return createElement("time", { dateTime: date.toISOString() }, formatDate(date, format, locale));
+  return <time dateTime={date.toISOString()}>{formatDate(date, format, locale)}</time>;
 }

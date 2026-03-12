@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { createElement } from "react";
 import { useToast, ToastContext } from "./use-toast.js";
 
 describe("useToast", () => {
@@ -13,11 +12,11 @@ describe("useToast", () => {
   it("calls show with correct options for each method", () => {
     const mockShow = vi.fn();
 
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-      createElement(ToastContext.Provider, {
-        value: { show: mockShow },
-        children,
-      });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContext.Provider value={{ show: mockShow }}>
+        {children}
+      </ToastContext.Provider>
+    );
 
     const { result } = renderHook(() => useToast(), { wrapper });
 

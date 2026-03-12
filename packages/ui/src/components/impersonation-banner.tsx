@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { useCurrentUser } from "@cfast/auth/client";
 import { useComponent } from "../plugin.js";
 import type { ImpersonationBannerProps } from "../types.js";
@@ -18,36 +17,23 @@ export function ImpersonationBanner({
     return null;
   }
 
-  return createElement(
-    Alert,
-    {
-      color: "warning",
-      children: createElement(
-        "div",
-        {
-          style: {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "12px",
-          },
-        },
-        createElement(
-          "strong",
-          null,
-          `Viewing as ${user.name} (${user.email})`,
-        ),
-        createElement(
-          "form",
-          { method: "post", action: stopAction },
-          createElement(Button, {
-            type: "submit",
-            variant: "outlined",
-            size: "sm",
-            children: "Stop Impersonating",
-          }),
-        ),
-      ),
-    },
+  return (
+    <Alert color="warning">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "12px",
+        }}
+      >
+        <strong>{`Viewing as ${user.name} (${user.email})`}</strong>
+        <form method="post" action={stopAction}>
+          <Button type="submit" variant="outlined" size="sm">
+            Stop Impersonating
+          </Button>
+        </form>
+      </div>
+    </Alert>
   );
 }

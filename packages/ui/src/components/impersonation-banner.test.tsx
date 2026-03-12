@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { ImpersonationBanner } from "./impersonation-banner.js";
 
 afterEach(cleanup);
@@ -28,14 +27,14 @@ describe("ImpersonationBanner", () => {
       isImpersonating: false,
     });
 
-    const { container } = render(createElement(ImpersonationBanner, {}));
+    const { container } = render(<ImpersonationBanner />);
     expect(container.innerHTML).toBe("");
   });
 
   it("renders nothing when user is null", () => {
     mockUseCurrentUser.mockReturnValue(null);
 
-    const { container } = render(createElement(ImpersonationBanner, {}));
+    const { container } = render(<ImpersonationBanner />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -50,7 +49,7 @@ describe("ImpersonationBanner", () => {
       realUser: { id: "1", name: "Admin" },
     });
 
-    render(createElement(ImpersonationBanner, {}));
+    render(<ImpersonationBanner />);
     expect(screen.getByText("Viewing as Impersonated User (impersonated@example.com)")).toBeTruthy();
     expect(screen.getByText("Stop Impersonating")).toBeTruthy();
   });
@@ -65,7 +64,7 @@ describe("ImpersonationBanner", () => {
       isImpersonating: true,
     });
 
-    render(createElement(ImpersonationBanner, { stopAction: "/custom/stop" }));
+    render(<ImpersonationBanner stopAction="/custom/stop" />);
     const form = screen.getByText("Stop Impersonating").closest("form") as HTMLFormElement;
     expect(form.getAttribute("action")).toBe("/custom/stop");
   });

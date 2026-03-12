@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import Sheet from "@mui/joy/Sheet";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
@@ -18,38 +18,28 @@ export function ImpersonationBanner({
     return null;
   }
 
-  return createElement(
-    Sheet,
-    {
-      color: "warning",
-      variant: "solid",
-      sx: {
+  return (
+    <Sheet
+      color="warning"
+      variant="solid"
+      sx={{
         position: "sticky",
         top: 0,
         zIndex: 1100,
         py: 1,
         px: 3,
-      },
-    },
-    createElement(
-      Stack,
-      { direction: "row", spacing: 2, alignItems: "center", justifyContent: "center" },
-      createElement(Typography, {
-        level: "body-sm",
-        sx: { fontWeight: "bold" },
-        children: `Viewing as ${user.name} (${user.email})`,
-      }),
-      createElement(
-        "form",
-        { method: "post", action: stopAction },
-        createElement(Button, {
-          size: "sm",
-          variant: "outlined",
-          color: "warning",
-          type: "submit",
-          children: "Stop Impersonating",
-        }),
-      ),
-    ),
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+        <Typography level="body-sm" sx={{ fontWeight: "bold" }}>
+          {`Viewing as ${user.name} (${user.email})`}
+        </Typography>
+        <form method="post" action={stopAction}>
+          <Button size="sm" variant="outlined" color="warning" type="submit">
+            Stop Impersonating
+          </Button>
+        </form>
+      </Stack>
+    </Sheet>
   );
 }

@@ -1,23 +1,22 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { createUIPlugin, UIPluginProvider, useUIPlugin, useComponent } from "../plugin.js";
 import type { ButtonSlotProps } from "../types.js";
 
 afterEach(cleanup);
 
 function TestButton(props: ButtonSlotProps) {
-  return createElement("button", { "data-testid": "custom-button" }, props.children);
+  return <button data-testid="custom-button">{props.children}</button>;
 }
 
 function UsePluginConsumer() {
   const plugin = useUIPlugin();
-  return createElement("div", { "data-testid": "plugin-value" }, plugin ? "has-plugin" : "no-plugin");
+  return <div data-testid="plugin-value">{plugin ? "has-plugin" : "no-plugin"}</div>;
 }
 
 function UseComponentConsumer() {
   const Button = useComponent("button");
-  return createElement(Button, { children: "Click me" });
+  return <Button>Click me</Button>;
 }
 
 describe("createUIPlugin", () => {
@@ -38,10 +37,9 @@ describe("UIPluginProvider", () => {
   it("provides plugin to children", () => {
     const plugin = createUIPlugin({ components: {} });
     render(
-      createElement(UIPluginProvider, {
-        plugin,
-        children: createElement(UsePluginConsumer),
-      }),
+      <UIPluginProvider plugin={plugin}>
+        <UsePluginConsumer />
+      </UIPluginProvider>,
     );
     expect(screen.getByTestId("plugin-value").textContent).toBe("has-plugin");
   });
@@ -49,14 +47,14 @@ describe("UIPluginProvider", () => {
 
 describe("useUIPlugin", () => {
   it("returns null when no provider is present", () => {
-    render(createElement(UsePluginConsumer));
+    render(<UsePluginConsumer />);
     expect(screen.getByTestId("plugin-value").textContent).toBe("no-plugin");
   });
 });
 
 describe("useComponent", () => {
   it("returns headless default when no plugin provides the slot", () => {
-    render(createElement(UseComponentConsumer));
+    render(<UseComponentConsumer />);
     expect(screen.getByRole("button")).toBeTruthy();
     expect(screen.getByRole("button").textContent).toBe("Click me");
   });
@@ -64,10 +62,9 @@ describe("useComponent", () => {
   it("returns plugin component when provided", () => {
     const plugin = createUIPlugin({ components: { button: TestButton } });
     render(
-      createElement(UIPluginProvider, {
-        plugin,
-        children: createElement(UseComponentConsumer),
-      }),
+      <UIPluginProvider plugin={plugin}>
+        <UseComponentConsumer />
+      </UIPluginProvider>,
     );
     expect(screen.getByTestId("custom-button")).toBeTruthy();
     expect(screen.getByTestId("custom-button").textContent).toBe("Click me");
@@ -78,14 +75,13 @@ describe("useComponent", () => {
 
     function TooltipConsumer() {
       const Tooltip = useComponent("tooltip");
-      return createElement(Tooltip, { title: "test", children: "hover me" });
+      return <Tooltip title="test">hover me</Tooltip>;
     }
 
     render(
-      createElement(UIPluginProvider, {
-        plugin,
-        children: createElement(TooltipConsumer),
-      }),
+      <UIPluginProvider plugin={plugin}>
+        <TooltipConsumer />
+      </UIPluginProvider>,
     );
     expect(screen.getByText("hover me").getAttribute("title")).toBe("test");
   });

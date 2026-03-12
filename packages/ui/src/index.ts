@@ -23,6 +23,9 @@ export { RoleBadge } from "./components/role-badge.js";
 export { ImpersonationBanner } from "./components/impersonation-banner.js";
 export { EmptyState } from "./components/empty-state.js";
 export { NavigationProgress } from "./components/navigation-progress.js";
+export { PageContainer } from "./components/page-container.js";
+export { AppShell, AppShellSidebar, AppShellHeader } from "./components/app-shell.js";
+export { UserMenu } from "./components/user-menu.js";
 
 // Types
 export type {

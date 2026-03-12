@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { EmptyState } from "./empty-state.js";
 import { createMockDescriptor } from "../__tests__/helpers.js";
 
@@ -21,10 +20,10 @@ describe("EmptyState", () => {
 
   it("renders title and description without createAction", () => {
     render(
-      createElement(EmptyState, {
-        title: "No posts yet",
-        description: "Create your first post.",
-      }),
+      <EmptyState
+        title="No posts yet"
+        description="Create your first post."
+      />,
     );
     expect(screen.getByText("No posts yet")).toBeTruthy();
     expect(screen.getByText("Create your first post.")).toBeTruthy();
@@ -44,11 +43,11 @@ describe("EmptyState", () => {
 
     const descriptor = createMockDescriptor(["createPost"]);
     render(
-      createElement(EmptyState, {
-        title: "No posts",
-        createAction: descriptor,
-        createLabel: "New Post",
-      }),
+      <EmptyState
+        title="No posts"
+        createAction={descriptor}
+        createLabel="New Post"
+      />,
     );
 
     const button = screen.getByText("New Post");
@@ -70,12 +69,12 @@ describe("EmptyState", () => {
 
     const descriptor = createMockDescriptor(["createPost"]);
     render(
-      createElement(EmptyState, {
-        title: "No posts",
-        description: "Talk to an admin.",
-        createAction: descriptor,
-        createLabel: "New Post",
-      }),
+      <EmptyState
+        title="No posts"
+        description="Talk to an admin."
+        createAction={descriptor}
+        createLabel="New Post"
+      />,
     );
 
     expect(screen.getByText("No posts")).toBeTruthy();
@@ -96,10 +95,10 @@ describe("EmptyState", () => {
 
     const descriptor = createMockDescriptor(["createPost"]);
     render(
-      createElement(EmptyState, {
-        title: "No posts",
-        createAction: descriptor,
-      }),
+      <EmptyState
+        title="No posts"
+        createAction={descriptor}
+      />,
     );
 
     expect(screen.getByText("Nothing here yet")).toBeTruthy();

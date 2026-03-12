@@ -1,9 +1,8 @@
-import { createElement } from "react";
 import type { UrlFieldProps } from "../types.js";
 
 export function UrlField({ value, truncate }: UrlFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   let display = value;
@@ -16,10 +15,10 @@ export function UrlField({ value, truncate }: UrlFieldProps) {
     }
   }
 
-  return createElement(
-    "a",
-    { href: value, target: "_blank", rel: "noopener noreferrer" },
-    display,
-    " ↗",
+  return (
+    <a href={value} target="_blank" rel="noopener noreferrer">
+      {display}
+      {" \u2197"}
+    </a>
   );
 }
