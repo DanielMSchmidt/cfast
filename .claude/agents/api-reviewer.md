@@ -32,10 +32,18 @@ Review proposed or implemented APIs for consistency across the @cfast/* packages
 - Server-only code in main entrypoint, client code in `/client` sub-export
 - Plugin entrypoints: `@cfast/package/plugin-name`
 
+### TSDoc Coverage
+- Every public export (`export function`, `export type`, `export const`, `export class`) must have a TSDoc comment
+- Functions must have `@param` tags for all parameters and a `@returns` tag
+- Main factory functions (`createX`), schema functions (`defineX`), and hooks (`useX`) must have an `@example` tag
+- Error classes must have a TSDoc description
+- Types used in public APIs must have a TSDoc description
+
 ## Process
 
 1. Read the README.md of the package being reviewed
 2. Read the README.md files of related packages (check the dependency graph in CLAUDE.md)
 3. Grep for all public exports (`export function`, `export type`, `export const`, `export interface`)
+3.5. Check TSDoc coverage on all public exports found in step 3. Flag missing or incomplete TSDoc.
 4. Compare naming, option shapes, error patterns, and export structure against the conventions above
 5. Flag any inconsistencies with specific suggestions for how to fix them

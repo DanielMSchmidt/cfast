@@ -46,6 +46,7 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - No classes in public APIs unless there's a strong reason. Prefer functions and plain objects.
 - Named exports only. No default exports except in route files (React Router convention).
 - Use JSX syntax in `@cfast/ui` components. Do not use `createElement` — JSX is more readable and the tsconfig supports it.
+- All public exports must have TSDoc comments (`@param`, `@returns`, `@example` for main functions). The `api-reviewer` agent enforces this.
 
 ### Testing
 - Test against D1/SQLite, not Postgres. Use `miniflare` or `wrangler dev` for integration tests.
@@ -73,12 +74,12 @@ Use the custom agents in `.claude/agents/` for quality checks. Spawn them with t
 
 | Agent | Model | When to Run |
 |---|---|---|
-| `api-reviewer.md` | Sonnet | After adding/changing any public API |
+| `api-reviewer.md` | Sonnet | After adding/changing any public API — also checks TSDoc coverage |
 | `workers-compat.md` | Haiku | After adding deps or writing code that might use Node.js APIs |
 | `package-boundary.md` | Haiku | After changing dependencies between packages or adding exports |
 | `readme-sync.md` | Sonnet | After implementing features to verify code matches documented API |
 | `deps-checker.md` | Haiku | After adding/changing dependencies or periodically to check freshness |
-| `example-sync.md` | Sonnet | After implementing/changing any @cfast/* package — verifies `examples/team-blog-after` uses the latest APIs |
+| `example-sync.md` | Sonnet | After implementing/changing any @cfast/* package — verifies `examples/team-blog-after` and `docs/tutorials/` use the latest APIs |
 
 ## Commands
 
@@ -88,4 +89,6 @@ pnpm dev            # Dev mode (watch)
 pnpm test           # Run unit tests (vitest via turbo)
 pnpm typecheck      # Type-check all packages
 pnpm lint           # Lint all packages
+pnpm docs:dev       # Serve documentation site locally
+pnpm docs:build     # Build documentation site for deployment
 ```

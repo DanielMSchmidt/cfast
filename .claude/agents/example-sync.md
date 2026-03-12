@@ -17,6 +17,15 @@ Search `examples/team-blog-after/app/` for:
 - Usage of the package's API (functions, types, components)
 - Patterns that the package is meant to replace (e.g., manual permission checks if `@cfast/permissions` changed)
 
+### 2b. Find Usage in Tutorial Steps
+
+Search `docs/tutorials/team-blog/step-*/` for:
+- Imports from the changed package (`@cfast/<package>`)
+- Usage of the package's API
+- Patterns that the package is meant to replace
+
+Tutorial steps that import the changed package should be using the latest API.
+
 ### 3. Check for Stale Patterns
 
 Compare the example's usage against the package's current README:
@@ -32,7 +41,7 @@ Verify `examples/team-blog-after/package.json`:
 
 ### 5. Report
 
-For each issue found:
+For each issue found (in the example app or tutorial steps):
 - The file and line(s) that need updating
 - What the current code does
 - What it should do to match the new API
@@ -48,3 +57,4 @@ For each issue found:
 
 - The example app may use legacy helpers (like `hasRole`/`hasAnyRole`) alongside new @cfast APIs during migration. This is expected when not all packages are implemented yet.
 - Focus on the package that just changed. Don't audit the entire example for all packages.
+- Also check tutorial step projects in `docs/tutorials/team-blog/`. Each step is a complete project that should use current APIs for the packages it imports.
