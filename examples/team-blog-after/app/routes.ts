@@ -10,12 +10,5 @@ export default [
   route("profile", "routes/profile.tsx"),
   route("api/upload", "routes/api.upload.tsx"),
   route("api/file/*", "routes/api.file.$.tsx"),
-  route("admin", "routes/admin.tsx", [
-    index("routes/admin._index.tsx"),
-    route("users", "routes/admin.users.tsx"),
-    route("users/:id", "routes/admin.users.$id.tsx"),
-    route("posts", "routes/admin.posts.tsx"),
-    route("impersonate/:id", "routes/admin.impersonate.$id.tsx"),
-    route("stop-impersonation", "routes/admin.stop-impersonation.tsx"),
-  ]),
+  route("admin", "routes/admin.tsx"),
 ] satisfies RouteConfig;

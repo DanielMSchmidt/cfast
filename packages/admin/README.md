@@ -25,28 +25,74 @@ This means:
 - **Customizable, not locked in.** Override any view, any field, any action. But the default is good enough to ship.
 - **UI delegated to `@cfast/ui`.** Admin generates configuration. `@cfast/ui/joy` renders it.
 
-## Planned API
+## API
 
 ### Minimal Setup
 
 ```typescript
-// app/routes/admin.tsx (or wherever you mount it)
+// app/routes/admin.tsx
 import { createAdmin } from "@cfast/admin";
-import { db } from "~/db";
-import { auth } from "~/auth";
+import type { AdminAuthConfig } from "@cfast/admin";
 import * as schema from "~/schema";
 
-export const admin = createAdmin({
+// Auth adapter — bridges your app's auth to admin's interface
+const auth: AdminAuthConfig = {
+  async requireUser(request) {
+    // Return { user: AdminUser, grants: unknown[] }
+    const session = await getSession(request);
+    return { user: session.user, grants: session.grants };
+  },
+  hasRole: (user, role) => user.roles.includes(role),
+  getRoles: (userId) => authInstance.getRoles(userId),
+  setRole: (userId, role) => authInstance.setRole(userId, role),
+  removeRole: (userId, role) => authInstance.removeRole(userId, role),
+  setRoles: (userId, roles) => authInstance.setRoles(userId, roles),
+  impersonate: (adminId, targetId, request) => { /* ... */ },
+  stopImpersonation: (request) => { /* ... */ },
+};
+
+// DB factory — called per-request with grants and user context
+function db(grants: unknown[], user: { id: string } | null) {
+  return createDb({ d1: env.DB, schema, grants, user });
+}
+
+const admin = createAdmin({
   db,
   auth,
   schema,
-  // That's it. Every table in your schema gets a full CRUD UI.
+  requiredRole: "admin", // Role required to access admin (default: "admin")
 });
 
 // React Router route:
 export const loader = admin.loader;
 export const action = admin.action;
 export default admin.Component;
+```
+
+### Server/Client Splitting
+
+For React Router apps where server code must not leak into client bundles, use the individual factories:
+
+```typescript
+// app/admin.server.ts — server only
+import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
+
+const tableMetas = introspectSchema(schema);
+export const adminLoader = createAdminLoader(config, tableMetas);
+export const adminAction = createAdminAction(config, tableMetas);
+```
+
+```typescript
+// app/routes/admin.tsx — safe for client bundle
+import { createAdminComponent, introspectSchema } from "@cfast/admin";
+import { adminLoader, adminAction } from "~/admin.server";
+
+const tableMetas = introspectSchema(schema);
+const AdminComponent = createAdminComponent(tableMetas);
+
+export const loader = adminLoader;
+export const action = adminAction;
+export default AdminComponent;
 ```
 
 ### Table Configuration
@@ -64,11 +110,13 @@ createAdmin({
       listColumns: ["title", "author", "published", "createdAt"],
       searchable: ["title", "content"],
       defaultSort: { column: "createdAt", direction: "desc" },
+      exclude: false, // Set true to hide a table from admin
       fields: {
         content: { component: RichTextEditor },
       },
     },
     // Tables not listed here use sensible defaults
+    // Auth-internal tables (session, account, verification, passkey) are auto-excluded
   },
 });
 ```
@@ -81,8 +129,6 @@ Built-in views for managing users and roles:
 createAdmin({
   // ...
   users: {
-    // Control which user fields are visible/editable in admin
-    displayFields: ["email", "name", "createdAt", "lastLogin"],
     // Which roles can be assigned through the admin UI
     // (respects auth.roleGrants for who can assign what)
     assignableRoles: ["user", "editor", "moderator", "admin"],
@@ -100,10 +146,10 @@ The admin automatically provides:
 
 When an admin impersonates a user:
 
-1. The admin panel shows a banner via `@cfast/ui`'s `<ImpersonationBanner>`
+1. The admin panel shows an impersonation banner with a "Stop Impersonation" button
 2. The rest of the app behaves as that user (same session, same permissions)
-3. A floating button lets the admin end impersonation at any time
-4. All impersonation events are logged to an audit table
+3. Impersonation start/stop is handled by the `auth.impersonate` and `auth.stopImpersonation` callbacks you provide
+4. Audit logging is the responsibility of your auth adapter (see the example in Minimal Setup)
 
 ### Custom Actions
 
@@ -118,14 +164,19 @@ createAdmin({
         row: [
           {
             label: "Publish",
-            action: publishPostAction, // from @cfast/actions
-            // Automatically hidden if the admin can't perform this action
+            action: async (id: string, formData: FormData) => {
+              // Custom logic — called with the record ID and form data
+            },
+            confirm: "Are you sure you want to publish?", // Optional confirmation dialog
+            variant: "default", // "default" | "danger" — controls button styling
           },
         ],
         table: [
           {
             label: "Export CSV",
-            handler: async (selectedRows) => { /* ... */ },
+            handler: async (selectedIds: string[]) => {
+              // Called with an array of selected record IDs
+            },
           },
         ],
       },
@@ -160,20 +211,14 @@ createAdmin({
 
 The rendering stack:
 
-| Admin generates config for... | Which renders via... |
+| Admin feature | Rendered with |
 |---|---|
-| Table list pages | `@cfast/ui`'s `<ListView>` |
-| Record detail pages | `@cfast/ui`'s `<DetailView>` |
 | Create/edit forms | `@cfast/forms`' `<AutoForm>` |
-| Navigation sidebar | `@cfast/ui`'s `<AppShell>` |
-| Data tables | `@cfast/ui`'s `<DataTable>` |
-| Filters | `@cfast/ui`'s `<FilterBar>` |
-| Action buttons | `@cfast/ui`'s `<ActionButton>` |
-| Bulk actions | `@cfast/ui`'s `<BulkActionBar>` |
 | User role display | `@cfast/ui`'s `<RoleBadge>` |
-| Impersonation UI | `@cfast/ui`'s `<ImpersonationBanner>` |
-
-Admin does **not** contain its own component library. If you want to customize how a list page looks, you override it with `@cfast/ui` components — the same components you'd use anywhere else in your app.
+| User avatars | `@cfast/ui`'s `<AvatarWithInitials>` |
+| Confirm dialogs | `@cfast/ui`'s `useConfirm` |
+| List, detail, dashboard views | Built-in admin components (MUI Joy) |
+| Navigation sidebar | Built-in admin components (MUI Joy) |
 
 ## Integration
 
