@@ -1,5 +1,6 @@
 import type { BindingDef, BindingType, EnvValidationError } from "./types";
 
+/** Human-readable labels for each binding type, used in error messages. */
 const BINDING_LABELS: Record<BindingType, string> = {
   d1: "D1",
   kv: "KV",
@@ -19,6 +20,7 @@ function hasMethod(obj: Record<string, unknown>, method: string): boolean {
   return typeof obj[method] === "function";
 }
 
+/** Duck-type method checks for each object binding type. */
 const DUCK_CHECKS: Record<string, string[]> = {
   d1: ["prepare"],
   kv: ["get", "put"],
@@ -28,6 +30,17 @@ const DUCK_CHECKS: Record<string, string[]> = {
   service: ["fetch"],
 };
 
+/**
+ * Validates a single binding value against its definition.
+ *
+ * For `var` bindings, defaults must be resolved by the caller before calling
+ * this function. Object bindings are validated via duck-type method checks.
+ *
+ * @param key - The binding name (e.g., `"DB"`, `"API_KEY"`).
+ * @param def - The binding definition from the schema.
+ * @param value - The raw value from the Worker environment.
+ * @returns An {@link EnvValidationError} if validation fails, or `undefined` if valid.
+ */
 export function validateBinding(
   key: string,
   def: BindingDef,
