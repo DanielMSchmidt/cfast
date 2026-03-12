@@ -32,6 +32,10 @@ export type AuthConfig = {
   anonymousRoles?: string[];
   defaultRoles?: string[];
   roleTableName?: string;
+  roleGrants?: Record<string, string[]>;
+  impersonation?: {
+    allowedRoles?: string[];
+  };
 };
 
 export type AuthEnvConfig = {
@@ -43,9 +47,19 @@ export type AuthInstance = {
   createContext: (request: Request) => Promise<AuthContext>;
   requireUser: (request: Request) => Promise<AuthenticatedContext>;
   getRoles: (userId: string) => Promise<string[]>;
-  setRole: (userId: string, role: string) => Promise<void>;
-  setRoles: (userId: string, roles: string[]) => Promise<void>;
+  setRole: (
+    userId: string,
+    role: string,
+    caller?: { callerRoles?: string[] },
+  ) => Promise<void>;
+  setRoles: (
+    userId: string,
+    roles: string[],
+    caller?: { callerRoles?: string[] },
+  ) => Promise<void>;
   removeRole: (userId: string, role: string) => Promise<void>;
+  impersonate: (adminUserId: string, targetUserId: string) => Promise<void>;
+  stopImpersonating: (adminUserId: string) => Promise<void>;
   /** Handle auth API requests (forwards to Better Auth) */
   handler: (request: Request) => Promise<Response>;
   /** The underlying Better Auth instance */
