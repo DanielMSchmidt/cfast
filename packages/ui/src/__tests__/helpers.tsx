@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ClientDescriptor } from "@cfast/actions";
+import type { ClientDescriptor } from "@cfast/actions/client";
 import { UIPluginProvider, createUIPlugin } from "../plugin.js";
 import type { UIPluginComponents } from "../types.js";
 

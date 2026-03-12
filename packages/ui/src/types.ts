@@ -1,6 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import type { ClientDescriptor } from "@cfast/actions";
-import type { ActionHookResult } from "@cfast/actions/client";
+import type { ClientDescriptor, ActionHookResult } from "@cfast/actions/client";
 
 // --- Plugin System ---
 

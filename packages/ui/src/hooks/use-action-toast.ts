@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useActions } from "@cfast/actions/client";
-import type { ClientDescriptor } from "@cfast/actions";
+import type { ClientDescriptor } from "@cfast/actions/client";
 import { useToast } from "./use-toast.js";
 
 type ActionToastConfig = Record<

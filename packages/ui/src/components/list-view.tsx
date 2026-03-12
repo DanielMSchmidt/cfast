@@ -6,7 +6,7 @@ import { BulkActionBar } from "./bulk-action-bar.js";
 import { EmptyState } from "./empty-state.js";
 import { ActionButton } from "./action-button.js";
 import { useActionStatus } from "../hooks/use-action-status.js";
-import type { ClientDescriptor } from "@cfast/actions";
+import type { ClientDescriptor } from "@cfast/actions/client";
 import type { ListViewProps, BulkAction, ColumnShorthand } from "../types.js";
 
 /**
