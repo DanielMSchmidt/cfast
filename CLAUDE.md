@@ -51,6 +51,11 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - Unit tests for pure logic (permissions, validation). Integration tests for DB/auth/storage.
 - Every public API function needs at least one test.
 
+### Storybook
+- When adding or changing a component in `@cfast/ui`, add or update a Storybook story in `packages/ui/src/joy/`. Stories use the Joy UI implementations (not headless).
+- Stories live next to the Joy component they document (e.g. `role-badge.stories.tsx` beside `role-badge.tsx`).
+- CI runs `build-storybook` to catch broken stories. Run `pnpm --filter @cfast/ui storybook` locally to preview.
+
 ### Example App
 - After implementing or changing any `@cfast/*` package, update `examples/team-blog-after` to use the latest APIs. The example app must always reflect current package usage.
 
