@@ -33,3 +33,6 @@ export { DetailView } from "./joy/detail-view.js";
 export { AvatarWithInitials } from "./joy/avatar-with-initials.js";
 export { RoleBadge } from "./joy/role-badge.js";
 export { ImpersonationBanner } from "./joy/impersonation-banner.js";
+
+// Auth
+export { joyLoginComponents } from "./joy/login-components.js";
