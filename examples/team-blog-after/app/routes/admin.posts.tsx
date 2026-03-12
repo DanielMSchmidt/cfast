@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form, Link, redirect } from "react-router";
 import Table from "@mui/joy/Table";
@@ -6,19 +5,16 @@ import Button from "@mui/joy/Button";
 import Chip from "@mui/joy/Chip";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import Tabs from "@mui/joy/Tabs";
-import Tab from "@mui/joy/Tab";
-import TabList from "@mui/joy/TabList";
 import Box from "@mui/joy/Box";
+import { useConfirm } from "@cfast/ui";
 import { requireAuthContext, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { createCfDb } from "~/db/cfast.server";
 import { compose } from "@cfast/db";
 import { posts, users, auditLogs } from "~/db/schema";
-import { eq, desc, count, and } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Pagination } from "~/components/Pagination";
-import { ConfirmDialog } from "~/components/ConfirmDialog";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const env = context.cloudflare.env;
@@ -132,8 +128,7 @@ export default function AdminPosts() {
   const actionData = useActionData<typeof action>();
   const totalPages = Math.ceil(total / limit);
 
-  const [deletePostId, setDeletePostId] = useState<string | null>(null);
-  const [deletePostTitle, setDeletePostTitle] = useState<string>("");
+  const confirm = useConfirm();
 
   const baseUrl =
     status !== "all" ? `/admin/posts?status=${status}` : "/admin/posts";
@@ -255,9 +250,27 @@ export default function AdminPosts() {
                       size="sm"
                       variant="soft"
                       color="danger"
-                      onClick={() => {
-                        setDeletePostId(post.id);
-                        setDeletePostTitle(post.title);
+                      onClick={async () => {
+                        const confirmed = await confirm({
+                          title: "Delete Post",
+                          description: `Are you sure you want to delete "${post.title}"? This action cannot be undone.`,
+                          variant: "danger",
+                        });
+                        if (confirmed) {
+                          const form = document.createElement("form");
+                          form.method = "post";
+                          form.style.display = "none";
+                          const actionInput = document.createElement("input");
+                          actionInput.name = "_action";
+                          actionInput.value = "delete";
+                          form.appendChild(actionInput);
+                          const idInput = document.createElement("input");
+                          idInput.name = "postId";
+                          idInput.value = post.id;
+                          form.appendChild(idInput);
+                          document.body.appendChild(form);
+                          form.submit();
+                        }
                       }}
                     >
                       Delete
@@ -284,32 +297,6 @@ export default function AdminPosts() {
 
       <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
 
-      <ConfirmDialog
-        open={deletePostId !== null}
-        onClose={() => setDeletePostId(null)}
-        onConfirm={() => {
-          if (deletePostId) {
-            const form = document.createElement("form");
-            form.method = "post";
-            form.style.display = "none";
-
-            const actionInput = document.createElement("input");
-            actionInput.name = "_action";
-            actionInput.value = "delete";
-            form.appendChild(actionInput);
-
-            const idInput = document.createElement("input");
-            idInput.name = "postId";
-            idInput.value = deletePostId;
-            form.appendChild(idInput);
-
-            document.body.appendChild(form);
-            form.submit();
-          }
-        }}
-        title="Delete Post"
-        message={`Are you sure you want to delete "${deletePostTitle}"? This action cannot be undone.`}
-      />
     </Stack>
   );
 }

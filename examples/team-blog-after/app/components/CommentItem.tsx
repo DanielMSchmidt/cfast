@@ -1,9 +1,9 @@
 import { Form } from "react-router";
 import Card from "@mui/joy/Card";
 import Typography from "@mui/joy/Typography";
-import Avatar from "@mui/joy/Avatar";
 import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
+import { AvatarWithInitials } from "@cfast/ui/joy";
 import type { AuthUser } from "~/permissions";
 import { hasAnyRole } from "~/permissions";
 
@@ -19,15 +19,6 @@ interface CommentItemProps {
     };
   };
   user: AuthUser | null;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 function formatDate(date: Date): string {
@@ -48,12 +39,11 @@ export function CommentItem({ comment, user }: CommentItemProps) {
   return (
     <Card variant="soft" sx={{ p: 2 }}>
       <Stack direction="row" spacing={2} alignItems="flex-start">
-        <Avatar
-          src={comment.author.avatarUrl ?? undefined}
+        <AvatarWithInitials
+          src={comment.author.avatarUrl}
+          name={comment.author.name}
           size="sm"
-        >
-          {getInitials(comment.author.name)}
-        </Avatar>
+        />
         <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
           <Stack direction="row" spacing={1} alignItems="center">
             <Typography level="title-sm">
