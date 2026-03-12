@@ -41,6 +41,9 @@ importers:
       '@cfast/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@cfast/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@cfast/db':
         specifier: workspace:*
         version: link:../../packages/db
