@@ -21,6 +21,7 @@ import { eq, desc, and, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
+import { ConfirmDialog } from "~/components/ConfirmDialog";
 import { useToast } from "~/components/ToastProvider";
 import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
 
@@ -334,6 +335,9 @@ export default function PostDetail() {
 
   const { addToast } = useToast();
   const [commentContent, setCommentContent] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
 
   useEffect(() => {
     if (!actionData) return;
@@ -415,34 +419,75 @@ export default function PostDetail() {
             </Button>
           )}
           {canPublish && !post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="publish" />
-              <Button type="submit" color="success" variant="soft" size="sm">
-                Publish
-              </Button>
-            </Form>
+            <Button color="success" variant="soft" size="sm" onClick={() => setShowPublishConfirm(true)}>
+              Publish
+            </Button>
           )}
           {canPublish && post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="unpublish" />
-              <Button type="submit" color="warning" variant="soft" size="sm">
-                Unpublish
-              </Button>
-            </Form>
+            <Button color="warning" variant="soft" size="sm" onClick={() => setShowUnpublishConfirm(true)}>
+              Unpublish
+            </Button>
           )}
           {canDelete && (
-            <Form method="post" onSubmit={(e) => {
-              if (!confirm("Are you sure you want to delete this post?")) {
-                e.preventDefault();
-              }
-            }}>
-              <input type="hidden" name="_action" value="delete" />
-              <Button type="submit" color="danger" variant="soft" size="sm">
-                Delete
-              </Button>
-            </Form>
+            <Button color="danger" variant="soft" size="sm" onClick={() => setShowDeleteConfirm(true)}>
+              Delete
+            </Button>
           )}
         </Stack>
+
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            const form = document.createElement("form");
+            form.method = "post";
+            form.style.display = "none";
+            const input = document.createElement("input");
+            input.name = "_action";
+            input.value = "delete";
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+          }}
+          title="Delete Post"
+          message={`Are you sure you want to delete "${post.title}"? This action cannot be undone.`}
+        />
+
+        <ConfirmDialog
+          open={showPublishConfirm}
+          onClose={() => setShowPublishConfirm(false)}
+          onConfirm={() => {
+            const form = document.createElement("form");
+            form.method = "post";
+            form.style.display = "none";
+            const input = document.createElement("input");
+            input.name = "_action";
+            input.value = "publish";
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+          }}
+          title="Publish Post"
+          message={`Are you sure you want to publish "${post.title}"? It will become visible to all readers.`}
+        />
+
+        <ConfirmDialog
+          open={showUnpublishConfirm}
+          onClose={() => setShowUnpublishConfirm(false)}
+          onConfirm={() => {
+            const form = document.createElement("form");
+            form.method = "post";
+            form.style.display = "none";
+            const input = document.createElement("input");
+            input.name = "_action";
+            input.value = "unpublish";
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+          }}
+          title="Unpublish Post"
+          message={`Are you sure you want to unpublish "${post.title}"? It will no longer be visible to readers.`}
+        />
 
         <Divider sx={{ my: 4 }} />
 
