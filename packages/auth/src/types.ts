@@ -31,6 +31,7 @@ export type AuthConfig = {
   redirects?: { afterLogin?: string; loginPath?: string };
   anonymousRoles?: string[];
   defaultRoles?: string[];
+  roleTableName?: string;
 };
 
 export type AuthEnvConfig = {

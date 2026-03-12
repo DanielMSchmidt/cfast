@@ -669,13 +669,18 @@ For contributors and the detail-curious. Not part of the public API.
 
 ### Drizzle Table Identity
 
-Drizzle stores table names using Symbols (`Symbol.for("drizzle:Name")`, `Symbol.for("drizzle:BaseName")`), not on a plain `._` property. The `@cfast/permissions` package uses a duck type `DrizzleTable = { _: { name: string } }` for its public API. Internally, `@cfast/db` tries multiple strategies to resolve table names:
+Drizzle stores table names using Symbols (`Symbol.for("drizzle:Name")`), not on a plain `._` property. The `@cfast/permissions` package provides `getTableName(table)` which reads from this Symbol. Both `@cfast/permissions` and `@cfast/db` use **name-based comparison** (not reference equality) when matching grant subjects against operation tables. This means two different imports of the same logical table will match correctly as long as they share the same Drizzle name.
+
+### Using `db.unsafe()` for System Tables
+
+Use `db.unsafe()` when inserting into system tables (like `audit_logs`) that no user role should have direct grants for. This is intentional: audit logs are a side effect of user actions, not something users should need permission to create.
 
 ```typescript
-(table as any)._?.name
-  ?? (table as any)[Symbol.for("drizzle:Name")]
-  ?? (table as any)[Symbol.for("drizzle:BaseName")]
-  ?? "unknown"
+// Good: audit log bypasses permission checks
+await db.unsafe().insert(auditLogs).values({ ... }).run({});
+
+// Bad: requires a "create" grant on audit_logs for the current user's role
+await db.insert(auditLogs).values({ ... }).run({});
 ```
 
-This is necessary because the permission system's duck type doesn't match Drizzle's actual table implementation. The fallback chain handles both test fixtures (which use `._`) and real Drizzle tables (which use Symbols).
+`git grep '.unsafe()'` finds every permission bypass in your codebase.
