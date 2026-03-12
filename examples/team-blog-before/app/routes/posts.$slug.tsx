@@ -15,7 +15,6 @@ import Chip from "@mui/joy/Chip";
 import type { Env } from "~/env";
 import { getUser, requireUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
-import type { AuthUser } from "~/permissions";
 import { createDbClient } from "~/db/client";
 import { posts, users, comments, auditLogs } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
