@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { MemoryRouter } from "react-router";
 import { EmptyState } from "./empty-state.js";
 
-const meta = {
+const meta: Meta<typeof EmptyState> = {
   title: "Joy/EmptyState",
   component: EmptyState,
   parameters: {
@@ -16,7 +16,7 @@ const meta = {
       </MemoryRouter>
     ),
   ],
-} satisfies Meta<typeof EmptyState>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
