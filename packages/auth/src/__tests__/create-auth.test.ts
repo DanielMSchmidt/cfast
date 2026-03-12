@@ -4,15 +4,18 @@ import { parseExpiresIn } from "../create-auth";
 import { createMockD1 } from "./helpers";
 
 // Mock better-auth and drizzle-orm so we can test without a real D1 database
-const { mockGetSession, mockBetterAuth } = vi.hoisted(() => {
-  const mockGetSession = vi.fn();
-  const mockHandler = vi.fn();
-  const mockBetterAuth = vi.fn((_opts: Record<string, unknown>) => ({
-    api: { getSession: mockGetSession },
-    handler: mockHandler,
-  }));
-  return { mockGetSession, mockBetterAuth };
-});
+const { mockGetSession, mockSignInMagicLink, mockBetterAuth } = vi.hoisted(
+  () => {
+    const mockGetSession = vi.fn();
+    const mockSignInMagicLink = vi.fn().mockResolvedValue({});
+    const mockHandler = vi.fn();
+    const mockBetterAuth = vi.fn((_opts: Record<string, unknown>) => ({
+      api: { getSession: mockGetSession, signInMagicLink: mockSignInMagicLink },
+      handler: mockHandler,
+    }));
+    return { mockGetSession, mockSignInMagicLink, mockBetterAuth };
+  },
+);
 
 vi.mock("better-auth", () => ({
   betterAuth: mockBetterAuth,
@@ -284,8 +287,102 @@ describe("createAuth", () => {
 
   it("exposes a handler function", () => {
     const initAuth = createAuth({ permissions });
-    const auth = initAuth({ d1: createMockD1(), appUrl: "https://example.com" });
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
 
     expect(typeof auth.handler).toBe("function");
+  });
+
+  it("sendMagicLink delegates to auth.api.signInMagicLink", async () => {
+    const initAuth = createAuth({
+      permissions,
+      magicLink: { sendMagicLink: vi.fn() },
+    });
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
+
+    mockSignInMagicLink.mockClear();
+    await auth.sendMagicLink({ email: "test@example.com" });
+
+    expect(mockSignInMagicLink).toHaveBeenCalledWith({
+      body: { email: "test@example.com", callbackURL: "/" },
+      headers: expect.any(Headers),
+    });
+  });
+
+  it("sendMagicLink uses custom callbackURL when provided", async () => {
+    const initAuth = createAuth({
+      permissions,
+      magicLink: { sendMagicLink: vi.fn() },
+      redirects: { afterLogin: "/dashboard" },
+    });
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
+
+    mockSignInMagicLink.mockClear();
+    await auth.sendMagicLink({
+      email: "test@example.com",
+      callbackURL: "/custom",
+    });
+
+    expect(mockSignInMagicLink).toHaveBeenCalledWith({
+      body: { email: "test@example.com", callbackURL: "/custom" },
+      headers: expect.any(Headers),
+    });
+  });
+
+  it("sendMagicLink falls back to redirects.afterLogin config", async () => {
+    const initAuth = createAuth({
+      permissions,
+      magicLink: { sendMagicLink: vi.fn() },
+      redirects: { afterLogin: "/home" },
+    });
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
+
+    mockSignInMagicLink.mockClear();
+    await auth.sendMagicLink({ email: "test@example.com" });
+
+    expect(mockSignInMagicLink).toHaveBeenCalledWith({
+      body: { email: "test@example.com", callbackURL: "/home" },
+      headers: expect.any(Headers),
+    });
+  });
+
+  it("sendMagicLink throws when magicLink plugin not configured", async () => {
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
+
+    await expect(
+      auth.sendMagicLink({ email: "test@example.com" }),
+    ).rejects.toThrow("Magic link plugin not configured");
+  });
+
+  it("accepts templates config", () => {
+    const template = (props: { url: string; email: string }) =>
+      `<a href="${props.url}">Login as ${props.email}</a>`;
+
+    const initAuth = createAuth({
+      permissions,
+      magicLink: { sendMagicLink: vi.fn() },
+      templates: { magicLink: template },
+    });
+
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
+    expect(auth).toBeDefined();
   });
 });

@@ -15,9 +15,12 @@ const PAGE_SIZE = 20;
 
 /**
  * Shared table list for the sidebar, derived from tableMetas.
+ * Excludes the users table since it has a dedicated _users view in the sidebar.
  */
 function tableList(tableMetas: AdminTableMeta[]): Array<{ name: string; label: string }> {
-  return tableMetas.map((t) => ({ name: t.name, label: t.label }));
+  return tableMetas
+    .filter((t) => t.name !== "users" && t.name !== "user")
+    .map((t) => ({ name: t.name, label: t.label }));
 }
 
 /**
@@ -113,7 +116,7 @@ async function loadDashboard(
       if (widget.type === "count") {
         const rows = await db
           .query(meta.drizzleTable)
-          .findMany({ columns: {} })
+          .findMany()
           .run({});
         stats.push({ label: widget.label, value: rows.length });
       } else if (widget.type === "recent") {
@@ -142,7 +145,7 @@ async function loadDashboard(
     for (const meta of tableMetas) {
       const rows = await db
         .query(meta.drizzleTable)
-        .findMany({ columns: {} })
+        .findMany()
         .run({});
       stats.push({ label: meta.label, value: rows.length });
     }
@@ -216,7 +219,7 @@ async function loadList(
   // Fetch total count (using empty columns projection and array length)
   const allRows = await db
     .query(meta.drizzleTable)
-    .findMany({ columns: {}, where })
+    .findMany({ where })
     .run({});
   const total = allRows.length;
 
@@ -428,7 +431,7 @@ async function loadUserList(
   // Get total count
   const allRows = await unsafeDb
     .query(usersTable)
-    .findMany({ columns: {}, where })
+    .findMany({ where })
     .run({});
   const total = allRows.length;
 
@@ -561,7 +564,10 @@ export function createAdminLoader(
     const { user, grants } = await config.auth.requireUser(request);
 
     if (!config.auth.hasRole(user, requiredRole)) {
-      throw new Response("Forbidden", { status: 403 });
+      throw new Response(null, {
+        status: 302,
+        headers: { Location: "/" },
+      });
     }
 
     // Create DB instance scoped to this user's grants

@@ -7,6 +7,38 @@ export type AuthProviderProps = {
   children: ReactNode;
 };
 
+export type AuthClientInstance = {
+  signOut: () => Promise<unknown>;
+  passkey?: {
+    addPasskey: () => Promise<
+      { error?: { message?: string } | null } | undefined
+    >;
+    deletePasskey: (opts: {
+      id: string;
+    }) => Promise<{ error?: { message?: string } | null } | undefined>;
+  };
+  admin?: {
+    stopImpersonating: () => Promise<unknown>;
+  };
+};
+
+export type AuthClientProviderProps = {
+  authClient: AuthClientInstance;
+  children: ReactNode;
+};
+
+export type UseAuthReturn = {
+  signOut: () => Promise<void>;
+  registerPasskey: () => Promise<
+    { error?: { message?: string } | null } | undefined
+  >;
+  deletePasskey: (
+    id: string,
+  ) => Promise<{ error?: { message?: string } | null } | undefined>;
+  stopImpersonating: () => Promise<void>;
+  authClient: AuthClientInstance;
+};
+
 export type LoginComponents = {
   Layout?: ComponentType<{ children: ReactNode }>;
   EmailInput?: ComponentType<{

@@ -16,7 +16,7 @@ You don't configure an auth library. You tell cfast what roles your app has, and
 - **Workers-native.** Session storage on D1, email via Mailgun (Worker-friendly HTTP API), passkeys via WebAuthn. No Node.js dependencies.
 - **Admin-ready.** Role management and user impersonation built in, not bolted on.
 
-## Planned API
+## API
 
 ### Server Setup
 
@@ -24,14 +24,12 @@ You don't configure an auth library. You tell cfast what roles your app has, and
 import { createAuth } from "@cfast/auth";
 import { permissions } from "./permissions"; // from @cfast/permissions
 
-export const auth = createAuth({
+export const initAuth = createAuth({
   permissions, // Roles are inferred from your permission definitions
-  database: env.DB, // D1 binding
-  email: {
-    provider: "mailgun",
-    apiKey: env.MAILGUN_API_KEY,
-    domain: "mail.myapp.com",
-    from: "MyApp <hello@myapp.com>",
+  magicLink: {
+    sendMagicLink: async ({ email, url }) => {
+      // Send email with your provider (Mailgun, Resend, etc.)
+    },
   },
   passkeys: {
     rpName: "MyApp",
@@ -45,6 +43,9 @@ export const auth = createAuth({
     loginPath: "/login",    // where to send unauthenticated users
   },
 });
+
+// In your request handler, initialize with D1:
+const auth = initAuth({ d1: env.DB, appUrl: "https://myapp.com" });
 ```
 
 ### Route Integration (routes.ts Helper)
@@ -71,24 +72,25 @@ export { loader, action };
 
 ### Protecting Routes with AuthGuard
 
-`AuthGuard` is a layout-level component. Wrap a layout route with it and all child routes are protected.
+`AuthGuard` is a layout-level component. It takes a `user` prop from the loader and provides it to all child routes via context.
 
 ```typescript
 // routes/_protected.tsx
 import { AuthGuard } from "@cfast/auth/client";
-import { auth } from "~/auth.server";
-import { Outlet } from "react-router";
+import { requireAuthContext } from "~/auth.helpers.server";
+import { Outlet, useLoaderData } from "react-router";
 
 export async function loader({ request }) {
-  const user = await auth.requireUser(request);
+  const ctx = await requireAuthContext(request);
   // Sets a cfast_redirect_to cookie with the current path
   // Throws a redirect to /login if not authenticated
-  return { user };
+  return { user: ctx.user };
 }
 
 export default function ProtectedLayout() {
+  const { user } = useLoaderData<typeof loader>();
   return (
-    <AuthGuard>
+    <AuthGuard user={user}>
       <Outlet />
     </AuthGuard>
   );
@@ -97,23 +99,29 @@ export default function ProtectedLayout() {
 
 Any route nested under `_protected` is automatically guarded. The login page lives outside this layout as a normal route file.
 
-### Client-Side Provider
+### Client-Side Providers
 
-The `AuthProvider` wraps the app root. It is thin — it only reads user data from loader data via `AuthGuard`. It does not fetch on its own.
+Two providers wrap the app root:
+
+- **`AuthClientProvider`** — holds the Better Auth client instance. Required for `useAuth()`.
+- **`AuthProvider`** — holds the current user from loader data. Required for `useCurrentUser()`.
 
 ```typescript
 // root.tsx
-import { AuthProvider } from "@cfast/auth/client";
+import { AuthClientProvider } from "@cfast/auth/client";
+import { authClient } from "~/auth.client";
 import { Outlet } from "react-router";
 
-export default function Root() {
+export default function App() {
   return (
-    <AuthProvider loginPath="/login">
+    <AuthClientProvider authClient={authClient}>
       <Outlet />
-    </AuthProvider>
+    </AuthClientProvider>
   );
 }
 ```
+
+`AuthProvider` is typically used inside layout routes (via `AuthGuard`) rather than at the root, since user data comes from loaders.
 
 ### useCurrentUser Hook
 
@@ -206,12 +214,31 @@ The full redirect cycle:
 
 The `cfast_redirect_to` cookie is `HttpOnly`, `Secure`, `SameSite=Lax`, with a 10-minute TTL.
 
+### useAuth Hook
+
+`useAuth()` provides auth actions from the `AuthClientProvider` context. Takes no arguments.
+
+```typescript
+import { useAuth } from "@cfast/auth/client";
+
+const {
+  signOut,            // Sign out the current user
+  registerPasskey,    // Register a new passkey (WebAuthn)
+  deletePasskey,      // Delete a passkey by ID
+  stopImpersonating,  // Stop impersonating (admin only)
+  authClient,         // Raw Better Auth client for escape-hatch usage
+} = useAuth();
+```
+
 ### Authentication Methods
 
 #### Magic Email Link
 ```typescript
 // Server: send magic link
-await auth.sendMagicLink({ email: "user@example.com", request });
+await auth.sendMagicLink({ email: "user@example.com" });
+
+// With custom callback URL:
+await auth.sendMagicLink({ email: "user@example.com", callbackURL: "/welcome" });
 
 // The link hits /auth/callback (injected by plugin)
 // Auth handles verification and creates/updates the user + session automatically
@@ -222,14 +249,18 @@ await auth.sendMagicLink({ email: "user@example.com", request });
 // Client: register a passkey (from a settings page, after login)
 import { useAuth } from "@cfast/auth/client";
 
-function SecuritySettings() {
-  const { registerPasskey, passkeys } = useAuth();
+function SecuritySettings({ passkeys }) {
+  // passkeys come from loader data (server query), not from the hook
+  const { registerPasskey, deletePasskey } = useAuth();
 
   return (
     <div>
       <button onClick={() => registerPasskey()}>Add Passkey</button>
       {passkeys.map((pk) => (
-        <div key={pk.id}>{pk.name} - {pk.createdAt}</div>
+        <div key={pk.id}>
+          {pk.name} - {pk.createdAt}
+          <button onClick={() => deletePasskey(pk.id)}>Remove</button>
+        </div>
       ))}
     </div>
   );
@@ -286,22 +317,31 @@ await auth.impersonate(adminUserId, targetUserId);
 // All permission checks use the target user's roles
 // An "impersonating" flag is set so the UI can show a banner
 
-// Client:
-const { isImpersonating, stopImpersonating, impersonatedUser } = useCurrentUser();
+// Client: check impersonation state via useCurrentUser
+const user = useCurrentUser();
+// user.isImpersonating — true when admin is impersonating
+// user.realUser — { id, name } of the admin doing the impersonating
+
+// Client: stop impersonating via useAuth
+const { stopImpersonating } = useAuth();
+await stopImpersonating();
 ```
 
 ## Email Templates
 
-Auth emails (magic links, passkey registration confirmations) use react-email templates via `@cfast/email`. You can override any template:
+Auth emails (magic links) can use custom HTML templates. The template function receives the magic link URL and email address and returns an HTML string:
 
 ```typescript
 createAuth({
   // ...
   templates: {
-    magicLink: MyCustomMagicLinkEmail, // A react-email component
+    magicLink: ({ url, email }) =>
+      `<p>Hi ${email}, <a href="${url}">click here to sign in</a>.</p>`,
   },
 });
 ```
+
+Templates are plain functions returning strings — no React or Node.js dependencies required, so they work in Workers.
 
 ## Package Exports
 
@@ -309,8 +349,9 @@ createAuth({
 @cfast/auth
 ├── .                  → Server: createAuth, createRoleManager,
 │                        createImpersonationManager, createAuthRouteHandlers, types
-├── /client            → Client: AuthProvider, AuthGuard, LoginPage,
-│                        useCurrentUser, useAuth, createAuthClient, LoginComponents type
+├── /client            → Client: AuthProvider, AuthClientProvider, AuthGuard,
+│                        LoginPage, useCurrentUser, useAuth, createAuthClient,
+│                        LoginComponents, UseAuthReturn, AuthClientInstance types
 ├── /plugin            → Route helper: authRoutes() for routes.ts
 └── /schema            → Drizzle schema: auth tables for migrations
 ```

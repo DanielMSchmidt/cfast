@@ -177,6 +177,31 @@ export function createAuth(config: AuthConfig) {
         await impersonationManager.impersonate(adminUserId, targetUserId);
       },
       stopImpersonating: impersonationManager.stopImpersonating,
+      sendMagicLink: async (params: {
+        email: string;
+        callbackURL?: string;
+      }) => {
+        if (!config.magicLink) {
+          throw new Error(
+            "Magic link plugin not configured. Add magicLink to createAuth config.",
+          );
+        }
+        await (
+          auth.api as unknown as {
+            signInMagicLink: (opts: {
+              body: { email: string; callbackURL: string };
+              headers: HeadersInit;
+            }) => Promise<unknown>;
+          }
+        ).signInMagicLink({
+          body: {
+            email: params.email,
+            callbackURL:
+              params.callbackURL ?? config.redirects?.afterLogin ?? "/",
+          },
+          headers: new Headers(),
+        });
+      },
       handler: (request: Request) => auth.handler(request),
       api: auth,
     };

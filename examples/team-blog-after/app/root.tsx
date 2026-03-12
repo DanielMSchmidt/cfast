@@ -12,6 +12,8 @@ import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
 import { createUIPlugin, UIPluginProvider, ConfirmProvider } from "@cfast/ui";
 import { ConfirmDialog } from "@cfast/ui/joy";
+import { AuthClientProvider } from "@cfast/auth/client";
+import { authClient } from "~/auth.client";
 
 const plugin = createUIPlugin({
   components: { confirmDialog: ConfirmDialog },
@@ -43,7 +45,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <AuthClientProvider authClient={authClient}>
+      <Outlet />
+    </AuthClientProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: { error: unknown }) {

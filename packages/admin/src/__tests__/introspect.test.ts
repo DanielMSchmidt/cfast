@@ -93,8 +93,8 @@ describe("tableNameToLabel", () => {
     expect(tableNameToLabel("blogPost")).toBe("Blog Posts");
   });
 
-  it("handles already-plural-looking names", () => {
-    expect(tableNameToLabel("posts")).toBe("Postses");
+  it("does not double-pluralize already-plural names", () => {
+    expect(tableNameToLabel("posts")).toBe("Posts");
   });
 });
 
@@ -169,8 +169,8 @@ describe("introspectSchema", () => {
 
     const usersTable = result.find((t) => t.name === "users");
     const postsTable = result.find((t) => t.name === "posts");
-    expect(usersTable?.label).toBe("Userses");
-    expect(postsTable?.label).toBe("Postses");
+    expect(usersTable?.label).toBe("Users");
+    expect(postsTable?.label).toBe("Posts");
   });
 
   it("uses override labels when provided", () => {

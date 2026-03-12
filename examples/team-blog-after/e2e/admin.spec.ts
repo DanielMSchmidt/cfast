@@ -18,7 +18,7 @@ test.describe("Admin Panel", () => {
 
   test("shows user list", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/users");
+    await page.goto("/admin?view=_users");
     await expect(page.getByText("admin@example.com")).toBeVisible();
     await expect(page.getByText("editor@example.com")).toBeVisible();
     await expect(page.getByText("author@example.com")).toBeVisible();
@@ -27,14 +27,14 @@ test.describe("Admin Panel", () => {
 
   test("shows user detail with roles", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/users");
+    await page.goto("/admin?view=_users");
     await page.getByRole("link", { name: "View" }).first().click();
-    await expect(page.getByText("Role")).toBeVisible();
+    await expect(page.getByText("Roles", { exact: true })).toBeVisible();
   });
 
   test("shows posts list with status filter", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin/posts");
+    await page.goto("/admin?view=posts");
     await expect(page.getByText("Getting Started with Cloudflare Workers")).toBeVisible();
     await expect(page.getByText("Advanced Drizzle ORM Patterns")).toBeVisible();
   });
@@ -44,10 +44,10 @@ test.describe("Admin Panel", () => {
     await page.goto("/admin", { waitUntil: "networkidle" });
 
     await page.getByRole("link", { name: "Users" }).click();
-    await expect(page).toHaveURL(/\/admin\/users/);
+    await expect(page).toHaveURL(/\/admin\?view=_users/);
 
     await page.getByRole("link", { name: "Posts" }).click();
-    await expect(page).toHaveURL(/\/admin\/posts/);
+    await expect(page).toHaveURL(/\/admin\?view=posts/);
 
     await page.getByRole("link", { name: "Dashboard" }).click();
     await expect(page).toHaveURL(/\/admin$/);
