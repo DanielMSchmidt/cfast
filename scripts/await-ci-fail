@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Waits for any CI check on the current PR to fail, then runs:
+#   claude <args...>
+# Exits 1 if all checks pass. Waits for at least one expected check to
+# report before evaluating, so it won't misfire in the brief window
+# before checks are registered.
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+POLL_INTERVAL="${POLL_INTERVAL:-30}"
+
+for cmd in gh jq ruby; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "Error: $cmd is required but not installed" >&2
+    exit 1
+  fi
+done
+
+mapfile -t EXPECTED_CHECKS < <("$SCRIPT_DIR/ci-check-names")
+if [[ ${#EXPECTED_CHECKS[@]} -eq 0 ]]; then
+  echo "Error: no CI checks found in workflow YAML" >&2
+  exit 1
+fi
+
+PR_NUMBER=$(gh pr view --json number -q .number 2>/dev/null) || {
+  echo "Error: No PR found for current branch" >&2
+  exit 1
+}
+
+echo "Watching PR #$PR_NUMBER — waiting for a CI check to fail"
+echo "Expected: ${EXPECTED_CHECKS[*]}"
+echo ""
+
+while true; do
+  CHECKS_JSON=$(gh pr checks "$PR_NUMBER" --json name,state,conclusion 2>/dev/null) || {
+    echo "Failed to fetch check status, retrying in ${POLL_INTERVAL}s..." >&2
+    sleep "$POLL_INTERVAL"
+    continue
+  }
+
+  any_found=false
+  all_found=true
+  all_complete=true
+  any_failed=false
+  failed_check=""
+
+  for check in "${EXPECTED_CHECKS[@]}"; do
+    state=$(echo "$CHECKS_JSON" | jq -r --arg name "$check" \
+      '[.[] | select(.name == $name)] | last | .state // empty')
+    conclusion=$(echo "$CHECKS_JSON" | jq -r --arg name "$check" \
+      '[.[] | select(.name == $name)] | last | .conclusion // empty')
+
+    if [[ -z "$state" ]]; then
+      all_found=false
+      echo "  [waiting] $check — not yet reported"
+    else
+      any_found=true
+      if [[ "$state" != "COMPLETED" ]]; then
+        all_complete=false
+        echo "  [running] $check — $state"
+      elif [[ "$conclusion" == "SUCCESS" || "$conclusion" == "NEUTRAL" || "$conclusion" == "SKIPPED" ]]; then
+        echo "  [passed]  $check"
+      else
+        any_failed=true
+        failed_check="$check ($conclusion)"
+        echo "  [failed]  $check — $conclusion"
+      fi
+    fi
+  done
+
+  # Only evaluate once at least one check has reported
+  if $any_found && $any_failed; then
+    echo ""
+    echo "CI check failed: $failed_check"
+    if [[ $# -gt 0 ]]; then
+      exec claude "$@"
+    fi
+    exit 0
+  fi
+
+  # All checks done and none failed — CI passed, which is "failure" for this script
+  if $all_found && $all_complete && ! $any_failed; then
+    echo ""
+    echo "All CI checks passed — no failure detected."
+    exit 1
+  fi
+
+  echo ""
+  echo "Polling again in ${POLL_INTERVAL}s..."
+  sleep "$POLL_INTERVAL"
+done
