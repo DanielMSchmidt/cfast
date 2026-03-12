@@ -15,6 +15,11 @@ export { PageContainer } from "./joy/page-container.js";
 export { AppShell, AppShellSidebar, AppShellHeader } from "./joy/app-shell.js";
 export { UserMenu } from "./joy/user-menu.js";
 
+// Data
+export { DataTable } from "./joy/data-table.js";
+export { FilterBar } from "./joy/filter-bar.js";
+export { BulkActionBar } from "./joy/bulk-action-bar.js";
+
 // Utilities
 export { AvatarWithInitials } from "./joy/avatar-with-initials.js";
 export { RoleBadge } from "./joy/role-badge.js";

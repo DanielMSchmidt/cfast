@@ -26,6 +26,12 @@ export { NavigationProgress } from "./components/navigation-progress.js";
 export { PageContainer } from "./components/page-container.js";
 export { AppShell, AppShellSidebar, AppShellHeader } from "./components/app-shell.js";
 export { UserMenu } from "./components/user-menu.js";
+export { DataTable } from "./components/data-table.js";
+export { FilterBar } from "./components/filter-bar.js";
+export { BulkActionBar } from "./components/bulk-action-bar.js";
+
+// Hooks — data
+export { useColumnInference } from "./hooks/use-column-inference.js";
 
 // Types
 export type {
