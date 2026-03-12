@@ -11,7 +11,7 @@ import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { posts, users, auditLogs } from "~/db/schema";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, asc, count } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Pagination } from "~/components/Pagination";
 import { ConfirmDialog } from "~/components/ConfirmDialog";
@@ -30,6 +30,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
   const status = url.searchParams.get("status") ?? "all";
+  const sortColumn = url.searchParams.get("sort") ?? "createdAt";
+  const sortOrder = url.searchParams.get("order") ?? "desc";
   const offset = (page - 1) * limit;
 
   const statusCondition =
@@ -38,6 +40,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       : status === "draft"
         ? eq(posts.published, false)
         : undefined;
+
+  const sortableColumns = {
+    title: posts.title,
+    createdAt: posts.createdAt,
+  } as const;
+
+  const column = sortableColumns[sortColumn as keyof typeof sortableColumns] ?? posts.createdAt;
+  const orderFn = sortOrder === "asc" ? asc : desc;
 
   const postList = await db
     .select({
@@ -52,7 +62,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .from(posts)
     .leftJoin(users, eq(posts.authorId, users.id))
     .where(statusCondition)
-    .orderBy(desc(posts.createdAt))
+    .orderBy(orderFn(column))
     .limit(limit)
     .offset(offset);
 
@@ -63,7 +73,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .get();
   const total = totalResult?.total ?? 0;
 
-  return { posts: postList, total, page, limit, status };
+  return { posts: postList, total, page, limit, status, sort: sortColumn, order: sortOrder };
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -112,8 +122,35 @@ export async function action({ request, context }: ActionFunctionArgs) {
   return { error: "Unknown action" };
 }
 
+function SortHeader({
+  column,
+  label,
+  currentSort,
+  currentOrder,
+  baseUrl,
+}: {
+  column: string;
+  label: string;
+  currentSort: string;
+  currentOrder: string;
+  baseUrl: string;
+}) {
+  const isActive = currentSort === column;
+  const nextOrder = isActive && currentOrder === "asc" ? "desc" : "asc";
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  const href = `${baseUrl}${separator}sort=${column}&order=${nextOrder}`;
+
+  return (
+    <th>
+      <Link to={href} style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
+        {label} {isActive ? (currentOrder === "asc" ? "\u2191" : "\u2193") : ""}
+      </Link>
+    </th>
+  );
+}
+
 export default function AdminPosts() {
-  const { posts: postList, total, page, limit, status } =
+  const { posts: postList, total, page, limit, status, sort, order } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const totalPages = Math.ceil(total / limit);
@@ -131,7 +168,7 @@ export default function AdminPosts() {
     }
   }, [actionData, addToast]);
 
-  const baseUrl =
+  const filterUrl =
     status !== "all" ? `/admin/posts?status=${status}` : "/admin/posts";
 
   return (
@@ -202,10 +239,10 @@ export default function AdminPosts() {
         <Table hoverRow>
           <thead>
             <tr>
-              <th>Title</th>
+              <SortHeader column="title" label="Title" currentSort={sort} currentOrder={order} baseUrl={filterUrl} />
               <th>Author</th>
               <th>Status</th>
-              <th>Created</th>
+              <SortHeader column="createdAt" label="Created" currentSort={sort} currentOrder={order} baseUrl={filterUrl} />
               <th>Actions</th>
             </tr>
           </thead>
@@ -278,7 +315,7 @@ export default function AdminPosts() {
         </Table>
       </Box>
 
-      <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
+      <Pagination currentPage={page} totalPages={totalPages} baseUrl={filterUrl} />
 
       <ConfirmDialog
         open={deletePostId !== null}

@@ -10,7 +10,7 @@ import type { Env } from "~/env";
 import { requireUser, hasRole } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { users, roles } from "~/db/schema";
-import { eq, like, or, count, desc, sql } from "drizzle-orm";
+import { eq, like, or, count, desc, asc, sql } from "drizzle-orm";
 import { RoleChip } from "~/components/RoleChip";
 import { Pagination } from "~/components/Pagination";
 
@@ -27,6 +27,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get("limit") ?? "20", 10)));
   const search = url.searchParams.get("search") ?? "";
+  const sortColumn = url.searchParams.get("sort") ?? "createdAt";
+  const sortOrder = url.searchParams.get("order") ?? "desc";
   const offset = (page - 1) * limit;
 
   const searchCondition = search
@@ -36,11 +38,20 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       )
     : undefined;
 
+  const sortableColumns = {
+    name: users.name,
+    email: users.email,
+    createdAt: users.createdAt,
+  } as const;
+
+  const column = sortableColumns[sortColumn as keyof typeof sortableColumns] ?? users.createdAt;
+  const orderFn = sortOrder === "asc" ? asc : desc;
+
   const userList = await db
     .select()
     .from(users)
     .where(searchCondition)
-    .orderBy(desc(users.createdAt))
+    .orderBy(orderFn(column))
     .limit(limit)
     .offset(offset);
 
@@ -68,14 +79,41 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     })
   );
 
-  return { users: usersWithRoles, total, page, limit, search };
+  return { users: usersWithRoles, total, page, limit, search, sort: sortColumn, order: sortOrder };
+}
+
+function SortHeader({
+  column,
+  label,
+  currentSort,
+  currentOrder,
+  baseUrl,
+}: {
+  column: string;
+  label: string;
+  currentSort: string;
+  currentOrder: string;
+  baseUrl: string;
+}) {
+  const isActive = currentSort === column;
+  const nextOrder = isActive && currentOrder === "asc" ? "desc" : "asc";
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  const href = `${baseUrl}${separator}sort=${column}&order=${nextOrder}`;
+
+  return (
+    <th>
+      <Link to={href} style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}>
+        {label} {isActive ? (currentOrder === "asc" ? "\u2191" : "\u2193") : ""}
+      </Link>
+    </th>
+  );
 }
 
 export default function AdminUsers() {
-  const { users: userList, total, page, limit, search } = useLoaderData<typeof loader>();
+  const { users: userList, total, page, limit, search, sort, order } = useLoaderData<typeof loader>();
   const totalPages = Math.ceil(total / limit);
 
-  const baseUrl = search
+  const filterUrl = search
     ? `/admin/users?search=${encodeURIComponent(search)}`
     : "/admin/users";
 
@@ -115,10 +153,10 @@ export default function AdminUsers() {
         <Table hoverRow>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
+              <SortHeader column="name" label="Name" currentSort={sort} currentOrder={order} baseUrl={filterUrl} />
+              <SortHeader column="email" label="Email" currentSort={sort} currentOrder={order} baseUrl={filterUrl} />
               <th>Roles</th>
-              <th>Joined</th>
+              <SortHeader column="createdAt" label="Joined" currentSort={sort} currentOrder={order} baseUrl={filterUrl} />
               <th>Actions</th>
             </tr>
           </thead>
@@ -180,7 +218,7 @@ export default function AdminUsers() {
         </Table>
       </Box>
 
-      <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
+      <Pagination currentPage={page} totalPages={totalPages} baseUrl={filterUrl} />
     </Stack>
   );
 }
