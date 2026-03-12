@@ -113,7 +113,7 @@ async function loadDashboard(
       if (widget.type === "count") {
         const rows = await db
           .query(meta.drizzleTable)
-          .findMany({ columns: {} })
+          .findMany()
           .run({});
         stats.push({ label: widget.label, value: rows.length });
       } else if (widget.type === "recent") {
@@ -142,7 +142,7 @@ async function loadDashboard(
     for (const meta of tableMetas) {
       const rows = await db
         .query(meta.drizzleTable)
-        .findMany({ columns: {} })
+        .findMany()
         .run({});
       stats.push({ label: meta.label, value: rows.length });
     }
@@ -216,7 +216,7 @@ async function loadList(
   // Fetch total count (using empty columns projection and array length)
   const allRows = await db
     .query(meta.drizzleTable)
-    .findMany({ columns: {}, where })
+    .findMany({ where })
     .run({});
   const total = allRows.length;
 
@@ -428,7 +428,7 @@ async function loadUserList(
   // Get total count
   const allRows = await unsafeDb
     .query(usersTable)
-    .findMany({ columns: {}, where })
+    .findMany({ where })
     .run({});
   const total = allRows.length;
 
