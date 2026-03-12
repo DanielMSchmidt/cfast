@@ -49,7 +49,7 @@ const STATUS_FILTER = {
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta = {
+const meta: Meta<typeof ListView> = {
   title: "Joy/ListView",
   component: ListView,
   decorators: [
@@ -62,7 +62,7 @@ const meta = {
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof ListView>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -122,8 +122,8 @@ export const Selectable: Story = {
     columns: COLUMNS,
     selectable: true,
     bulkActions: [
-      { label: "Publish", handler: (rows) => console.log("Publish", rows) },
-      { label: "Archive", handler: (rows) => console.log("Archive", rows) },
+      { label: "Publish", handler: (rows: unknown[]) => console.log("Publish", rows) },
+      { label: "Archive", handler: (rows: unknown[]) => console.log("Archive", rows) },
     ],
   },
 };

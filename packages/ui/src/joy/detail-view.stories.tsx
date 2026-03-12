@@ -52,7 +52,7 @@ const USER: User = {
 // Meta
 // ---------------------------------------------------------------------------
 
-const meta = {
+const meta: Meta<typeof DetailView> = {
   title: "Joy/DetailView",
   component: DetailView,
   decorators: [
@@ -65,7 +65,7 @@ const meta = {
   parameters: {
     layout: "fullscreen",
   },
-} satisfies Meta<typeof DetailView>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
