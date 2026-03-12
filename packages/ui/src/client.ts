@@ -20,3 +20,6 @@ export { DataTable } from "./components/data-table.js";
 export { FilterBar } from "./components/filter-bar.js";
 export { BulkActionBar } from "./components/bulk-action-bar.js";
 export { useColumnInference } from "./hooks/use-column-inference.js";
+export { DropZone } from "./components/drop-zone.js";
+export { ImagePreview } from "./components/image-preview.js";
+export { FileList } from "./components/file-list.js";

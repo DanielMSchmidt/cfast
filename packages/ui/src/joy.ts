@@ -20,6 +20,11 @@ export { DataTable } from "./joy/data-table.js";
 export { FilterBar } from "./joy/filter-bar.js";
 export { BulkActionBar } from "./joy/bulk-action-bar.js";
 
+// File components
+export { DropZone } from "./joy/drop-zone.js";
+export { ImagePreview } from "./joy/image-preview.js";
+export { FileList } from "./joy/file-list.js";
+
 // Utilities
 export { AvatarWithInitials } from "./joy/avatar-with-initials.js";
 export { RoleBadge } from "./joy/role-badge.js";
