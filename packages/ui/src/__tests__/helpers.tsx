@@ -1,5 +1,6 @@
 import { createElement } from "react";
 import type { ReactNode } from "react";
+import type { ClientDescriptor } from "@cfast/actions";
 import { UIPluginProvider, createUIPlugin } from "../plugin.js";
 import type { UIPluginComponents } from "../types.js";
 
@@ -12,6 +13,17 @@ export function withUIPlugin(
   const plugin = createUIPlugin({ components });
   return function Wrapper({ children }: { children: ReactNode }) {
     return createElement(UIPluginProvider, { plugin, children });
+  };
+}
+
+/**
+ * Creates a mock ClientDescriptor for testing.
+ */
+export function createMockDescriptor(actionNames: string[]): ClientDescriptor {
+  return {
+    _brand: "ActionClientDescriptor" as const,
+    actionNames,
+    permissionsKey: "_actionPermissions",
   };
 }
 
