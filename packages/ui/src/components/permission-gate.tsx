@@ -1,9 +1,10 @@
 import { createElement, Fragment } from "react";
-import { useActionStatus } from "../hooks/use-action-status.js";
 import type { PermissionGateProps } from "../types.js";
 
 /**
  * Conditionally renders children based on action permission status.
+ *
+ * Takes an `ActionHookResult` from `useActions()`.
  *
  * - When permitted: renders children
  * - When forbidden (not permitted, not invisible): renders fallback
@@ -11,18 +12,14 @@ import type { PermissionGateProps } from "../types.js";
  */
 export function PermissionGate({
   action,
-  actionName,
-  input,
   children,
   fallback,
 }: PermissionGateProps) {
-  const status = useActionStatus(action, actionName, input);
-
-  if (status.invisible) {
+  if (action.invisible) {
     return null;
   }
 
-  if (!status.permitted) {
+  if (!action.permitted) {
     return fallback ? createElement(Fragment, null, fallback) : null;
   }
 

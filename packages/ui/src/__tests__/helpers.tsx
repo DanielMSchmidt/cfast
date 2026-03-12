@@ -16,31 +16,6 @@ export function withUIPlugin(
 }
 
 /**
- * Creates a mock for the react-router useLoaderData hook.
- * To use: vi.mock("react-router", () => ({ ...actual, useLoaderData: () => mockData }))
- */
-export function createMockLoaderData(permissions: Record<string, { permitted: boolean; invisible: boolean; reason: string | null }> = {}) {
-  return {
-    _actionPermissions: permissions,
-  };
-}
-
-/**
- * Creates a mock ClientDescriptor for testing.
- */
-export function createMockDescriptor(actionNames: string[]): {
-  _brand: "ActionClientDescriptor";
-  actionNames: readonly string[];
-  permissionsKey: string;
-} {
-  return {
-    _brand: "ActionClientDescriptor",
-    actionNames,
-    permissionsKey: `test_${actionNames.join("_")}`,
-  };
-}
-
-/**
  * Combines multiple wrappers into a single wrapper.
  */
 export function withAll(...wrappers: Array<(props: { children: ReactNode }) => ReactNode>) {

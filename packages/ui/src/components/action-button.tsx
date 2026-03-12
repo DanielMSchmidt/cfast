@@ -1,52 +1,42 @@
 import { createElement } from "react";
-import { useActionStatus } from "../hooks/use-action-status.js";
 import { useComponent } from "../plugin.js";
 import type { ActionButtonProps } from "../types.js";
 
 /**
  * Permission-aware button that submits an action.
  *
+ * Takes an `ActionHookResult` from `useActions()` — no hooks inside,
+ * pure presentation component. Extra props are forwarded to the
+ * underlying button slot.
+ *
  * - whenForbidden="hide": hidden when not permitted
  * - whenForbidden="disable": shown but disabled when not permitted
  * - whenForbidden="show": shown and clickable regardless of permission
- *
- * Supports a `confirmation` prop that, when set, will be used by
- * the confirm system (wired in the Feedback PR).
  */
 export function ActionButton({
   action,
-  actionName,
-  input,
   children,
   whenForbidden = "disable",
   confirmation: _confirmation,
-  variant,
-  color,
-  size,
-  startDecorator,
+  ...buttonProps
 }: ActionButtonProps) {
-  const status = useActionStatus(action, actionName, input);
   const Button = useComponent("button");
 
-  // Handle visibility
-  if (status.invisible) {
+  if (action.invisible) {
     return null;
   }
 
-  if (!status.permitted && whenForbidden === "hide") {
+  if (!action.permitted && whenForbidden === "hide") {
     return null;
   }
 
-  const disabled = !status.permitted && whenForbidden === "disable";
+  const disabled = !action.permitted && whenForbidden === "disable";
 
   return createElement(Button, {
+    ...buttonProps,
     children,
-    onClick: () => status.submit(),
+    onClick: () => action.submit(),
     disabled,
-    loading: status.pending,
-    variant,
-    color,
-    size,
-    startDecorator,
+    loading: action.pending,
   });
 }

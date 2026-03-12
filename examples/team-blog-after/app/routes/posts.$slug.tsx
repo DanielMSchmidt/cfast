@@ -12,6 +12,8 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
+import { useActions, clientDescriptor } from "@cfast/actions/client";
+import { ActionButton } from "@cfast/ui/joy";
 import { getUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
 import { createDbClient } from "~/db/client";
@@ -113,6 +115,14 @@ const composed = composeActions({
 
 export const action = composed.action;
 
+const postActions = clientDescriptor([
+  "deletePost",
+  "publishPost",
+  "unpublishPost",
+  "addComment",
+  "deleteComment",
+]);
+
 function getInitials(name: string): string {
   return name
     .split(" ")
@@ -213,6 +223,7 @@ export default function PostDetail() {
   );
 
   const [commentContent, setCommentContent] = useState("");
+  const actions = useActions(postActions);
 
   const isAuthor = user?.id === post.authorId;
   const isEditorOrAdmin = user ? hasAnyRole(user, ["editor", "admin"]) : false;
@@ -272,41 +283,41 @@ export default function PostDetail() {
             </Button>
           )}
           {canPublish && !post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="publishPost" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="title" value={post.title} />
-              <input type="hidden" name="slug" value={post.slug} />
-              <input type="hidden" name="authorId" value={post.authorId} />
-              <Button type="submit" color="success" variant="soft" size="sm">
-                Publish
-              </Button>
-            </Form>
+            <ActionButton
+              action={actions.publishPost({ postId: post.id, title: post.title, slug: post.slug, authorId: post.authorId })}
+              color="success"
+              variant="soft"
+              size="sm"
+            >
+              Publish
+            </ActionButton>
           )}
           {canPublish && post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="unpublishPost" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="title" value={post.title} />
-              <Button type="submit" color="warning" variant="soft" size="sm">
-                Unpublish
-              </Button>
-            </Form>
+            <ActionButton
+              action={actions.unpublishPost({ postId: post.id, title: post.title })}
+              color="warning"
+              variant="soft"
+              size="sm"
+            >
+              Unpublish
+            </ActionButton>
           )}
           {canDelete && (
-            <Form method="post" onSubmit={(e) => {
-              if (!confirm("Are you sure you want to delete this post?")) {
-                e.preventDefault();
-              }
-            }}>
-              <input type="hidden" name="_action" value="deletePost" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="title" value={post.title} />
-              <input type="hidden" name="slug" value={post.slug} />
-              <Button type="submit" color="danger" variant="soft" size="sm">
-                Delete
-              </Button>
-            </Form>
+            <ActionButton
+              action={{
+                ...actions.deletePost({ postId: post.id, title: post.title, slug: post.slug }),
+                submit: () => {
+                  if (confirm("Are you sure you want to delete this post?")) {
+                    actions.deletePost({ postId: post.id, title: post.title, slug: post.slug }).submit();
+                  }
+                },
+              }}
+              color="danger"
+              variant="soft"
+              size="sm"
+            >
+              Delete
+            </ActionButton>
           )}
         </Stack>
 
