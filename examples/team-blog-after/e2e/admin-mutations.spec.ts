@@ -31,11 +31,12 @@ test.describe.serial("Role Management", () => {
   test("assigned role appears as a chip on the user detail page", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
-    await page.goto(`/admin?view=_users&id=${userIds.reader}`);
+    await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
 
-    // The "author" chip should now be visible in the Roles section
-    // Use a specific selector to avoid matching the Select dropdown option
-    await expect(page.locator('.MuiChip-root', { hasText: "author" })).toBeVisible();
+    // The "author" chip should be visible in the Roles section.
+    // The Chip wraps a RoleBadge which also renders as a Chip, so look for
+    // the text "author" within a MuiChip-label span to be specific.
+    await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
   });
 
   test("admin can revoke a role from a user", async ({ page, context }) => {
