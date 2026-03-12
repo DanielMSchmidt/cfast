@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { FileListProps, FileListFile } from "../types.js";
 
 function formatBytes(bytes: number): string {
@@ -15,22 +14,22 @@ export function FileList({
   onDownload,
 }: FileListProps) {
   if (files.length === 0) {
-    return createElement("div", { style: { color: "#999" } }, "No files");
+    return <div style={{ color: "#999" }}>No files</div>;
   }
 
-  return createElement(
-    "ul",
-    {
-      style: { listStyle: "none", padding: 0, margin: 0 },
-      "data-testid": "file-list",
-    },
-    ...files.map((file) =>
-      createElement(FileListItem, {
-        key: file.key,
-        file,
-        onDownload,
-      }),
-    ),
+  return (
+    <ul
+      style={{ listStyle: "none", padding: 0, margin: 0 }}
+      data-testid="file-list"
+    >
+      {files.map((file) => (
+        <FileListItem
+          key={file.key}
+          file={file}
+          onDownload={onDownload}
+        />
+      ))}
+    </ul>
   );
 }
 
@@ -41,46 +40,42 @@ function FileListItem({
   file: FileListFile;
   onDownload?: (file: FileListFile) => void;
 }) {
-  return createElement(
-    "li",
-    {
-      style: {
+  return (
+    <li
+      style={{
         display: "flex",
         alignItems: "center",
         gap: "8px",
         padding: "8px 0",
         borderBottom: "1px solid #eee",
-      },
-    },
-    createElement("span", { style: { flex: 1 } }, file.name),
-    file.size != null
-      ? createElement("span", { style: { color: "#666", fontSize: "0.85em" } }, formatBytes(file.size))
-      : null,
-    onDownload
-      ? createElement(
-          "button",
-          {
-            onClick: () => onDownload(file),
-            style: {
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#1976d2",
-              textDecoration: "underline",
-            },
-          },
-          "Download",
-        )
-      : file.url
-        ? createElement(
-            "a",
-            {
-              href: file.url,
-              download: file.name,
-              style: { color: "#1976d2", textDecoration: "underline" },
-            },
-            "Download",
-          )
-        : null,
+      }}
+    >
+      <span style={{ flex: 1 }}>{file.name}</span>
+      {file.size != null ? (
+        <span style={{ color: "#666", fontSize: "0.85em" }}>{formatBytes(file.size)}</span>
+      ) : null}
+      {onDownload ? (
+        <button
+          onClick={() => onDownload(file)}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#1976d2",
+            textDecoration: "underline",
+          }}
+        >
+          Download
+        </button>
+      ) : file.url ? (
+        <a
+          href={file.url}
+          download={file.name}
+          style={{ color: "#1976d2", textDecoration: "underline" }}
+        >
+          Download
+        </a>
+      ) : null}
+    </li>
   );
 }

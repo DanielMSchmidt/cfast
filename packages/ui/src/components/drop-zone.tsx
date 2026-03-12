@@ -1,4 +1,4 @@
-import { createElement, useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useComponent } from "../plugin.js";
 import type { DropZoneProps } from "../types.js";
 
@@ -53,26 +53,27 @@ export function DropZone({
     ? `Uploading... ${upload.progress}%`
     : upload.error ?? upload.validationError ?? "Drop files here or click to browse";
 
-  return createElement(
-    "div",
-    null,
-    createElement(DropZoneSlot, {
-      isDragOver,
-      isInvalid: !!(upload.error || upload.validationError),
-      onClick: handleClick,
-      onDrop: handleDrop,
-      onDragOver: handleDragOver,
-      onDragLeave: handleDragLeave,
-      accept: upload.accept,
-      children: children ?? defaultContent,
-    }),
-    createElement("input", {
-      ref: inputRef,
-      type: "file",
-      accept: upload.accept,
-      multiple,
-      style: { display: "none" },
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files),
-    }),
+  return (
+    <div>
+      <DropZoneSlot
+        isDragOver={isDragOver}
+        isInvalid={!!(upload.error || upload.validationError)}
+        onClick={handleClick}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        accept={upload.accept}
+      >
+        {children ?? defaultContent}
+      </DropZoneSlot>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={upload.accept}
+        multiple={multiple}
+        style={{ display: "none" }}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
+      />
+    </div>
   );
 }

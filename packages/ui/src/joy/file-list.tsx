@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import JoyList from "@mui/joy/List";
 import JoyListItem from "@mui/joy/ListItem";
 import JoyListItemContent from "@mui/joy/ListItemContent";
@@ -20,46 +20,38 @@ export function FileList({
   onDownload,
 }: FileListProps): ReactElement {
   if (files.length === 0) {
-    return createElement(
-      JoyTypography,
-      { level: "body-sm" as const, color: "neutral" as const },
-      "No files",
+    return (
+      <JoyTypography level={"body-sm" as const} color={"neutral" as const}>
+        No files
+      </JoyTypography>
     );
   }
 
-  return createElement(
-    JoyList,
-    { size: "sm" as const },
-    ...files.map((file) =>
-      createElement(
-        JoyListItem,
-        { key: file.key },
-        createElement(
-          JoyListItemContent,
-          null,
-          createElement(JoyTypography, { level: "body-sm" as const }, file.name),
-          file.size != null
-            ? createElement(
-                JoyTypography,
-                { level: "body-xs" as const, color: "neutral" as const },
-                formatBytes(file.size),
-              )
-            : null,
-        ),
-        (onDownload || file.url)
-          ? createElement(
-              JoyButton,
-              {
-                size: "sm" as const,
-                variant: "plain" as const,
-                onClick: onDownload
-                  ? () => onDownload(file)
-                  : undefined,
-                children: "↓",
-              },
-            )
-          : null,
-      ),
-    ),
+  return (
+    <JoyList size={"sm" as const}>
+      {files.map((file) => (
+        <JoyListItem key={file.key}>
+          <JoyListItemContent>
+            <JoyTypography level={"body-sm" as const}>{file.name}</JoyTypography>
+            {file.size != null ? (
+              <JoyTypography level={"body-xs" as const} color={"neutral" as const}>
+                {formatBytes(file.size)}
+              </JoyTypography>
+            ) : null}
+          </JoyListItemContent>
+          {(onDownload || file.url) ? (
+            <JoyButton
+              size={"sm" as const}
+              variant={"plain" as const}
+              onClick={onDownload
+                ? () => onDownload(file)
+                : undefined}
+            >
+              {"↓"}
+            </JoyButton>
+          ) : null}
+        </JoyListItem>
+      ))}
+    </JoyList>
   );
 }

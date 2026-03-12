@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { ImagePreviewProps } from "../types.js";
 
 /**
@@ -16,34 +15,36 @@ export function ImagePreview({
   const resolvedSrc = src ?? (fileKey && getUrl ? getUrl(fileKey) : null);
 
   if (!resolvedSrc) {
-    return fallback
-      ? createElement("div", null, fallback)
-      : createElement(
-          "div",
-          {
-            style: {
-              width,
-              height,
-              backgroundColor: "#f5f5f5",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "4px",
-              color: "#999",
-            },
-          },
-          "No image",
-        );
+    return fallback ? (
+      <div>{fallback}</div>
+    ) : (
+      <div
+        style={{
+          width,
+          height,
+          backgroundColor: "#f5f5f5",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "4px",
+          color: "#999",
+        }}
+      >
+        No image
+      </div>
+    );
   }
 
-  return createElement("img", {
-    src: resolvedSrc,
-    alt,
-    style: {
-      width,
-      height,
-      objectFit: "cover" as const,
-      borderRadius: "4px",
-    },
-  });
+  return (
+    <img
+      src={resolvedSrc}
+      alt={alt}
+      style={{
+        width,
+        height,
+        objectFit: "cover" as const,
+        borderRadius: "4px",
+      }}
+    />
+  );
 }

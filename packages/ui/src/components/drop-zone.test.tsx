@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { DropZone } from "./drop-zone.js";
 
 vi.mock("../plugin.js", () => ({
@@ -14,16 +13,15 @@ vi.mock("../plugin.js", () => ({
       children: unknown;
       onClick: () => void;
       isDragOver: boolean;
-    }) =>
-      createElement(
-        "div",
-        {
-          "data-testid": "dropzone",
-          "data-drag-over": isDragOver,
-          onClick,
-        },
-        children as string,
-      ),
+    }) => (
+      <div
+        data-testid="dropzone"
+        data-drag-over={isDragOver}
+        onClick={onClick}
+      >
+        {children as string}
+      </div>
+    ),
 }));
 
 afterEach(cleanup);
@@ -44,49 +42,48 @@ function makeMockUpload(overrides?: Record<string, unknown>) {
 
 describe("DropZone", () => {
   it("renders default content", () => {
-    render(createElement(DropZone, { upload: makeMockUpload() }));
+    render(<DropZone upload={makeMockUpload()} />);
     expect(screen.getByText("Drop files here or click to browse")).toBeTruthy();
   });
 
   it("shows upload progress", () => {
     render(
-      createElement(DropZone, {
-        upload: makeMockUpload({ isUploading: true, progress: 42 }),
-      }),
+      <DropZone
+        upload={makeMockUpload({ isUploading: true, progress: 42 })}
+      />,
     );
     expect(screen.getByText("Uploading... 42%")).toBeTruthy();
   });
 
   it("shows error message", () => {
     render(
-      createElement(DropZone, {
-        upload: makeMockUpload({ error: "Upload failed" }),
-      }),
+      <DropZone
+        upload={makeMockUpload({ error: "Upload failed" })}
+      />,
     );
     expect(screen.getByText("Upload failed")).toBeTruthy();
   });
 
   it("shows validation error", () => {
     render(
-      createElement(DropZone, {
-        upload: makeMockUpload({ validationError: "File too large" }),
-      }),
+      <DropZone
+        upload={makeMockUpload({ validationError: "File too large" })}
+      />,
     );
     expect(screen.getByText("File too large")).toBeTruthy();
   });
 
   it("renders custom children", () => {
     render(
-      createElement(DropZone, {
-        upload: makeMockUpload(),
-        children: createElement("span", null, "Custom content"),
-      }),
+      <DropZone upload={makeMockUpload()}>
+        <span>Custom content</span>
+      </DropZone>,
     );
     expect(screen.getByText("Custom content")).toBeTruthy();
   });
 
   it("triggers file input on click", () => {
-    render(createElement(DropZone, { upload: makeMockUpload() }));
+    render(<DropZone upload={makeMockUpload()} />);
     const dropzone = screen.getByTestId("dropzone");
     // Click should propagate to the hidden input
     fireEvent.click(dropzone);

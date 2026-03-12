@@ -1,4 +1,4 @@
-import { createElement, useState, useCallback, useRef, type ReactElement } from "react";
+import { useState, useCallback, useRef, type ReactElement } from "react";
 import JoySheet from "@mui/joy/Sheet";
 import JoyTypography from "@mui/joy/Typography";
 import JoyLinearProgress from "@mui/joy/LinearProgress";
@@ -53,14 +53,11 @@ export function DropZone({
 
   const hasError = !!(upload.error || upload.validationError);
 
-  return createElement(
-    "div",
-    null,
-    createElement(
-      JoySheet,
-      {
-        variant: "outlined" as const,
-        sx: {
+  return (
+    <div>
+      <JoySheet
+        variant={"outlined" as const}
+        sx={{
           borderStyle: "dashed",
           borderWidth: 2,
           borderColor: hasError
@@ -74,47 +71,45 @@ export function DropZone({
           cursor: "pointer",
           transition: "border-color 0.2s",
           "&:hover": { borderColor: "primary.300" },
-        },
-        onClick: handleClick,
-        onDrop: handleDrop,
-        onDragOver: handleDragOver,
-        onDragLeave: handleDragLeave,
-      },
-      children ??
-        createElement(
-          "div",
-          null,
-          upload.isUploading
-            ? createElement(
-                "div",
-                null,
-                createElement(JoyTypography, { level: "body-sm" as const }, `Uploading... ${upload.progress}%`),
-                createElement(JoyLinearProgress, {
-                  determinate: true,
-                  value: upload.progress,
-                  sx: { mt: 1 },
-                }),
-              )
-            : hasError
-              ? createElement(
-                  JoyTypography,
-                  { color: "danger" as const, level: "body-sm" as const },
-                  upload.error ?? upload.validationError,
-                )
-              : createElement(
-                  JoyTypography,
-                  { level: "body-sm" as const, color: "neutral" as const },
-                  "Drop files here or click to browse",
-                ),
-        ),
-    ),
-    createElement("input", {
-      ref: inputRef,
-      type: "file",
-      accept: upload.accept,
-      multiple,
-      style: { display: "none" },
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files),
-    }),
+        }}
+        onClick={handleClick}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
+        {children ?? (
+          <div>
+            {upload.isUploading ? (
+              <div>
+                <JoyTypography level={"body-sm" as const}>
+                  {`Uploading... ${upload.progress}%`}
+                </JoyTypography>
+                <JoyLinearProgress
+                  determinate
+                  value={upload.progress}
+                  sx={{ mt: 1 }}
+                />
+              </div>
+            ) : hasError ? (
+              <JoyTypography color={"danger" as const} level={"body-sm" as const}>
+                {upload.error ?? upload.validationError}
+              </JoyTypography>
+            ) : (
+              <JoyTypography level={"body-sm" as const} color={"neutral" as const}>
+                Drop files here or click to browse
+              </JoyTypography>
+            )}
+          </div>
+        )}
+      </JoySheet>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={upload.accept}
+        multiple={multiple}
+        style={{ display: "none" }}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
+      />
+    </div>
   );
 }

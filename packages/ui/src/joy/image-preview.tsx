@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import JoyAspectRatio from "@mui/joy/AspectRatio";
 import JoyTypography from "@mui/joy/Typography";
 import type { ImagePreviewProps } from "../types.js";
@@ -18,28 +18,30 @@ export function ImagePreview({
   const resolvedSrc = src ?? (fileKey && getUrl ? getUrl(fileKey) : null);
 
   if (!resolvedSrc) {
-    return fallback
-      ? createElement("div", null, fallback)
-      : createElement(
-          JoyAspectRatio,
-          {
-            ratio: `${width}/${height}` as unknown as number,
-            sx: { width, borderRadius: "sm", bgcolor: "neutral.softBg" },
-          },
-          createElement(JoyTypography, { level: "body-sm" as const, color: "neutral" as const }, "No image"),
-        );
+    return fallback ? (
+      <div>{fallback}</div>
+    ) : (
+      <JoyAspectRatio
+        ratio={`${width}/${height}` as unknown as number}
+        sx={{ width, borderRadius: "sm", bgcolor: "neutral.softBg" }}
+      >
+        <JoyTypography level={"body-sm" as const} color={"neutral" as const}>
+          No image
+        </JoyTypography>
+      </JoyAspectRatio>
+    );
   }
 
-  return createElement(
-    JoyAspectRatio,
-    {
-      ratio: `${width}/${height}` as unknown as number,
-      sx: { width, borderRadius: "sm", overflow: "hidden" },
-    },
-    createElement("img", {
-      src: resolvedSrc,
-      alt,
-      style: { objectFit: "cover", width: "100%", height: "100%" },
-    }),
+  return (
+    <JoyAspectRatio
+      ratio={`${width}/${height}` as unknown as number}
+      sx={{ width, borderRadius: "sm", overflow: "hidden" }}
+    >
+      <img
+        src={resolvedSrc}
+        alt={alt}
+        style={{ objectFit: "cover", width: "100%", height: "100%" }}
+      />
+    </JoyAspectRatio>
   );
 }
