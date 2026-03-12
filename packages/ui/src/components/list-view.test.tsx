@@ -1,43 +1,46 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { ListView } from "./list-view.js";
 
 // Mock all child components to isolate ListView logic
 vi.mock("./page-container.js", () => ({
-  PageContainer: ({ title, actions, children }: { title?: string; actions?: unknown; children: unknown }) =>
-    createElement("div", { "data-testid": "page-container" },
-      title ? createElement("h1", null, title) : null,
-      actions ? createElement("div", { "data-testid": "actions-slot" }, actions as string) : null,
-      children as string,
-    ),
+  PageContainer: ({ title, actions, children }: { title?: string; actions?: unknown; children: unknown }) => (
+    <div data-testid="page-container">
+      {title ? <h1>{title}</h1> : null}
+      {actions ? <div data-testid="actions-slot">{actions as string}</div> : null}
+      {children as string}
+    </div>
+  ),
 }));
 
 vi.mock("./data-table.js", () => ({
-  DataTable: ({ data }: { data: { items: unknown[] } }) =>
-    createElement("div", { "data-testid": "data-table" }, `${data.items.length} rows`),
+  DataTable: ({ data }: { data: { items: unknown[] } }) => (
+    <div data-testid="data-table">{`${data.items.length} rows`}</div>
+  ),
 }));
 
 vi.mock("./filter-bar.js", () => ({
-  FilterBar: () => createElement("div", { "data-testid": "filter-bar" }),
+  FilterBar: () => <div data-testid="filter-bar" />,
 }));
 
 vi.mock("./bulk-action-bar.js", () => ({
   BulkActionBar: ({ selectedCount }: { selectedCount: number }) =>
     selectedCount > 0
-      ? createElement("div", { "data-testid": "bulk-action-bar" }, `${selectedCount} selected`)
+      ? <div data-testid="bulk-action-bar">{`${selectedCount} selected`}</div>
       : null,
 }));
 
 vi.mock("./empty-state.js", () => ({
-  EmptyState: ({ title }: { title: string }) =>
-    createElement("div", { "data-testid": "empty-state" }, title),
+  EmptyState: ({ title }: { title: string }) => (
+    <div data-testid="empty-state">{title}</div>
+  ),
 }));
 
 vi.mock("./action-button.js", () => ({
-  ActionButton: ({ children }: { children: unknown }) =>
-    createElement("button", { "data-testid": "create-button" }, children as string),
+  ActionButton: ({ children }: { children: unknown }) => (
+    <button data-testid="create-button">{children as string}</button>
+  ),
 }));
 
 vi.mock("react-router", () => ({
@@ -51,11 +54,11 @@ afterEach(cleanup);
 describe("ListView", () => {
   it("renders title in PageContainer", () => {
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: { items: [{ id: 1, name: "Test" }] },
-        columns: ["name"],
-      }),
+      <ListView
+        title="Posts"
+        data={{ items: [{ id: 1, name: "Test" }] }}
+        columns={["name"]}
+      />,
     );
 
     expect(screen.getByText("Posts")).toBeTruthy();
@@ -63,11 +66,11 @@ describe("ListView", () => {
 
   it("renders DataTable with data", () => {
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: { items: [{ id: 1 }, { id: 2 }] },
-        columns: ["id"],
-      }),
+      <ListView
+        title="Posts"
+        data={{ items: [{ id: 1 }, { id: 2 }] }}
+        columns={["id"]}
+      />,
     );
 
     expect(screen.getByTestId("data-table")).toBeTruthy();
@@ -76,10 +79,10 @@ describe("ListView", () => {
 
   it("renders EmptyState when no data", () => {
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: { items: [], isLoading: false },
-      }),
+      <ListView
+        title="Posts"
+        data={{ items: [], isLoading: false }}
+      />,
     );
 
     expect(screen.getByTestId("empty-state")).toBeTruthy();
@@ -87,11 +90,11 @@ describe("ListView", () => {
 
   it("renders FilterBar when filters provided", () => {
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: { items: [{ id: 1 }] },
-        filters: [{ column: "status", type: "select" as const }],
-      }),
+      <ListView
+        title="Posts"
+        data={{ items: [{ id: 1 }] }}
+        filters={[{ column: "status", type: "select" as const }]}
+      />,
     );
 
     expect(screen.getByTestId("filter-bar")).toBeTruthy();
@@ -99,16 +102,16 @@ describe("ListView", () => {
 
   it("renders pagination controls for offset pagination", () => {
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: {
+      <ListView
+        title="Posts"
+        data={{
           items: [{ id: 1 }],
           totalPages: 5,
           currentPage: 2,
           goToPage: vi.fn(),
-        },
-        columns: ["id"],
-      }),
+        }}
+        columns={["id"]}
+      />,
     );
 
     expect(screen.getByText("Page 2 of 5")).toBeTruthy();
@@ -119,15 +122,15 @@ describe("ListView", () => {
   it("renders load more button for cursor pagination", () => {
     const loadMore = vi.fn();
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: {
+      <ListView
+        title="Posts"
+        data={{
           items: [{ id: 1 }],
           hasMore: true,
           loadMore,
-        },
-        columns: ["id"],
-      }),
+        }}
+        columns={["id"]}
+      />,
     );
 
     const button = screen.getByText("Load more");
@@ -138,12 +141,12 @@ describe("ListView", () => {
 
   it("renders create button when createAction provided", () => {
     render(
-      createElement(ListView, {
-        title: "Posts",
-        data: { items: [{ id: 1 }] },
-        createAction: { _brand: "ActionClientDescriptor" as const, actionNames: ["create"], permissionsKey: "test" },
-        createLabel: "New Post",
-      }),
+      <ListView
+        title="Posts"
+        data={{ items: [{ id: 1 }] }}
+        createAction={{ _brand: "ActionClientDescriptor" as const, actionNames: ["create"], permissionsKey: "test" }}
+        createLabel="New Post"
+      />,
     );
 
     expect(screen.getByTestId("create-button")).toBeTruthy();

@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import JoyGrid from "@mui/joy/Grid";
 import JoyTypography from "@mui/joy/Typography";
 import { PageContainer } from "./page-container.js";
@@ -41,46 +41,37 @@ export function DetailView<T = unknown>({
       ? fields
       : inferFieldsFromRecord(record, exclude);
 
-  return createElement(
-    PageContainer,
-    {
-      title,
-      breadcrumb,
-      children: createElement(
-        JoyGrid,
-        { container: true, spacing: 2 },
-        ...displayFields.map((field) => {
+  return (
+    <PageContainer title={title} breadcrumb={breadcrumb}>
+      <JoyGrid container spacing={2}>
+        {displayFields.map((field) => {
           const value = (record as Record<string, unknown>)[field.key];
           const FieldComponent = field.render
             ? null
             : resolveFieldComponent(field.key, table);
 
-          return createElement(
-            JoyGrid,
-            { key: field.key, xs: 12, md: 6 },
-            createElement(
-              JoyTypography,
-              {
-                level: "body-xs" as const,
-                textTransform: "uppercase" as const,
-                fontWeight: "lg" as const,
-                mb: 0.5,
-              },
-              field.label ?? field.key,
-            ),
-            createElement(
-              "div",
-              null,
-              field.render
-                ? field.render(value, record)
-                : FieldComponent
-                  ? createElement(FieldComponent, { value })
-                  : String(value ?? "—"),
-            ),
+          return (
+            <JoyGrid key={field.key} xs={12} md={6}>
+              <JoyTypography
+                level={"body-xs" as const}
+                textTransform={"uppercase" as const}
+                fontWeight={"lg" as const}
+                mb={0.5}
+              >
+                {field.label ?? field.key}
+              </JoyTypography>
+              <div>
+                {field.render
+                  ? field.render(value, record)
+                  : FieldComponent
+                    ? <FieldComponent value={value} />
+                    : String(value ?? "—")}
+              </div>
+            </JoyGrid>
           );
-        }),
-      ),
-    },
+        })}
+      </JoyGrid>
+    </PageContainer>
   );
 }
 

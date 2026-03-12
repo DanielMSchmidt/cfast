@@ -1,4 +1,4 @@
-import { createElement, useState, useCallback, type ReactElement } from "react";
+import { useState, useCallback, type ReactElement } from "react";
 import JoyButton from "@mui/joy/Button";
 import JoyStack from "@mui/joy/Stack";
 import JoyTypography from "@mui/joy/Typography";
@@ -43,93 +43,76 @@ export function ListView<T = unknown>({
   }, []);
 
   const createButton = createAction
-    ? createElement(ActionButton, {
-        action: createAction,
-        children: createLabel,
-        variant: "solid",
-        color: "primary",
-      })
+    ? <ActionButton action={createAction} variant="solid" color="primary">{createLabel}</ActionButton>
     : null;
 
-  return createElement(
-    PageContainer,
-    {
-      title,
-      breadcrumb,
-      actions: createButton,
-      children: createElement(
-        JoyStack,
-        { spacing: 2 },
-        // Filters
-        filters && filters.length > 0
-          ? createElement(FilterBar, { filters, searchable })
-          : null,
-        // Bulk actions
-        selectable && bulkActions && bulkActions.length > 0
-          ? createElement(BulkActionBar, {
-              selectedCount: selectedRows.length,
-              actions: bulkActions,
-              onAction: handleBulkAction,
-              onClearSelection: clearSelection,
-            })
-          : null,
-        // Data table or empty state
-        data.items.length === 0 && !data.isLoading
-          ? createElement(EmptyState, {
-              title: `No ${title.toLowerCase()} found`,
-              description: filters ? "Try adjusting your filters" : undefined,
-              createAction,
-              createLabel,
-            })
-          : createElement(DataTable, {
-              data,
-              columns: columns as ColumnShorthand<unknown>[],
-              selectable,
-              selectedRows: selectable ? (selectedRows as unknown[]) : undefined,
-              onSelectionChange: selectable
+  return (
+    <PageContainer title={title} breadcrumb={breadcrumb} actions={createButton}>
+      <JoyStack spacing={2}>
+        {/* Filters */}
+        {filters && filters.length > 0
+          ? <FilterBar filters={filters} searchable={searchable} />
+          : null}
+        {/* Bulk actions */}
+        {selectable && bulkActions && bulkActions.length > 0
+          ? <BulkActionBar
+              selectedCount={selectedRows.length}
+              actions={bulkActions}
+              onAction={handleBulkAction}
+              onClearSelection={clearSelection}
+            />
+          : null}
+        {/* Data table or empty state */}
+        {data.items.length === 0 && !data.isLoading
+          ? <EmptyState
+              title={`No ${title.toLowerCase()} found`}
+              description={filters ? "Try adjusting your filters" : undefined}
+              createAction={createAction}
+              createLabel={createLabel}
+            />
+          : <DataTable
+              data={data}
+              columns={columns as ColumnShorthand<unknown>[]}
+              selectable={selectable}
+              selectedRows={selectable ? (selectedRows as unknown[]) : undefined}
+              onSelectionChange={selectable
                 ? (rows: unknown[]) => setSelectedRows(rows as T[])
-                : undefined,
-            }),
-        // Offset pagination
-        data.totalPages && data.totalPages > 1 && data.goToPage
-          ? createElement(
-              JoyStack,
-              { direction: "row" as const, justifyContent: "center", alignItems: "center", spacing: 2 },
-              createElement(JoyButton, {
-                size: "sm" as const,
-                variant: "outlined" as const,
-                disabled: data.currentPage === 1,
-                onClick: () => data.goToPage?.(Math.max(1, (data.currentPage ?? 1) - 1)),
-                children: "Previous",
-              }),
-              createElement(
-                JoyTypography,
-                { level: "body-sm" as const },
-                `Page ${data.currentPage ?? 1} of ${data.totalPages}`,
-              ),
-              createElement(JoyButton, {
-                size: "sm" as const,
-                variant: "outlined" as const,
-                disabled: data.currentPage === data.totalPages,
-                onClick: () =>
-                  data.goToPage?.(Math.min(data.totalPages ?? 1, (data.currentPage ?? 1) + 1)),
-                children: "Next",
-              }),
-            )
-          : null,
-        // Cursor-based load more
-        data.hasMore && data.loadMore
-          ? createElement(
-              JoyStack,
-              { alignItems: "center" },
-              createElement(JoyButton, {
-                variant: "soft" as const,
-                onClick: data.loadMore,
-                children: "Load more",
-              }),
-            )
-          : null,
-      ),
-    },
+                : undefined}
+            />}
+        {/* Offset pagination */}
+        {data.totalPages && data.totalPages > 1 && data.goToPage
+          ? <JoyStack direction={"row" as const} justifyContent="center" alignItems="center" spacing={2}>
+              <JoyButton
+                size={"sm" as const}
+                variant={"outlined" as const}
+                disabled={data.currentPage === 1}
+                onClick={() => data.goToPage?.(Math.max(1, (data.currentPage ?? 1) - 1))}
+              >
+                Previous
+              </JoyButton>
+              <JoyTypography level={"body-sm" as const}>
+                {`Page ${data.currentPage ?? 1} of ${data.totalPages}`}
+              </JoyTypography>
+              <JoyButton
+                size={"sm" as const}
+                variant={"outlined" as const}
+                disabled={data.currentPage === data.totalPages}
+                onClick={() =>
+                  data.goToPage?.(Math.min(data.totalPages ?? 1, (data.currentPage ?? 1) + 1))}
+              >
+                Next
+              </JoyButton>
+            </JoyStack>
+          : null}
+        {/* Cursor-based load more */}
+        {data.hasMore && data.loadMore
+          ? <JoyStack alignItems="center">
+              <JoyButton variant={"soft" as const} onClick={data.loadMore}>
+                Load more
+              </JoyButton>
+            </JoyStack>
+          : null}
+      </JoyStack>
+    </PageContainer>
   );
 }
