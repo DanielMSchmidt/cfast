@@ -1,5 +1,6 @@
 import type { Db, Operation } from "@cfast/db";
 import type { Grant, PermissionDescriptor } from "@cfast/permissions";
+import { getTableName } from "@cfast/permissions";
 
 import { extractActionName, parseInput } from "./parse-input.js";
 import type {
@@ -30,7 +31,7 @@ export function checkPermissionStatus(
       const actionMatch = grant.action === "manage" || grant.action === desc.action;
       const subjectMatch =
         grant.subject === "all" ||
-        (typeof grant.subject === "object" && grant.subject._.name === desc.table._.name);
+        (typeof grant.subject === "object" && getTableName(grant.subject) === getTableName(desc.table));
       return actionMatch && subjectMatch;
     });
 
@@ -44,7 +45,7 @@ export function checkPermissionStatus(
   }
 
   const reason = denied
-    .map((d) => `${d.action} on ${d.table._.name}`)
+    .map((d) => `${d.action} on ${getTableName(d.table)}`)
     .join(", ");
 
   return {

@@ -40,7 +40,9 @@ export function createAuth(config: AuthConfig) {
   const loginPath = config.redirects?.loginPath ?? "/login";
 
   return function initAuth(env: AuthEnvConfig): AuthInstance {
-    const roleManager = createRoleManager(env.d1);
+    const roleManager = createRoleManager(env.d1, {
+      tableName: config.roleTableName,
+    });
     const plugins = [];
 
     if (config.magicLink) {

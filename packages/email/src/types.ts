@@ -14,7 +14,7 @@ export type EmailProvider = {
 };
 
 export type EmailClientConfig = {
-  provider: EmailProvider;
+  provider: EmailProvider | (() => EmailProvider);
   from: string | (() => string);
 };
 

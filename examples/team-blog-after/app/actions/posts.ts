@@ -14,7 +14,7 @@ export const deletePost = createAction<
   compose(
     [
       db.delete(posts).where(eq(posts.id, input.postId)),
-      db.insert(auditLogs).values({
+      db.unsafe().insert(auditLogs).values({
         id: nanoid(),
         userId: ctx.user.id,
         action: "post.deleted",
@@ -41,7 +41,7 @@ export const publishPost = createAction<
         .update(posts)
         .set({ published: true, publishedAt: new Date(), updatedAt: new Date() })
         .where(eq(posts.id, input.postId)),
-      db.insert(auditLogs).values({
+      db.unsafe().insert(auditLogs).values({
         id: nanoid(),
         userId: ctx.user.id,
         action: "post.published",
@@ -74,7 +74,7 @@ export const unpublishPost = createAction<
         .update(posts)
         .set({ published: false, updatedAt: new Date() })
         .where(eq(posts.id, input.postId)),
-      db.insert(auditLogs).values({
+      db.unsafe().insert(auditLogs).values({
         id: nanoid(),
         userId: ctx.user.id,
         action: "post.unpublished",

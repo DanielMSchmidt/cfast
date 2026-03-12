@@ -13,7 +13,12 @@ export function createEmailClient(config: EmailClientConfig): EmailClient {
         options.from ??
         (typeof config.from === "function" ? config.from() : config.from);
 
-      return config.provider.send({
+      const provider =
+        typeof config.provider === "function"
+          ? config.provider()
+          : config.provider;
+
+      return provider.send({
         to: options.to,
         from,
         subject: options.subject,

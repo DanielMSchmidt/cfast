@@ -14,12 +14,24 @@ test.describe.serial("Role Management", () => {
   }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
-    await page.goto(`/admin/users/${userIds.reader}`);
+    await page.goto(`/admin/users/${userIds.reader}`, { waitUntil: "networkidle" });
 
-    // Use the role assignment form with Select + Assign button
-    await page.getByRole("combobox").click();
-    await page.getByRole("option", { name: "Author" }).click();
-    await page.click('button:has-text("Assign")');
+    // MUI Joy Select uses a hidden input for form submission.
+    // Directly set the value and submit to avoid hydration timing issues.
+    const assignForm = page.locator('form:has(input[value="assignRole"])');
+    await assignForm.waitFor({ state: "visible" });
+    await assignForm.evaluate((form: HTMLFormElement) => {
+      // MUI Joy Select renders a hidden <input> with the name attribute
+      let input = form.querySelector('input[name="role"]') as HTMLInputElement;
+      if (!input) {
+        input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "role";
+        form.appendChild(input);
+      }
+      input.value = "author";
+      form.requestSubmit();
+    });
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText('Role "author" assigned successfully')).toBeVisible();

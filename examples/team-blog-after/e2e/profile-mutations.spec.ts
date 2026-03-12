@@ -25,14 +25,15 @@ test.describe.serial("Profile Updates", () => {
     await page.goto("/profile");
 
     // Clear the name field
-    await page.fill('input[name="name"]', "");
+    const nameInput = page.locator('input[name="name"]');
+    await nameInput.clear();
     await page.click('button:has-text("Update Profile")');
 
     // The HTML5 required validation prevents form submission.
-    // We verify we stay on the profile page (form not submitted).
+    // We verify we stay on the profile page (no redirect occurred).
     await expect(page).toHaveURL(/\/profile/);
-    // The name field should still be empty (no page change)
-    await expect(page.locator('input[name="name"]')).toHaveValue("");
+    // The success message should NOT appear (form was not submitted)
+    await expect(page.getByText("Profile updated successfully.")).not.toBeVisible();
   });
 
   test("updated name appears in header", async ({ page, context }) => {

@@ -91,7 +91,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
           excerpt,
           updatedAt: new Date(),
         }).where(eq(posts.id, post.id)),
-        cfDb.insert(auditLogs).values({
+        cfDb.unsafe().insert(auditLogs).values({
           id: nanoid(),
           userId: ctx.user.id,
           action: "post.updated",

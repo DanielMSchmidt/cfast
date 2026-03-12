@@ -5,8 +5,8 @@ import type { Db } from "@cfast/db";
 import type { Grant } from "@cfast/permissions";
 import { createMockOperation, createFormDataRequest } from "./helpers.js";
 
-const mockTable = { _: { name: "posts" } };
-const otherTable = { _: { name: "comments" } };
+const mockTable = { [Symbol.for("drizzle:Name")]: "posts" };
+const otherTable = { [Symbol.for("drizzle:Name")]: "comments" };
 
 function makeGetContext(grants: Grant[] = []) {
   return async (_args: RequestArgs): Promise<ActionContext<{ id: string }>> => ({
@@ -379,6 +379,96 @@ describe("checkPermissionStatus", () => {
 
     const result = checkPermissionStatus(grants, descriptors);
     expect(result.permitted).toBe(true);
+  });
+});
+
+const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
+
+function makeDrizzleMockTable(name: string) {
+  return { [DRIZZLE_NAME_SYMBOL]: name };
+}
+
+describe("checkPermissionStatus — name-based table matching", () => {
+  it("matches grant subject and descriptor table by Drizzle name, not reference equality", () => {
+    const postsForGrant = makeDrizzleMockTable("posts");
+    const postsForDescriptor = makeDrizzleMockTable("posts");
+    expect(postsForGrant).not.toBe(postsForDescriptor);
+
+    const grants: Grant[] = [{ action: "create", subject: postsForGrant }];
+    const descriptors = [{ action: "create" as const, table: postsForDescriptor }];
+
+    const result = checkPermissionStatus(grants, descriptors);
+    expect(result.permitted).toBe(true);
+  });
+
+  it("denies when table names differ between grant and descriptor", () => {
+    const postsTable = makeDrizzleMockTable("posts");
+    const commentsTable = makeDrizzleMockTable("comments");
+
+    const grants: Grant[] = [{ action: "create", subject: postsTable }];
+    const descriptors = [{ action: "create" as const, table: commentsTable }];
+
+    const result = checkPermissionStatus(grants, descriptors);
+    expect(result.permitted).toBe(false);
+    expect(result.reason).toContain("comments");
+  });
+
+  it("manage action matches any CRUD via name-based comparison", () => {
+    const postsForGrant = makeDrizzleMockTable("posts");
+    const postsForDescriptor = makeDrizzleMockTable("posts");
+
+    const grants: Grant[] = [{ action: "manage", subject: postsForGrant }];
+    const descriptors = [
+      { action: "read" as const, table: postsForDescriptor },
+      { action: "create" as const, table: postsForDescriptor },
+      { action: "update" as const, table: postsForDescriptor },
+      { action: "delete" as const, table: postsForDescriptor },
+    ];
+
+    const result = checkPermissionStatus(grants, descriptors);
+    expect(result.permitted).toBe(true);
+  });
+
+  it("invisible is true when all descriptors denied with name-based tables", () => {
+    const postsForGrant = makeDrizzleMockTable("posts");
+    const commentsForDescriptor = makeDrizzleMockTable("comments");
+
+    const grants: Grant[] = [{ action: "read", subject: postsForGrant }];
+    const descriptors = [
+      { action: "create" as const, table: commentsForDescriptor },
+      { action: "delete" as const, table: commentsForDescriptor },
+    ];
+
+    const result = checkPermissionStatus(grants, descriptors);
+    expect(result.permitted).toBe(false);
+    expect(result.invisible).toBe(true);
+  });
+
+  it("invisible is false when some descriptors match via name-based comparison", () => {
+    const postsA = makeDrizzleMockTable("posts");
+    const postsB = makeDrizzleMockTable("posts");
+
+    const grants: Grant[] = [{ action: "read", subject: postsA }];
+    const descriptors = [
+      { action: "read" as const, table: postsB },
+      { action: "create" as const, table: postsB },
+    ];
+
+    const result = checkPermissionStatus(grants, descriptors);
+    expect(result.permitted).toBe(false);
+    expect(result.invisible).toBe(false);
+  });
+
+  it("reason message includes the table name from the descriptor", () => {
+    const postsForGrant = makeDrizzleMockTable("posts");
+    const ordersForDescriptor = makeDrizzleMockTable("orders");
+
+    const grants: Grant[] = [{ action: "read", subject: postsForGrant }];
+    const descriptors = [{ action: "create" as const, table: ordersForDescriptor }];
+
+    const result = checkPermissionStatus(grants, descriptors);
+    expect(result.permitted).toBe(false);
+    expect(result.reason).toContain("orders");
   });
 });
 

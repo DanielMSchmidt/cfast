@@ -41,7 +41,7 @@ test.describe("Admin Panel", () => {
 
   test("admin sidebar navigation works", async ({ page, context }) => {
     await loginAs(context, "admin");
-    await page.goto("/admin");
+    await page.goto("/admin", { waitUntil: "networkidle" });
 
     await page.getByRole("link", { name: "Users" }).click();
     await expect(page).toHaveURL(/\/admin\/users/);

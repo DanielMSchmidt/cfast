@@ -13,7 +13,10 @@ function grantMatches(
   table: PermissionDescriptor["table"],
 ): boolean {
   const actionOk = g.action === action || g.action === "manage";
-  const subjectOk = g.subject === "all" || g.subject === table;
+  const subjectOk =
+    g.subject === "all" ||
+    g.subject === table ||
+    getTableName(g.subject) === getTableName(table);
   return actionOk && subjectOk;
 }
 

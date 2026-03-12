@@ -32,6 +32,8 @@ jobs:
 
       - run: pnpm lint
 
+      - run: pnpm test
+
   e2e:
     name: E2E (${{ matrix.example }})
     runs-on: ubuntu-latest
@@ -66,6 +68,7 @@ jobs:
           MAILGUN_API_KEY=test-key
           MAILGUN_DOMAIN=test.example.com
           VARS
+          sed -i 's/^[[:space:]]*//' examples/${{ matrix.example }}/.dev.vars
 
       - name: Run E2E tests
         run: pnpm --filter ${{ matrix.example }} test:e2e

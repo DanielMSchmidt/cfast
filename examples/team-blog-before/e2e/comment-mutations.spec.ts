@@ -12,9 +12,11 @@ test.describe.serial("Adding Comments", () => {
 
   test("authenticated user posts a comment on a published post", async ({ page, context }) => {
     await loginAs(context, "reader");
-    await page.goto(`/posts/${publishedPost.slug}`);
+    await page.goto(`/posts/${publishedPost.slug}`, { waitUntil: "networkidle" });
 
-    await page.getByPlaceholder("Write a comment...").fill(commentText);
+    const textarea = page.getByPlaceholder("Write a comment...");
+    await textarea.waitFor({ state: "visible" });
+    await textarea.fill(commentText);
     await page.getByRole("button", { name: "Post Comment" }).click();
     await page.waitForLoadState("networkidle");
 

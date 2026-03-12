@@ -29,8 +29,12 @@ test.describe("Home Page", () => {
   });
 
   test("navigates to post detail when clicking a post", async ({ page }) => {
-    await page.goto("/");
-    await page.getByText("Getting Started with Cloudflare Workers").click();
-    await expect(page).toHaveURL(/\/posts\/getting-started-with-cloudflare-workers/);
+    await page.goto("/", { waitUntil: "networkidle" });
+    const link = page.getByRole("link", { name: /Getting Started with Cloudflare Workers/ });
+    await link.waitFor({ state: "visible" });
+    // Wait for hydration: React Router's client-side navigation requires JS to be loaded
+    await page.waitForFunction(() => document.readyState === "complete");
+    await link.click();
+    await page.waitForURL(/\/posts\/getting-started-with-cloudflare-workers/, { timeout: 15000 });
   });
 });

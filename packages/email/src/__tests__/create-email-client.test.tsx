@@ -109,4 +109,51 @@ describe("createEmailClient", () => {
       }),
     ).rejects.toThrow("Provider failed");
   });
+
+  it("accepts a provider factory function for lazy initialization", async () => {
+    const provider = createMockProvider();
+    const factory = vi.fn(() => provider);
+
+    const client = createEmailClient({
+      provider: factory,
+      from: "test@example.com",
+    });
+
+    // Factory not called until first send
+    expect(factory).not.toHaveBeenCalled();
+
+    await client.send({
+      to: "user@example.com",
+      subject: "Test",
+      react: <TestEmail name="Lazy" />,
+    });
+
+    expect(factory).toHaveBeenCalledOnce();
+    expect(provider.send).toHaveBeenCalledOnce();
+    const message = provider.lastMessage as Record<string, unknown>;
+    expect(message.to).toBe("user@example.com");
+  });
+
+  it("calls provider factory on each send (no caching in createEmailClient)", async () => {
+    const provider = createMockProvider();
+    const factory = vi.fn(() => provider);
+
+    const client = createEmailClient({
+      provider: factory,
+      from: "test@example.com",
+    });
+
+    await client.send({
+      to: "a@example.com",
+      subject: "First",
+      react: <TestEmail name="A" />,
+    });
+    await client.send({
+      to: "b@example.com",
+      subject: "Second",
+      react: <TestEmail name="B" />,
+    });
+
+    expect(factory).toHaveBeenCalledTimes(2);
+  });
 });
