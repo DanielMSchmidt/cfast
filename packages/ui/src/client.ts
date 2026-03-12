@@ -17,3 +17,7 @@ export { FormStatus } from "./components/form-status.js";
 export { AvatarWithInitials, getInitials } from "./components/avatar-with-initials.js";
 export { RoleBadge } from "./components/role-badge.js";
 export { ImpersonationBanner } from "./components/impersonation-banner.js";
+export { DataTable } from "./components/data-table.js";
+export { FilterBar } from "./components/filter-bar.js";
+export { BulkActionBar } from "./components/bulk-action-bar.js";
+export { useColumnInference } from "./hooks/use-column-inference.js";
