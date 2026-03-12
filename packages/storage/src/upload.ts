@@ -81,8 +81,7 @@ async function uploadPartsStreaming(
     if (done) {
       // Upload remaining buffer as final part
       if (buffer.length > 0) {
-        const pn = partNumber++;
-        pending.push(upload.uploadPart(pn, buffer));
+        pending.push(upload.uploadPart(partNumber, buffer));
       }
       break;
     }

@@ -132,7 +132,7 @@ describe("createByteCountingStream", () => {
     const { stream, getByteCount } = createByteCountingStream(source, 2000);
 
     const reader = stream.getReader();
-    while (!(await reader.read()).done) {}
+    while (!(await reader.read()).done) { /* drain stream */ }
 
     expect(getByteCount()).toBe(1500);
   });
@@ -152,7 +152,7 @@ describe("createByteCountingStream", () => {
     const reader = stream.getReader();
 
     await expect(async () => {
-      while (!(await reader.read()).done) {}
+      while (!(await reader.read()).done) { /* drain stream */ }
     }).rejects.toThrow(StorageError);
   });
 });
