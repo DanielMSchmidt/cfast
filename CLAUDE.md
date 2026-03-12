@@ -45,6 +45,7 @@ Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle 
 - Prefer `type` over `interface` for public API types (they compose better).
 - No classes in public APIs unless there's a strong reason. Prefer functions and plain objects.
 - Named exports only. No default exports except in route files (React Router convention).
+- Use JSX syntax in `@cfast/ui` components. Do not use `createElement` — JSX is more readable and the tsconfig supports it.
 
 ### Testing
 - Test against D1/SQLite, not Postgres. Use `miniflare` or `wrangler dev` for integration tests.
