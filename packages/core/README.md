@@ -56,11 +56,12 @@ The alternative (automatic sorting) would make the execution order implicit and 
 
 Plugin dependencies are declared via a TypeScript generic on `definePlugin<TRequires>()`. Earlier designs used an `as` cast on a `requires` property (`requires: {} as { auth: {...} }`), but a generic parameter is cleaner — no phantom runtime values, and the intent is unambiguous.
 
-Dependent plugins import type tokens exported by the packages they depend on:
+Because TypeScript cannot partially infer generic parameters in a single call, dependent plugins use a **curried form** — you specify `TRequires` explicitly and let the compiler infer the rest:
 
 ```typescript
 import type { AuthPluginProvides } from '@cfast/auth';
-definePlugin<AuthPluginProvides>({ ... })
+definePlugin<AuthPluginProvides>()({ name: 'db', setup(ctx) { ... } })
+//                              ^^ curried call
 ```
 
 This creates a compile-time contract: if `authPlugin` renames a field, dependent plugins break at the type level.
@@ -114,6 +115,10 @@ export default {
 ### `app.env()`
 
 Returns the typed, validated environment. Same as calling `env.get()` directly, but accessible from the app object.
+
+### `app.permissions`
+
+The permissions config passed to `createApp()`, exposed for direct access (e.g., checking grants outside a request context).
 
 ### `app.context(request, context)`
 
@@ -244,9 +249,11 @@ Individual package hooks (`useCurrentUser()`, `useUpload()`) continue to work di
 
 ## Plugin API
 
-### `definePlugin<TRequires>(config)`
+### `definePlugin(config)` / `definePlugin<TRequires>()(config)`
 
 Creates a plugin. This is the API package authors use.
+
+The direct form (no dependencies) infers all type parameters:
 
 ```typescript
 import { definePlugin } from '@cfast/core';
@@ -255,10 +262,22 @@ export const myPlugin = (config: MyConfig) =>
   definePlugin({
     name: 'my-plugin',
     setup(ctx) {
-      // ctx is { request, env } when TRequires is {}
+      // ctx is { request, env } when no dependencies
       return { /* values exposed as ctx['my-plugin'] */ };
     },
   });
+```
+
+The curried form (with dependencies) lets you specify `TRequires` while inferring the rest:
+
+```typescript
+definePlugin<AuthPluginProvides>()({
+  name: 'db',
+  setup(ctx) {
+    ctx.auth.user // typed from TRequires
+    return { client };
+  },
+});
 ```
 
 ### Plugin config
@@ -279,7 +298,7 @@ import { definePlugin } from '@cfast/core';
 import type { AuthPluginProvides } from '@cfast/auth';
 
 export const dbPlugin = (config: DbPluginConfig) =>
-  definePlugin<AuthPluginProvides>({
+  definePlugin<AuthPluginProvides>()({
     name: 'db',
     setup(ctx) {
       // ctx.auth.user and ctx.auth.grants are typed
@@ -313,7 +332,7 @@ import type { AuthPluginProvides } from '@cfast/auth';
 import type { DbPluginProvides } from '@cfast/db';
 
 export const adminPlugin = (config: AdminConfig) =>
-  definePlugin<AuthPluginProvides & DbPluginProvides>({
+  definePlugin<AuthPluginProvides & DbPluginProvides>()({
     name: 'admin',
     setup(ctx) {
       ctx.auth.user       // typed
@@ -376,7 +395,7 @@ export type RateLimitConfig = {
 };
 
 export const rateLimitPlugin = (config: RateLimitConfig) =>
-  definePlugin<AuthPluginProvides>({
+  definePlugin<AuthPluginProvides>()({
     name: 'rate-limit',
 
     async setup(ctx) {
@@ -434,10 +453,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 `createApp().use()` performs validation eagerly (at import time, not per-request):
 
-1. **Duplicate names** — If two plugins share a `name`, `.use()` throws immediately.
-2. **Missing requirements** — If a plugin's `TRequires` includes keys not provided by prior plugins, `.use()` throws with a message like: `Plugin "db" requires "auth" — register authPlugin before dbPlugin`.
+1. **Duplicate names** — If two plugins share a `name`, `.use()` throws a `CfastConfigError` immediately.
+2. **Missing requirements** — If a plugin's `TRequires` includes keys not provided by prior plugins, TypeScript reports a type error at the `.use()` call site. This is compile-time only — there is no runtime check for missing requirements.
 
-The runtime check mirrors the compile-time type check. Both catch ordering errors — TypeScript catches them in the editor, the runtime check catches them if types are bypassed (e.g., `as any` or JavaScript consumers).
+If plugin `setup()` throws during `app.context()`, the error is wrapped in a `CfastPluginError` with the plugin name for diagnostics.
 
 ---
 
@@ -448,8 +467,10 @@ Server (`@cfast/core`):
 ```typescript
 export { createApp } from './create-app.js';
 export { definePlugin } from './define-plugin.js';
+export { CfastPluginError, CfastConfigError } from './errors.js';
 export type {
-  CfastPlugin, PluginProvides, AppContext, App, CreateAppConfig,
+  CfastPlugin, CreateAppConfig, PluginSetupContext,
+  AppContext, PluginProvides, App, RouteArgs,
 } from './types.js';
 ```
 
@@ -457,6 +478,7 @@ Client (`@cfast/core/client`):
 
 ```typescript
 export { useApp } from './client/use-app.js';
+export { createCoreProvider, CoreContext } from './client/provider.js';
 ```
 
 ---
