@@ -11,6 +11,9 @@ export { PermissionGate } from "./components/permission-gate.js";
 export { ActionButton } from "./components/action-button.js";
 export { ConfirmProvider } from "./components/confirm-provider.js";
 export { FormStatus } from "./components/form-status.js";
+export { AvatarWithInitials, getInitials } from "./components/avatar-with-initials.js";
+export { RoleBadge } from "./components/role-badge.js";
+export { ImpersonationBanner } from "./components/impersonation-banner.js";
 
 // Types
 export type {

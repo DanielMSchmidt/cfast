@@ -46,6 +46,9 @@ jobs:
 
       - run: pnpm test
 
+      - name: Build Storybook
+        run: pnpm --filter @cfast/ui build-storybook --quiet
+
   e2e:
     name: E2E (${{ matrix.example }})
     runs-on: ubuntu-latest
