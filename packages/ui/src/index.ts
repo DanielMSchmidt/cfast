@@ -36,6 +36,10 @@ export { DropZone } from "./components/drop-zone.js";
 export { ImagePreview } from "./components/image-preview.js";
 export { FileList } from "./components/file-list.js";
 
+// Composite views
+export { ListView } from "./components/list-view.js";
+export { DetailView } from "./components/detail-view.js";
+
 // Hooks — data
 export { useColumnInference } from "./hooks/use-column-inference.js";
 
