@@ -340,7 +340,7 @@ async function handleImpersonate(
  * Handle custom row actions defined in table overrides.
  */
 async function handleCustomAction(
-  config: AdminConfig,
+  _config: AdminConfig,
   tableMetas: AdminTableMeta[],
   formData: FormData,
 ): Promise<AdminActionResult> {
