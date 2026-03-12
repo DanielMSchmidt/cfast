@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { createElement } from "react";
 import { MemoryRouter } from "react-router";
 import { FilterBar } from "./filter-bar.js";
 import type { FilterDef } from "../types.js";
@@ -30,11 +29,14 @@ const TITLE_FILTER: FilterDef = {
   column: "title",
   type: "text",
   label: "Title",
-  placeholder: "Filter by title…",
+  placeholder: "Filter by title\u2026",
 };
 
-const withRouter = (Story: () => React.ReactElement) =>
-  createElement(MemoryRouter, { initialEntries: ["/posts"] }, createElement(Story));
+const withRouter = (Story: () => React.ReactElement) => (
+  <MemoryRouter initialEntries={["/posts"]}>
+    <Story />
+  </MemoryRouter>
+);
 
 const meta = {
   title: "Joy/FilterBar",

@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { useComponent } from "../plugin.js";
 import type { BulkAction } from "../types.js";
 
@@ -23,10 +22,9 @@ export function BulkActionBar({
 
   if (selectedCount === 0) return null;
 
-  return createElement(
-    "div",
-    {
-      style: {
+  return (
+    <div
+      style={{
         display: "flex",
         alignItems: "center",
         gap: "8px",
@@ -34,31 +32,33 @@ export function BulkActionBar({
         backgroundColor: "#f0f4ff",
         borderRadius: "4px",
         marginBottom: "8px",
-      },
-    },
-    createElement(
-      "span",
-      null,
-      `${selectedCount} selected`,
-    ),
-    ...actions.map((action) =>
-      createElement(Button, {
-        key: action.label,
-        children: action.label,
-        onClick: () => onAction(action),
-        variant: "soft" as const,
-        size: "sm" as const,
-        startDecorator: action.icon
-          ? createElement(action.icon, { className: "bulk-action-icon" })
-          : undefined,
-      }),
-    ),
-    createElement(Button, {
-      children: "Clear",
-      onClick: onClearSelection,
-      variant: "plain" as const,
-      size: "sm" as const,
-    }),
+      }}
+    >
+      <span>{`${selectedCount} selected`}</span>
+      {actions.map((action) => {
+        const Icon = action.icon;
+        return (
+          <Button
+            key={action.label}
+            onClick={() => onAction(action)}
+            variant={"soft" as const}
+            size={"sm" as const}
+            startDecorator={Icon
+              ? <Icon className="bulk-action-icon" />
+              : undefined}
+          >
+            {action.label}
+          </Button>
+        );
+      })}
+      <Button
+        onClick={onClearSelection}
+        variant={"plain" as const}
+        size={"sm" as const}
+      >
+        Clear
+      </Button>
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import JoySheet from "@mui/joy/Sheet";
 import JoyStack from "@mui/joy/Stack";
 import JoyButton from "@mui/joy/Button";
@@ -24,12 +24,11 @@ export function BulkActionBar({
 }: BulkActionBarProps): ReactElement | null {
   if (selectedCount === 0) return null;
 
-  return createElement(
-    JoySheet,
-    {
-      variant: "soft" as const,
-      color: "primary" as const,
-      sx: {
+  return (
+    <JoySheet
+      variant={"soft" as const}
+      color={"primary" as const}
+      sx={{
         p: 1,
         px: 2,
         borderRadius: "sm",
@@ -37,35 +36,37 @@ export function BulkActionBar({
         display: "flex",
         alignItems: "center",
         gap: 1,
-      },
-    },
-    createElement(
-      JoyTypography,
-      { level: "body-sm" as const, fontWeight: "lg" as const },
-      `${selectedCount} selected`,
-    ),
-    createElement(
-      JoyStack,
-      { direction: "row" as const, spacing: 1, sx: { ml: "auto" } },
-      ...actions.map((action) =>
-        createElement(JoyButton, {
-          key: action.label,
-          size: "sm" as const,
-          variant: "soft" as const,
-          onClick: () => onAction(action),
-          startDecorator: action.icon
-            ? createElement(action.icon, { className: "bulk-action-icon" })
-            : undefined,
-          children: action.label,
-        }),
-      ),
-      createElement(JoyButton, {
-        size: "sm" as const,
-        variant: "plain" as const,
-        color: "neutral" as const,
-        onClick: onClearSelection,
-        children: "Clear selection",
-      }),
-    ),
+      }}
+    >
+      <JoyTypography level={"body-sm" as const} fontWeight={"lg" as const}>
+        {`${selectedCount} selected`}
+      </JoyTypography>
+      <JoyStack direction={"row" as const} spacing={1} sx={{ ml: "auto" }}>
+        {actions.map((action) => {
+          const Icon = action.icon;
+          return (
+            <JoyButton
+              key={action.label}
+              size={"sm" as const}
+              variant={"soft" as const}
+              onClick={() => onAction(action)}
+              startDecorator={Icon
+                ? <Icon className="bulk-action-icon" />
+                : undefined}
+            >
+              {action.label}
+            </JoyButton>
+          );
+        })}
+        <JoyButton
+          size={"sm" as const}
+          variant={"plain" as const}
+          color={"neutral" as const}
+          onClick={onClearSelection}
+        >
+          Clear selection
+        </JoyButton>
+      </JoyStack>
+    </JoySheet>
   );
 }

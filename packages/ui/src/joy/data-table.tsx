@@ -1,4 +1,4 @@
-import { createElement, useState, useCallback, type ReactElement } from "react";
+import { useState, useCallback, type ReactElement } from "react";
 import JoyTable from "@mui/joy/Table";
 import JoySheet from "@mui/joy/Sheet";
 import JoyCheckbox from "@mui/joy/Checkbox";
@@ -71,92 +71,76 @@ export function DataTable<T = unknown>({
   }, [data.items, externalSelectedRows, onSelectionChange, getId]);
 
   if (data.items.length === 0 && !data.isLoading) {
-    return createElement(
-      "div",
-      { style: { textAlign: "center" as const, padding: "32px", color: "#666" } },
-      emptyMessage,
+    return (
+      <div style={{ textAlign: "center" as const, padding: "32px", color: "#666" }}>
+        {emptyMessage}
+      </div>
     );
   }
 
-  return createElement(
-    JoySheet,
-    { variant: "outlined", sx: { borderRadius: "sm", overflow: "auto" } },
-    createElement(
-      JoyTable,
-      { hoverRow: true, sx: { "& th": { fontWeight: "lg" } } },
-      createElement(
-        "thead",
-        null,
-        createElement(
-          "tr",
-          null,
-          selectable
-            ? createElement("th", { style: { width: 40 } })
-            : null,
-          ...columns.map((col) =>
-            createElement(
-              "th",
-              { key: col.key },
-              col.sortable !== false
-                ? createElement(
-                    "button",
-                    {
-                      onClick: () => handleSort(col.key),
-                      style: {
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        font: "inherit",
-                        padding: 0,
-                        color: "inherit",
-                      },
-                    },
-                    col.label ?? col.key,
-                    sortKey === col.key ? (sortDir === "asc" ? " ↑" : " ↓") : null,
-                  )
-                : (col.label ?? col.key),
-            ),
-          ),
-        ),
-      ),
-      createElement(
-        "tbody",
-        null,
-        ...data.items.map((row) => {
-          const id = getId(row);
-          const isSelected = selectedSet.has(id);
+  return (
+    <JoySheet variant="outlined" sx={{ borderRadius: "sm", overflow: "auto" }}>
+      <JoyTable hoverRow sx={{ "& th": { fontWeight: "lg" } }}>
+        <thead>
+          <tr>
+            {selectable ? <th style={{ width: 40 }} /> : null}
+            {columns.map((col) => (
+              <th key={col.key}>
+                {col.sortable !== false ? (
+                  <button
+                    onClick={() => handleSort(col.key)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      font: "inherit",
+                      padding: 0,
+                      color: "inherit",
+                    }}
+                  >
+                    {col.label ?? col.key}
+                    {sortKey === col.key ? (sortDir === "asc" ? " \u2191" : " \u2193") : null}
+                  </button>
+                ) : (col.label ?? col.key)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.items.map((row) => {
+            const id = getId(row);
+            const isSelected = selectedSet.has(id);
 
-          return createElement(
-            "tr",
-            {
-              key: String(id),
-              onClick: onRowClick ? () => onRowClick(row) : undefined,
-              style: onRowClick ? { cursor: "pointer" } : undefined,
-            },
-            selectable
-              ? createElement(
-                  "td",
-                  null,
-                  createElement(JoyCheckbox, {
-                    checked: isSelected,
-                    onChange: () => toggleRow(id),
-                    size: "sm" as const,
-                  }),
-                )
-              : null,
-            ...columns.map((col) => {
-              const value = (row as Record<string, unknown>)[col.key];
-              return createElement(
-                "td",
-                { key: col.key },
-                col.render ? col.render(value, row) : String(value ?? ""),
-              );
-            }),
-          );
-        }),
-      ),
-    ),
+            return (
+              <tr
+                key={String(id)}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                style={onRowClick ? { cursor: "pointer" } : undefined}
+              >
+                {selectable ? (
+                  <td>
+                    <JoyCheckbox
+                      checked={isSelected}
+                      onChange={() => toggleRow(id)}
+                      size={"sm" as const}
+                    />
+                  </td>
+                ) : null}
+                {columns.map((col) => {
+                  const value = (row as Record<string, unknown>)[col.key];
+                  return (
+                    <td key={col.key}>
+                      {col.render ? col.render(value, row) : String(value ?? "")}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </JoyTable>
+    </JoySheet>
   );
 }
 

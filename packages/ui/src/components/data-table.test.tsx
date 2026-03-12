@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { DataTable } from "./data-table.js";
 
 vi.mock("../plugin.js", () => ({
@@ -9,16 +8,16 @@ vi.mock("../plugin.js", () => ({
     switch (slot) {
       case "table":
         return ({ children }: { children: unknown }) =>
-          createElement("table", { "data-testid": "table" }, children as string);
+          <table data-testid="table">{children as string}</table>;
       case "tableHead":
         return ({ children }: { children: unknown }) =>
-          createElement("thead", null, children as string);
+          <thead>{children as string}</thead>;
       case "tableBody":
         return ({ children }: { children: unknown }) =>
-          createElement("tbody", null, children as string);
+          <tbody>{children as string}</tbody>;
       case "tableRow":
         return ({ children, onClick }: { children: unknown; onClick?: () => void }) =>
-          createElement("tr", { onClick }, children as string);
+          <tr onClick={onClick}>{children as string}</tr>;
       case "tableCell":
         return ({
           children,
@@ -32,18 +31,20 @@ vi.mock("../plugin.js", () => ({
           sortable?: boolean;
           sortDirection?: string | null;
           onSort?: () => void;
-        }) =>
-          createElement(
-            header ? "th" : "td",
-            {
-              onClick: sortable ? onSort : undefined,
-              "data-sort-dir": sortDirection ?? undefined,
-            },
-            children as string,
+        }) => {
+          const Tag = header ? "th" : "td";
+          return (
+            <Tag
+              onClick={sortable ? onSort : undefined}
+              data-sort-dir={sortDirection ?? undefined}
+            >
+              {children as string}
+            </Tag>
           );
+        };
       default:
         return ({ children }: { children: unknown }) =>
-          createElement("div", null, children as string);
+          <div>{children as string}</div>;
     }
   },
 }));
@@ -61,10 +62,10 @@ const sampleData = {
 describe("DataTable", () => {
   it("renders rows from data", () => {
     render(
-      createElement(DataTable, {
-        data: sampleData,
-        columns: ["name", "email"],
-      }),
+      <DataTable
+        data={sampleData}
+        columns={["name", "email"]}
+      />,
     );
 
     expect(screen.getByText("Alice")).toBeTruthy();
@@ -74,11 +75,11 @@ describe("DataTable", () => {
 
   it("renders empty message when no data", () => {
     render(
-      createElement(DataTable, {
-        data: { items: [], isLoading: false },
-        columns: ["name"],
-        emptyMessage: "Nothing here",
-      }),
+      <DataTable
+        data={{ items: [], isLoading: false }}
+        columns={["name"]}
+        emptyMessage="Nothing here"
+      />,
     );
 
     expect(screen.getByText("Nothing here")).toBeTruthy();
@@ -86,10 +87,10 @@ describe("DataTable", () => {
 
   it("normalizes string column shorthands to ColumnDef", () => {
     render(
-      createElement(DataTable, {
-        data: sampleData,
-        columns: ["name"],
-      }),
+      <DataTable
+        data={sampleData}
+        columns={["name"]}
+      />,
     );
 
     // Shorthand "name" → label "Name"
@@ -98,10 +99,10 @@ describe("DataTable", () => {
 
   it("supports column objects", () => {
     render(
-      createElement(DataTable, {
-        data: sampleData,
-        columns: [{ key: "name", label: "Full Name", sortable: false }],
-      }),
+      <DataTable
+        data={sampleData}
+        columns={[{ key: "name", label: "Full Name", sortable: false }]}
+      />,
     );
 
     expect(screen.getByText("Full Name")).toBeTruthy();
@@ -109,11 +110,11 @@ describe("DataTable", () => {
 
   it("renders checkboxes when selectable", () => {
     render(
-      createElement(DataTable, {
-        data: sampleData,
-        columns: ["name"],
-        selectable: true,
-      }),
+      <DataTable
+        data={sampleData}
+        columns={["name"]}
+        selectable
+      />,
     );
 
     const checkboxes = screen.getAllByRole("checkbox");
@@ -123,11 +124,11 @@ describe("DataTable", () => {
   it("calls onRowClick when row is clicked", () => {
     const onRowClick = vi.fn();
     render(
-      createElement(DataTable, {
-        data: sampleData,
-        columns: ["name"],
-        onRowClick,
-      }),
+      <DataTable
+        data={sampleData}
+        columns={["name"]}
+        onRowClick={onRowClick}
+      />,
     );
 
     fireEvent.click(screen.getByText("Alice"));
@@ -144,12 +145,12 @@ describe("DataTable", () => {
     };
 
     render(
-      createElement(DataTable, {
-        data,
-        columns: ["name"],
-        selectable: true,
-        getRowId: (row: unknown) => (row as Record<string, unknown>).uuid as string,
-      }),
+      <DataTable
+        data={data}
+        columns={["name"]}
+        selectable
+        getRowId={(row: unknown) => (row as Record<string, unknown>).uuid as string}
+      />,
     );
 
     const checkboxes = screen.getAllByRole("checkbox");

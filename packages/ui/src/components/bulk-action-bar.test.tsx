@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { BulkActionBar } from "./bulk-action-bar.js";
 
 vi.mock("../plugin.js", () => ({
   useComponent: () =>
     ({ children, onClick }: { children: unknown; onClick?: () => void }) =>
-      createElement("button", { onClick }, children as string),
+      <button onClick={onClick}>{children as string}</button>,
 }));
 
 afterEach(cleanup);
@@ -15,12 +14,12 @@ afterEach(cleanup);
 describe("BulkActionBar", () => {
   it("renders nothing when no rows selected", () => {
     const { container } = render(
-      createElement(BulkActionBar, {
-        selectedCount: 0,
-        actions: [],
-        onAction: vi.fn(),
-        onClearSelection: vi.fn(),
-      }),
+      <BulkActionBar
+        selectedCount={0}
+        actions={[]}
+        onAction={vi.fn()}
+        onClearSelection={vi.fn()}
+      />,
     );
 
     expect(container.innerHTML).toBe("");
@@ -28,12 +27,12 @@ describe("BulkActionBar", () => {
 
   it("shows selected count", () => {
     render(
-      createElement(BulkActionBar, {
-        selectedCount: 3,
-        actions: [],
-        onAction: vi.fn(),
-        onClearSelection: vi.fn(),
-      }),
+      <BulkActionBar
+        selectedCount={3}
+        actions={[]}
+        onAction={vi.fn()}
+        onClearSelection={vi.fn()}
+      />,
     );
 
     expect(screen.getByText("3 selected")).toBeTruthy();
@@ -41,15 +40,15 @@ describe("BulkActionBar", () => {
 
   it("renders action buttons", () => {
     render(
-      createElement(BulkActionBar, {
-        selectedCount: 2,
-        actions: [
+      <BulkActionBar
+        selectedCount={2}
+        actions={[
           { label: "Delete" },
           { label: "Archive" },
-        ],
-        onAction: vi.fn(),
-        onClearSelection: vi.fn(),
-      }),
+        ]}
+        onAction={vi.fn()}
+        onClearSelection={vi.fn()}
+      />,
     );
 
     expect(screen.getByText("Delete")).toBeTruthy();
@@ -61,12 +60,12 @@ describe("BulkActionBar", () => {
     const action = { label: "Delete" };
 
     render(
-      createElement(BulkActionBar, {
-        selectedCount: 2,
-        actions: [action],
-        onAction,
-        onClearSelection: vi.fn(),
-      }),
+      <BulkActionBar
+        selectedCount={2}
+        actions={[action]}
+        onAction={onAction}
+        onClearSelection={vi.fn()}
+      />,
     );
 
     fireEvent.click(screen.getByText("Delete"));
@@ -77,12 +76,12 @@ describe("BulkActionBar", () => {
     const onClearSelection = vi.fn();
 
     render(
-      createElement(BulkActionBar, {
-        selectedCount: 2,
-        actions: [],
-        onAction: vi.fn(),
-        onClearSelection,
-      }),
+      <BulkActionBar
+        selectedCount={2}
+        actions={[]}
+        onAction={vi.fn()}
+        onClearSelection={onClearSelection}
+      />,
     );
 
     fireEvent.click(screen.getByText("Clear"));

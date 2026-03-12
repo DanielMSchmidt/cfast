@@ -1,4 +1,4 @@
-import { createElement, useCallback, type ReactElement } from "react";
+import { useCallback, type ReactElement } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router";
 import JoyInput from "@mui/joy/Input";
 import JoySelect from "@mui/joy/Select";
@@ -32,28 +32,29 @@ export function FilterBar({
     [searchParams, navigate, location.pathname],
   );
 
-  return createElement(
-    JoyStack,
-    { direction: "row" as const, spacing: 1, flexWrap: "wrap" as const, alignItems: "center", sx: { mb: 2 } },
-    searchable && searchable.length > 0
-      ? createElement(JoyInput, {
-          type: "search",
-          placeholder: `Search ${searchable.join(", ")}...`,
-          value: searchParams.get("q") ?? "",
-          onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-            updateParam("q", e.target.value || null),
-          size: "sm" as const,
-          sx: { minWidth: 200 },
-        })
-      : null,
-    ...filters.map((filter) =>
-      createElement(JoyFilterInput, {
-        key: filter.column,
-        filter,
-        value: searchParams.get(filter.column) ?? "",
-        onChange: (value: string) => updateParam(filter.column, value || null),
-      }),
-    ),
+  return (
+    <JoyStack direction={"row" as const} spacing={1} flexWrap={"wrap" as const} alignItems="center" sx={{ mb: 2 }}>
+      {searchable && searchable.length > 0 ? (
+        <JoyInput
+          type="search"
+          placeholder={`Search ${searchable.join(", ")}...`}
+          value={searchParams.get("q") ?? ""}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            updateParam("q", e.target.value || null)
+          }
+          size={"sm" as const}
+          sx={{ minWidth: 200 }}
+        />
+      ) : null}
+      {filters.map((filter) => (
+        <JoyFilterInput
+          key={filter.column}
+          filter={filter}
+          value={searchParams.get(filter.column) ?? ""}
+          onChange={(value: string) => updateParam(filter.column, value || null)}
+        />
+      ))}
+    </JoyStack>
   );
 }
 
@@ -71,33 +72,33 @@ function JoyFilterInput({
   switch (filter.type) {
     case "select":
     case "boolean":
-      return createElement(
-        JoySelect,
-        {
-          value: value || null,
-          onChange: (_e: unknown, newValue: unknown) => onChange(newValue ? String(newValue) : ""),
-          placeholder: `All ${label}`,
-          size: "sm" as const,
-          sx: { minWidth: 140 },
-          slotProps: { button: { "aria-label": label } },
-        },
-        ...(filter.options ?? []).map((opt) =>
-          createElement(JoyOption, {
-            key: String(opt.value),
-            value: String(opt.value),
-            children: opt.label,
-          }),
-        ),
+      return (
+        <JoySelect
+          value={value || null}
+          onChange={(_e: unknown, newValue: unknown) => onChange(newValue ? String(newValue) : "")}
+          placeholder={`All ${label}`}
+          size={"sm" as const}
+          sx={{ minWidth: 140 }}
+          slotProps={{ button: { "aria-label": label } }}
+        >
+          {(filter.options ?? []).map((opt) => (
+            <JoyOption key={String(opt.value)} value={String(opt.value)}>
+              {opt.label}
+            </JoyOption>
+          ))}
+        </JoySelect>
       );
 
     case "text":
     default:
-      return createElement(JoyInput, {
-        placeholder: filter.placeholder ?? label,
-        value,
-        onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
-        size: "sm" as const,
-        slotProps: { input: { "aria-label": label } },
-      });
+      return (
+        <JoyInput
+          placeholder={filter.placeholder ?? label}
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          size={"sm" as const}
+          slotProps={{ input: { "aria-label": label } }}
+        />
+      );
   }
 }

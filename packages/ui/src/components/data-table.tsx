@@ -1,4 +1,4 @@
-import { createElement, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useComponent } from "../plugin.js";
 import type { DataTableProps, ColumnDef, ColumnShorthand } from "../types.js";
 
@@ -71,67 +71,60 @@ export function DataTable<T = unknown>({
   }, [data.items, externalSelectedRows, onSelectionChange, getRowId]);
 
   if (data.items.length === 0 && !data.isLoading) {
-    return createElement("div", { style: { textAlign: "center" as const, padding: "32px", color: "#666" } }, emptyMessage);
+    return <div style={{ textAlign: "center" as const, padding: "32px", color: "#666" }}>{emptyMessage}</div>;
   }
 
-  return createElement(
-    Table,
-    { hoverRow: true, children: createElement("div") },
-    createElement(
-      TableHead,
-      { children: createElement("div") },
-      createElement(
-        TableRow,
-        { children: createElement("div") },
-        selectable
-          ? createElement(TableCell, { header: true, children: "" })
-          : null,
-        ...columns.map((col) =>
-          createElement(TableCell, {
-            key: col.key,
-            header: true,
-            sortable: col.sortable !== false,
-            sortDirection: sortKey === col.key ? sortDir : null,
-            onSort: () => handleSort(col.key),
-            children: col.label ?? col.key,
-          }),
-        ),
-      ),
-    ),
-    createElement(
-      TableBody,
-      { children: createElement("div") },
-      ...data.items.map((row) => {
-        const id = (getRowId ?? defaultGetId)(row);
-        const isSelected = selectedSet.has(id);
+  return (
+    <Table hoverRow>
+      <TableHead>
+        <TableRow>
+          {selectable ? <TableCell header>{""}</TableCell> : null}
+          {columns.map((col) => (
+            <TableCell
+              key={col.key}
+              header
+              sortable={col.sortable !== false}
+              sortDirection={sortKey === col.key ? sortDir : null}
+              onSort={() => handleSort(col.key)}
+            >
+              {col.label ?? col.key}
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {data.items.map((row) => {
+          const id = (getRowId ?? defaultGetId)(row);
+          const isSelected = selectedSet.has(id);
 
-        return createElement(
-          TableRow,
-          {
-            key: String(id),
-            selected: isSelected,
-            onClick: onRowClick ? () => onRowClick(row) : undefined,
-            children: createElement("div"),
-          },
-          selectable
-            ? createElement(TableCell, {
-                children: createElement("input", {
-                  type: "checkbox",
-                  checked: isSelected,
-                  onChange: () => toggleRow(id),
-                }),
-              })
-            : null,
-          ...columns.map((col) => {
-            const value = (row as Record<string, unknown>)[col.key];
-            return createElement(TableCell, {
-              key: col.key,
-              children: col.render ? col.render(value, row) : String(value ?? ""),
-            });
-          }),
-        );
-      }),
-    ),
+          return (
+            <TableRow
+              key={String(id)}
+              selected={isSelected}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+            >
+              {selectable ? (
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleRow(id)}
+                  />
+                </TableCell>
+              ) : null}
+              {columns.map((col) => {
+                const value = (row as Record<string, unknown>)[col.key];
+                return (
+                  <TableCell key={col.key}>
+                    {col.render ? col.render(value, row) : String(value ?? "")}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }
 

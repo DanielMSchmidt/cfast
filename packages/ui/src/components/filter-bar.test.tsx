@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { FilterBar } from "./filter-bar.js";
 
 const mockNavigate = vi.fn();
@@ -22,8 +21,8 @@ afterEach(() => {
 describe("FilterBar", () => {
   it("renders select filters", () => {
     render(
-      createElement(FilterBar, {
-        filters: [
+      <FilterBar
+        filters={[
           {
             column: "status",
             type: "select",
@@ -33,8 +32,8 @@ describe("FilterBar", () => {
               { label: "Draft", value: "draft" },
             ],
           },
-        ],
-      }),
+        ]}
+      />,
     );
 
     expect(screen.getByLabelText("Status")).toBeTruthy();
@@ -45,15 +44,15 @@ describe("FilterBar", () => {
 
   it("renders text filters", () => {
     render(
-      createElement(FilterBar, {
-        filters: [
+      <FilterBar
+        filters={[
           {
             column: "title",
             type: "text",
             placeholder: "Search titles...",
           },
-        ],
-      }),
+        ]}
+      />,
     );
 
     expect(screen.getByPlaceholderText("Search titles...")).toBeTruthy();
@@ -61,10 +60,10 @@ describe("FilterBar", () => {
 
   it("renders search input when searchable is set", () => {
     render(
-      createElement(FilterBar, {
-        filters: [],
-        searchable: ["title", "body"],
-      }),
+      <FilterBar
+        filters={[]}
+        searchable={["title", "body"]}
+      />,
     );
 
     expect(screen.getByPlaceholderText("Search title, body...")).toBeTruthy();
@@ -72,8 +71,8 @@ describe("FilterBar", () => {
 
   it("navigates with updated params on filter change", () => {
     render(
-      createElement(FilterBar, {
-        filters: [
+      <FilterBar
+        filters={[
           {
             column: "status",
             type: "select",
@@ -82,8 +81,8 @@ describe("FilterBar", () => {
               { label: "Published", value: "published" },
             ],
           },
-        ],
-      }),
+        ]}
+      />,
     );
 
     const select = screen.getByLabelText("Status");
@@ -98,8 +97,8 @@ describe("FilterBar", () => {
     mockSearchParams = new URLSearchParams("page=3&cursor=abc");
 
     render(
-      createElement(FilterBar, {
-        filters: [
+      <FilterBar
+        filters={[
           {
             column: "status",
             type: "select",
@@ -108,8 +107,8 @@ describe("FilterBar", () => {
               { label: "Published", value: "published" },
             ],
           },
-        ],
-      }),
+        ]}
+      />,
     );
 
     const select = screen.getByLabelText("Status");
