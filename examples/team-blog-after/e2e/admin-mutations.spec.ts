@@ -17,7 +17,6 @@ test.describe.serial("Role Management", () => {
     await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
 
     // Joy UI Select: click the select trigger to open the listbox, then pick "author"
-    // Joy UI Select renders with role="combobox" on the trigger element
     await page.getByText("Select role...").click();
     await page.getByRole("option", { name: "author" }).click();
 
@@ -26,23 +25,24 @@ test.describe.serial("Role Management", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText('Role "author" added to user.')).toBeVisible();
+
+    // After the mutation reloads the page, the role chip should appear
+    await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
   });
 
-  test("assigned role appears as a chip on the user detail page", async ({ page, context }) => {
+  test("assigned role persists on fresh page load", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
     await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
 
-    // The "author" chip should be visible in the Roles section.
-    // The Chip wraps a RoleBadge which also renders as a Chip, so look for
-    // the text "author" within a MuiChip-label span to be specific.
+    // The "author" chip should be visible after a fresh page load
     await expect(page.locator('.MuiChip-label:has-text("author")')).toBeVisible();
   });
 
   test("admin can revoke a role from a user", async ({ page, context }) => {
     const { userIds } = loadState();
     await loginAs(context, "admin");
-    await page.goto(`/admin?view=_users&id=${userIds.reader}`);
+    await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
 
     // The chip has an "x" button to remove the role.
     // Find the chip containing "author" and click its remove button.
