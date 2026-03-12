@@ -47,20 +47,26 @@ export const auth = createAuth({
 });
 ```
 
-### Route Integration (React Router Plugin)
+### Route Integration (routes.ts Helper)
 
-Auth routes (magic link callback, passkey endpoints) are injected automatically via a React Router plugin. No manual route files needed for auth internals.
+Auth routes (magic link callback, passkey endpoints) are added via a helper in your `routes.ts`. You create a handler file that forwards requests to Better Auth.
 
 ```typescript
-// react-router.config.ts
-import { createAuthPlugin } from "@cfast/auth/plugin";
-import { auth } from "./app/auth.server";
+// app/routes.ts
+import type { RouteConfig } from "@react-router/dev/routes";
+import { authRoutes } from "@cfast/auth/plugin";
 
-export default {
-  plugins: [
-    createAuthPlugin(auth), // injects /auth/callback, /auth/passkey/* routes
-  ],
-};
+export default [
+  ...authRoutes({ handlerFile: "routes/auth.$.tsx" }),
+  // ... other routes
+] satisfies RouteConfig;
+```
+
+The handler file (`routes/auth.$.tsx`) uses `createAuthRouteHandlers`:
+```typescript
+import { createAuthRouteHandlers } from "@cfast/auth";
+const { loader, action } = createAuthRouteHandlers(() => getAuth());
+export { loader, action };
 ```
 
 ### Protecting Routes with AuthGuard
@@ -124,30 +130,37 @@ function Header() {
 
 ### Login Page
 
-The consumer creates their own login route and renders `<LoginPage>`. The default UI is built with MUI Joy UI and shows:
-
-1. An email input
-2. A "Sign in with Passkey" button
-3. A "Send Magic Link" button
-4. Success/error feedback messages
-
-Both options are always visible regardless of whether the user has a registered passkey.
+The consumer creates their own login route and renders `<LoginPage>`. The component accepts an `authClient` prop and a `components` prop for UI slot overrides. Default slots render plain HTML — use `@cfast/ui/joy` for Joy UI styling.
 
 ```typescript
 // routes/login.tsx
 import { LoginPage } from "@cfast/auth/client";
+import { joyLoginComponents } from "@cfast/ui/joy";
+import { authClient } from "~/auth.client";
 
 export default function Login() {
-  return <LoginPage />;
+  return (
+    <LoginPage
+      authClient={authClient}
+      components={joyLoginComponents}
+      title="Sign In"
+      subtitle="Sign in to My App"
+    />
+  );
 }
 ```
 
+The login page shows:
+1. An email input
+2. A "Send Magic Link" button
+3. A "Sign in with Passkey" button
+4. Success/error feedback messages
+
 ### Component Slot Overrides
 
-Override individual pieces of the login UI. Unspecified slots use the Joy UI defaults.
+Override individual pieces of the login UI. Unspecified slots use the plain HTML defaults.
 
 ```typescript
-// routes/login.tsx
 import { LoginPage } from "@cfast/auth/client";
 import type { LoginComponents } from "@cfast/auth/client";
 
@@ -166,14 +179,16 @@ const components: LoginComponents = {
     <MyAlert>Check {email} for your login link</MyAlert>
   ),
   ErrorMessage: ({ error }) => (
-    <MyAlert color="danger">{error.message}</MyAlert>
+    <MyAlert color="danger">{error}</MyAlert>
   ),
 };
 
 export default function Login() {
-  return <LoginPage components={components} />;
+  return <LoginPage authClient={authClient} components={components} />;
 }
 ```
+
+For Joy UI, use the pre-built `joyLoginComponents` from `@cfast/ui/joy` instead of writing custom slots.
 
 ### Redirect Flow
 
@@ -292,14 +307,15 @@ createAuth({
 
 ```
 @cfast/auth
-├── .                  → Server: createAuth, types
+├── .                  → Server: createAuth, createRoleManager,
+│                        createImpersonationManager, createAuthRouteHandlers, types
 ├── /client            → Client: AuthProvider, AuthGuard, LoginPage,
-│                        useCurrentUser, useAuth, LoginComponents type
-├── /plugin            → React Router plugin: createAuthPlugin
+│                        useCurrentUser, useAuth, createAuthClient, LoginComponents type
+├── /plugin            → Route helper: authRoutes() for routes.ts
 └── /schema            → Drizzle schema: auth tables for migrations
 ```
 
-Server code stays out of client bundles. The `/plugin` entrypoint is only used in `react-router.config.ts` (build-time). The `/schema` entrypoint lets `@cfast/db` include auth tables in migrations without importing the full auth package.
+Server code stays out of client bundles. The `/plugin` entrypoint is only used in `routes.ts` (build-time). The `/schema` entrypoint lets `@cfast/db` include auth tables in migrations without importing the full auth package.
 
 ## Integration
 
