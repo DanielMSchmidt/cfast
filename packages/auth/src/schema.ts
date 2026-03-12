@@ -115,7 +115,7 @@ export const roles = sqliteTable("roles", {
  */
 export const impersonationLogs = sqliteTable("impersonation_logs", {
   id: text("id").primaryKey(),
-  adminUserId: text("admin_user_id")
+  adminId: text("admin_id")
     .notNull()
     .references(() => users.id),
   targetUserId: text("target_user_id")

@@ -75,7 +75,7 @@ describe("auth schema", () => {
   it("impersonationLogs has required audit columns", () => {
     const cols = Object.keys(impersonationLogs);
     expect(cols).toContain("id");
-    expect(cols).toContain("adminUserId");
+    expect(cols).toContain("adminId");
     expect(cols).toContain("targetUserId");
     expect(cols).toContain("startedAt");
     expect(cols).toContain("endedAt");

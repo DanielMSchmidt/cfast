@@ -1,5 +1,7 @@
 export type ImpersonationManagerOptions = {
   tableName?: string;
+  adminIdColumn?: string;
+  targetUserIdColumn?: string;
 };
 
 export function createImpersonationManager(
@@ -7,6 +9,8 @@ export function createImpersonationManager(
   options?: ImpersonationManagerOptions,
 ) {
   const table = options?.tableName ?? "impersonation_logs";
+  const adminCol = options?.adminIdColumn ?? "admin_id";
+  const targetCol = options?.targetUserIdColumn ?? "target_user_id";
 
   return {
     async impersonate(
@@ -17,7 +21,7 @@ export function createImpersonationManager(
       const now = Date.now();
       await d1
         .prepare(
-          `INSERT INTO ${table} (id, admin_user_id, target_user_id, started_at) VALUES (?, ?, ?, ?)`,
+          `INSERT INTO ${table} (id, ${adminCol}, ${targetCol}, started_at) VALUES (?, ?, ?, ?)`,
         )
         .bind(id, adminUserId, targetUserId, now)
         .run();
@@ -27,7 +31,7 @@ export function createImpersonationManager(
       const now = Date.now();
       await d1
         .prepare(
-          `UPDATE ${table} SET ended_at = ? WHERE admin_user_id = ? AND ended_at IS NULL`,
+          `UPDATE ${table} SET ended_at = ? WHERE ${adminCol} = ? AND ended_at IS NULL`,
         )
         .bind(now, adminUserId)
         .run();
@@ -38,7 +42,7 @@ export function createImpersonationManager(
     ): Promise<{ targetUserId: string } | null> {
       const result = await d1
         .prepare(
-          `SELECT target_user_id FROM ${table} WHERE admin_user_id = ? AND ended_at IS NULL LIMIT 1`,
+          `SELECT ${targetCol} as target_user_id FROM ${table} WHERE ${adminCol} = ? AND ended_at IS NULL LIMIT 1`,
         )
         .bind(adminUserId)
         .first<{ target_user_id: string }>();
