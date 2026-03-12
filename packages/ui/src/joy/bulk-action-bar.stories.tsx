@@ -12,9 +12,9 @@ const meta = {
   title: "Joy/BulkActionBar",
   component: BulkActionBar,
   parameters: { layout: "padded" },
-  argTypes: {
-    onAction: { action: "onAction" },
-    onClearSelection: { action: "onClearSelection" },
+  args: {
+    onAction: () => {},
+    onClearSelection: () => {},
   },
 } satisfies Meta<typeof BulkActionBar>;
 
