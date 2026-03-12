@@ -12,13 +12,13 @@ vi.mock("react-router", () => ({
 
 vi.mock("react", () => ({
   useRef: (val: unknown) => ({ current: val }),
-  useCallback: (fn: Function) => fn,
-  useMemo: (fn: Function) => fn(),
+  useCallback: (fn: (...args: unknown[]) => unknown) => fn,
+  useMemo: (fn: () => unknown) => fn(),
   useState: (init: unknown) => {
-    const state = typeof init === "function" ? (init as Function)() : init;
+    const state = typeof init === "function" ? (init as () => unknown)() : init;
     return [state, vi.fn()];
   },
-  useEffect: (fn: Function) => fn(),
+  useEffect: (fn: () => void) => fn(),
 }));
 
 import { usePagination } from "../use-pagination";

@@ -10,7 +10,7 @@ vi.mock("react-router", () => ({
 }));
 
 vi.mock("react", () => ({
-  useCallback: (fn: Function) => fn,
+  useCallback: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
 import { useOffsetPagination } from "../use-offset-pagination";
