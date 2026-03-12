@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { useComponent } from "../plugin.js";
 import type { BooleanFieldProps } from "../types.js";
 
@@ -12,13 +11,16 @@ export function BooleanField({
   const Chip = useComponent("chip");
 
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
-  return createElement(Chip, {
-    children: value ? trueLabel : falseLabel,
-    color: (value ? trueColor : falseColor) as "success" | "neutral" | "danger" | "primary" | "warning",
-    variant: "soft",
-    size: "sm",
-  });
+  return (
+    <Chip
+      color={(value ? trueColor : falseColor) as "success" | "neutral" | "danger" | "primary" | "warning"}
+      variant="soft"
+      size="sm"
+    >
+      {value ? trueLabel : falseLabel}
+    </Chip>
+  );
 }

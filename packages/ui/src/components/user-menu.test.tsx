@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { UserMenu } from "./user-menu.js";
 
 afterEach(cleanup);
@@ -25,7 +24,7 @@ describe("UserMenu", () => {
 
   it("renders nothing when user is null", () => {
     mockUseCurrentUser.mockReturnValue(null);
-    const { container } = render(createElement(UserMenu, {}));
+    const { container } = render(<UserMenu />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -38,7 +37,7 @@ describe("UserMenu", () => {
       roles: ["admin"],
     });
 
-    render(createElement(UserMenu, {}));
+    render(<UserMenu />);
     expect(screen.getByText("Test User")).toBeTruthy();
     expect(screen.getByText("test@example.com")).toBeTruthy();
   });
@@ -52,7 +51,7 @@ describe("UserMenu", () => {
       roles: ["admin", "editor"],
     });
 
-    render(createElement(UserMenu, {}));
+    render(<UserMenu />);
     expect(screen.getByText("admin")).toBeTruthy();
     expect(screen.getByText("editor")).toBeTruthy();
   });
@@ -66,7 +65,7 @@ describe("UserMenu", () => {
       roles: [],
     });
 
-    render(createElement(UserMenu, { onSignOut: vi.fn() }));
+    render(<UserMenu onSignOut={vi.fn()} />);
     expect(screen.getByText("Sign out")).toBeTruthy();
   });
 });

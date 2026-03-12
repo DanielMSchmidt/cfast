@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { NavigationProgress } from "./navigation-progress.js";
 
 afterEach(cleanup);
@@ -23,7 +22,7 @@ describe("NavigationProgress", () => {
       state: "idle",
     } as ReturnType<typeof useNavigation>);
 
-    const { container } = render(createElement(NavigationProgress, {}));
+    const { container } = render(<NavigationProgress />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -32,7 +31,7 @@ describe("NavigationProgress", () => {
       state: "loading",
     } as ReturnType<typeof useNavigation>);
 
-    render(createElement(NavigationProgress, {}));
+    render(<NavigationProgress />);
     expect(screen.getByRole("progressbar")).toBeTruthy();
   });
 });

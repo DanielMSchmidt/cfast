@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { TextFieldProps } from "../types.js";
 
 export function TextField({
@@ -6,7 +5,7 @@ export function TextField({
   maxLength,
 }: TextFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   const display = maxLength && value.length > maxLength
@@ -14,8 +13,8 @@ export function TextField({
     : value;
 
   if (maxLength && value.length > maxLength) {
-    return createElement("span", { title: value }, display);
+    return <span title={value}>{display}</span>;
   }
 
-  return createElement("span", null, display);
+  return <span>{display}</span>;
 }

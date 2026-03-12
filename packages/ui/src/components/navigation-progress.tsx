@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { useNavigation } from "react-router";
 import type { NavigationProgressProps } from "../types.js";
 
@@ -16,18 +15,20 @@ export function NavigationProgress({
     return null;
   }
 
-  return createElement("div", {
-    role: "progressbar",
-    "aria-label": "Loading",
-    style: {
-      position: "fixed" as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      height: "3px",
-      backgroundColor: color,
-      zIndex: 9999,
-      animation: "nav-progress 2s ease-in-out infinite",
-    },
-  });
+  return (
+    <div
+      role="progressbar"
+      aria-label="Loading"
+      style={{
+        position: "fixed" as const,
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "3px",
+        backgroundColor: color,
+        zIndex: 9999,
+        animation: "nav-progress 2s ease-in-out infinite",
+      }}
+    />
+  );
 }

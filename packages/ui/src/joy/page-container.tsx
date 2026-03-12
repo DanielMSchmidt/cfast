@@ -1,4 +1,4 @@
-import { createElement, Fragment, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import Typography from "@mui/joy/Typography";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import { Link } from "react-router";
@@ -24,28 +24,28 @@ export function PageContainer({
   tabs: _tabs,
   children,
 }: PageContainerProps): ReactElement {
-  return createElement(
-    "div",
-    { style: { padding: "16px 24px" } },
-    breadcrumb && breadcrumb.length > 0
-      ? createElement(
-          Breadcrumbs,
-          { size: "sm", sx: { mb: 1, p: 0 } },
-          ...breadcrumb.map((item, i) =>
-            item.to
-              ? createElement(Link, { key: i, to: item.to, style: { textDecoration: "none", color: "inherit" } }, item.label)
-              : createElement(Typography, { key: i, fontSize: "sm", children: item.label }),
-          ),
-        )
-      : null,
-    title || actions
-      ? createElement(
-          Stack,
-          { direction: "row", justifyContent: "space-between", alignItems: "center", sx: { mb: 2 } },
-          title ? createElement(Typography, { level: "h2", children: title }) : null,
-          actions ? createElement(Fragment, null, actions) : null,
-        )
-      : null,
-    children,
+  return (
+    <div style={{ padding: "16px 24px" }}>
+      {breadcrumb && breadcrumb.length > 0
+        ? (
+            <Breadcrumbs size="sm" sx={{ mb: 1, p: 0 }}>
+              {breadcrumb.map((item, i) =>
+                item.to
+                  ? <Link key={i} to={item.to} style={{ textDecoration: "none", color: "inherit" }}>{item.label}</Link>
+                  : <Typography key={i} fontSize="sm">{item.label}</Typography>,
+              )}
+            </Breadcrumbs>
+          )
+        : null}
+      {title || actions
+        ? (
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              {title ? <Typography level="h2">{title}</Typography> : null}
+              {actions ? <>{actions}</> : null}
+            </Stack>
+          )
+        : null}
+      {children}
+    </div>
   );
 }

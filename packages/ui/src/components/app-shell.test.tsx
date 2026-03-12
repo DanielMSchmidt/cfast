@@ -1,6 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { AppShell, AppShellHeader } from "./app-shell.js";
 
 afterEach(cleanup);
@@ -8,20 +7,21 @@ afterEach(cleanup);
 describe("AppShell", () => {
   it("renders children", () => {
     render(
-      createElement(AppShell, {
-        children: createElement("div", { "data-testid": "content" }, "Main content"),
-      }),
+      <AppShell>
+        <div data-testid="content">Main content</div>
+      </AppShell>,
     );
     expect(screen.getByTestId("content")).toBeTruthy();
   });
 
   it("renders with sidebar and header", () => {
     render(
-      createElement(AppShell, {
-        sidebar: createElement("nav", { "data-testid": "sidebar" }, "Sidebar"),
-        header: createElement("header", { "data-testid": "header" }, "Header"),
-        children: "Content",
-      }),
+      <AppShell
+        sidebar={<nav data-testid="sidebar">Sidebar</nav>}
+        header={<header data-testid="header">Header</header>}
+      >
+        Content
+      </AppShell>,
     );
     expect(screen.getByTestId("sidebar")).toBeTruthy();
     expect(screen.getByTestId("header")).toBeTruthy();
@@ -31,9 +31,9 @@ describe("AppShell", () => {
 describe("AppShellHeader", () => {
   it("renders with user menu", () => {
     render(
-      createElement(AppShellHeader, {
-        userMenu: createElement("div", { "data-testid": "menu" }, "Menu"),
-      }),
+      <AppShellHeader
+        userMenu={<div data-testid="menu">Menu</div>}
+      />,
     );
     expect(screen.getByTestId("menu")).toBeTruthy();
   });

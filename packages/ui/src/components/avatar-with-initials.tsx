@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { AvatarWithInitialsProps } from "../types.js";
 
 /**
@@ -26,23 +25,24 @@ export function AvatarWithInitials({
   const px = sizeMap[size];
 
   if (src) {
-    return createElement("img", {
-      src,
-      alt: name,
-      style: {
-        width: px,
-        height: px,
-        borderRadius: "50%",
-        objectFit: "cover" as const,
-      },
-    });
+    return (
+      <img
+        src={src}
+        alt={name}
+        style={{
+          width: px,
+          height: px,
+          borderRadius: "50%",
+          objectFit: "cover" as const,
+        }}
+      />
+    );
   }
 
-  return createElement(
-    "span",
-    {
-      "aria-label": name,
-      style: {
+  return (
+    <span
+      aria-label={name}
+      style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -52,8 +52,9 @@ export function AvatarWithInitials({
         backgroundColor: "#ddd",
         fontSize: px * 0.4,
         fontWeight: "bold",
-      },
-    },
-    getInitials(name),
+      }}
+    >
+      {getInitials(name)}
+    </span>
   );
 }

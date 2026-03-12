@@ -1,4 +1,3 @@
-import { createElement, Fragment } from "react";
 import { useComponent } from "../plugin.js";
 import type { BreadcrumbItem, TabItem } from "../types.js";
 import type { ReactNode } from "react";
@@ -24,10 +23,12 @@ export function PageContainer({
   const PageContainerSlot = useComponent("pageContainer");
   const Breadcrumb = useComponent("breadcrumb");
 
-  return createElement(Fragment, null,
-    breadcrumb && breadcrumb.length > 0
-      ? createElement(Breadcrumb, { items: breadcrumb })
-      : null,
-    createElement(PageContainerSlot, { title, actions, children }),
+  return (
+    <>
+      {breadcrumb && breadcrumb.length > 0
+        ? <Breadcrumb items={breadcrumb} />
+        : null}
+      <PageContainerSlot title={title} actions={actions}>{children}</PageContainerSlot>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { createElement } from "react";
 import LinearProgress from "@mui/joy/LinearProgress";
 import { MemoryRouter } from "react-router";
 import { NavigationProgress } from "./navigation-progress.js";
@@ -35,15 +34,16 @@ export const Idle: Story = {
  * state is "loading".
  */
 export const Loading: Story = {
-  render: () =>
-    createElement(LinearProgress, {
-      sx: {
+  render: () => (
+    <LinearProgress
+      sx={{
         position: "relative",
         top: 0,
         left: 0,
         right: 0,
         "--LinearProgress-radius": "0px",
         "--LinearProgress-thickness": "3px",
-      },
-    }),
+      }}
+    />
+  ),
 };

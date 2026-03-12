@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
-import { createElement } from "react";
 import { useActionToast } from "./use-action-toast.js";
 import { ToastContext } from "./use-toast.js";
 import { createMockDescriptor } from "../__tests__/helpers.js";
@@ -34,11 +33,11 @@ describe("useActionToast", () => {
       }),
     });
 
-    const wrapper = ({ children }: { children: React.ReactNode }) =>
-      createElement(ToastContext.Provider, {
-        value: { show: mockShow },
-        children,
-      });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <ToastContext.Provider value={{ show: mockShow }}>
+        {children}
+      </ToastContext.Provider>
+    );
 
     renderHook(
       () =>

@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { RelationFieldProps } from "../types.js";
 
 export function RelationField({
@@ -7,7 +6,7 @@ export function RelationField({
   linkTo,
 }: RelationFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   const record = value as Record<string, unknown>;
@@ -16,8 +15,8 @@ export function RelationField({
 
   if (linkTo && id) {
     const href = linkTo.replace(":id", id);
-    return createElement("a", { href }, displayValue);
+    return <a href={href}>{displayValue}</a>;
   }
 
-  return createElement("span", null, displayValue);
+  return <span>{displayValue}</span>;
 }

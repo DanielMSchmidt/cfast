@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { useComponent } from "../plugin.js";
 import type { RoleBadgeProps, ChipSlotProps } from "../types.js";
 
@@ -22,10 +21,9 @@ export function RoleBadge({ role, colors }: RoleBadgeProps) {
     : defaultColors;
   const chipColor = colorMap[role] ?? "neutral";
 
-  return createElement(Chip, {
-    children: role,
-    color: chipColor,
-    variant: "soft",
-    size: "sm",
-  });
+  return (
+    <Chip color={chipColor} variant="soft" size="sm">
+      {role}
+    </Chip>
+  );
 }

@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { NumberFieldProps } from "../types.js";
 
 export function NumberField({
@@ -8,7 +7,7 @@ export function NumberField({
   decimals,
 }: NumberFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   const options: Intl.NumberFormatOptions = {};
@@ -22,5 +21,5 @@ export function NumberField({
   }
 
   const formatted = new Intl.NumberFormat(locale, options).format(value);
-  return createElement("span", null, formatted);
+  return <span>{formatted}</span>;
 }

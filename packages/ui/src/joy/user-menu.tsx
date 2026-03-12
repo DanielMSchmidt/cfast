@@ -1,4 +1,4 @@
-import { createElement, type ReactElement, type ComponentType } from "react";
+import { type ReactElement, type ComponentType } from "react";
 import Avatar from "@mui/joy/Avatar";
 import Dropdown from "@mui/joy/Dropdown";
 import Menu from "@mui/joy/Menu";
@@ -28,54 +28,46 @@ export function UserMenu({
     return null;
   }
 
-  return createElement(
-    Dropdown,
-    null,
-    createElement(
-      MenuButton,
-      { slots: { root: IconButton }, slotProps: { root: { variant: "plain", size: "sm" } } },
-      createElement(Avatar, {
-        src: user.avatarUrl ?? undefined,
-        size: "sm",
-        children: getInitials(user.name),
-      }),
-    ),
-    createElement(
-      Menu,
-      { placement: "bottom-end", size: "sm" },
-      createElement(MenuItem, { disabled: true },
-        createElement("div", null,
-          createElement("strong", null, user.name),
-          createElement("br"),
-          createElement("small", null, user.email),
-        ),
-      ),
-      user.roles.length > 0
-        ? createElement(MenuItem, { disabled: true },
-            createElement("div", { style: { display: "flex", gap: "4px" } },
-              ...user.roles.map((role) =>
-                createElement(RoleBadge, { key: role, role }),
+  return (
+    <Dropdown>
+      <MenuButton slots={{ root: IconButton }} slotProps={{ root: { variant: "plain", size: "sm" } }}>
+        <Avatar src={user.avatarUrl ?? undefined} size="sm">
+          {getInitials(user.name)}
+        </Avatar>
+      </MenuButton>
+      <Menu placement="bottom-end" size="sm">
+        <MenuItem disabled>
+          <div>
+            <strong>{user.name}</strong>
+            <br />
+            <small>{user.email}</small>
+          </div>
+        </MenuItem>
+        {user.roles.length > 0
+          ? (
+              <MenuItem disabled>
+                <div style={{ display: "flex", gap: "4px" }}>
+                  {user.roles.map((role) => (
+                    <RoleBadge key={role} role={role} />
+                  ))}
+                </div>
+              </MenuItem>
+            )
+          : null}
+        {links.map((link) =>
+          link.action
+            ? <PermissionFilteredLink key={link.to} link={link} />
+            : (
+                <AnyMenuItem key={link.to} component={Link} to={link.to}>
+                  {link.label}
+                </AnyMenuItem>
               ),
-            ),
-          )
-        : null,
-      ...links.map((link) =>
-        link.action
-          ? createElement(PermissionFilteredLink, { key: link.to, link })
-          : createElement(AnyMenuItem, {
-              key: link.to,
-              component: Link,
-              to: link.to,
-              children: link.label,
-            }),
-      ),
-      onSignOut
-        ? createElement(MenuItem, {
-            onClick: onSignOut,
-            children: "Sign out",
-          })
-        : null,
-    ),
+        )}
+        {onSignOut
+          ? <MenuItem onClick={onSignOut}>Sign out</MenuItem>
+          : null}
+      </Menu>
+    </Dropdown>
   );
 }
 
@@ -86,9 +78,9 @@ function PermissionFilteredLink({ link }: { link: UserMenuLink }): ReactElement 
     return null;
   }
 
-  return createElement(AnyMenuItem, {
-    component: Link,
-    to: link.to,
-    children: link.label,
-  });
+  return (
+    <AnyMenuItem component={Link} to={link.to}>
+      {link.label}
+    </AnyMenuItem>
+  );
 }

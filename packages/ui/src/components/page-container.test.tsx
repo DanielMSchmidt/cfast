@@ -1,6 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { PageContainer } from "./page-container.js";
 
 afterEach(cleanup);
@@ -8,32 +7,32 @@ afterEach(cleanup);
 describe("PageContainer", () => {
   it("renders children", () => {
     render(
-      createElement(PageContainer, {
-        children: createElement("div", { "data-testid": "content" }, "Page content"),
-      }),
+      <PageContainer>
+        <div data-testid="content">Page content</div>
+      </PageContainer>,
     );
     expect(screen.getByTestId("content")).toBeTruthy();
   });
 
   it("renders title", () => {
     render(
-      createElement(PageContainer, {
-        title: "My Page",
-        children: "Content",
-      }),
+      <PageContainer title="My Page">
+        Content
+      </PageContainer>,
     );
     expect(screen.getByText("My Page")).toBeTruthy();
   });
 
   it("renders breadcrumb", () => {
     render(
-      createElement(PageContainer, {
-        breadcrumb: [
+      <PageContainer
+        breadcrumb={[
           { label: "Home", to: "/" },
           { label: "Posts" },
-        ],
-        children: "Content",
-      }),
+        ]}
+      >
+        Content
+      </PageContainer>,
     );
     expect(screen.getByText("Home")).toBeTruthy();
     // "Posts" is rendered inside a span with " / " prefix — use a function matcher
@@ -42,10 +41,9 @@ describe("PageContainer", () => {
 
   it("renders actions", () => {
     render(
-      createElement(PageContainer, {
-        actions: createElement("button", null, "Create"),
-        children: "Content",
-      }),
+      <PageContainer actions={<button>Create</button>}>
+        Content
+      </PageContainer>,
     );
     expect(screen.getByText("Create")).toBeTruthy();
   });

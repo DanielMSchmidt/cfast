@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent, act } from "@testing-library/react";
-import { createElement, useState } from "react";
+import { useState } from "react";
 import { ConfirmProvider } from "./confirm-provider.js";
 import { useConfirm } from "../hooks/use-confirm.js";
 
@@ -10,30 +10,34 @@ function TestConsumer() {
   const confirm = useConfirm();
   const [result, setResult] = useState<string>("pending");
 
-  return createElement("div", null,
-    createElement("button", {
-      "data-testid": "trigger",
-      onClick: async () => {
-        const confirmed = await confirm({
-          title: "Delete item?",
-          description: "This cannot be undone.",
-          confirmLabel: "Yes, delete",
-          cancelLabel: "No",
-          variant: "danger",
-        });
-        setResult(confirmed ? "confirmed" : "cancelled");
-      },
-    }, "Open dialog"),
-    createElement("span", { "data-testid": "result" }, result),
+  return (
+    <div>
+      <button
+        data-testid="trigger"
+        onClick={async () => {
+          const confirmed = await confirm({
+            title: "Delete item?",
+            description: "This cannot be undone.",
+            confirmLabel: "Yes, delete",
+            cancelLabel: "No",
+            variant: "danger",
+          });
+          setResult(confirmed ? "confirmed" : "cancelled");
+        }}
+      >
+        Open dialog
+      </button>
+      <span data-testid="result">{result}</span>
+    </div>
   );
 }
 
 describe("ConfirmProvider", () => {
   it("provides useConfirm context and renders dialog on trigger", async () => {
     render(
-      createElement(ConfirmProvider, {
-        children: createElement(TestConsumer),
-      }),
+      <ConfirmProvider>
+        <TestConsumer />
+      </ConfirmProvider>,
     );
 
     expect(screen.getByTestId("result").textContent).toBe("pending");
@@ -50,9 +54,9 @@ describe("ConfirmProvider", () => {
 
   it("resolves true when confirmed", async () => {
     render(
-      createElement(ConfirmProvider, {
-        children: createElement(TestConsumer),
-      }),
+      <ConfirmProvider>
+        <TestConsumer />
+      </ConfirmProvider>,
     );
 
     await act(async () => {
@@ -68,9 +72,9 @@ describe("ConfirmProvider", () => {
 
   it("resolves false when cancelled", async () => {
     render(
-      createElement(ConfirmProvider, {
-        children: createElement(TestConsumer),
-      }),
+      <ConfirmProvider>
+        <TestConsumer />
+      </ConfirmProvider>,
     );
 
     await act(async () => {

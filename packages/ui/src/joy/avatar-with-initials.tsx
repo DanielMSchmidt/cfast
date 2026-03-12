@@ -1,4 +1,4 @@
-import { createElement, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import Avatar from "@mui/joy/Avatar";
 import type { AvatarWithInitialsProps } from "../types.js";
 import { getInitials } from "../components/avatar-with-initials.js";
@@ -11,10 +11,9 @@ export function AvatarWithInitials({
   name,
   size = "md",
 }: AvatarWithInitialsProps): ReactElement {
-  return createElement(Avatar, {
-    src: src ?? undefined,
-    alt: name,
-    size,
-    children: getInitials(name),
-  });
+  return (
+    <Avatar src={src ?? undefined} alt={name} size={size}>
+      {getInitials(name)}
+    </Avatar>
+  );
 }

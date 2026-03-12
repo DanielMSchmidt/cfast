@@ -1,4 +1,4 @@
-import { createElement, Fragment, type ReactElement, type ComponentType } from "react";
+import { type ReactElement, type ComponentType } from "react";
 import Sheet from "@mui/joy/Sheet";
 import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
@@ -21,14 +21,14 @@ export function AppShell({
   sidebar,
   header,
 }: AppShellProps): ReactElement {
-  return createElement(
-    "div",
-    { style: { display: "flex", minHeight: "100vh" } },
-    sidebar ?? null,
-    createElement("div", { style: { flex: 1, display: "flex", flexDirection: "column" as const } },
-      header ?? null,
-      createElement("main", { style: { flex: 1 } }, children),
-    ),
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {sidebar ?? null}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" as const }}>
+        {header ?? null}
+        <main style={{ flex: 1 }}>{children}</main>
+      </div>
+    </div>
   );
 }
 
@@ -36,39 +36,35 @@ export function AppShell({
  * Joy UI Sidebar — Sheet with List navigation items.
  */
 export function AppShellSidebar({ items }: { items: NavigationItem[] }): ReactElement {
-  return createElement(
-    Sheet,
-    {
-      sx: {
+  return (
+    <Sheet
+      sx={{
         width: 240,
         borderRight: "1px solid",
         borderColor: "divider",
         p: 2,
-      },
-    },
-    createElement(
-      List,
-      { size: "sm" },
-      ...items.map((item) =>
-        createElement(SidebarItem, { key: item.to, item }),
-      ),
-    ),
+      }}
+    >
+      <List size="sm">
+        {items.map((item) => (
+          <SidebarItem key={item.to} item={item} />
+        ))}
+      </List>
+    </Sheet>
   );
 }
 
 function SidebarItem({ item }: { item: NavigationItem }): ReactElement | null {
   if (item.action) {
-    return createElement(PermissionFilteredItem, { item });
+    return <PermissionFilteredItem item={item} />;
   }
 
-  return createElement(
-    ListItem,
-    null,
-    createElement(AnyListItemButton, {
-      component: Link,
-      to: item.to,
-      children: item.label,
-    }),
+  return (
+    <ListItem>
+      <AnyListItemButton component={Link} to={item.to}>
+        {item.label}
+      </AnyListItemButton>
+    </ListItem>
   );
 }
 
@@ -79,14 +75,12 @@ function PermissionFilteredItem({ item }: { item: NavigationItem }): ReactElemen
     return null;
   }
 
-  return createElement(
-    ListItem,
-    null,
-    createElement(AnyListItemButton, {
-      component: Link,
-      to: item.to,
-      children: item.label,
-    }),
+  return (
+    <ListItem>
+      <AnyListItemButton component={Link} to={item.to}>
+        {item.label}
+      </AnyListItemButton>
+    </ListItem>
   );
 }
 
@@ -100,11 +94,10 @@ export function AppShellHeader({
   children?: ReactNode;
   userMenu?: ReactNode;
 }): ReactElement {
-  return createElement(
-    AnySheet,
-    {
-      component: "header",
-      sx: {
+  return (
+    <AnySheet
+      component="header"
+      sx={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -112,10 +105,11 @@ export function AppShellHeader({
         py: 1.5,
         borderBottom: "1px solid",
         borderColor: "divider",
-      },
-    },
-    children ?? createElement(Fragment, null),
-    userMenu ?? null,
+      }}
+    >
+      {children ?? <></>}
+      {userMenu ?? null}
+    </AnySheet>
   );
 }
 

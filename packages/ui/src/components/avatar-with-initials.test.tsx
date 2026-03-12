@@ -1,6 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
-import { createElement } from "react";
 import { AvatarWithInitials, getInitials } from "./avatar-with-initials.js";
 
 afterEach(cleanup);
@@ -21,23 +20,23 @@ describe("getInitials", () => {
 
 describe("AvatarWithInitials", () => {
   it("renders initials when no src provided", () => {
-    render(createElement(AvatarWithInitials, { name: "Daniel Schmidt" }));
+    render(<AvatarWithInitials name="Daniel Schmidt" />);
     expect(screen.getByText("DS")).toBeTruthy();
   });
 
   it("renders image when src is provided", () => {
     render(
-      createElement(AvatarWithInitials, {
-        name: "Daniel Schmidt",
-        src: "https://example.com/avatar.jpg",
-      }),
+      <AvatarWithInitials
+        name="Daniel Schmidt"
+        src="https://example.com/avatar.jpg"
+      />,
     );
     const img = screen.getByAltText("Daniel Schmidt") as HTMLImageElement;
     expect(img.src).toBe("https://example.com/avatar.jpg");
   });
 
   it("renders initials when src is null", () => {
-    render(createElement(AvatarWithInitials, { name: "Test User", src: null }));
+    render(<AvatarWithInitials name="Test User" src={null} />);
     expect(screen.getByText("TU")).toBeTruthy();
   });
 });

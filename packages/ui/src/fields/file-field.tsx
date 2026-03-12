@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import type { FileFieldProps } from "../types.js";
 
 function formatBytes(bytes: number): string {
@@ -13,11 +12,11 @@ export function FileField({
   fileSize,
 }: FileFieldProps) {
   if (value == null) {
-    return createElement("span", null, "—");
+    return <span>—</span>;
   }
 
   const name = fileName ?? value;
   const sizeStr = fileSize != null ? ` (${formatBytes(fileSize)})` : "";
 
-  return createElement("span", null, `📄 ${name}${sizeStr}`);
+  return <span>{`\u{1F4C4} ${name}${sizeStr}`}</span>;
 }

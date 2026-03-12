@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
-import { createElement } from "react";
 import { ActionButton } from "./action-button.js";
 import type { ActionHookResult } from "@cfast/actions/client";
 
@@ -24,7 +23,7 @@ describe("ActionButton", () => {
     const submitFn = vi.fn();
     const action = mockAction({ submit: submitFn });
 
-    render(createElement(ActionButton, { action, children: "Delete" }));
+    render(<ActionButton action={action}>Delete</ActionButton>);
 
     const button = screen.getByRole("button");
     expect(button.textContent).toBe("Delete");
@@ -37,7 +36,7 @@ describe("ActionButton", () => {
     const action = mockAction({ permitted: false, invisible: true });
 
     const { container } = render(
-      createElement(ActionButton, { action, children: "Delete" }),
+      <ActionButton action={action}>Delete</ActionButton>,
     );
 
     expect(container.innerHTML).toBe("");
@@ -47,11 +46,9 @@ describe("ActionButton", () => {
     const action = mockAction({ permitted: false, reason: "No permission" });
 
     const { container } = render(
-      createElement(ActionButton, {
-        action,
-        whenForbidden: "hide",
-        children: "Delete",
-      }),
+      <ActionButton action={action} whenForbidden="hide">
+        Delete
+      </ActionButton>,
     );
 
     expect(container.innerHTML).toBe("");
@@ -60,7 +57,7 @@ describe("ActionButton", () => {
   it("disables button when forbidden and whenForbidden=disable (default)", () => {
     const action = mockAction({ permitted: false, reason: "No permission" });
 
-    render(createElement(ActionButton, { action, children: "Delete" }));
+    render(<ActionButton action={action}>Delete</ActionButton>);
 
     const button = screen.getByRole("button");
     expect((button as HTMLButtonElement).disabled).toBe(true);
@@ -69,7 +66,7 @@ describe("ActionButton", () => {
   it("shows loading state when pending", () => {
     const action = mockAction({ pending: true });
 
-    render(createElement(ActionButton, { action, children: "Delete" }));
+    render(<ActionButton action={action}>Delete</ActionButton>);
 
     // Headless default button shows "Loading..." when loading
     expect(screen.getByRole("button").textContent).toBe("Loading...");
@@ -84,11 +81,9 @@ describe("ActionButton", () => {
     });
 
     render(
-      createElement(ActionButton, {
-        action,
-        whenForbidden: "show",
-        children: "Delete",
-      }),
+      <ActionButton action={action} whenForbidden="show">
+        Delete
+      </ActionButton>,
     );
 
     const button = screen.getByRole("button");

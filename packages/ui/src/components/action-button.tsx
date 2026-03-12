@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { useComponent } from "../plugin.js";
 import type { ActionButtonProps } from "../types.js";
 
@@ -32,11 +31,14 @@ export function ActionButton({
 
   const disabled = !action.permitted && whenForbidden === "disable";
 
-  return createElement(Button, {
-    ...buttonProps,
-    children,
-    onClick: () => action.submit(),
-    disabled,
-    loading: action.pending,
-  });
+  return (
+    <Button
+      {...buttonProps}
+      onClick={() => action.submit()}
+      disabled={disabled}
+      loading={action.pending}
+    >
+      {children}
+    </Button>
+  );
 }
