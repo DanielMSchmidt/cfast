@@ -179,7 +179,6 @@ const adminConfig = {
     users: schema.users,
     posts: schema.posts,
     comments: schema.comments,
-    roles: schema.roles,
     auditLogs: schema.auditLogs,
   },
   users: {

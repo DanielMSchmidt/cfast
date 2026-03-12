@@ -52,6 +52,15 @@ export function tableNameToLabel(name: string): string {
  * that appear in database table names.
  */
 function pluralize(word: string): string {
+  // Words already ending in a common plural suffix — don't double-pluralize
+  const lower = word.toLowerCase();
+  if (
+    lower.endsWith("es") ||
+    lower.endsWith("ies") ||
+    (lower.endsWith("s") && !lower.endsWith("ss") && !lower.endsWith("us"))
+  ) {
+    return word;
+  }
   if (word.endsWith("s") || word.endsWith("x") || word.endsWith("z")) {
     return word + "es";
   }

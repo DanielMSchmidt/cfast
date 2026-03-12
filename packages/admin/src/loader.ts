@@ -15,9 +15,12 @@ const PAGE_SIZE = 20;
 
 /**
  * Shared table list for the sidebar, derived from tableMetas.
+ * Excludes the users table since it has a dedicated _users view in the sidebar.
  */
 function tableList(tableMetas: AdminTableMeta[]): Array<{ name: string; label: string }> {
-  return tableMetas.map((t) => ({ name: t.name, label: t.label }));
+  return tableMetas
+    .filter((t) => t.name !== "users" && t.name !== "user")
+    .map((t) => ({ name: t.name, label: t.label }));
 }
 
 /**
@@ -561,7 +564,10 @@ export function createAdminLoader(
     const { user, grants } = await config.auth.requireUser(request);
 
     if (!config.auth.hasRole(user, requiredRole)) {
-      throw new Response("Forbidden", { status: 403 });
+      throw new Response(null, {
+        status: 302,
+        headers: { Location: "/" },
+      });
     }
 
     // Create DB instance scoped to this user's grants
