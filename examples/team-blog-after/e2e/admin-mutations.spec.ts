@@ -16,25 +16,16 @@ test.describe.serial("Role Management", () => {
     await loginAs(context, "admin");
     await page.goto(`/admin?view=_users&id=${userIds.reader}`, { waitUntil: "networkidle" });
 
-    // MUI Joy Select uses a hidden input for form submission.
-    // Directly set the value and submit to avoid hydration timing issues.
-    const assignForm = page.locator('form:has(input[value="assignRole"])');
-    await assignForm.waitFor({ state: "visible" });
-    await assignForm.evaluate((form: HTMLFormElement) => {
-      // MUI Joy Select renders a hidden <input> with the name attribute
-      let input = form.querySelector('input[name="role"]') as HTMLInputElement;
-      if (!input) {
-        input = document.createElement("input");
-        input.type = "hidden";
-        input.name = "role";
-        form.appendChild(input);
-      }
-      input.value = "author";
-      form.requestSubmit();
-    });
+    // Joy UI Select: click the select trigger to open the listbox, then pick "author"
+    // Joy UI Select renders with role="combobox" on the trigger element
+    await page.getByText("Select role...").click();
+    await page.getByRole("option", { name: "author" }).click();
+
+    // Click the "Add Role" button
+    await page.getByRole("button", { name: "Add Role" }).click();
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText('Role "author" assigned successfully')).toBeVisible();
+    await expect(page.getByText('Role "author" added to user.')).toBeVisible();
   });
 
   test("assigned role appears as a chip on the user detail page", async ({ page, context }) => {
@@ -42,9 +33,8 @@ test.describe.serial("Role Management", () => {
     await loginAs(context, "admin");
     await page.goto(`/admin?view=_users&id=${userIds.reader}`);
 
-    // The "author" chip should now be visible in the Current Roles section
-    const rolesSection = page.getByText("Current Roles").locator("..");
-    await expect(rolesSection.getByText("author")).toBeVisible();
+    // The "author" chip should now be visible in the Roles section
+    await expect(page.getByText("author")).toBeVisible();
   });
 
   test("admin can revoke a role from a user", async ({ page, context }) => {
@@ -52,14 +42,13 @@ test.describe.serial("Role Management", () => {
     await loginAs(context, "admin");
     await page.goto(`/admin?view=_users&id=${userIds.reader}`);
 
-    // The revoke form has hidden inputs with _action=revokeRole and roleId.
-    // Submit the form directly since the "x" button inside MUI Chip's endDecorator
-    // is obscured by the Chip overlay.
-    const revokeForm = page.locator('form:has(input[value="revokeRole"])').first();
-    await revokeForm.evaluate((form: HTMLFormElement) => form.requestSubmit());
+    // The chip has an "x" button to remove the role.
+    // Find the chip containing "author" and click its remove button.
+    const authorChip = page.locator('.MuiChip-root', { hasText: "author" }).first();
+    await authorChip.getByRole("button").click();
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText('Role "author" revoked successfully')).toBeVisible();
+    await expect(page.getByText('Role "author" removed from user.')).toBeVisible();
   });
 });
 
@@ -73,14 +62,15 @@ test.describe.serial("Admin Post Management", () => {
     await postRow.getByRole("button", { name: "Delete" }).click();
 
     // The ConfirmDialog modal should appear
-    await expect(page.getByText("Delete Post")).toBeVisible();
+    await expect(page.getByText("Delete record")).toBeVisible();
     await expect(page.getByText("Are you sure you want to delete")).toBeVisible();
 
-    // Click Confirm in the dialog
-    await page.getByRole("button", { name: "Confirm" }).click();
+    // Click Delete in the dialog (confirmLabel is "Delete")
+    // There are now multiple "Delete" buttons — the one in the dialog is in a Modal
+    await page.locator('[role="dialog"]').getByRole("button", { name: "Delete" }).click();
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText("Post deleted successfully")).toBeVisible();
+    await expect(page.getByText("Deleted Posts record.")).toBeVisible();
   });
 
   test("deleted post disappears from the table", async ({ page, context }) => {
@@ -96,8 +86,9 @@ test.describe.serial("User Search", () => {
     await loginAs(context, "admin");
     await page.goto("/admin?view=_users");
 
-    await page.fill('input[name="search"]', "Editor");
-    await page.click('button:has-text("Search")');
+    // Joy UI Input with placeholder "Search users..."
+    await page.getByPlaceholder("Search users...").fill("Editor");
+    await page.getByRole("button", { name: "Search" }).click();
     await page.waitForLoadState("networkidle");
 
     await expect(page.getByText("editor@example.com")).toBeVisible();
