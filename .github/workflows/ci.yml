@@ -47,10 +47,10 @@ jobs:
       - run: pnpm test
 
       - name: Build Storybook
-        run: pnpm --filter @cfast/ui build-storybook --quiet
+        run: pnpm turbo build-storybook --filter=@cfast/ui
 
       - name: Build docs
-        run: pnpm --filter @cfast/docs build
+        run: pnpm turbo build --filter=@cfast/docs
 
   e2e:
     name: E2E (${{ matrix.example }})

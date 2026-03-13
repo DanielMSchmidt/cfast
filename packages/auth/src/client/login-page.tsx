@@ -167,7 +167,7 @@ export function LoginPage({
           <div style={{ marginTop: 8 }}>
             <MagicLinkBtn onClick={handleMagicLink} loading={loading} />
           </div>
-          {authClient.signIn.passkey && (
+          {authClient?.signIn?.passkey && (
             <div style={{ marginTop: 8 }}>
               <PasskeyBtn onClick={handlePasskey} loading={passkeyLoading} />
             </div>
