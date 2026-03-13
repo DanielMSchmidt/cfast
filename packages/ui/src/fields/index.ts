@@ -1,3 +1,16 @@
+/**
+ * TypedField components for read-only data display.
+ *
+ * Each field renders a specific data type with appropriate formatting.
+ * Used by `DataTable` cell renderers, `DetailView` field layouts, and
+ * available for direct use in application code.
+ *
+ * @see {@link fieldForColumn} to map a Drizzle column to the appropriate field.
+ * @see {@link fieldsForTable} to get a field map for an entire Drizzle table.
+ *
+ * @module
+ */
+
 export { DateField } from "./date-field.js";
 export { BooleanField } from "./boolean-field.js";
 export { NumberField } from "./number-field.js";

@@ -7,7 +7,12 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DrizzleTable = Record<string | symbol, any>;
 
-/** Minimal structural type for a Drizzle SQL expression. */
+/**
+ * Minimal structural type for a Drizzle SQL expression.
+ *
+ * Matches any object with a `getSQL()` method, which includes Drizzle's
+ * `SQL`, `SQLWrapper`, and condition builder results.
+ */
 export type DrizzleSQL = { getSQL(): unknown };
 
 const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
@@ -22,13 +27,37 @@ export function getTableName(table: DrizzleTable): string {
   return (table[DRIZZLE_NAME_SYMBOL] as string) ?? "unknown";
 }
 
-/** A permission action: one of the four CRUD operations, or `"manage"` for all. */
+/**
+ * A permission action: one of the four CRUD operations, or `"manage"` for all.
+ *
+ * - `"read"` maps to `SELECT` queries.
+ * - `"create"` maps to `INSERT` statements.
+ * - `"update"` maps to `UPDATE` statements.
+ * - `"delete"` maps to `DELETE` statements.
+ * - `"manage"` is shorthand for granting all four CRUD actions.
+ */
 export type PermissionAction = "read" | "create" | "update" | "delete" | "manage";
 
-/** A CRUD-only permission action (excludes `"manage"`). */
+/**
+ * A CRUD-only permission action (excludes `"manage"`).
+ *
+ * Useful when you need to iterate over concrete operations without the
+ * `"manage"` shorthand. See also {@link CRUD_ACTIONS}.
+ */
 export type CrudAction = Exclude<PermissionAction, "manage">;
 
-/** Readonly array of the four CRUD action strings, useful for iteration. */
+/**
+ * Readonly array of the four CRUD action strings, useful for iteration.
+ *
+ * @example
+ * ```typescript
+ * import { CRUD_ACTIONS } from "@cfast/permissions";
+ *
+ * for (const action of CRUD_ACTIONS) {
+ *   console.log(action); // "read", "create", "update", "delete"
+ * }
+ * ```
+ */
 export const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", "delete"] as const;
 
 /**
@@ -61,6 +90,8 @@ export type Grant = {
  *
  * Used when `grants` is provided as a callback in {@link PermissionsConfig}
  * so that `where` clauses receive a correctly typed `user` parameter.
+ *
+ * @typeParam TUser - The user type passed to `where` clause callbacks.
  */
 export type GrantFn<TUser> = (
   action: PermissionAction,
@@ -72,7 +103,16 @@ export type GrantFn<TUser> = (
  * Structural description of a permission requirement.
  *
  * Describes *what kind* of operation on *which table* without specifying concrete row values.
- * This is what makes client-side permission introspection possible.
+ * This is what makes client-side permission introspection possible: you can check whether a
+ * role has the right grants without knowing the specific row being accessed.
+ *
+ * @example
+ * ```typescript
+ * const descriptor: PermissionDescriptor = {
+ *   action: "update",
+ *   table: posts,
+ * };
+ * ```
  */
 export type PermissionDescriptor = {
   /** The operation being checked. */
@@ -117,6 +157,8 @@ export type PermissionsConfig<
  * The resolved permissions object returned by {@link definePermissions}.
  *
  * Contains the original roles and grants, plus the hierarchy-expanded `resolvedGrants`.
+ * Pass this to `createDb()` for server-side enforcement or import it on the client
+ * for UI-level permission introspection.
  *
  * @typeParam TRoles - Tuple of role name string literals.
  */

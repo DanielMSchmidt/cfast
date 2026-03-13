@@ -21,8 +21,32 @@ function normalizeFields<T>(
 }
 
 /**
- * Composite DetailView — displays a single record's fields in a two-column grid.
- * Composes PageContainer + TypedField rendering.
+ * Read-only detail page for a single record, rendered in a two-column grid.
+ *
+ * Composes {@link PageContainer} with automatic TypedField rendering. When a Drizzle
+ * `table` is provided, field types are inferred from column metadata and rendered with
+ * the appropriate field component (DateField, BooleanField, etc.). Fields can also be
+ * specified manually as strings or full {@link ColumnDef} objects with custom renderers.
+ *
+ * If no `fields` are specified, they are inferred from the record's own keys
+ * (minus any keys listed in `exclude`).
+ *
+ * @typeParam T - The record data type.
+ * @param props - See {@link DetailViewProps}.
+ *
+ * @example
+ * ```tsx
+ * <DetailView
+ *   title={post.title}
+ *   table={posts}
+ *   record={post}
+ *   fields={["title", "content", "author", "published", "createdAt"]}
+ *   breadcrumb={[
+ *     { label: "Posts", to: "/posts" },
+ *     { label: post.title },
+ *   ]}
+ * />
+ * ```
  */
 export function DetailView<T = unknown>({
   title,

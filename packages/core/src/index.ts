@@ -1,3 +1,4 @@
+/** @module core */
 // @cfast/core — app composition layer with plugin system
 export { createApp } from "./create-app";
 export { definePlugin } from "./define-plugin";

@@ -100,12 +100,29 @@ export function columnNameToLabel(name: string): string {
 }
 
 /**
- * Introspect a Drizzle schema and produce AdminTableMeta for each visible table.
+ * Introspect a Drizzle schema and produce {@link AdminTableMeta} for each visible table.
  *
- * Auto-excludes auth-related tables (session, account, verification, passkey)
- * unless explicitly included via table overrides.
+ * Reads every `SQLiteTable` in the schema, extracts column types, foreign keys,
+ * and primary keys, then applies user-provided {@link TableOverrides}. Auth-internal
+ * tables (`session`, `account`, `verification`, `passkey`) are auto-excluded unless
+ * you explicitly provide overrides for them.
  *
- * Applies user-provided overrides for labels, columns, sorting, etc.
+ * Use this directly when you need server/client code splitting (the result is
+ * JSON-serializable minus the `drizzleTable` references, which stay on the server).
+ *
+ * @param schema - Your Drizzle schema object (e.g., `import * as schema from "~/schema"`).
+ * @param tableOverrides - Optional per-table display and behavior overrides, keyed by table name.
+ * @returns An array of {@link AdminTableMeta} sorted alphabetically by table name.
+ *
+ * @example
+ * ```typescript
+ * import { introspectSchema } from "@cfast/admin";
+ * import * as schema from "~/schema";
+ *
+ * const tableMetas = introspectSchema(schema, {
+ *   posts: { label: "Blog Posts", listColumns: ["title", "createdAt"] },
+ * });
+ * ```
  */
 export function introspectSchema(
   schema: Record<string, SQLiteTable>,

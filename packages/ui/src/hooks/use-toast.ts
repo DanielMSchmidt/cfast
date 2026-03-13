@@ -8,9 +8,34 @@ type ToastContextValue = {
 export const ToastContext = createContext<ToastContextValue | null>(null);
 
 /**
- * Returns an imperative toast API.
+ * Returns an imperative {@link ToastApi} for showing toast notifications.
  *
- * Must be used within a `ToastProvider`.
+ * Provides convenience methods (`success`, `error`, `info`, `warning`) as well
+ * as a generic `show` method that accepts full {@link ToastOptions}.
+ *
+ * Must be used within a `ToastProvider` -- typically supplied by the Joy UI
+ * plugin (backed by Sonner) or a custom UI plugin implementation.
+ *
+ * @returns A {@link ToastApi} object with methods for each notification type.
+ * @throws {Error} If called outside of a `ToastProvider`.
+ *
+ * @example
+ * ```ts
+ * function PublishButton() {
+ *   const toast = useToast();
+ *
+ *   async function handlePublish() {
+ *     try {
+ *       await publishPost();
+ *       toast.success("Post published");
+ *     } catch (err) {
+ *       toast.error("Failed to publish post");
+ *     }
+ *   }
+ *
+ *   return <button onClick={handlePublish}>Publish</button>;
+ * }
+ * ```
  */
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);

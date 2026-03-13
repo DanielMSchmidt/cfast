@@ -1,3 +1,4 @@
+/** @module storage */
 export { defineStorage, filetype, parseSize } from "./schema.js";
 export { StorageError } from "./errors.js";
 export type {

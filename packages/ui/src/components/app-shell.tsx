@@ -4,7 +4,23 @@ import type { AppShellProps, NavigationItem } from "../types.js";
 import type { ReactNode } from "react";
 
 /**
- * AppShell provides a sidebar + header + content layout.
+ * Base application layout with sidebar navigation, header, and content area.
+ *
+ * Delegates rendering to the UI plugin's `appShell` slot. Compose with
+ * {@link AppShellSidebar} (`AppShell.Sidebar`) and {@link AppShellHeader}
+ * (`AppShell.Header`) for a complete layout.
+ *
+ * @param props - See {@link AppShellProps}.
+ *
+ * @example
+ * ```tsx
+ * <AppShell
+ *   sidebar={<AppShell.Sidebar items={navigationItems} />}
+ *   header={<AppShell.Header userMenu={<UserMenu />} />}
+ * >
+ *   {children}
+ * </AppShell>
+ * ```
  */
 export function AppShell({ children, sidebar, header }: AppShellProps) {
   const Shell = useComponent("appShell");
@@ -12,7 +28,20 @@ export function AppShell({ children, sidebar, header }: AppShellProps) {
 }
 
 /**
- * Sidebar component that filters navigation items based on permissions.
+ * Sidebar navigation for {@link AppShell} that automatically filters items by permission.
+ *
+ * Each {@link NavigationItem} can optionally carry an `action` descriptor. Items whose
+ * action is invisible or forbidden are hidden from the sidebar automatically.
+ *
+ * @param props.items - Navigation items to render.
+ *
+ * @example
+ * ```tsx
+ * <AppShell.Sidebar items={[
+ *   { label: "Posts", to: "/posts", icon: DocumentIcon },
+ *   { label: "Users", to: "/users", icon: UsersIcon, action: manageUsers.client },
+ * ]} />
+ * ```
  */
 export function AppShellSidebar({ items }: { items: NavigationItem[] }) {
   return (
@@ -54,7 +83,20 @@ function PermissionFilteredItem({ item }: { item: NavigationItem }) {
 }
 
 /**
- * Header slot for AppShell.
+ * Header bar for {@link AppShell} with flexible content and an optional user menu.
+ *
+ * Renders a horizontal bar at the top of the shell. Pass a {@link UserMenu}
+ * element via the `userMenu` prop for authenticated user controls.
+ *
+ * @param props.children - Custom header content (logo, search, etc.).
+ * @param props.userMenu - User menu element rendered at the far right.
+ *
+ * @example
+ * ```tsx
+ * <AppShell.Header userMenu={<UserMenu links={[{ label: "Profile", to: "/profile" }]} />}>
+ *   <Logo />
+ * </AppShell.Header>
+ * ```
  */
 export function AppShellHeader({
   children,

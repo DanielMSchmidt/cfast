@@ -1,5 +1,23 @@
 import type { NumberFieldProps } from "../types.js";
 
+/**
+ * Read-only display component that formats numeric values.
+ *
+ * Uses `Intl.NumberFormat` for locale-aware formatting. Supports currency
+ * display and decimal precision control. Returns an em-dash for null/undefined values.
+ *
+ * @param props - See {@link NumberFieldProps}.
+ * @returns A `<span>` with the formatted number, or a placeholder for null values.
+ *
+ * @example
+ * ```tsx
+ * <NumberField value={1234.5} locale="en" />
+ * // -> "1,234.5"
+ *
+ * <NumberField value={29.99} currency="USD" />
+ * // -> "$29.99"
+ * ```
+ */
 export function NumberField({
   value,
   locale = "en",

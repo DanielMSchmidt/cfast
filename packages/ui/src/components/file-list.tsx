@@ -7,7 +7,21 @@ function formatBytes(bytes: number): string {
 }
 
 /**
- * Headless FileList — displays a list of files with download links.
+ * Displays a list of uploaded files with metadata, formatted sizes, and download links.
+ *
+ * Each file is rendered as a row showing the file name, size (human-readable), and
+ * a download link (either via `onDownload` callback or the file's direct `url`).
+ * Returns a "No files" placeholder when the list is empty.
+ *
+ * @param props - See {@link FileListProps}.
+ *
+ * @example
+ * ```tsx
+ * <FileList
+ *   files={post.attachments}
+ *   onDownload={(file) => window.open(storage.getSignedUrl(file.key))}
+ * />
+ * ```
  */
 export function FileList({
   files,

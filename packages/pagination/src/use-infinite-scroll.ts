@@ -2,25 +2,44 @@ import { useRef, useEffect, type RefObject } from "react";
 import { usePagination } from "./use-pagination";
 import type { UsePaginationOptions } from "./use-pagination";
 
-/** Options for the {@link useInfiniteScroll} hook. */
+/**
+ * Options for the {@link useInfiniteScroll} hook.
+ *
+ * Extends {@link UsePaginationOptions} with IntersectionObserver configuration.
+ *
+ * @typeParam T - The item type in the paginated list.
+ */
 export type UseInfiniteScrollOptions<T> = UsePaginationOptions<T> & {
+  /** Margin around the root for the IntersectionObserver (e.g., `"200px"`). Defaults to `"200px"`. */
   rootMargin?: string;
 };
 
-/** Return value of the {@link useInfiniteScroll} hook. */
+/**
+ * Return value of the {@link useInfiniteScroll} hook.
+ *
+ * @typeParam T - The item type in the paginated list.
+ */
 export type UseInfiniteScrollResult<T> = {
+  /** Accumulated, deduplicated items from all loaded pages. */
   items: T[];
+  /** Ref to attach to a sentinel DOM element. Loading triggers when it enters the viewport. */
   sentinelRef: RefObject<Element | null>;
+  /** `true` if there are more pages to fetch. */
   hasMore: boolean;
+  /** `true` while a page fetch is in flight. */
   isLoading: boolean;
 };
 
 /**
  * React hook for infinite scroll with automatic loading via IntersectionObserver.
- * Wraps {@link usePagination} and triggers `loadMore` when a sentinel element enters the viewport.
  *
- * @param options - Optional configuration including `rootMargin` for the IntersectionObserver.
- * @returns Items, a sentinel ref to attach to a DOM element, and loading state.
+ * Wraps {@link usePagination} and triggers `loadMore` when a sentinel element enters
+ * the viewport. Attach the returned `sentinelRef` to an empty `<div>` at the bottom
+ * of your list to enable automatic page loading on scroll.
+ *
+ * @typeParam T - The item type in the paginated list.
+ * @param options - Optional configuration including `rootMargin` for the IntersectionObserver and a custom key extractor.
+ * @returns A {@link UseInfiniteScrollResult} with items, a sentinel ref, and loading state.
  *
  * @example
  * ```tsx

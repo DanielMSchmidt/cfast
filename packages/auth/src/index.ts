@@ -1,3 +1,4 @@
+/** @module auth */
 export { createAuth } from "./create-auth";
 export { createRoleManager } from "./roles";
 export { createImpersonationManager } from "./impersonation";

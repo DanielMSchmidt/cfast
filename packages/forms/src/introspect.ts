@@ -34,8 +34,13 @@ function resolveInputType(column: {
 /**
  * Introspect a Drizzle SQLite table and produce field definitions for form generation.
  *
+ * Reads column metadata (type, nullability, defaults, enums) and merges it with any
+ * {@link ValidationRules} attached via the {@link v} helper. The resulting
+ * {@link FieldDefinition} array is used by {@link createResolver} for validation
+ * and by the AutoForm component for rendering.
+ *
  * @param table - A Drizzle `SQLiteTable` to introspect.
- * @returns An array of {@link FieldDefinition} objects describing each column.
+ * @returns An array of {@link FieldDefinition} objects, one per column in the table.
  *
  * @example
  * ```ts

@@ -15,8 +15,26 @@ type ColumnMeta = {
 /**
  * Maps a Drizzle column's metadata to the appropriate TypedField component.
  *
- * Uses `getTableColumns(table)` from drizzle-orm to get column metadata,
- * then maps the `dataType` to a field component.
+ * Inspects the column's `dataType` and `name` to determine the best display
+ * component. The mapping follows these rules:
+ *
+ * - `boolean` or integer columns named `is*` -> {@link BooleanField}
+ * - Columns containing `timestamp`, `date`, or `datetime` -> {@link DateField}
+ * - Numeric types (`integer`, `real`, `float`, etc.) -> {@link NumberField}
+ * - Columns named `email` or `*Email` -> {@link EmailField}
+ * - `json`, `jsonb`, or `blob` -> {@link JsonField}
+ * - Everything else -> {@link TextField}
+ *
+ * @param column - Drizzle column metadata with `dataType` and `name` properties.
+ * @returns A React component suitable for displaying the column's values.
+ *
+ * @example
+ * ```ts
+ * import { fieldForColumn } from "@cfast/ui";
+ *
+ * const Field = fieldForColumn({ dataType: "timestamp", name: "createdAt" });
+ * // Field === DateField
+ * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fieldForColumn(column: ColumnMeta): ComponentType<any> {
@@ -53,7 +71,30 @@ export function fieldForColumn(column: ColumnMeta): ComponentType<any> {
 }
 
 /**
- * Given a Drizzle table, returns a map of column names to field components.
+ * Given a Drizzle table, returns a map of column names to their inferred
+ * TypedField components.
+ *
+ * Iterates over the table's entries, identifies columns by duck-typing
+ * (`dataType` and `name` properties), and delegates to {@link fieldForColumn}
+ * for each one.
+ *
+ * @param table - A Drizzle table object whose entries expose column metadata.
+ * @returns A record mapping column key names to field component types. Each
+ *   component accepts {@link BaseFieldProps} and a `value` prop.
+ *
+ * @example
+ * ```ts
+ * import { fieldsForTable } from "@cfast/ui";
+ * import { posts } from "~/db/schema";
+ *
+ * const fields = fieldsForTable(posts);
+ * // fields.title === TextField
+ * // fields.createdAt === DateField
+ * // fields.published === BooleanField
+ *
+ * const TitleField = fields.title;
+ * <TitleField value={post.title} />;
+ * ```
  */
 export function fieldsForTable(
   table: { [Symbol.iterator]?: never } & Record<string, unknown>,

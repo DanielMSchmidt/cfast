@@ -94,11 +94,29 @@ function extractFormValues(
 /**
  * Create an admin action function from config and introspected table metadata.
  *
- * The returned action:
- * 1. Guards access with auth + role check
- * 2. Reads `_action` from formData to determine the operation
- * 3. Dispatches to the appropriate handler
- * 4. Returns AdminActionResult or a Response (for impersonation)
+ * The returned action handles all admin mutations: record create, update, delete,
+ * role assignment/removal, impersonation start/stop, and custom row actions.
+ * It reads the `_action` field from the submitted `FormData` to dispatch to the
+ * appropriate handler.
+ *
+ * Like the loader, it guards access using the auth adapter and creates a
+ * permission-scoped DB instance per request.
+ *
+ * Use this instead of {@link createAdmin} when you need server/client code splitting.
+ *
+ * @param config - The admin configuration (same object passed to {@link createAdmin}).
+ * @param tableMetas - Table metadata from {@link introspectSchema}.
+ * @returns An async function that takes a `Request` and returns an {@link AdminActionResult} or a `Response` (for impersonation redirects).
+ *
+ * @example
+ * ```typescript
+ * // app/admin.server.ts
+ * import { createAdminAction, introspectSchema } from "@cfast/admin";
+ * import * as schema from "~/schema";
+ *
+ * const tableMetas = introspectSchema(schema);
+ * export const adminAction = createAdminAction(config, tableMetas);
+ * ```
  */
 export function createAdminAction(
   config: AdminConfig,

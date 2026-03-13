@@ -1,3 +1,4 @@
+/** @module permissions */
 export { definePermissions } from "./define-permissions";
 export { grant } from "./grant";
 export { checkPermissions } from "./check";

@@ -6,13 +6,23 @@ import { introspectTable } from "./introspect";
 import { createResolver } from "./resolver";
 import type { FieldConfig, FieldDefinition, FormPlugin } from "./types";
 
+/**
+ * Props for the AutoForm component returned by {@link createAutoForm}.
+ */
 type AutoFormProps = {
+  /** The Drizzle SQLite table to generate the form from. */
   table: SQLiteTable;
+  /** Form mode: `"create"` renders empty fields, `"edit"` pre-fills from `data`. */
   mode: "create" | "edit";
+  /** Existing record data to pre-fill when `mode` is `"edit"`. */
   data?: Record<string, unknown>;
+  /** Callback invoked with validated form values on successful submission. */
   onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
+  /** Per-field overrides for customizing labels, components, visibility, and validation. */
   fields?: Partial<Record<string, FieldConfig>>;
+  /** Column names to exclude from the rendered form. */
   exclude?: string[];
+  /** External react-hook-form instance for advanced use cases (e.g., multi-step wizards). */
   form?: UseFormReturn<Record<string, unknown>>;
 };
 
@@ -30,10 +40,15 @@ function getComponentForField(plugin: FormPlugin, field: FieldDefinition) {
 }
 
 /**
- * Create an auto-generated form component from a Drizzle table schema.
+ * Create an AutoForm React component bound to a specific UI {@link FormPlugin}.
+ *
+ * The returned component introspects a Drizzle table via {@link introspectTable},
+ * builds validation via {@link createResolver}, and renders fields using the
+ * plugin's components. Supports both create and edit modes, per-field overrides
+ * via {@link FieldConfig}, column exclusion, and external react-hook-form instances.
  *
  * @param plugin - A {@link FormPlugin} providing the UI components for rendering.
- * @returns A React component that renders a form based on a Drizzle table.
+ * @returns A React component (`AutoForm`) that accepts {@link AutoFormProps}.
  *
  * @example
  * ```tsx
@@ -42,7 +57,18 @@ function getComponentForField(plugin: FormPlugin, field: FieldDefinition) {
  * const plugin = createFormPlugin({ components: joyComponents });
  * const AutoForm = createAutoForm(plugin);
  *
+ * // Create mode
  * <AutoForm table={posts} mode="create" onSubmit={handleSubmit} />
+ *
+ * // Edit mode with field overrides
+ * <AutoForm
+ *   table={posts}
+ *   mode="edit"
+ *   data={existingPost}
+ *   fields={{ title: { label: "Post Title" } }}
+ *   exclude={["createdAt"]}
+ *   onSubmit={handleSubmit}
+ * />
  * ```
  */
 export function createAutoForm(plugin: FormPlugin) {

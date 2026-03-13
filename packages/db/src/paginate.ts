@@ -2,8 +2,15 @@ import { and, or, lt, gt, eq } from "drizzle-orm";
 import type { Column, SQL } from "drizzle-orm";
 import type { CursorParams, OffsetParams } from "./types";
 
+/**
+ * Options for controlling default and maximum pagination limits.
+ *
+ * Shared by {@link parseCursorParams} and {@link parseOffsetParams}.
+ */
 type PaginationOptions = {
+  /** Default number of items per page when `limit` is not in the URL. Defaults to `20`. */
   defaultLimit?: number;
+  /** Maximum allowed `limit` value (URL values are clamped to this). Defaults to `100`. */
   maxLimit?: number;
 };
 
@@ -20,16 +27,20 @@ function clamp(value: number, min: number, max: number): number {
 /**
  * Parses cursor-based pagination parameters from a request URL's search params.
  *
- * Reads `cursor` and `limit` from the URL. Clamps `limit` between 1 and `maxLimit`.
+ * Reads `cursor` and `limit` from the URL query string. Clamps `limit` between 1 and `maxLimit`.
+ * Returns a {@link CursorParams} object ready to pass to `db.query(table).paginate()`.
  *
- * @param request - The incoming HTTP request whose URL contains pagination params.
+ * @param request - The incoming HTTP request whose URL contains `?cursor=...&limit=...`.
  * @param options - Optional defaults and limits for pagination.
- * @returns Parsed `CursorParams` with `type`, `cursor`, and `limit`.
+ * @returns Parsed {@link CursorParams} with `type`, `cursor`, and `limit`.
  *
  * @example
  * ```ts
+ * import { parseCursorParams } from "@cfast/db";
+ *
  * const params = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
  * const page = await db.query(posts).paginate(params).run({});
+ * // page => { items: [...], nextCursor: "..." | null }
  * ```
  */
 export function parseCursorParams(
@@ -49,17 +60,21 @@ export function parseCursorParams(
 /**
  * Parses offset-based pagination parameters from a request URL's search params.
  *
- * Reads `page` and `limit` from the URL. Clamps `limit` between 1 and `maxLimit`, and
- * ensures `page` is at least 1.
+ * Reads `page` and `limit` from the URL query string. Clamps `limit` between 1 and `maxLimit`,
+ * and ensures `page` is at least 1. Returns an {@link OffsetParams} object ready to pass
+ * to `db.query(table).paginate()`.
  *
- * @param request - The incoming HTTP request whose URL contains pagination params.
+ * @param request - The incoming HTTP request whose URL contains `?page=...&limit=...`.
  * @param options - Optional defaults and limits for pagination.
- * @returns Parsed `OffsetParams` with `type`, `page`, and `limit`.
+ * @returns Parsed {@link OffsetParams} with `type`, `page`, and `limit`.
  *
  * @example
  * ```ts
+ * import { parseOffsetParams } from "@cfast/db";
+ *
  * const params = parseOffsetParams(request, { defaultLimit: 20 });
  * const page = await db.query(posts).paginate(params).run({});
+ * // page => { items: [...], total: 100, page: 1, totalPages: 5 }
  * ```
  */
 export function parseOffsetParams(

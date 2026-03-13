@@ -12,9 +12,21 @@ const SIZE_UNITS: Record<string, number> = {
 /**
  * Parse a human-readable size string into bytes.
  *
+ * Supports `b`, `kb`, `mb`, and `gb` units (case-insensitive). Decimal values
+ * are supported and the result is rounded to the nearest byte.
+ *
  * @param size - Size string (e.g. `"10mb"`, `"1.5kb"`, `"500b"`, `"1gb"`).
  * @returns The size in bytes.
  * @throws If the format is invalid.
+ *
+ * @example
+ * ```ts
+ * import { parseSize } from "@cfast/storage";
+ *
+ * parseSize("2mb");   // 2097152
+ * parseSize("1.5kb"); // 1536
+ * parseSize("500b");  // 500
+ * ```
  */
 export function parseSize(size: string): number {
   const match = size.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb)$/);
@@ -29,10 +41,12 @@ export function parseSize(size: string): number {
 /**
  * Define a file type with its constraints and key generation strategy.
  *
- * Applies defaults for optional fields (`uploadable`, `replace`, `multipartThreshold`, `partSize`).
+ * Applies defaults for optional fields: `uploadable` defaults to `true`,
+ * `replace` to `false`, `multipartThreshold` to `"5mb"`, and `partSize` to `"10mb"`.
  *
+ * @typeParam TInput - The shape of caller-provided input available in the `key` function and hooks.
  * @param config - The file type configuration.
- * @returns The config with defaults applied.
+ * @returns The config with defaults applied, fully resolved.
  *
  * @example
  * ```ts
@@ -66,6 +80,7 @@ export function filetype<TInput = Record<string, unknown>>(
  * `getSignedUrl`, `verifySignedUrl`, and `clientConfig` methods that are all
  * scoped to the declared schema.
  *
+ * @typeParam T - The storage schema type, inferred from the `schema` argument.
  * @param schema - A record mapping file type names to their {@link FiletypeConfig}.
  * @returns A {@link StorageInstance} with methods for uploads, serving, and URL generation.
  *

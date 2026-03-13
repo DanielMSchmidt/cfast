@@ -5,8 +5,25 @@ import type { UserMenuProps, UserMenuLink } from "../types.js";
 import { useActionStatus } from "../hooks/use-action-status.js";
 
 /**
- * User menu dropdown showing current user info, role badges, and links.
- * Headless implementation with basic HTML.
+ * Header dropdown showing the current user's avatar, name, email, role badges, and navigation links.
+ *
+ * Reads the authenticated user via `useCurrentUser()` from `@cfast/auth`. Renders
+ * an {@link AvatarWithInitials} trigger and a dropdown with user info, {@link RoleBadge}
+ * chips, permission-filtered navigation links, and an optional sign-out button.
+ * Returns `null` when no user is authenticated.
+ *
+ * @param props - See {@link UserMenuProps}.
+ *
+ * @example
+ * ```tsx
+ * <UserMenu
+ *   links={[
+ *     { label: "Profile", to: "/profile" },
+ *     { label: "Admin", to: "/admin", action: adminAccess.client },
+ *   ]}
+ *   onSignOut={() => signOut()}
+ * />
+ * ```
  */
 export function UserMenu({
   links = [],

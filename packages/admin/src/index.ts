@@ -1,3 +1,4 @@
+/** @module admin */
 export { createAdmin } from "./create-admin.js";
 export { introspectSchema } from "./introspect.js";
 export { createAdminLoader } from "./loader.js";

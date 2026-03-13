@@ -17,7 +17,29 @@ function normalizeColumns<T>(columns: ColumnShorthand<T>[] | undefined): ColumnD
 }
 
 /**
- * Headless DataTable — renders a table with sorting, selection, and row actions.
+ * Data table with column sorting, row selection, and pluggable cell rendering.
+ *
+ * Renders via the UI plugin's table slots (`table`, `tableHead`, `tableBody`,
+ * `tableRow`, `tableCell`). Accepts column definitions as strings (auto-labeled)
+ * or full {@link ColumnDef} objects for custom labels, sorting, and renderers.
+ *
+ * Integrates with `@cfast/pagination` hook results for paginated data and with
+ * `@cfast/actions` for row-level actions.
+ *
+ * @typeParam T - The row data type.
+ * @param props - See {@link DataTableProps}.
+ *
+ * @example
+ * ```tsx
+ * const pagination = usePagination<Post>();
+ *
+ * <DataTable
+ *   data={pagination}
+ *   columns={["title", "author", { key: "createdAt", sortable: false }]}
+ *   selectable
+ *   onRowClick={(row) => navigate(`/posts/${row.id}`)}
+ * />
+ * ```
  */
 export function DataTable<T = unknown>({
   data,

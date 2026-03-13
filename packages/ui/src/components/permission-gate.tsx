@@ -3,11 +3,21 @@ import type { PermissionGateProps } from "../types.js";
 /**
  * Conditionally renders children based on action permission status.
  *
- * Takes an `ActionHookResult` from `useActions()`.
+ * Accepts an `ActionHookResult` from `useActions()` and controls rendering
+ * based on the user's permission level:
  *
- * - When permitted: renders children
- * - When forbidden (not permitted, not invisible): renders fallback
- * - When invisible: renders nothing
+ * - **Permitted**: renders `children`
+ * - **Forbidden** (not permitted, not invisible): renders `fallback` if provided, otherwise nothing
+ * - **Invisible**: renders nothing (the resource does not exist for this user)
+ *
+ * @param props - See {@link PermissionGateProps}.
+ *
+ * @example
+ * ```tsx
+ * <PermissionGate action={editPost} fallback={<ReadOnlyBanner />}>
+ *   <EditToolbar />
+ * </PermissionGate>
+ * ```
  */
 export function PermissionGate({
   action,

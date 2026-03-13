@@ -8,19 +8,32 @@ type OffsetPageData = {
   totalPages: number;
 };
 
-/** Return value of the {@link useOffsetPagination} hook. */
+/**
+ * Return value of the {@link useOffsetPagination} hook.
+ *
+ * @typeParam T - The item type in the paginated list.
+ */
 export type UseOffsetPaginationResult<T> = {
+  /** Items for the current page. */
   items: T[];
+  /** Total number of items across all pages. */
   total: number;
+  /** Total number of pages available. */
   totalPages: number;
+  /** The current 1-based page number. */
   currentPage: number;
+  /** Navigates to the given 1-based page number by updating the URL search params. */
   goToPage: (page: number) => void;
 };
 
 /**
  * React hook for offset-based (page number) pagination with React Router loader data.
  *
- * @returns Paginated items, page metadata, and a `goToPage` function.
+ * Reads the current page data from React Router's `useLoaderData()` and provides
+ * a `goToPage` function that navigates by updating the `?page=` URL search parameter.
+ *
+ * @typeParam T - The item type in the paginated list.
+ * @returns A {@link UseOffsetPaginationResult} with items, page metadata, and a `goToPage` function.
  *
  * @example
  * ```tsx

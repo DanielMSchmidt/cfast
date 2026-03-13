@@ -1,10 +1,21 @@
-/** Error codes produced by the storage validation and upload pipeline. */
+/**
+ * Machine-readable error codes produced by the storage validation and upload pipeline.
+ *
+ * - `"FILE_TOO_LARGE"` — The file exceeds the configured `maxSize` (HTTP 413).
+ * - `"INVALID_MIME_TYPE"` — The file's MIME type is not in the `accept` list (HTTP 415).
+ * - `"UPLOAD_FAILED"` — The R2 upload operation failed (HTTP 500).
+ */
 export type StorageErrorCode =
   | "FILE_TOO_LARGE"
   | "INVALID_MIME_TYPE"
   | "UPLOAD_FAILED";
 
-/** Options used to construct a {@link StorageError}. */
+/**
+ * Options used to construct a {@link StorageError}.
+ *
+ * Combines a machine-readable code, human-readable detail, and an HTTP status
+ * code so that errors can be surfaced directly in API responses.
+ */
 export type StorageErrorOptions = {
   /** Machine-readable error code. */
   code: StorageErrorCode;
@@ -14,7 +25,27 @@ export type StorageErrorOptions = {
   status: number;
 };
 
-/** Configuration for a single file type within a storage schema. */
+/**
+ * Configuration for a single file type within a storage schema.
+ *
+ * Defines the R2 bucket, accepted MIME types, size limits, key generation
+ * strategy, and optional lifecycle hooks for a category of files.
+ *
+ * @typeParam TInput - The shape of caller-provided input available in the `key` function and hooks.
+ *
+ * @example
+ * ```ts
+ * import { filetype } from "@cfast/storage";
+ *
+ * const avatars = filetype({
+ *   bucket: "UPLOADS",
+ *   accept: ["image/jpeg", "image/png", "image/webp"],
+ *   maxSize: "2mb",
+ *   key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+ *   replace: true,
+ * });
+ * ```
+ */
 export type FiletypeConfig<TInput = Record<string, unknown>> = {
   /** R2 binding name from the Workers environment (e.g. `"UPLOADS"`). */
   bucket: string;
@@ -38,7 +69,15 @@ export type FiletypeConfig<TInput = Record<string, unknown>> = {
   hooks?: FiletypeHooks<TInput>;
 };
 
-/** Lifecycle hooks for a file type, invoked during the upload pipeline. */
+/**
+ * Lifecycle hooks for a file type, invoked during the upload pipeline.
+ *
+ * Use `beforeUpload` for pre-processing (e.g. quota checks, image resizing)
+ * and `afterUpload` for post-processing (e.g. saving to the database,
+ * triggering a queue).
+ *
+ * @typeParam TInput - The shape of caller-provided input available in the hook context.
+ */
 export type FiletypeHooks<TInput = Record<string, unknown>> = {
   /** Called after validation but before bytes are written to R2. */
   beforeUpload?: (file: FileInfo, ctx: HandleContext<TInput>) => Promise<void>;
@@ -46,7 +85,11 @@ export type FiletypeHooks<TInput = Record<string, unknown>> = {
   afterUpload?: (result: UploadResult, ctx: HandleContext<TInput>) => Promise<void>;
 };
 
-/** Context passed to the `key` function when generating an R2 object key. */
+/**
+ * Context passed to the `key` function when generating an R2 object key.
+ *
+ * @typeParam TInput - The shape of caller-provided input data.
+ */
 export type KeyContext<TInput = Record<string, unknown>> = {
   /** The authenticated user performing the upload. */
   user: { id: string; [key: string]: unknown };
@@ -54,7 +97,14 @@ export type KeyContext<TInput = Record<string, unknown>> = {
   input: TInput;
 };
 
-/** Context required by the upload handler and lifecycle hooks. */
+/**
+ * Context required by the upload handler and lifecycle hooks.
+ *
+ * Passed to {@link StorageInstance.handle} to provide access to env bindings,
+ * the authenticated user, and optional caller-provided input.
+ *
+ * @typeParam TInput - The shape of caller-provided input data.
+ */
 export type HandleContext<TInput = Record<string, unknown>> = {
   /** Workers environment bindings (must include the target R2 bucket). */
   env: Record<string, unknown>;
@@ -64,7 +114,12 @@ export type HandleContext<TInput = Record<string, unknown>> = {
   input?: TInput;
 };
 
-/** Metadata about a file extracted from the incoming request. */
+/**
+ * Metadata about a file extracted from the incoming multipart request.
+ *
+ * Passed to the `beforeUpload` hook with the file's identity and size
+ * before any bytes are written to R2.
+ */
 export type FileInfo = {
   /** Original file name (e.g. `"photo.jpg"`). */
   name: string;
@@ -76,7 +131,12 @@ export type FileInfo = {
   size: number;
 };
 
-/** Result returned after a successful file upload to R2. */
+/**
+ * Result returned after a successful file upload to R2.
+ *
+ * Contains the R2 object key, the verified byte count, and the MIME type.
+ * Passed to the `afterUpload` hook and returned from {@link StorageInstance.handle}.
+ */
 export type UploadResult = {
   /** The R2 object key where the file was stored. */
   key: string;
@@ -87,14 +147,23 @@ export type UploadResult = {
 };
 
 /**
- * A record of named file type configurations, used as the input to {@link defineStorage}.
+ * A record mapping file type names to their {@link FiletypeConfig} definitions.
  *
- * @remarks Uses `any` for the input generic so that heterogeneous file types can be collected.
+ * Used as the input to {@link defineStorage} to declare the full storage schema.
+ *
+ * @remarks Uses `any` for the input generic so that heterogeneous file types
+ * with different `TInput` shapes can be collected in a single schema.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal constraint type for schema registration
 export type StorageSchema = Record<string, FiletypeConfig<any>>;
 
-/** Client-safe subset of a file type's configuration, used for client-side validation. */
+/**
+ * Client-safe subset of a file type's configuration, used for client-side validation.
+ *
+ * Contains only the information needed by the `useUpload` hook to validate
+ * files before uploading (accepted MIME types and max size). Does not expose
+ * bucket names, key functions, or other server-only details.
+ */
 export type ClientFiletypeConfig = {
   /** MIME types accepted for this file type. */
   accept: readonly string[];
@@ -104,10 +173,18 @@ export type ClientFiletypeConfig = {
   maxSizeBytes: number;
 };
 
-/** A record of client-safe file type configs, keyed by file type name. */
+/**
+ * A record of client-safe file type configs, keyed by file type name.
+ *
+ * Passed to the `StorageProvider` to make schema information available to `useUpload`.
+ */
 export type ClientStorageConfig = Record<string, ClientFiletypeConfig>;
 
-/** Options for generating a time-limited signed URL. */
+/**
+ * Options for generating a time-limited HMAC-signed URL for private file access.
+ *
+ * Requires a `STORAGE_SECRET` binding in the Workers environment for HMAC signing.
+ */
 export type SignedUrlOptions = {
   /** Workers environment bindings (must include `STORAGE_SECRET`). */
   env: Record<string, unknown>;
@@ -115,7 +192,12 @@ export type SignedUrlOptions = {
   expiresIn: string;
 };
 
-/** Options for serving a file directly from R2. */
+/**
+ * Options for serving a file directly from R2 as an HTTP response.
+ *
+ * The resulting `Response` streams the file body and includes R2 HTTP metadata
+ * (content-type, etag, etc.) plus any additional headers you specify.
+ */
 export type ServeOptions = {
   /** Workers environment bindings (must include the target R2 bucket). */
   env: Record<string, unknown>;
@@ -123,7 +205,28 @@ export type ServeOptions = {
   headers?: Record<string, string>;
 };
 
-/** The storage instance returned by {@link defineStorage}, providing upload, serve, and URL methods. */
+/**
+ * The storage instance returned by {@link defineStorage}, providing upload, serve, and URL methods.
+ *
+ * All methods are scoped to the declared schema — TypeScript enforces that file type
+ * names and input types match the schema definition.
+ *
+ * @typeParam T - The storage schema type mapping file type names to their configs.
+ *
+ * @example
+ * ```ts
+ * const storage = defineStorage({ avatars: filetype({ ... }) });
+ *
+ * // Upload
+ * const result = await storage.handle("avatars", request, { env, user });
+ *
+ * // Serve
+ * const response = await storage.serve("avatars", result.key, { env });
+ *
+ * // Client config for StorageProvider
+ * const config = storage.clientConfig();
+ * ```
+ */
 export type StorageInstance<T extends StorageSchema> = {
   /** The raw schema passed to `defineStorage`. */
   schema: T;

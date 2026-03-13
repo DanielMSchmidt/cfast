@@ -1,3 +1,4 @@
+/** @module ui */
 // Plugin API
 export { createUIPlugin, UIPluginProvider, useUIPlugin, useComponent } from "./plugin.js";
 
