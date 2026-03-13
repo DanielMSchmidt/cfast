@@ -52,6 +52,13 @@ function validateField(
   return undefined;
 }
 
+/**
+ * Create a react-hook-form resolver that validates against introspected field definitions.
+ *
+ * @param fields - The field definitions to validate against.
+ * @param fieldOverrides - Optional per-field configuration including custom validators.
+ * @returns A react-hook-form {@link Resolver}.
+ */
 export function createResolver(
   fields: FieldDefinition[],
   fieldOverrides?: Partial<Record<string, FieldConfig>>,

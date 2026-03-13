@@ -6,10 +6,12 @@ type CursorPageData = {
   nextCursor: string | null;
 };
 
+/** Options for the {@link usePagination} hook. */
 export type UsePaginationOptions<T> = {
   getKey?: (item: T) => string | number;
 };
 
+/** Return value of the {@link usePagination} hook. */
 export type UsePaginationResult<T> = {
   items: T[];
   loadMore: () => void;
@@ -35,6 +37,28 @@ function deduplicateItems<T>(
   return Array.from(seen.values());
 }
 
+/**
+ * React hook for cursor-based pagination with React Router loader data.
+ * Accumulates pages as the user loads more and deduplicates items by key.
+ *
+ * @param options - Optional pagination configuration.
+ * @returns Paginated items and controls to load more.
+ *
+ * @example
+ * ```tsx
+ * import { usePagination } from "@cfast/pagination";
+ *
+ * function PostList() {
+ *   const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
+ *   return (
+ *     <>
+ *       {items.map(post => <PostCard key={post.id} post={post} />)}
+ *       {hasMore && <button onClick={loadMore} disabled={isLoading}>Load more</button>}
+ *     </>
+ *   );
+ * }
+ * ```
+ */
 export function usePagination<T = unknown>(
   options?: UsePaginationOptions<T>,
 ): UsePaginationResult<T> {

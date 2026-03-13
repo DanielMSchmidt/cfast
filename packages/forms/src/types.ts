@@ -1,6 +1,7 @@
 import type React from "react";
 import type { UseFormRegister, FieldValues } from "react-hook-form";
 
+/** Validation rules that can be attached to a Drizzle column via {@link v}. */
 export type ValidationRules = {
   minLength?: number;
   maxLength?: number;
@@ -10,8 +11,10 @@ export type ValidationRules = {
   message?: string;
 };
 
+/** The HTML input type for a form field. */
 export type InputType = "text" | "number" | "checkbox" | "select";
 
+/** A field definition produced by {@link introspectTable}, describing a single form field. */
 export type FieldDefinition = {
   name: string;
   inputType: InputType;
@@ -23,6 +26,7 @@ export type FieldDefinition = {
   validation: ValidationRules;
 };
 
+/** Per-field overrides for customizing auto-generated form fields. */
 export type FieldConfig = {
   label?: string;
   placeholder?: string;
@@ -32,6 +36,7 @@ export type FieldConfig = {
   validate?: (value: unknown) => string | undefined;
 };
 
+/** Props passed to field components by the auto-generated form. */
 export type FieldComponentProps = {
   name: string;
   label: string;
@@ -42,6 +47,7 @@ export type FieldComponentProps = {
   register: UseFormRegister<FieldValues>;
 };
 
+/** The set of UI components a {@link FormPlugin} must provide. */
 export type FormPluginComponents = {
   textInput: React.ComponentType<FieldComponentProps>;
   numberInput: React.ComponentType<FieldComponentProps>;
@@ -51,16 +57,19 @@ export type FormPluginComponents = {
   submitButton: React.ComponentType<SubmitButtonProps>;
 };
 
+/** Props for the form wrapper component. */
 export type FormWrapperProps = {
   onSubmit: (e: React.FormEvent) => void;
   children: React.ReactNode;
 };
 
+/** Props for the submit button component. */
 export type SubmitButtonProps = {
   isSubmitting: boolean;
   children: React.ReactNode;
 };
 
+/** A form plugin created by {@link createFormPlugin}. */
 export type FormPlugin = {
   components: FormPluginComponents;
 };

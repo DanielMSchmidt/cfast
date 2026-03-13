@@ -8,6 +8,7 @@ type OffsetPageData = {
   totalPages: number;
 };
 
+/** Return value of the {@link useOffsetPagination} hook. */
 export type UseOffsetPaginationResult<T> = {
   items: T[];
   total: number;
@@ -16,6 +17,26 @@ export type UseOffsetPaginationResult<T> = {
   goToPage: (page: number) => void;
 };
 
+/**
+ * React hook for offset-based (page number) pagination with React Router loader data.
+ *
+ * @returns Paginated items, page metadata, and a `goToPage` function.
+ *
+ * @example
+ * ```tsx
+ * import { useOffsetPagination } from "@cfast/pagination";
+ *
+ * function PostList() {
+ *   const { items, currentPage, totalPages, goToPage } = useOffsetPagination<Post>();
+ *   return (
+ *     <>
+ *       {items.map(post => <PostCard key={post.id} post={post} />)}
+ *       <Pagination current={currentPage} total={totalPages} onChange={goToPage} />
+ *     </>
+ *   );
+ * }
+ * ```
+ */
 export function useOffsetPagination<T = unknown>(): UseOffsetPaginationResult<T> {
   const data = useLoaderData() as OffsetPageData;
   const navigate = useNavigate();

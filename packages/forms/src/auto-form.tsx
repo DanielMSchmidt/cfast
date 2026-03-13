@@ -29,6 +29,22 @@ function getComponentForField(plugin: FormPlugin, field: FieldDefinition) {
   }
 }
 
+/**
+ * Create an auto-generated form component from a Drizzle table schema.
+ *
+ * @param plugin - A {@link FormPlugin} providing the UI components for rendering.
+ * @returns A React component that renders a form based on a Drizzle table.
+ *
+ * @example
+ * ```tsx
+ * import { createAutoForm, createFormPlugin } from "@cfast/forms";
+ *
+ * const plugin = createFormPlugin({ components: joyComponents });
+ * const AutoForm = createAutoForm(plugin);
+ *
+ * <AutoForm table={posts} mode="create" onSubmit={handleSubmit} />
+ * ```
+ */
 export function createAutoForm(plugin: FormPlugin) {
   function AutoForm({
     table,
