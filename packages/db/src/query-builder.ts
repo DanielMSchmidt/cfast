@@ -60,6 +60,15 @@ function buildQueryOperation<TResult>(
   };
 }
 
+/**
+ * Creates a query builder that produces permission-aware read operations for a table.
+ *
+ * The builder provides `findMany`, `findFirst`, and `paginate` methods, each returning
+ * an `Operation` that applies permission filters at `.run()` time.
+ *
+ * @param config - Configuration including D1, schema, grants, user, target table, and unsafe flag.
+ * @returns A query builder with `findMany`, `findFirst`, and `paginate` methods.
+ */
 export function createQueryBuilder(config: QueryBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
   const tableKey = getTableKey(config.schema, config.table);

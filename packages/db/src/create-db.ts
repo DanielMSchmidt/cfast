@@ -5,6 +5,30 @@ import { createCacheManager, type CacheManager } from "./cache";
 import { deduplicateDescriptors } from "./utils";
 import type { Db, DbConfig, Operation } from "./types";
 
+/**
+ * Creates a permission-aware database instance bound to the given user.
+ *
+ * Call this once per request, passing the authenticated user. The returned `Db` instance
+ * applies permission checks and WHERE clause injection on every operation.
+ *
+ * @param config - Database configuration including D1 binding, schema, grants, and user.
+ * @returns A `Db` instance with query, insert, update, delete, unsafe, batch, and cache methods.
+ *
+ * @example
+ * ```ts
+ * import { createDb } from '@cfast/db';
+ *
+ * const db = createDb({
+ *   d1: env.DB,
+ *   schema,
+ *   grants: resolvedGrants,
+ *   user: currentUser,
+ *   cache: { backend: 'cache-api' },
+ * });
+ *
+ * const posts = await db.query(postsTable).findMany().run({});
+ * ```
+ */
 export function createDb(config: DbConfig): Db {
   return buildDb(config, false);
 }

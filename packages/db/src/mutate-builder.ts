@@ -48,6 +48,15 @@ function buildMutationWithReturning(
   };
 }
 
+/**
+ * Creates an insert builder that produces permission-aware insert operations for a table.
+ *
+ * Insert permissions are checked at the role level only (no row-level WHERE injection).
+ * After a successful insert, the table's cache version is bumped via `onMutate`.
+ *
+ * @param config - Configuration including D1, schema, grants, user, target table, unsafe flag, and mutation callback.
+ * @returns An insert builder with a `values()` method.
+ */
 export function createInsertBuilder(config: MutateBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
   const permissions = makePermissions(config.unsafe, "create", config.table);
@@ -66,6 +75,15 @@ export function createInsertBuilder(config: MutateBuilderConfig) {
   };
 }
 
+/**
+ * Creates an update builder that produces permission-aware update operations for a table.
+ *
+ * Row-level permission WHERE clauses are AND'd with the user-supplied WHERE condition.
+ * After a successful update, the table's cache version is bumped via `onMutate`.
+ *
+ * @param config - Configuration including D1, schema, grants, user, target table, unsafe flag, and mutation callback.
+ * @returns An update builder with a `set()` method that chains to `where()`.
+ */
 export function createUpdateBuilder(config: MutateBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
   const permissions = makePermissions(config.unsafe, "update", config.table);
@@ -93,6 +111,15 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
   };
 }
 
+/**
+ * Creates a delete builder that produces permission-aware delete operations for a table.
+ *
+ * Row-level permission WHERE clauses are AND'd with the user-supplied WHERE condition.
+ * After a successful delete, the table's cache version is bumped via `onMutate`.
+ *
+ * @param config - Configuration including D1, schema, grants, user, target table, unsafe flag, and mutation callback.
+ * @returns A delete builder with a `where()` method.
+ */
 export function createDeleteBuilder(config: MutateBuilderConfig) {
   const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
   const permissions = makePermissions(config.unsafe, "delete", config.table);

@@ -17,6 +17,21 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+/**
+ * Parses cursor-based pagination parameters from a request URL's search params.
+ *
+ * Reads `cursor` and `limit` from the URL. Clamps `limit` between 1 and `maxLimit`.
+ *
+ * @param request - The incoming HTTP request whose URL contains pagination params.
+ * @param options - Optional defaults and limits for pagination.
+ * @returns Parsed `CursorParams` with `type`, `cursor`, and `limit`.
+ *
+ * @example
+ * ```ts
+ * const params = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
+ * const page = await db.query(posts).paginate(params).run({});
+ * ```
+ */
 export function parseCursorParams(
   request: Request,
   options?: PaginationOptions,
@@ -31,6 +46,22 @@ export function parseCursorParams(
   return { type: "cursor", cursor, limit };
 }
 
+/**
+ * Parses offset-based pagination parameters from a request URL's search params.
+ *
+ * Reads `page` and `limit` from the URL. Clamps `limit` between 1 and `maxLimit`, and
+ * ensures `page` is at least 1.
+ *
+ * @param request - The incoming HTTP request whose URL contains pagination params.
+ * @param options - Optional defaults and limits for pagination.
+ * @returns Parsed `OffsetParams` with `type`, `page`, and `limit`.
+ *
+ * @example
+ * ```ts
+ * const params = parseOffsetParams(request, { defaultLimit: 20 });
+ * const page = await db.query(posts).paginate(params).run({});
+ * ```
+ */
 export function parseOffsetParams(
   request: Request,
   options?: PaginationOptions,
@@ -45,10 +76,24 @@ export function parseOffsetParams(
   return { type: "offset", page, limit };
 }
 
+/**
+ * Encodes cursor column values into an opaque base64 string for use in pagination URLs.
+ *
+ * @param values - The column values from the last row of the current page.
+ * @returns A base64-encoded cursor string.
+ */
 export function encodeCursor(values: unknown[]): string {
   return btoa(JSON.stringify({ v: values }));
 }
 
+/**
+ * Decodes an opaque cursor string back into the original column values.
+ *
+ * Returns `null` if the cursor is `null`, malformed, or cannot be parsed.
+ *
+ * @param cursor - The base64-encoded cursor string, or `null`.
+ * @returns The decoded array of column values, or `null`.
+ */
 export function decodeCursor(cursor: string | null): unknown[] | null {
   if (cursor === null) return null;
   try {
@@ -69,6 +114,17 @@ export function decodeCursor(cursor: string | null): unknown[] | null {
   }
 }
 
+/**
+ * Builds a Drizzle SQL WHERE clause for cursor-based pagination.
+ *
+ * For a single column, produces `col < value` (desc) or `col > value` (asc).
+ * For multiple columns, produces a tuple comparison expansion using OR/AND.
+ *
+ * @param cursorColumns - The Drizzle column references used for cursor ordering.
+ * @param cursorValues - The values from the decoded cursor, matching `cursorColumns` order.
+ * @param direction - Sort direction: `"desc"` uses `<`, `"asc"` uses `>`. Defaults to `"desc"`.
+ * @returns A Drizzle SQL expression for the WHERE clause, or `undefined` if no columns.
+ */
 export function buildCursorWhere(
   cursorColumns: Column[],
   cursorValues: unknown[],

@@ -10,6 +10,17 @@ import type {
 } from "@cfast/permissions";
 import { CRUD_ACTIONS } from "@cfast/permissions";
 
+/**
+ * Finds matching grants for an action/table combination and returns their WHERE clause functions.
+ *
+ * If any matching grant has no `where` clause, access is unrestricted and an empty array is returned.
+ * Otherwise, all `where` clause functions are returned for OR-combination.
+ *
+ * @param grants - The resolved permission grants for the current user's role.
+ * @param action - The permission action being performed (e.g., `"read"`, `"update"`).
+ * @param table - The Drizzle table being accessed.
+ * @returns Array of WHERE clause functions, or empty array if access is unrestricted.
+ */
 export function resolvePermissionFilters(
   grants: Grant[],
   action: PermissionAction,
@@ -67,6 +78,16 @@ function hasManagePermission(grants: Grant[], table: DrizzleTable): boolean {
   return CRUD_ACTIONS.every((action) => hasGrantFor(grants, action, table));
 }
 
+/**
+ * Checks whether the user's grants satisfy all permission descriptors.
+ *
+ * Throws `ForbiddenError` if any required permission is not granted. For `"manage"` actions,
+ * checks that either an explicit `"manage"` grant exists or all individual CRUD actions are granted.
+ *
+ * @param grants - The resolved permission grants for the current user's role.
+ * @param descriptors - The permission requirements to check.
+ * @throws ForbiddenError if any descriptor is not satisfied by the grants.
+ */
 export function checkOperationPermissions(
   grants: Grant[],
   descriptors: PermissionDescriptor[],

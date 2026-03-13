@@ -3,13 +3,36 @@ import type { ComponentType, ReactNode } from "react";
 import type { CfastPlugin, PluginSetupContext } from "./types";
 
 /**
- * Define a cfast plugin.
+ * Defines a cfast plugin for use with `createApp().use()`.
  *
- * No dependencies (types fully inferred):
- *   definePlugin({ name: "db", setup: () => ({ query: ... }) })
+ * Has two call signatures:
+ * - **Direct form** (no dependencies): `definePlugin({ name, setup, ... })` -- types are fully inferred.
+ * - **Curried form** (with dependencies): `definePlugin<TRequires>()({ name, setup, ... })` --
+ *   specify `TRequires` explicitly so `setup(ctx)` receives typed prior-plugin context.
  *
- * With dependencies (curried form for partial type inference):
- *   definePlugin<AuthPluginProvides>()({ name: "acl", setup: (ctx) => ... })
+ * @param config - Plugin configuration with `name`, `setup`, and optional `Provider`/`client`.
+ * @returns A `CfastPlugin` instance ready to pass to `app.use()`.
+ *
+ * @example
+ * ```ts
+ * // Leaf plugin (no dependencies)
+ * const analyticsPlugin = definePlugin({
+ *   name: 'analytics',
+ *   setup(ctx) {
+ *     return { track: (event: string) => {} };
+ *   },
+ * });
+ *
+ * // Plugin with dependencies (curried)
+ * import type { AuthPluginProvides } from '@cfast/auth';
+ * const dbPlugin = definePlugin<AuthPluginProvides>()({
+ *   name: 'db',
+ *   setup(ctx) {
+ *     ctx.auth.user; // typed from AuthPluginProvides
+ *     return { client: createDb({}) };
+ *   },
+ * });
+ * ```
  */
 
 // Direct form: no dependencies, full inference
