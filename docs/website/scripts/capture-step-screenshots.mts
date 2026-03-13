@@ -121,13 +121,17 @@ function execQuiet(cmd: string, cwd: string) {
   execSync(cmd, { cwd, stdio: "pipe" });
 }
 
-async function waitForServer(url: string, timeoutMs = 60_000): Promise<void> {
+async function waitForServer(url: string, server: ChildProcess, timeoutMs = 60_000): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
+    // Fail fast if server process died
+    if (server.exitCode !== null) {
+      throw new Error(`Dev server exited with code ${server.exitCode} before becoming ready`);
+    }
     try {
       const res = await fetch(url);
-      // Wait for a successful response (not 502/503) to ensure Workers runtime is ready
-      if (res.ok || res.status === 302 || res.status === 404) return;
+      // Accept any non-5xx response as "server is ready"
+      if (res.status < 500) return;
     } catch {
       // server not ready
     }
@@ -156,8 +160,15 @@ function startDevServer(cwd: string): ChildProcess {
     stdio: "pipe",
     env: { ...process.env, PORT: String(PORT) },
   });
-  child.stderr?.on("data", () => {}); // drain stderr
-  child.stdout?.on("data", () => {}); // drain stdout
+  // Log server output for debugging in CI
+  child.stderr?.on("data", (d: Buffer) => {
+    const line = d.toString().trim();
+    if (line) console.log(`  [server:err] ${line}`);
+  });
+  child.stdout?.on("data", (d: Buffer) => {
+    const line = d.toString().trim();
+    if (line) console.log(`  [server:out] ${line}`);
+  });
   return child;
 }
 
@@ -468,7 +479,7 @@ async function main() {
     const server = startDevServer(stepDir);
 
     try {
-      await waitForServer(BASE_URL);
+      await waitForServer(BASE_URL, server);
       // Extra delay for Workers runtime to fully initialize
       await new Promise((r) => setTimeout(r, 2000));
       log(stepName, "Dev server ready");
