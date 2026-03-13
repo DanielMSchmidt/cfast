@@ -9,8 +9,25 @@ type ConfirmState = ConfirmOptions & {
 };
 
 /**
- * Provides the `useConfirm()` context and renders the confirm dialog.
- * Uses the plugin's `confirmDialog` slot for rendering.
+ * Provides the {@link useConfirm} context and renders the confirmation dialog.
+ *
+ * Wrap your application (or a subtree) with `ConfirmProvider` to enable the
+ * imperative `useConfirm()` hook. The dialog is rendered using the UI plugin's
+ * `confirmDialog` slot, so it matches your chosen component library.
+ *
+ * @param props.children - The React tree that can call `useConfirm()`.
+ *
+ * @example
+ * ```tsx
+ * // In your root layout:
+ * <ConfirmProvider>
+ *   <App />
+ * </ConfirmProvider>
+ *
+ * // In any descendant component:
+ * const confirm = useConfirm();
+ * const ok = await confirm({ title: "Delete?", variant: "danger" });
+ * ```
  */
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ConfirmState | null>(null);

@@ -3,8 +3,24 @@ import { useComponent } from "../plugin.js";
 import type { DropZoneProps } from "../types.js";
 
 /**
- * Headless DropZone — drag-and-drop file upload area.
- * Integrates with `useUpload()` from `@cfast/storage/client`.
+ * Drag-and-drop file upload area that integrates with `@cfast/storage`.
+ *
+ * Accepts an `upload` result from `useUpload()` (`@cfast/storage/client`).
+ * File type restrictions and max size are inherited from the storage schema.
+ * Renders via the UI plugin's `dropZone` slot and manages drag state,
+ * file validation, and upload progress internally.
+ *
+ * @param props - See {@link DropZoneProps}.
+ *
+ * @example
+ * ```tsx
+ * const upload = useUpload("postCoverImage");
+ *
+ * <DropZone upload={upload} />
+ *
+ * // Allow multiple files:
+ * <DropZone upload={upload} multiple />
+ * ```
  */
 export function DropZone({
   upload,

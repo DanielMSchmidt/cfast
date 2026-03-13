@@ -1,9 +1,20 @@
 import { StorageError } from "./errors.js";
 
+/** Result of writing an object to R2 (direct PUT or multipart). */
 export type UploadedObject = {
+  /** The R2 object key where the file was stored. */
   key: string;
 };
 
+/**
+ * Upload a file to R2 using a single PUT request.
+ *
+ * @param bucket - The R2 bucket binding.
+ * @param key - The destination object key.
+ * @param stream - The file body stream.
+ * @param contentType - MIME type to set on the stored object.
+ * @returns The uploaded object's key.
+ */
 export async function directPut(
   bucket: R2Bucket,
   key: string,
@@ -17,6 +28,20 @@ export async function directPut(
   return { key };
 }
 
+/**
+ * Upload a file to R2 using the multipart upload API.
+ *
+ * Splits the stream into parts, uploads them with limited concurrency,
+ * and completes (or aborts on failure) the multipart upload.
+ *
+ * @param bucket - The R2 bucket binding.
+ * @param key - The destination object key.
+ * @param stream - The file body stream.
+ * @param contentType - MIME type to set on the stored object.
+ * @param options - Part size and upload concurrency settings.
+ * @returns The uploaded object's key.
+ * @throws {StorageError} With code `"UPLOAD_FAILED"` if the multipart upload fails.
+ */
 export async function multipartUpload(
   bucket: R2Bucket,
   key: string,
@@ -97,6 +122,15 @@ async function uploadPartsStreaming(
   return parts;
 }
 
+/**
+ * Delete all existing objects under a given prefix in an R2 bucket.
+ *
+ * Used when a file type has `replace: true` to remove previous uploads
+ * before writing the new one.
+ *
+ * @param bucket - The R2 bucket binding.
+ * @param prefix - The key prefix to list and delete objects under.
+ */
 export async function replaceExisting(
   bucket: R2Bucket,
   prefix: string,
@@ -107,7 +141,7 @@ export async function replaceExisting(
     const listed = await bucket.list({ prefix, cursor });
 
     if (listed.objects.length > 0) {
-      const keys = listed.objects.map((obj) => obj.key);
+      const keys = listed.objects.map((obj: R2Object) => obj.key);
       await bucket.delete(keys);
     }
 

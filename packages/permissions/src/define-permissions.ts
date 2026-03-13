@@ -20,6 +20,39 @@ function buildPermissions<TRoles extends readonly string[]>(
   };
 }
 
+/**
+ * Creates a permission configuration that can be shared between server-side
+ * enforcement (`@cfast/db`) and client-side introspection (`@cfast/actions`).
+ *
+ * Supports two calling styles:
+ * - **Direct:** `definePermissions(config)` when no custom user type is needed.
+ * - **Curried:** `definePermissions<MyUser>()(config)` to get typed `where` clause user parameters.
+ *
+ * @param config - The permissions configuration with roles, grants, and optional hierarchy.
+ * @returns A {@link Permissions} object containing roles, raw grants, and hierarchy-expanded `resolvedGrants`.
+ *
+ * @example
+ * ```typescript
+ * import { definePermissions, grant } from "@cfast/permissions";
+ * import { eq } from "drizzle-orm";
+ * import { posts, comments } from "./schema";
+ *
+ * const permissions = definePermissions({
+ *   roles: ["anonymous", "user", "admin"] as const,
+ *   grants: {
+ *     anonymous: [
+ *       grant("read", posts, { where: (p) => eq(p.published, true) }),
+ *     ],
+ *     user: [
+ *       grant("read", posts),
+ *       grant("create", posts),
+ *       grant("update", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+ *     ],
+ *     admin: [grant("manage", "all")],
+ *   },
+ * });
+ * ```
+ */
 export function definePermissions<TRoles extends readonly string[]>(
   config: PermissionsConfig<TRoles>,
 ): Permissions<TRoles>;
@@ -28,8 +61,10 @@ export function definePermissions<TUser>(): <
 >(
   config: PermissionsConfig<TRoles, TUser>,
 ) => Permissions<TRoles>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function definePermissions(config?: any): any {
   if (config === undefined) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (c: any) => buildPermissions(c);
   }
   return buildPermissions(config);

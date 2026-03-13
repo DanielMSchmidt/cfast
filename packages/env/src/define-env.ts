@@ -26,6 +26,35 @@ function resolveDefault(
   return def.default[environment];
 }
 
+/**
+ * Creates a type-safe, runtime-validated environment object for Cloudflare Worker bindings.
+ *
+ * Declare your bindings once and get a fully typed environment. Validation runs once
+ * at startup via `init()`, catching missing or misconfigured bindings before any
+ * request is processed.
+ *
+ * @param schema - A record mapping binding names to their definitions (type, defaults, validation).
+ * @returns An object with `init()` and `get()` methods for initializing and accessing the typed environment.
+ *
+ * @example
+ * ```typescript
+ * import { defineEnv } from "@cfast/env";
+ *
+ * const env = defineEnv({
+ *   DB: { type: "d1" },
+ *   CACHE: { type: "kv" },
+ *   MAILGUN_API_KEY: { type: "secret" },
+ *   APP_URL: { type: "var", default: "http://localhost:8787" },
+ * });
+ *
+ * export default {
+ *   async fetch(request, rawEnv) {
+ *     env.init(rawEnv);
+ *     const { DB, MAILGUN_API_KEY } = env.get();
+ *   },
+ * };
+ * ```
+ */
 export function defineEnv<S extends Schema>(schema: S): Env<S> {
   let cached: ParsedEnv<S> | null = null;
 

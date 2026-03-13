@@ -25,6 +25,19 @@
     },
     "clean": {
       "cache": false
+    },
+    "build-storybook": {
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "*.config.*", "tsconfig*.json", ".storybook/**"],
+      "outputs": ["storybook-static/**"]
+    },
+    "docs:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "docs:build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
     }
   }
 }

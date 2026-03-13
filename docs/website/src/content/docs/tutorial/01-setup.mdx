@@ -1,0 +1,208 @@
+---
+title: "1. Project Setup"
+description: "Create a minimal React Router v7 app running on Cloudflare Workers."
+---
+
+import { Steps, Aside, FileTree } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import stepHome from "../../../assets/tutorial/step-01-home.png";
+
+In this tutorial you will build a team blog from scratch using CFast. Each step adds one layer -- project scaffolding, database, authentication, and permissions -- so you can see how the pieces compose.
+
+By the end of this first step you will have a React Router v7 application running on Cloudflare Workers with server-side rendering.
+
+## What we are building
+
+A multi-author blog where:
+
+- Authors write and manage their own posts
+- Editors can publish and edit any post
+- Readers see only published content
+- Admins control everything
+
+This step lays the foundation: a Workers project with React Router, a D1 database binding (not yet used), and a single home page.
+
+## Prerequisites
+
+- **Node.js 20+**
+- **pnpm** (latest) -- `npm install -g pnpm`
+- **Wrangler CLI** -- `npm install -g wrangler`
+- A [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier works)
+
+## Project structure
+
+<FileTree>
+- step-01-setup/
+  - app/
+    - root.tsx — HTML shell and error boundary
+    - routes.ts — route configuration
+    - routes/
+      - home.tsx — the home page component
+  - package.json
+  - react-router.config.ts
+  - tsconfig.json
+  - wrangler.jsonc — Cloudflare Workers config
+</FileTree>
+
+## Walkthrough
+
+<Steps>
+
+1. **Create `package.json`**
+
+   The project depends on React Router v7 and its Cloudflare adapter. Dev dependencies include Wrangler (the Workers CLI) and TypeScript.
+
+   ```json title="package.json"
+   {
+     "name": "team-blog-step-01",
+     "private": true,
+     "type": "module",
+     "scripts": {
+       "build": "react-router build",
+       "dev": "react-router dev",
+       "typecheck": "react-router typegen && tsc -b"
+     },
+     "dependencies": {
+       "@react-router/cloudflare": "^7.13.1",
+       "react": "^19.2.4",
+       "react-dom": "^19.2.4",
+       "react-router": "^7.13.1"
+     },
+     "devDependencies": {
+       "@cloudflare/workers-types": "^4.20250620.0",
+       "@react-router/dev": "^7.13.1",
+       "@types/react": "^19.2.7",
+       "@types/react-dom": "^19.2.3",
+       "typescript": "^5.9.2",
+       "wrangler": "^4.40.2"
+     }
+   }
+   ```
+
+2. **Configure Wrangler**
+
+   `wrangler.jsonc` tells Cloudflare how to run your Worker. We declare a D1 database binding now -- even though we will not query it until Step 2 -- because the binding needs to exist before the Worker starts.
+
+   ```jsonc title="wrangler.jsonc"
+   {
+     "name": "team-blog",
+     "compatibility_date": "2025-04-01",
+     "compatibility_flags": ["nodejs_compat"],
+     "d1_databases": [
+       {
+         "binding": "DB",
+         "database_name": "team-blog-db",
+         "database_id": "local"
+       }
+     ]
+   }
+   ```
+
+   The `nodejs_compat` flag enables Node.js-compatible APIs in the Workers runtime, which some dependencies require.
+
+3. **Configure React Router**
+
+   A one-liner that enables server-side rendering:
+
+   ```ts title="react-router.config.ts"
+   import type { Config } from "@react-router/dev/config";
+
+   export default {
+     ssr: true,
+   } satisfies Config;
+   ```
+
+   With `ssr: true`, loaders run on the server (inside the Worker) and the rendered HTML is streamed to the browser. This is how we will fetch data from D1 in later steps.
+
+4. **Create the root layout**
+
+   `app/root.tsx` provides the `<html>` shell that wraps every page. It also includes an `ErrorBoundary` so route errors render gracefully instead of showing a blank screen.
+
+   ```tsx title="app/root.tsx"
+   import {
+     isRouteErrorResponse, Links, Meta, Outlet,
+     Scripts, ScrollRestoration,
+   } from "react-router";
+
+   export function Layout({ children }: { children: React.ReactNode }) {
+     return (
+       <html lang="en">
+         <head>
+           <meta charSet="utf-8" />
+           <meta name="viewport" content="width=device-width, initial-scale=1" />
+           <Meta />
+           <Links />
+         </head>
+         <body>
+           {children}
+           <ScrollRestoration />
+           <Scripts />
+         </body>
+       </html>
+     );
+   }
+
+   export default function App() {
+     return <Outlet />;
+   }
+   ```
+
+5. **Define routes**
+
+   React Router v7 uses a `routes.ts` file for route configuration. We start with a single index route.
+
+   ```ts title="app/routes.ts"
+   import { type RouteConfig, index } from "@react-router/dev/routes";
+
+   export default [
+     index("routes/home.tsx"),
+   ] satisfies RouteConfig;
+   ```
+
+6. **Create the home page**
+
+   A static page that confirms everything is wired up.
+
+   ```tsx title="app/routes/home.tsx"
+   export default function Home() {
+     return (
+       <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
+         <h1>Team Blog</h1>
+         <p>Welcome to the team blog.</p>
+       </main>
+     );
+   }
+   ```
+
+</Steps>
+
+## Running the dev server
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Open `http://localhost:5173` and you should see "Team Blog" rendered by your Worker.
+
+<Image src={stepHome} alt="The Team Blog home page showing the heading and latest posts" />
+
+<Aside type="tip">
+  `react-router dev` starts Wrangler under the hood, so your app runs in the actual Workers runtime -- not a Node.js process. This means any Workers-incompatible code will fail here, not just in production.
+</Aside>
+
+## What is happening under the hood
+
+When a request hits your Worker:
+
+1. Wrangler routes it to the React Router server handler
+2. React Router matches the URL to a route (here, `home.tsx`)
+3. If the route has a `loader`, it runs on the server and returns data
+4. The component renders with that data, and HTML is streamed to the browser
+5. Client-side JavaScript hydrates the page for interactivity
+
+Right now there is no loader -- the page is purely static. In the next step, we add a database and a loader that queries it.
+
+## Next step
+
+In [Step 2: Database Setup](/tutorial/02-database), we add Drizzle ORM and `@cfast/env` to query Cloudflare D1.

@@ -9,6 +9,25 @@ const SIZE_UNITS: Record<string, number> = {
   gb: 1024 * 1024 * 1024,
 };
 
+/**
+ * Parse a human-readable size string into bytes.
+ *
+ * Supports `b`, `kb`, `mb`, and `gb` units (case-insensitive). Decimal values
+ * are supported and the result is rounded to the nearest byte.
+ *
+ * @param size - Size string (e.g. `"10mb"`, `"1.5kb"`, `"500b"`, `"1gb"`).
+ * @returns The size in bytes.
+ * @throws If the format is invalid.
+ *
+ * @example
+ * ```ts
+ * import { parseSize } from "@cfast/storage";
+ *
+ * parseSize("2mb");   // 2097152
+ * parseSize("1.5kb"); // 1536
+ * parseSize("500b");  // 500
+ * ```
+ */
 export function parseSize(size: string): number {
   const match = size.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb)$/);
   if (!match) {
@@ -19,6 +38,29 @@ export function parseSize(size: string): number {
   return Math.round(value * SIZE_UNITS[unit]);
 }
 
+/**
+ * Define a file type with its constraints and key generation strategy.
+ *
+ * Applies defaults for optional fields: `uploadable` defaults to `true`,
+ * `replace` to `false`, `multipartThreshold` to `"5mb"`, and `partSize` to `"10mb"`.
+ *
+ * @typeParam TInput - The shape of caller-provided input available in the `key` function and hooks.
+ * @param config - The file type configuration.
+ * @returns The config with defaults applied, fully resolved.
+ *
+ * @example
+ * ```ts
+ * import { filetype } from "@cfast/storage";
+ *
+ * const avatars = filetype({
+ *   bucket: "UPLOADS",
+ *   accept: ["image/jpeg", "image/png", "image/webp"],
+ *   maxSize: "2mb",
+ *   key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+ *   replace: true,
+ * });
+ * ```
+ */
 export function filetype<TInput = Record<string, unknown>>(
   config: FiletypeConfig<TInput>,
 ): FiletypeConfig<TInput> & { uploadable: boolean; replace: boolean; multipartThreshold: string; partSize: string } {
@@ -31,6 +73,32 @@ export function filetype<TInput = Record<string, unknown>>(
   };
 }
 
+/**
+ * Create a type-safe storage instance from a schema of named file types.
+ *
+ * The returned instance provides `handle` (upload), `serve`, `getPublicUrl`,
+ * `getSignedUrl`, `verifySignedUrl`, and `clientConfig` methods that are all
+ * scoped to the declared schema.
+ *
+ * @typeParam T - The storage schema type, inferred from the `schema` argument.
+ * @param schema - A record mapping file type names to their {@link FiletypeConfig}.
+ * @returns A {@link StorageInstance} with methods for uploads, serving, and URL generation.
+ *
+ * @example
+ * ```ts
+ * import { defineStorage, filetype } from "@cfast/storage";
+ *
+ * export const storage = defineStorage({
+ *   avatars: filetype({
+ *     bucket: "UPLOADS",
+ *     accept: ["image/jpeg", "image/png", "image/webp"],
+ *     maxSize: "2mb",
+ *     key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+ *     replace: true,
+ *   }),
+ * });
+ * ```
+ */
 export function defineStorage<T extends StorageSchema>(schema: T): StorageInstance<T> {
   return {
     schema,

@@ -10,8 +10,37 @@ import type { ClientDescriptor } from "@cfast/actions/client";
 import type { ListViewProps, BulkAction, ColumnShorthand } from "../types.js";
 
 /**
- * Composite ListView — composes PageContainer, FilterBar, DataTable,
- * EmptyState, BulkActionBar, and pagination controls.
+ * Full-page list layout composing filters, data table, pagination, and empty state.
+ *
+ * Combines {@link PageContainer}, {@link FilterBar}, {@link DataTable},
+ * {@link EmptyState}, {@link BulkActionBar}, and pagination controls into a
+ * single component. This is the primary component used by `@cfast/admin` for
+ * every table view, but it is equally useful in application code.
+ *
+ * Supports both offset-based pagination (page numbers) and cursor-based pagination
+ * (load more). The `createAction` prop controls the visibility of the "Create" button
+ * via permission checks.
+ *
+ * @typeParam T - The row data type.
+ * @param props - See {@link ListViewProps}.
+ *
+ * @example
+ * ```tsx
+ * const pagination = useOffsetPagination<Post>();
+ *
+ * <ListView
+ *   title="Blog Posts"
+ *   data={pagination}
+ *   columns={["title", "author", "published", "createdAt"]}
+ *   filters={[{ column: "published", type: "select", options: publishedOptions }]}
+ *   searchable={["title", "content"]}
+ *   createAction={createPost.client}
+ *   selectable
+ *   bulkActions={[
+ *     { label: "Delete", handler: (rows) => bulkDelete(rows) },
+ *   ]}
+ * />
+ * ```
  */
 export function ListView<T = unknown>({
   title,

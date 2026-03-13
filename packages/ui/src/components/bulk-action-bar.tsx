@@ -9,8 +9,26 @@ type BulkActionBarProps = {
 };
 
 /**
- * Headless BulkActionBar — shown when rows are selected.
- * Displays count + action buttons + clear selection.
+ * Toolbar that appears when rows are selected in a {@link DataTable}.
+ *
+ * Displays the selected row count, action buttons for each {@link BulkAction},
+ * and a "Clear" button to deselect all rows. Actions are rendered via the UI
+ * plugin's `button` slot. Hidden automatically when `selectedCount` is zero.
+ *
+ * @param props - See {@link BulkActionBarProps}.
+ *
+ * @example
+ * ```tsx
+ * <BulkActionBar
+ *   selectedCount={selectedRows.length}
+ *   actions={[
+ *     { label: "Delete", icon: TrashIcon },
+ *     { label: "Publish" },
+ *   ]}
+ *   onAction={(action) => handleBulk(action, selectedRows)}
+ *   onClearSelection={() => clearSelection()}
+ * />
+ * ```
  */
 export function BulkActionBar({
   selectedCount,

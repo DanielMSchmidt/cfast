@@ -64,7 +64,7 @@ export type LoginPageProps = {
       magicLink: (opts: {
         email: string;
       }) => Promise<{ error?: { message?: string } | null }>;
-      passkey: () => Promise<
+      passkey?: () => Promise<
         { error?: { message?: string } | null } | undefined
       >;
     };

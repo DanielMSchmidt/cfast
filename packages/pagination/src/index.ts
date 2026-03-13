@@ -1,3 +1,4 @@
+/** @module pagination */
 export { usePagination } from "./use-pagination";
 export type { UsePaginationOptions, UsePaginationResult } from "./use-pagination";
 export { useInfiniteScroll } from "./use-infinite-scroll";

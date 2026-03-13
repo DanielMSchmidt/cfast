@@ -4,6 +4,18 @@ import { parseRequest } from "./parse.js";
 import { validateContentType, validateContentLength, validateMagicBytes, createByteCountingStream } from "./validation.js";
 import { directPut, multipartUpload, replaceExisting } from "./upload.js";
 
+/**
+ * End-to-end upload handler: parse the request, validate, upload to R2, and run hooks.
+ *
+ * This is the internal implementation behind `StorageInstance.handle()`. It executes
+ * the full validation pipeline (content type, content length, magic bytes, byte counting)
+ * and routes to direct PUT or multipart upload based on file size.
+ *
+ * @param config - The file type configuration.
+ * @param request - The incoming HTTP request containing multipart form data.
+ * @param ctx - Handler context with env bindings, user, and optional input.
+ * @returns The upload result with key, size, and MIME type.
+ */
 export async function handleUpload<TInput>(
   config: FiletypeConfig<TInput>,
   request: Request,

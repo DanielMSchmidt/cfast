@@ -1,3 +1,4 @@
+/** @module env */
 export { defineEnv } from "./define-env";
 export { EnvError } from "./errors";
 export type {

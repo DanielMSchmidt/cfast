@@ -1,11 +1,34 @@
 import type { EmailMessage, EmailProvider } from "./types.js";
 import { EmailDeliveryError } from "./errors.js";
 
+/** Configuration for the Mailgun email provider. */
 type MailgunConfig = {
+  /** Mailgun API key (found in your Mailgun dashboard). */
   apiKey: string;
+  /** Mailgun sending domain (e.g. `"mail.myapp.com"`). */
   domain: string;
 };
 
+/**
+ * Create a Mailgun {@link EmailProvider} that sends emails via the Mailgun HTTP API.
+ *
+ * The config getter is called lazily at send time, which is the Workers-friendly
+ * pattern for accessing env bindings that are not available at module scope.
+ *
+ * @param getConfig - A getter function returning Mailgun API credentials.
+ * @returns An {@link EmailProvider} backed by Mailgun.
+ * @throws {EmailDeliveryError} If the Mailgun API returns a non-OK response.
+ *
+ * @example
+ * ```ts
+ * import { mailgun } from "@cfast/email/mailgun";
+ *
+ * const provider = mailgun(() => ({
+ *   apiKey: env.get().MAILGUN_API_KEY,
+ *   domain: env.get().MAILGUN_DOMAIN,
+ * }));
+ * ```
+ */
 export function mailgun(getConfig: () => MailgunConfig): EmailProvider {
   return {
     name: "mailgun",

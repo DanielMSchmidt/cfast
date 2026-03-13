@@ -31,6 +31,26 @@ function resolveInputType(column: {
   }
 }
 
+/**
+ * Introspect a Drizzle SQLite table and produce field definitions for form generation.
+ *
+ * Reads column metadata (type, nullability, defaults, enums) and merges it with any
+ * {@link ValidationRules} attached via the {@link v} helper. The resulting
+ * {@link FieldDefinition} array is used by {@link createResolver} for validation
+ * and by the AutoForm component for rendering.
+ *
+ * @param table - A Drizzle `SQLiteTable` to introspect.
+ * @returns An array of {@link FieldDefinition} objects, one per column in the table.
+ *
+ * @example
+ * ```ts
+ * import { introspectTable } from "@cfast/forms";
+ * import { posts } from "./schema";
+ *
+ * const fields = introspectTable(posts);
+ * // [{ name: "title", inputType: "text", label: "Title", required: true, ... }, ...]
+ * ```
+ */
 export function introspectTable(table: SQLiteTable): FieldDefinition[] {
   const columns = getTableColumns(table);
   const fields: FieldDefinition[] = [];

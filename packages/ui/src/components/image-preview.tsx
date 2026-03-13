@@ -1,7 +1,24 @@
 import type { ImagePreviewProps } from "../types.js";
 
 /**
- * Headless ImagePreview — displays an image from storage or direct src.
+ * Displays an image from `@cfast/storage` or a direct URL.
+ *
+ * Resolves the display URL from either a direct `src`, or a `fileKey` + `getUrl`
+ * resolver function (for signed URL generation). Shows a placeholder when no
+ * image is available, or renders the `fallback` element if provided.
+ *
+ * @param props - See {@link ImagePreviewProps}.
+ *
+ * @example
+ * ```tsx
+ * <ImagePreview
+ *   fileKey={post.coverImageKey}
+ *   getUrl={(key) => storage.getSignedUrl(key)}
+ *   width={200}
+ *   height={150}
+ *   fallback={<PlaceholderImage />}
+ * />
+ * ```
  */
 export function ImagePreview({
   fileKey,

@@ -52,6 +52,32 @@ function validateField(
   return undefined;
 }
 
+/**
+ * Create a react-hook-form resolver that validates form values against
+ * introspected {@link FieldDefinition} rules.
+ *
+ * Checks required fields, string length constraints, numeric range constraints,
+ * regex patterns, and any custom `validate` functions from {@link FieldConfig} overrides.
+ * Schema-derived rules (from {@link introspectTable}) and custom rules (from {@link v})
+ * are both enforced.
+ *
+ * @param fields - The {@link FieldDefinition} array to validate against (from {@link introspectTable}).
+ * @param fieldOverrides - Optional per-field {@link FieldConfig} overrides, including custom `validate` functions.
+ * @returns A react-hook-form `Resolver` that validates form values and returns errors.
+ *
+ * @example
+ * ```ts
+ * import { introspectTable, createResolver } from "@cfast/forms";
+ * import { posts } from "./schema";
+ * import { useForm } from "react-hook-form";
+ *
+ * const fields = introspectTable(posts);
+ * const resolver = createResolver(fields, {
+ *   title: { validate: (v) => (v === "test" ? "No test titles" : undefined) },
+ * });
+ * const form = useForm({ resolver });
+ * ```
+ */
 export function createResolver(
   fields: FieldDefinition[],
   fieldOverrides?: Partial<Record<string, FieldConfig>>,

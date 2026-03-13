@@ -25,14 +25,25 @@ function simpleHash(str: string): string {
   return (hash >>> 0).toString(36);
 }
 
+/**
+ * Internal cache manager interface for table-level versioning and Cache API/KV storage.
+ */
 export type CacheManager = {
+  /** Generates a cache key from SQL hash, role, and table version. */
   generateKey: (sql: string, role: string, tableVersion: number) => string;
+  /** Returns the current version counter for a table (0 if never mutated). */
   getTableVersion: (table: string) => number;
+  /** Bumps the version counter for a table, invalidating all its cached queries. */
   invalidateTable: (table: string) => void;
+  /** Invalidates cached entries by their tag names. */
   invalidateTags: (tags: string[]) => Promise<void>;
+  /** Checks if a table is in the exclusion list (never cached). */
   isExcluded: (table: string) => boolean;
+  /** Parses a TTL string override (or uses the default) and returns seconds. */
   getTtlSeconds: (override?: string) => number;
+  /** Reads a cached value by key. Returns `undefined` on miss. */
   get: (key: string, tableName: string) => Promise<unknown | undefined>;
+  /** Stores a value in the cache with the configured TTL and optional tags. */
   set: (
     key: string,
     value: unknown,
@@ -41,6 +52,21 @@ export type CacheManager = {
   ) => Promise<void>;
 };
 
+/**
+ * Creates a cache manager with in-memory table version tracking and Cache API or KV storage.
+ *
+ * Mutations bump table version counters so subsequent reads generate different cache keys,
+ * effectively invalidating stale entries.
+ *
+ * @param config - Cache configuration specifying backend, TTL, exclusions, and observability hooks.
+ * @returns A `CacheManager` instance.
+ *
+ * @example
+ * ```ts
+ * const cache = createCacheManager({ backend: 'cache-api', ttl: '30s' });
+ * const key = cache.generateKey(sqlString, 'editor', cache.getTableVersion('posts'));
+ * ```
+ */
 export function createCacheManager(config: CacheConfig): CacheManager {
   const tableVersions = new Map<string, number>();
   const tagToKeys = new Map<string, Set<string>>();

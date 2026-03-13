@@ -42,6 +42,25 @@ function formatDate(date: Date, format: DateFieldProps["format"], locale: string
   }
 }
 
+/**
+ * Read-only display component that formats date values.
+ *
+ * Accepts `Date` objects, ISO strings, or Unix timestamps. Renders a `<time>`
+ * element with the formatted date and a machine-readable `datetime` attribute.
+ * Returns an em-dash for null/undefined values and "Invalid date" for unparseable input.
+ *
+ * @param props - See {@link DateFieldProps}.
+ * @returns A `<time>` element with the formatted date, or a placeholder `<span>`.
+ *
+ * @example
+ * ```tsx
+ * <DateField value={post.createdAt} format="relative" />
+ * // -> "3 days ago"
+ *
+ * <DateField value="2026-03-11" format="short" locale="en" />
+ * // -> "Mar 11, 2026"
+ * ```
+ */
 export function DateField({
   value,
   format = "short",

@@ -14,6 +14,15 @@ import type {
   AuthInstance,
 } from "./types";
 
+/**
+ * Parses a human-readable duration string into seconds.
+ *
+ * Supports suffixes: `s` (seconds), `m` (minutes), `h` (hours), `d` (days).
+ * Returns 30 days in seconds if the format is unrecognized.
+ *
+ * @param value - Duration string (e.g., `"30d"`, `"12h"`, `"60m"`, `"3600s"`).
+ * @returns The duration in seconds.
+ */
 function parseExpiresIn(value: string): number {
   const match = value.match(/^(\d+)(s|m|h|d)$/);
   if (!match) return 60 * 60 * 24 * 30; // default 30d
@@ -32,6 +41,36 @@ function parseExpiresIn(value: string): number {
   }
 }
 
+/**
+ * Creates a pre-configured auth factory for Cloudflare Workers.
+ *
+ * Returns an `initAuth()` function that accepts per-request environment bindings
+ * ({@link AuthEnvConfig}) and produces a fully initialized {@link AuthInstance}
+ * with session management, role assignment, impersonation, and magic link support.
+ *
+ * @param config - The auth configuration including permissions, authentication methods, and role rules.
+ * @returns A factory function `(env: AuthEnvConfig) => AuthInstance` to call per-request.
+ *
+ * @example
+ * ```ts
+ * import { createAuth } from "@cfast/auth";
+ * import { permissions } from "./permissions";
+ *
+ * export const initAuth = createAuth({
+ *   permissions,
+ *   magicLink: {
+ *     sendMagicLink: async ({ email, url }) => {
+ *       await sendEmail({ to: email, html: `<a href="${url}">Sign in</a>` });
+ *     },
+ *   },
+ *   redirects: { afterLogin: "/", loginPath: "/login" },
+ * });
+ *
+ * // Per-request initialization:
+ * const auth = initAuth({ d1: env.DB, appUrl: "https://myapp.com" });
+ * const ctx = await auth.requireUser(request);
+ * ```
+ */
 export function createAuth(config: AuthConfig) {
   const anonymousRoles = config.anonymousRoles ?? [];
   const anonymousGrants: Grant[] = resolveGrants(

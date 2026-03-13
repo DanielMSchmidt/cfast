@@ -2,8 +2,22 @@ import { useNavigation } from "react-router";
 import type { NavigationProgressProps } from "../types.js";
 
 /**
- * Thin progress bar at the top of the page during React Router navigation.
- * Shows when navigation state is "loading", hides when "idle".
+ * Thin progress bar fixed to the top of the viewport during React Router navigation.
+ *
+ * Uses `useNavigation().state` from React Router to detect loading transitions.
+ * Visible when `state === "loading"`, hidden when `state === "idle"`. No
+ * configuration is required beyond dropping it into your root layout.
+ *
+ * @param props - See {@link NavigationProgressProps}.
+ *
+ * @example
+ * ```tsx
+ * // In your root layout:
+ * <NavigationProgress />
+ *
+ * // With custom color:
+ * <NavigationProgress color="#e91e63" />
+ * ```
  */
 export function NavigationProgress({
   color = "#1976d2",

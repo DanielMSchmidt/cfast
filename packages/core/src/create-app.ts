@@ -11,6 +11,26 @@ import type {
 import { CfastPluginError, CfastConfigError } from "./errors";
 import { createCoreProvider } from "./client/provider";
 
+/**
+ * Creates a cfast application instance that wires env, permissions, and plugins into a typed per-request context.
+ *
+ * Call `.use(plugin)` to register plugins, then use `app.context(request, context)` in route
+ * loaders/actions to build the per-request context with all plugin values.
+ *
+ * @param config - Application configuration containing the env schema and permissions definition.
+ * @returns An `App` instance with methods for context creation, route helpers, and plugin registration.
+ *
+ * @example
+ * ```ts
+ * import { createApp } from '@cfast/core';
+ * import { authPlugin } from '@cfast/auth';
+ * import { envSchema } from './env';
+ * import { permissions } from './permissions';
+ *
+ * export const app = createApp({ env: envSchema, permissions })
+ *   .use(authPlugin({ magicLink: { sendMagicLink: async ({ email, url }) => {} } }));
+ * ```
+ */
 export function createApp<
   TSchema extends Schema,
   TPermissions extends Permissions,

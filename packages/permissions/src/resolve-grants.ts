@@ -2,12 +2,19 @@ import { or, type SQLWrapper } from "drizzle-orm";
 import type { Grant, Permissions } from "./types";
 
 /**
- * Resolves grants for multiple roles by looking up each role's pre-expanded
- * grants and merging/deduplicating them.
+ * Resolves and merges grants for multiple roles into a single flat array.
  *
- * When multiple grants share the same action + subject:
- * - If ANY grant has no `where` clause, the merged grant is unrestricted (no where)
- * - If ALL grants have `where` clauses, they are OR-merged via drizzle's `or()`
+ * Looks up each role's pre-expanded grants (from hierarchy resolution) and
+ * deduplicates them by action + subject. When multiple grants share the same
+ * action + subject:
+ * - If **any** grant has no `where` clause, the merged grant is unrestricted.
+ * - If **all** grants have `where` clauses, they are OR-merged via Drizzle's `or()`.
+ *
+ * This is used when a user has multiple roles and their grants need to be combined.
+ *
+ * @param permissions - The permissions object from {@link definePermissions}.
+ * @param roles - Array of role names whose grants should be merged.
+ * @returns A deduplicated array of {@link Grant} objects with merged `where` clauses.
  */
 export function resolveGrants(
   permissions: Permissions,

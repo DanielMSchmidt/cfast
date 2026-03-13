@@ -1,0 +1,26 @@
+{
+  "name": "@cfast/docs",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "screenshots": "npx tsx scripts/capture-step-screenshots.mts"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.34",
+    "astro": "^5",
+    "sharp": "^0.34",
+    "starlight-typedoc": "^0.21",
+    "typedoc": "^0.28",
+    "typedoc-plugin-markdown": "^4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4",
+    "@types/react": "^19",
+    "playwright": "^1",
+    "tsx": "^4"
+  }
+}

@@ -11,7 +11,27 @@ export type PageContainerProps = {
 };
 
 /**
- * Page wrapper with title, breadcrumb, tabs, and action toolbar.
+ * Page wrapper providing a title, breadcrumb trail, tab navigation, and an action toolbar.
+ *
+ * Renders via the UI plugin's `pageContainer` and `breadcrumb` slots. Used internally
+ * by {@link ListView} and {@link DetailView}, but also useful as a standalone page shell
+ * for custom pages.
+ *
+ * @param props - See {@link PageContainerProps}.
+ *
+ * @example
+ * ```tsx
+ * <PageContainer
+ *   title="Edit Post"
+ *   breadcrumb={[
+ *     { label: "Posts", to: "/posts" },
+ *     { label: post.title },
+ *   ]}
+ *   actions={<ActionButton action={deletePost} input={{ postId }} />}
+ * >
+ *   ...
+ * </PageContainer>
+ * ```
  */
 export function PageContainer({
   title,

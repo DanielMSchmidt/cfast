@@ -3,12 +3,27 @@ import { useComponent } from "../plugin.js";
 import type { EmptyStateProps } from "../types.js";
 
 /**
- * Permission-aware empty state.
+ * Permission-aware empty state placeholder.
  *
- * - If createAction is permitted: shows title + description + CTA button
- * - If createAction is forbidden: shows title + description only
- * - If createAction is invisible: shows generic message
- * - If no createAction: shows title + description
+ * Adapts its content based on the user's permissions for the create action:
+ *
+ * - **Permitted**: shows title, description, and a CTA button
+ * - **Forbidden**: shows title and description without the CTA
+ * - **Invisible**: shows a generic "Nothing here yet" message
+ * - **No createAction**: shows title and description only
+ *
+ * @param props - See {@link EmptyStateProps}.
+ *
+ * @example
+ * ```tsx
+ * <EmptyState
+ *   title="No posts yet"
+ *   description="Create your first blog post to get started."
+ *   createAction={createPost.client}
+ *   createLabel="New Post"
+ *   icon={DocumentIcon}
+ * />
+ * ```
  */
 export function EmptyState({
   title,

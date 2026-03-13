@@ -1,3 +1,4 @@
+/** @module actions */
 export { createActions, checkPermissionStatus } from "./create-actions.js";
 export type {
   Serializable,

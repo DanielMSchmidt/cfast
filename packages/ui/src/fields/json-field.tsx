@@ -1,6 +1,23 @@
 import { useState } from "react";
 import type { JsonFieldProps } from "../types.js";
 
+/**
+ * Read-only display component that renders a JSON value as formatted code.
+ *
+ * When `collapsed` is true, shows a single-line preview (truncated at 60 chars)
+ * with an "expand" button. When expanded, displays the full pretty-printed JSON
+ * in a `<pre>` block. Returns an em-dash for null/undefined values.
+ *
+ * @param props - See {@link JsonFieldProps}.
+ * @returns A `<pre>` with formatted JSON, a collapsed preview, or a
+ *   placeholder `<span>` for null values.
+ *
+ * @example
+ * ```tsx
+ * <JsonField value={{ tags: ["react", "typescript"] }} collapsed />
+ * // -> '{"tags":["react","typescript"]}' with expand button
+ * ```
+ */
 export function JsonField({
   value,
   collapsed = false,

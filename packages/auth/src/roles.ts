@@ -1,12 +1,27 @@
+/**
+ * Options for configuring the role manager's storage and authorization rules.
+ */
 export type RoleManagerOptions = {
+  /** Custom table name for role storage. Defaults to `"roles"`. */
   tableName?: string;
+  /** Maps each role to the roles it is allowed to assign. Used to enforce role grant rules. */
   roleGrants?: Record<string, string[]>;
 };
 
+/** Options identifying the caller for role grant authorization checks. */
 type CallerOptions = {
+  /** The roles of the user attempting the role assignment. */
   callerRoles?: string[];
 };
 
+/**
+ * Validates that the caller's roles permit assigning the target role.
+ *
+ * @param roleGrants - The role-to-assignable-roles mapping.
+ * @param callerRoles - The roles of the user performing the assignment.
+ * @param targetRole - The role being assigned.
+ * @throws {Error} If none of the caller's roles permit assigning the target role.
+ */
 function checkRoleGrants(
   roleGrants: Record<string, string[]>,
   callerRoles: string[],
@@ -24,6 +39,32 @@ function checkRoleGrants(
   }
 }
 
+/**
+ * Creates a role manager backed by a Cloudflare D1 database.
+ *
+ * Provides methods to query, assign, replace, and remove user roles.
+ * When `roleGrants` is configured, assignment methods enforce authorization
+ * rules so that, for example, an editor cannot promote someone to admin.
+ *
+ * @param d1 - The Cloudflare D1 database binding.
+ * @param options - Optional configuration for table name and role grant rules.
+ * @returns An object with `getRoles`, `setRole`, `setRoles`, and `removeRole` methods.
+ *
+ * @example
+ * ```ts
+ * import { createRoleManager } from "@cfast/auth";
+ *
+ * const roles = createRoleManager(env.DB, {
+ *   roleGrants: {
+ *     admin: ["admin", "editor", "user"],
+ *     editor: ["user"],
+ *   },
+ * });
+ *
+ * const userRoles = await roles.getRoles(userId);
+ * await roles.setRole(userId, "editor", { callerRoles: ["admin"] });
+ * ```
+ */
 export function createRoleManager(d1: D1Database, options?: RoleManagerOptions) {
   const table = options?.tableName ?? "roles";
   const roleGrants = options?.roleGrants;

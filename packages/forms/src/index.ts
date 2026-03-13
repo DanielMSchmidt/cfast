@@ -1,3 +1,4 @@
+/** @module forms */
 export { introspectTable } from "./introspect";
 export { createResolver } from "./resolver";
 export { createFormPlugin } from "./plugin";

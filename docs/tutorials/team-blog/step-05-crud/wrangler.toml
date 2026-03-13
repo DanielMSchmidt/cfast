@@ -1,0 +1,13 @@
+name = "team-blog-step-05"
+compatibility_date = "2025-12-01"
+compatibility_flags = ["nodejs_compat"]
+main = "./workers/app.ts"
+
+[vars]
+APP_URL = "http://localhost:5173"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "team-blog"
+database_id = "local"
+migrations_dir = "drizzle"

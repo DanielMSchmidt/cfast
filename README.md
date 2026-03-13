@@ -1,6 +1,10 @@
-# CFast
+<p align="center">
+  <img src="docs/website/src/assets/cfast-logo.png" alt="CFast" width="200" />
+</p>
 
-**Skip the boring parts. Build your Cloudflare Workers app.**
+<h1 align="center">CFast</h1>
+
+<p align="center"><strong>Skip the boring parts. Build your Cloudflare Workers app.</strong></p>
 
 CFast is a collection of composable TypeScript libraries that make building production-ready web applications on Cloudflare Workers with React Router fast, secure, and enjoyable. It is opinionated where it matters and invisible where it doesn't.
 

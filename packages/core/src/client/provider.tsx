@@ -1,10 +1,20 @@
 import { createContext, type ReactNode, type ComponentType } from "react";
 import type { CfastPlugin } from "../types";
 
+/** React context holding client-side plugin values for `useApp()`. */
 export const CoreContext = createContext<Record<string, unknown> | null>(null);
 
 type ProviderComponent = ComponentType<{ children: ReactNode }>;
 
+/**
+ * Creates a composed React provider that nests all plugin providers and exposes
+ * client-side plugin values via {@link CoreContext}.
+ *
+ * Plugins are nested in registration order (first registered = outermost).
+ *
+ * @param plugins - The registered plugins, each with optional `Provider` and `client`.
+ * @returns A React component that wraps children with all plugin providers and the core context.
+ */
 export function createCoreProvider(
   plugins: Pick<CfastPlugin, "name" | "Provider" | "client">[],
 ): ProviderComponent {

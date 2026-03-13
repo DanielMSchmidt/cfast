@@ -9,8 +9,20 @@ const defaultColors: Record<string, ChipSlotProps["color"]> = {
 };
 
 /**
- * Colored badge displaying a user's role.
- * Uses the plugin's `chip` slot for rendering.
+ * Colored badge displaying a user's role name.
+ *
+ * Renders via the UI plugin's `chip` slot. Default color mapping:
+ * admin = danger, editor = primary, author = success, reader = neutral.
+ * Pass a custom `colors` map to override or extend the defaults.
+ *
+ * @param props - See {@link RoleBadgeProps}.
+ *
+ * @example
+ * ```tsx
+ * <RoleBadge role="admin" />
+ * // Custom colors:
+ * <RoleBadge role="moderator" colors={{ moderator: "warning" }} />
+ * ```
  */
 export function RoleBadge({ role, colors }: RoleBadgeProps) {
   const Chip = useComponent("chip");

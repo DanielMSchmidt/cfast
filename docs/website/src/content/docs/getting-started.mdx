@@ -1,0 +1,227 @@
+---
+title: Getting Started
+description: Set up your first CFast project on Cloudflare Workers in minutes.
+---
+
+import { Steps, Aside } from "@astrojs/starlight/components";
+
+This guide walks you through creating a Cloudflare Workers app with CFast — from an empty directory to a running dev server that queries a D1 database.
+
+## Prerequisites
+
+- **Node.js 20+**
+- **pnpm** (latest) — `npm install -g pnpm`
+- **A Cloudflare account** — the [free tier](https://dash.cloudflare.com/sign-up) works
+- **Wrangler CLI** — `npm install -g wrangler`
+
+## Project Setup
+
+<Aside type="tip">
+  `npm create cfast@latest` is coming soon. For now, set up manually.
+</Aside>
+
+<Steps>
+
+1. **Create the project and install dependencies**
+
+   ```bash
+   mkdir my-app && cd my-app
+   pnpm init
+   pnpm add react react-dom react-router @react-router/dev @react-router/cloudflare
+   pnpm add -D wrangler typescript @cloudflare/workers-types
+   ```
+
+2. **Configure Wrangler**
+
+   Create a `wrangler.jsonc` at the project root:
+
+   ```jsonc
+   // wrangler.jsonc
+   {
+     "name": "my-app",
+     "main": "./build/server/index.js",
+     "assets": {
+       "directory": "./build/client"
+     },
+     "compatibility_date": "2025-04-01",
+     "compatibility_flags": ["nodejs_compat"],
+     "d1_databases": [
+       {
+         "binding": "DB",
+         "database_name": "my-app-db",
+         "database_id": "<your-database-id>"
+       }
+     ]
+   }
+   ```
+
+   You will fill in `database_id` after creating the D1 database in a later step.
+
+3. **Configure React Router**
+
+   Create `react-router.config.ts`:
+
+   ```ts
+   // react-router.config.ts
+   import type { Config } from "@react-router/dev/config";
+
+   export default {
+     ssr: true,
+   } satisfies Config;
+   ```
+
+4. **Set up your environment with `@cfast/env`**
+
+   ```bash
+   pnpm add @cfast/env
+   ```
+
+   Create `app/env.server.ts`:
+
+   ```ts
+   // app/env.server.ts
+   import { defineEnv } from "@cfast/env";
+
+   export const env = defineEnv({
+     DB: { type: "d1" },
+   });
+
+   export type Env = ReturnType<typeof env.get>;
+   ```
+
+   `defineEnv` gives you a validated, fully typed environment object. If the `DB` binding is missing, you get a clear error at startup instead of an obscure crash at query time.
+
+   Initialize it once in your Worker's fetch handler (or wherever your app's entry point creates the request context):
+
+   ```ts
+   env.init(rawEnv);
+   const { DB } = env.get(); // DB is typed as D1Database
+   ```
+
+5. **Define your schema**
+
+   ```bash
+   pnpm add @cfast/db drizzle-orm
+   ```
+
+   Create `app/schema.ts`:
+
+   ```ts
+   // app/schema.ts
+   import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+   export const posts = sqliteTable("posts", {
+     id: integer("id").primaryKey({ autoIncrement: true }),
+     title: text("title").notNull(),
+     content: text("content").notNull(),
+     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+   });
+   ```
+
+6. **Create your first route**
+
+   Create `app/routes/home.tsx`:
+
+   ```tsx
+   // app/routes/home.tsx
+   import { createDb } from "@cfast/db";
+   import { desc } from "drizzle-orm";
+   import * as schema from "../schema";
+   import { posts } from "../schema";
+   import { env } from "../env.server";
+   import type { Route } from "./+types/home";
+
+   export async function loader({ context }: Route.LoaderArgs) {
+     env.init(context.cloudflare.env);
+     const { DB } = env.get();
+
+     const db = createDb({
+       d1: DB,
+       schema,
+       permissions: undefined as any, // We'll add permissions later
+       user: null,
+       cache: false,
+     });
+
+     const allPosts = await db
+       .unsafe() // Skip permissions for now
+       .query(posts)
+       .findMany({
+         orderBy: desc(posts.createdAt),
+         limit: 20,
+       })
+       .run({});
+
+     return { posts: allPosts };
+   }
+
+   export default function Home({ loaderData }: Route.ComponentProps) {
+     const { posts } = loaderData;
+
+     return (
+       <div>
+         <h1>My App</h1>
+         {posts.length === 0 ? (
+           <p>No posts yet.</p>
+         ) : (
+           <ul>
+             {posts.map((post) => (
+               <li key={post.id}>
+                 <h2>{post.title}</h2>
+                 <p>{post.content}</p>
+               </li>
+             ))}
+           </ul>
+         )}
+       </div>
+     );
+   }
+   ```
+
+   This uses `db.unsafe()` to skip permission checks while getting started. Once you add `@cfast/permissions`, you can replace this with proper role-based access control.
+
+7. **Create the D1 database and run locally**
+
+   ```bash
+   wrangler d1 create my-app-db
+   ```
+
+   Copy the `database_id` from the output into your `wrangler.jsonc`.
+
+   Apply your schema (you can use Drizzle Kit or run raw SQL):
+
+   ```bash
+   wrangler d1 execute my-app-db --local --command \
+     "CREATE TABLE IF NOT EXISTS posts (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       title TEXT NOT NULL,
+       content TEXT NOT NULL,
+       created_at INTEGER NOT NULL
+     );"
+   ```
+
+   Start the dev server:
+
+   ```bash
+   wrangler dev
+   ```
+
+   Open [http://localhost:8787](http://localhost:8787) and you should see your app running against a local D1 database.
+
+</Steps>
+
+## Next Steps
+
+You now have a working Cloudflare Workers app with type-safe bindings and a D1 database. From here:
+
+- **[Tutorial: Build a Team Blog](/tutorial/01-setup/)** — Walk through building a complete app with authentication, permissions, and an admin panel.
+- **[Environment Guide](/guides/env/)** — Learn about environment-aware defaults, secrets, and validation.
+- **[API Reference](/api/)** — Full type signatures for every package.
+
+As you build out your app, the typical progression is:
+
+1. **`@cfast/permissions`** — Define roles and grants so queries are permission-aware.
+2. **`@cfast/auth`** — Add magic-link email and passkey authentication.
+3. **`@cfast/actions`** — Structure your mutations with multi-action routes.
+4. **`@cfast/ui`** — Use permission-aware components that automatically hide actions users cannot perform.
+5. **`@cfast/admin`** — Generate an admin panel from your Drizzle schema.

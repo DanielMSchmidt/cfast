@@ -2,15 +2,29 @@ import { useComponent } from "../plugin.js";
 import type { ActionButtonProps } from "../types.js";
 
 /**
- * Permission-aware button that submits an action.
+ * Permission-aware button that submits a `@cfast/actions` action.
  *
- * Takes an `ActionHookResult` from `useActions()` — no hooks inside,
- * pure presentation component. Extra props are forwarded to the
- * underlying button slot.
+ * Accepts an `ActionHookResult` from `useActions()` and renders a button
+ * via the UI plugin's `button` slot. The button's visibility and disabled
+ * state are controlled by the action's permission status. Extra props are
+ * forwarded to the underlying button component.
  *
- * - whenForbidden="hide": hidden when not permitted
- * - whenForbidden="disable": shown but disabled when not permitted
- * - whenForbidden="show": shown and clickable regardless of permission
+ * - `whenForbidden="hide"` -- hidden when not permitted
+ * - `whenForbidden="disable"` -- shown but disabled when not permitted (default)
+ * - `whenForbidden="show"` -- shown and clickable regardless of permission
+ *
+ * @param props - See {@link ActionButtonProps}.
+ *
+ * @example
+ * ```tsx
+ * <ActionButton
+ *   action={publishPost}
+ *   whenForbidden="disable"
+ *   confirmation="Publish this post?"
+ * >
+ *   Publish
+ * </ActionButton>
+ * ```
  */
 export function ActionButton({
   action,

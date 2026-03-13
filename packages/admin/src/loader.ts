@@ -548,10 +548,27 @@ async function loadUserDetail(
 /**
  * Create an admin loader function from config and introspected table metadata.
  *
- * The returned loader:
- * 1. Guards access with auth + role check
- * 2. Parses URL params to determine the view
- * 3. Fetches appropriate data and returns AdminLoaderData
+ * The returned loader handles all admin views: dashboard, table list, detail,
+ * create, edit, user list, and user detail. It guards access using the
+ * {@link AdminAuthConfig.requireUser} and {@link AdminAuthConfig.hasRole} callbacks,
+ * creates a permission-scoped DB instance via {@link CreateDbFn}, and parses the
+ * URL to determine which view data to fetch.
+ *
+ * Use this instead of {@link createAdmin} when you need server/client code splitting.
+ *
+ * @param config - The admin configuration (same object passed to {@link createAdmin}).
+ * @param tableMetas - Table metadata from {@link introspectSchema}.
+ * @returns An async function that takes a `Request` and returns {@link AdminLoaderData}.
+ *
+ * @example
+ * ```typescript
+ * // app/admin.server.ts
+ * import { createAdminLoader, introspectSchema } from "@cfast/admin";
+ * import * as schema from "~/schema";
+ *
+ * const tableMetas = introspectSchema(schema);
+ * export const adminLoader = createAdminLoader(config, tableMetas);
+ * ```
  */
 export function createAdminLoader(
   config: AdminConfig,

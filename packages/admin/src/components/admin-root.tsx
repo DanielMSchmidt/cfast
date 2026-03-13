@@ -14,10 +14,36 @@ import { UserList } from "./user-list.js";
 import { UserDetail } from "./user-detail.js";
 
 /**
- * Create the root admin React component.
+ * Create the root admin React component from introspected table metadata.
  *
- * Takes table metadata (from introspection) so it can pass drizzle table
- * references to forms and find primary key information.
+ * Returns a React component that reads {@link AdminLoaderData} from React Router's
+ * `useLoaderData` and {@link AdminActionResult} from `useActionData`, then renders
+ * the appropriate admin view (dashboard, list, detail, create, edit, users, or error).
+ *
+ * The component includes a sidebar, impersonation banner, and wraps everything in
+ * a `ConfirmProvider` from `@cfast/ui`.
+ *
+ * Use this instead of {@link createAdmin} when you need server/client code splitting
+ * (this function is safe for client bundles since it only depends on table metadata,
+ * not on DB or auth server code).
+ *
+ * @param tableMetas - Table metadata from {@link introspectSchema}. Used to resolve Drizzle table references for forms and primary key lookups.
+ * @returns A React component to use as the default export of your admin route.
+ *
+ * @example
+ * ```typescript
+ * // app/routes/admin.tsx
+ * import { createAdminComponent, introspectSchema } from "@cfast/admin";
+ * import { adminLoader, adminAction } from "~/admin.server";
+ * import * as schema from "~/schema";
+ *
+ * const tableMetas = introspectSchema(schema);
+ * const AdminComponent = createAdminComponent(tableMetas);
+ *
+ * export const loader = adminLoader;
+ * export const action = adminAction;
+ * export default AdminComponent;
+ * ```
  */
 export function createAdminComponent(
   tableMetas: AdminTableMeta[],

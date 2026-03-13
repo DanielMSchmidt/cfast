@@ -6,14 +6,29 @@ type CursorPageData = {
   nextCursor: string | null;
 };
 
+/**
+ * Options for the {@link usePagination} hook.
+ *
+ * @typeParam T - The item type in the paginated list.
+ */
 export type UsePaginationOptions<T> = {
+  /** Extracts a unique key from each item for deduplication. Defaults to `item.id`. */
   getKey?: (item: T) => string | number;
 };
 
+/**
+ * Return value of the {@link usePagination} hook.
+ *
+ * @typeParam T - The item type in the paginated list.
+ */
 export type UsePaginationResult<T> = {
+  /** Accumulated, deduplicated items from all loaded pages. */
   items: T[];
+  /** Fetches the next page of results. No-op if already loading or no more pages. */
   loadMore: () => void;
+  /** `true` if there are more pages to fetch (a `nextCursor` exists). */
   hasMore: boolean;
+  /** `true` while a page fetch is in flight. */
   isLoading: boolean;
 };
 
@@ -35,6 +50,32 @@ function deduplicateItems<T>(
   return Array.from(seen.values());
 }
 
+/**
+ * React hook for cursor-based pagination with React Router loader data.
+ *
+ * Accumulates pages as the user loads more and deduplicates items by key
+ * to handle data changes during scrolling. Reads initial data from React Router's
+ * `useLoaderData()` and fetches subsequent pages via `useFetcher()`.
+ *
+ * @typeParam T - The item type in the paginated list.
+ * @param options - Optional pagination configuration (e.g., custom key extractor).
+ * @returns A {@link UsePaginationResult} with items, loading state, and a `loadMore` callback.
+ *
+ * @example
+ * ```tsx
+ * import { usePagination } from "@cfast/pagination";
+ *
+ * function PostList() {
+ *   const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
+ *   return (
+ *     <>
+ *       {items.map(post => <PostCard key={post.id} post={post} />)}
+ *       {hasMore && <button onClick={loadMore} disabled={isLoading}>Load more</button>}
+ *     </>
+ *   );
+ * }
+ * ```
+ */
 export function usePagination<T = unknown>(
   options?: UsePaginationOptions<T>,
 ): UsePaginationResult<T> {

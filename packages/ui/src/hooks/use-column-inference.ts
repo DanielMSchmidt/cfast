@@ -3,22 +3,46 @@ import { fieldForColumn } from "../fields/field-for-column.js";
 import type { ColumnDef } from "../types.js";
 import type { ComponentType } from "react";
 
+/** Drizzle column metadata used for field type inference. */
 type ColumnMeta = {
   dataType: string;
   name: string;
   notNull?: boolean;
 };
 
+/** A column definition extended with an inferred TypedField component. */
 type InferredColumn = ColumnDef & {
+  /** The field component that renders the appropriate display for this column type. */
   field: ComponentType<{ value: unknown }>;
 };
 
 /**
- * Inspects a Drizzle table's columns and returns inferred column definitions
- * with appropriate TypedField components.
+ * Inspects a Drizzle table's columns and returns inferred {@link ColumnDef} entries
+ * with appropriate TypedField components attached.
  *
- * @param table - A Drizzle table object (columns accessible via iteration)
- * @param columns - Optional subset of column names to include
+ * Uses {@link fieldForColumn} internally to map each Drizzle column's `dataType`
+ * to a display component (e.g., `DateField`, `BooleanField`, `TextField`).
+ * Labels are auto-derived from camelCase column keys.
+ *
+ * Memoized -- only recomputes when the `table` reference or `columns` array changes.
+ *
+ * @param table - A Drizzle table object whose entries expose `dataType` and `name` metadata.
+ *   Pass `undefined` to return an empty array (safe for conditional rendering).
+ * @param columns - Optional subset of column names to include. When provided,
+ *   only matching columns are returned and their order is preserved.
+ * @returns Array of {@link InferredColumn} definitions, each containing a `field`
+ *   component ready for rendering.
+ *
+ * @example
+ * ```ts
+ * import { useColumnInference } from "@cfast/ui";
+ * import { posts } from "~/db/schema";
+ *
+ * const cols = useColumnInference(posts, ["title", "createdAt", "published"]);
+ * // cols[0].field === TextField
+ * // cols[1].field === DateField
+ * // cols[2].field === BooleanField
+ * ```
  */
 export function useColumnInference(
   table: Record<string, unknown> | undefined,

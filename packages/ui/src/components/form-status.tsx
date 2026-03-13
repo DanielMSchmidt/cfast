@@ -3,8 +3,26 @@ import { useComponent } from "../plugin.js";
 import type { FormStatusProps } from "../types.js";
 
 /**
- * Displays action result feedback (success/error messages) using the
- * plugin's `alert` slot.
+ * Displays action result feedback (success, error, and field-level validation messages).
+ *
+ * Renders alerts via the UI plugin's `alert` slot. Success messages are shown
+ * in green, errors in red, and field-level validation errors as a bulleted list.
+ * Returns `null` when there is no feedback to display.
+ *
+ * @param props - See {@link FormStatusProps}.
+ *
+ * @example
+ * ```tsx
+ * function EditForm() {
+ *   const actionData = useActionData();
+ *   return (
+ *     <Form method="post">
+ *       <FormStatus data={actionData} />
+ *       ...
+ *     </Form>
+ *   );
+ * }
+ * ```
  */
 export function FormStatus({ data }: FormStatusProps) {
   const Alert = useComponent("alert");

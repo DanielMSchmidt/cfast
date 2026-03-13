@@ -1,0 +1,165 @@
+---
+title: "@cfast/actions"
+description: "Multi-action routes and permission-aware action definitions for React Router"
+---
+
+## Overview
+
+Most React Router routes need more than one action: a blog post page might handle publish, unpublish, delete, and add-comment all from the same route. `@cfast/actions` solves this with a single factory that provides type-safe, permission-aware action definitions. You define operations once, and the package handles routing, permission checking, and client-side submission controls.
+
+Actions integrate deeply with `@cfast/db` operations and `@cfast/permissions` grants. The server checks permissions automatically, and the client gets `permitted`/`invisible`/`pending` flags per action without any extra work.
+
+## Installation
+
+```bash
+pnpm add @cfast/actions
+```
+
+Peer dependencies: `@cfast/db`, `@cfast/permissions`, `react-router`
+
+## Quick Setup
+
+Start by creating a factory that provides context (database, user, grants) for all your actions:
+
+```typescript
+// app/actions.server.ts
+import { createActions } from "@cfast/actions";
+
+export const { createAction, composeActions } = createActions({
+  getContext: async ({ request }) => {
+    const ctx = await requireAuthContext(request);
+    const db = createCfDb(env.DB, ctx);
+    return { db, user: ctx.user, grants: ctx.grants };
+  },
+});
+```
+
+`createActions` returns two functions scoped to your context provider: `createAction` for individual actions, and `composeActions` for combining multiple actions into a single route handler.
+
+## Core Concepts
+
+### Single Actions
+
+`createAction` takes an operations function that receives `(db, input, ctx)` and returns a `@cfast/db` Operation. The operation defines both the database work and the permission requirements:
+
+```typescript
+import { compose } from "@cfast/db";
+import { eq } from "drizzle-orm";
+import { createAction } from "~/actions.server";
+import { posts, auditLogs } from "~/db/schema";
+
+export const deletePost = createAction<{ postId: string }, Response>(
+  (db, input, ctx) =>
+    compose(
+      [
+        db.delete(posts).where(eq(posts.id, input.postId)),
+        db.insert(auditLogs).values({
+          id: crypto.randomUUID(),
+          userId: ctx.user.id,
+          action: "post.deleted",
+          targetId: input.postId,
+        }),
+      ],
+      async (runDelete, runAudit) => {
+        await runDelete({});
+        await runAudit({});
+        return redirect("/");
+      },
+    ),
+);
+```
+
+Each action definition exposes four facets: `.action` (the route handler), `.loader()` (permission-injecting loader wrapper), `.client` (descriptor for hooks), and `.buildOperation()` (for advanced composition).
+
+### Composed Actions
+
+When a route needs multiple actions, `composeActions` merges them with a discriminator field:
+
+```typescript
+import { composeActions } from "~/actions.server";
+import { deletePost, publishPost, unpublishPost } from "~/actions/posts";
+
+const composed = composeActions({ deletePost, publishPost, unpublishPost });
+
+export const action = composed.action;
+```
+
+Forms include `<input type="hidden" name="_action" value="deletePost" />` to route to the correct handler. JSON requests use `{ _action: "deletePost", ...input }`.
+
+### Loader Integration
+
+Wrap your loader with `.loader()` to inject permission metadata into loader data. The wrapper checks each action's permissions against the user's grants and merges `_actionPermissions` into the response:
+
+```typescript
+export const loader = composed.loader(async ({ request, params }) => {
+  const post = await getPost(params.slug);
+  return { post };
+});
+```
+
+The client never receives raw permission descriptors -- only boolean flags indicating what the user can do.
+
+## Common Patterns
+
+### Permission-Aware Buttons on the Client
+
+The `useActions` hook reads `_actionPermissions` from loader data and returns submission controls per action:
+
+```typescript
+import { useActions } from "@cfast/actions/client";
+
+function PostActions({ postId }: { postId: string }) {
+  const actions = useActions(composed.client);
+  const remove = actions.deletePost({ postId });
+  const publish = actions.publishPost({ postId });
+
+  return (
+    <>
+      <button
+        onClick={publish.submit}
+        disabled={!publish.permitted || publish.pending}
+        hidden={publish.invisible}
+      >
+        Publish
+      </button>
+      <button
+        onClick={remove.submit}
+        disabled={!remove.permitted || remove.pending}
+      >
+        Delete
+      </button>
+    </>
+  );
+}
+```
+
+Each action returns `permitted`, `invisible`, `reason`, `submit`, `pending`, `data`, and `error` -- everything you need to build responsive, permission-aware UIs.
+
+### Dual Input Formats
+
+Actions accept input from both FormData and JSON. The `_action` discriminator is stripped automatically:
+
+- **FormData**: `<input name="_action" value="deletePost" />` plus other fields
+- **JSON**: `{ _action: "deletePost", postId: "123" }`
+
+This lets you use standard forms or programmatic `fetch` calls interchangeably.
+
+### Integrating with @cfast/ui
+
+`@cfast/actions` pairs naturally with `@cfast/ui` components. `ActionButton` and `PermissionGate` consume action descriptors directly, so you get permission-aware rendering without manual checks:
+
+```typescript
+import { ActionButton } from "@cfast/ui/joy";
+
+<ActionButton
+  action={publishPost}
+  input={{ postId }}
+  confirmation="Publish this post?"
+>
+  Publish
+</ActionButton>
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.
