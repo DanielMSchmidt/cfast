@@ -22,7 +22,7 @@ describe("upload-download", () => {
     // Clean up bucket before each test
     const listed = await env.UPLOADS.list({ prefix: "avatars/user-1/" });
     if (listed.objects.length > 0) {
-      await env.UPLOADS.delete(listed.objects.map((o) => o.key));
+      await env.UPLOADS.delete(listed.objects.map((o: { key: string }) => o.key));
     }
   });
 
