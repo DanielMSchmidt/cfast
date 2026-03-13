@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@cfast/db": "^0.1.0",
+    "drizzle-orm": "^0.45.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.9"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote"
+  }
+}
