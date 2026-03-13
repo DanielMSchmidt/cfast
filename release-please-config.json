@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    "packages/actions": { "component": "@cfast/actions" },
+    "packages/admin": { "component": "@cfast/admin" },
+    "packages/auth": { "component": "@cfast/auth" },
+    "packages/core": { "component": "@cfast/core" },
+    "packages/create-cfast": { "component": "create-cfast" },
+    "packages/db": { "component": "@cfast/db" },
+    "packages/email": { "component": "@cfast/email" },
+    "packages/env": { "component": "@cfast/env" },
+    "packages/forms": { "component": "@cfast/forms" },
+    "packages/pagination": { "component": "@cfast/pagination" },
+    "packages/permissions": { "component": "@cfast/permissions" },
+    "packages/storage": { "component": "@cfast/storage" },
+    "packages/ui": { "component": "@cfast/ui" }
+  }
+}
