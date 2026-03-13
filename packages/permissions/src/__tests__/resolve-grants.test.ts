@@ -2,10 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { definePermissions } from "../define-permissions";
 import { grant } from "../grant";
 import { resolveGrants } from "../resolve-grants";
-import type { DrizzleSQL } from "../types";
+import type { DrizzleSQL, DrizzleTable, WhereClause } from "../types";
 
-const posts = { _: { name: "posts" } } as any;
-const comments = { _: { name: "comments" } } as any;
+const posts: DrizzleTable = { _: { name: "posts" } };
+const comments: DrizzleTable = { _: { name: "comments" } };
 
 const fakeSql = (tag: string): DrizzleSQL => ({ getSQL: () => tag });
 
@@ -86,8 +86,8 @@ describe("resolveGrants", () => {
   });
 
   it("OR-merges where clauses when all grants are restricted", () => {
-    const where1 = vi.fn((_cols: any, _user: any) => fakeSql("w1"));
-    const where2 = vi.fn((_cols: any, _user: any) => fakeSql("w2"));
+    const where1: WhereClause = vi.fn((_cols: Record<string, unknown>, _user: unknown) => fakeSql("w1"));
+    const where2: WhereClause = vi.fn((_cols: Record<string, unknown>, _user: unknown) => fakeSql("w2"));
 
     const p = definePermissions({
       roles: ["a", "b"] as const,
@@ -173,7 +173,7 @@ describe("resolveGrants", () => {
 
   it("groups by subject reference equality for tables", () => {
     // Two different table objects with the same name should NOT be merged
-    const posts2 = { _: { name: "posts" } } as any;
+    const posts2: DrizzleTable = { _: { name: "posts" } };
 
     const p = definePermissions({
       roles: ["a", "b"] as const,

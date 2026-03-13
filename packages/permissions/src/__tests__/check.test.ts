@@ -3,10 +3,12 @@ import { checkPermissions } from "../check";
 import { definePermissions } from "../define-permissions";
 import { grant } from "../grant";
 
+import type { DrizzleTable } from "../types";
+
 const DRIZZLE_NAME = Symbol.for("drizzle:Name");
-const posts = { [DRIZZLE_NAME]: "posts" } as any;
-const comments = { [DRIZZLE_NAME]: "comments" } as any;
-const auditLogs = { [DRIZZLE_NAME]: "audit_logs" } as any;
+const posts: DrizzleTable = { [DRIZZLE_NAME]: "posts" };
+const comments: DrizzleTable = { [DRIZZLE_NAME]: "comments" };
+const auditLogs: DrizzleTable = { [DRIZZLE_NAME]: "audit_logs" };
 
 const permissions = definePermissions({
   roles: ["anonymous", "user", "editor", "admin"] as const,

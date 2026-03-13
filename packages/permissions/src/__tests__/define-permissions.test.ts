@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { definePermissions } from "../define-permissions";
 import { grant } from "../grant";
+import type { DrizzleTable } from "../types";
 
-const posts = { _: { name: "posts" } } as any;
-const _comments = { _: { name: "comments" } } as any;
+const posts: DrizzleTable = { _: { name: "posts" } };
+const _comments: DrizzleTable = { _: { name: "comments" } };
 
 describe("definePermissions", () => {
   describe("basic (no hierarchy)", () => {
