@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -47,9 +51,10 @@ jobs:
       - name: Publish released packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
         run: |
-          PATHS='${{ needs.release-please.outputs.paths_released }}'
-          for pkg_path in $(echo "$PATHS" | jq -r '.[]'); do
+          set -euo pipefail
+          for pkg_path in $(echo "$PATHS_RELEASED" | jq -r '.[]'); do
             echo "Publishing $pkg_path..."
             pnpm --filter "./$pkg_path" publish --access public --no-git-checks
           done
