@@ -1,26 +1,15 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { eq } from "drizzle-orm";
-import { createDb } from "@cfast/db";
 import { resolveGrants } from "@cfast/permissions";
 import { createActions } from "@cfast/actions";
 import type { ActionPermissionsMap } from "@cfast/actions";
 import { applyMigrations, resetDatabase, seedUsers, seedPosts } from "../helpers/d1";
 import { permissions, testUsers, testPosts } from "../helpers/permissions";
-import { posts, schema } from "../helpers/schema";
-import type { Grant } from "@cfast/permissions";
+import { posts } from "../helpers/schema";
+import { dbAs } from "../helpers/db";
 
 type TestUser = { id: string; role: string };
-
-function dbAs(user: TestUser, grants: Grant[]) {
-  return createDb({
-    d1: env.DB,
-    schema,
-    grants,
-    user: { id: user.id },
-    cache: false,
-  });
-}
 
 describe("loader-integration", () => {
   beforeAll(async () => {
