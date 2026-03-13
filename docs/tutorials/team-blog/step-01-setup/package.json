@@ -5,7 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "typecheck": "react-router typegen && tsc -b"
+    "typecheck": "wrangler types && react-router typegen && tsc -b"
   },
   "dependencies": {
     "react": "^19.2.4",
