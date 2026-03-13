@@ -3,10 +3,12 @@ import type { Schema, ParsedEnv } from "@cfast/env";
 import type { Permissions } from "@cfast/permissions";
 import type {
   CfastPlugin,
+  RuntimePlugin,
   CreateAppConfig,
   AppContext,
   RouteArgs,
   App,
+  PluginSetupContext,
 } from "./types";
 import { CfastPluginError, CfastConfigError } from "./errors";
 import { createCoreProvider } from "./client/provider";
@@ -52,7 +54,7 @@ function buildApp<
 >(
   envInstance: { init(raw: Record<string, unknown>): void; get(): ParsedEnv<TSchema> },
   permissions: TPermissions,
-  plugins: CfastPlugin[],
+  plugins: RuntimePlugin[],
 ): App<TSchema, TPermissions, TPluginContext, TClientContext> {
   const pluginNames = new Set(plugins.map((p) => p.name));
 
@@ -81,7 +83,15 @@ function buildApp<
           ...accumulated,
         };
         try {
-          const result = await plugin.setup(setupCtx);
+          // Type boundary: RuntimePlugin.setup is typed as (ctx: never) => unknown
+          // so that all CfastPlugin subtypes can be stored without casting. At
+          // runtime, setupCtx contains { request, env, ...priorPluginResults },
+          // which satisfies each plugin's TRequires. The type system cannot verify
+          // this statically because the accumulated shape depends on registration
+          // order, so we cast the context to the setup parameter type here.
+          const result = await plugin.setup(
+            setupCtx as PluginSetupContext<never>,
+          );
           accumulated[plugin.name] = result;
         } catch (e) {
           if (e instanceof CfastPluginError) throw e;
@@ -89,6 +99,11 @@ function buildApp<
         }
       }
 
+      // Type boundary: we dynamically build the context by accumulating each
+      // plugin's setup result keyed by plugin name. The resulting object matches
+      // AppContext<TSchema, TPluginContext> at runtime, but TypeScript cannot
+      // track the incremental type growth through the for-loop, so we assert
+      // the final shape here.
       return { env, ...accumulated } as AppContext<TSchema, TPluginContext>;
     },
 
@@ -130,12 +145,16 @@ function buildApp<
         );
       }
 
+      // No cast needed: CfastPlugin<TName, TProvides, TPluginContext, TClient>
+      // is structurally assignable to RuntimePlugin because RuntimePlugin.setup
+      // uses PluginSetupContext<never> in the contravariant parameter position,
+      // and never extends any TRequires.
       return buildApp<
         TSchema,
         TPermissions,
         TPluginContext & { [K in TName]: TProvides },
         TClientContext & (TClient extends object ? { [K in TName]: TClient } : unknown)
-      >(envInstance, permissions, [...plugins, plugin as unknown as CfastPlugin]);
+      >(envInstance, permissions, [...plugins, plugin]);
     },
 
     Provider: createCoreProvider(plugins),

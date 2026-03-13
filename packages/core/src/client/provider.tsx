@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, type ComponentType } from "react";
-import type { CfastPlugin } from "../types";
+import type { RuntimePlugin } from "../types";
 
 /** React context holding client-side plugin values for `useApp()`. */
 export const CoreContext = createContext<Record<string, unknown> | null>(null);
@@ -16,7 +16,7 @@ type ProviderComponent = ComponentType<{ children: ReactNode }>;
  * @returns A React component that wraps children with all plugin providers and the core context.
  */
 export function createCoreProvider(
-  plugins: Pick<CfastPlugin, "name" | "Provider" | "client">[],
+  plugins: Pick<RuntimePlugin, "name" | "Provider" | "client">[],
 ): ProviderComponent {
   // Build client context value from plugins that have client exports
   const clientValue: Record<string, unknown> = {};
@@ -38,7 +38,10 @@ export function createCoreProvider(
     // Nest providers: first registered = outermost
     let tree = children;
     for (let i = providers.length - 1; i >= 0; i--) {
-      const P = providers[i] as ProviderComponent;
+      // providers[i] is guaranteed defined because we iterate within bounds.
+      // The non-null assertion avoids an unnecessary cast; the array element
+      // type is already ProviderComponent.
+      const P = providers[i]!;
       tree = <P>{tree}</P>;
     }
 

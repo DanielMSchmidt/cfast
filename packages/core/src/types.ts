@@ -63,6 +63,36 @@ export type CfastPlugin<
 };
 
 /**
+ * Minimal plugin shape used internally for runtime iteration in `buildApp`.
+ *
+ * The `setup` parameter uses `PluginSetupContext<never>` so that every concrete
+ * `CfastPlugin<TName, TProvides, TRequires, TClient>` is structurally assignable
+ * to this type without casting — `never` extends any `TRequires`, satisfying
+ * function parameter contravariance.
+ *
+ * At the call site in `context()`, we use a single documented cast to invoke
+ * `setup` with the actual runtime context, since TypeScript cannot prove that
+ * accumulated plugin results satisfy each plugin's `TRequires`.
+ *
+ * This type is internal and not part of the public API.
+ */
+export type RuntimePlugin = {
+  /** Plugin name used as the namespace key. */
+  name: string;
+  /**
+   * Setup function called per-request.
+   *
+   * Typed with `never` parameter to make all `CfastPlugin` subtypes assignable.
+   * Called at runtime via a documented cast in `context()`.
+   */
+  setup: (ctx: PluginSetupContext<never>) => unknown | Promise<unknown>;
+  /** Optional client-side React provider. */
+  Provider?: ComponentType<{ children: ReactNode }>;
+  /** Optional client-side values. */
+  client?: unknown;
+};
+
+/**
  * Utility type that extracts `{ [name]: ReturnType<setup> }` from a plugin definition.
  *
  * Use this to create a type token that dependent plugins can reference via `definePlugin<TRequires>()`.
