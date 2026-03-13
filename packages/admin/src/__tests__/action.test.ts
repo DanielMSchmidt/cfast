@@ -1,0 +1,678 @@
+import { describe, it, expect, vi } from "vitest";
+import { createAdminAction } from "../action.js";
+import type { AdminConfig, AdminTableMeta } from "../types.js";
+import {
+  mockAdminUser,
+  mockAuthConfig,
+  mockDb,
+  mockDbWithError,
+  testTableMetas,
+  formData,
+  testSchema,
+} from "./helpers.js";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function makeConfig(
+  overrides?: Partial<AdminConfig>,
+): AdminConfig {
+  return {
+    db: vi.fn().mockReturnValue(mockDb()),
+    auth: mockAuthConfig(),
+    schema: testSchema,
+    ...overrides,
+  };
+}
+
+async function callAction(
+  config: AdminConfig,
+  fd: FormData,
+  tableMetas?: AdminTableMeta[],
+) {
+  const metas = tableMetas ?? testTableMetas();
+  const action = createAdminAction(config, metas);
+  const request = new Request("http://localhost/admin", {
+    method: "POST",
+    body: fd,
+  });
+  return action(request);
+}
+
+// ---------------------------------------------------------------------------
+// Auth guard
+// ---------------------------------------------------------------------------
+
+describe("auth guard", () => {
+  it("throws 403 when hasRole returns false", async () => {
+    const auth = mockAuthConfig({ hasRole: vi.fn().mockReturnValue(false) });
+    const config = makeConfig({ auth });
+
+    try {
+      await callAction(config, formData({ _action: "create" }));
+      expect.unreachable("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(Response);
+      const res = err as Response;
+      expect(res.status).toBe(403);
+    }
+  });
+
+  it("uses custom requiredRole when configured", async () => {
+    const auth = mockAuthConfig({ hasRole: vi.fn().mockReturnValue(true) });
+    const config = makeConfig({ auth, requiredRole: "superadmin" });
+
+    await callAction(config, formData({ _action: "create", _table: "posts", title: "t", content: "c", author_id: "u1" }));
+
+    expect(auth.hasRole).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "admin-1" }),
+      "superadmin",
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Missing / unknown _action
+// ---------------------------------------------------------------------------
+
+describe("missing/unknown _action", () => {
+  it('returns { error: "Missing _action field." } when _action missing', async () => {
+    const config = makeConfig();
+    const result = await callAction(config, formData({}));
+    expect(result).toEqual({ error: "Missing _action field." });
+  });
+
+  it('returns error for unknown action', async () => {
+    const config = makeConfig();
+    const result = await callAction(config, formData({ _action: "fly" }));
+    expect(result).toEqual({ error: 'Unknown action: "fly".' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Create action
+// ---------------------------------------------------------------------------
+
+describe("create action", () => {
+  it("returns error when _table missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(config, formData({ _action: "create" }));
+    expect(result).toEqual({ error: "Missing _table field." });
+  });
+
+  it("returns error when table not found", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "create", _table: "nonexistent" }),
+    );
+    expect(result).toEqual({ error: 'Table "nonexistent" not found.' });
+  });
+
+  it("inserts record and returns success", async () => {
+    const db = mockDb();
+    const insertSpy = vi.spyOn(db, "insert");
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "create",
+        _table: "posts",
+        title: "Hello",
+        content: "World",
+        author_id: "user-1",
+      }),
+    );
+
+    expect(result).toEqual({ success: "Created new Posts record." });
+    expect(insertSpy).toHaveBeenCalled();
+  });
+
+  it("skips primary key columns in form values", async () => {
+    const db = mockDb();
+    let capturedValues: Record<string, unknown> | undefined;
+    const origInsert = db.insert.bind(db);
+    db.insert = vi.fn((table) => {
+      const builder = origInsert(table);
+      const origValues = builder.values;
+      builder.values = (vals) => {
+        capturedValues = vals;
+        return origValues(vals);
+      };
+      return builder;
+    });
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    await callAction(
+      config,
+      formData({
+        _action: "create",
+        _table: "posts",
+        id: "should-be-skipped",
+        title: "Test",
+        content: "Body",
+        author_id: "user-1",
+      }),
+    );
+
+    expect(capturedValues).toBeDefined();
+    expect(capturedValues).not.toHaveProperty("id");
+    expect(capturedValues).toHaveProperty("title", "Test");
+  });
+
+  it('coerces boolean fields ("true" -> true)', async () => {
+    const db = mockDb();
+    let capturedValues: Record<string, unknown> | undefined;
+    const origInsert = db.insert.bind(db);
+    db.insert = vi.fn((table) => {
+      const builder = origInsert(table);
+      const origValues = builder.values;
+      builder.values = (vals) => {
+        capturedValues = vals;
+        return origValues(vals);
+      };
+      return builder;
+    });
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    await callAction(
+      config,
+      formData({
+        _action: "create",
+        _table: "posts",
+        title: "Test",
+        content: "Body",
+        author_id: "user-1",
+        published: "true",
+      }),
+    );
+
+    expect(capturedValues).toBeDefined();
+    expect(capturedValues!.published).toBe(true);
+  });
+
+  it('coerces number fields ("42" -> 42)', async () => {
+    const db = mockDb();
+    let capturedValues: Record<string, unknown> | undefined;
+    const origInsert = db.insert.bind(db);
+    db.insert = vi.fn((table) => {
+      const builder = origInsert(table);
+      const origValues = builder.values;
+      builder.values = (vals) => {
+        capturedValues = vals;
+        return origValues(vals);
+      };
+      return builder;
+    });
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    await callAction(
+      config,
+      formData({
+        _action: "create",
+        _table: "posts",
+        title: "Test",
+        content: "Body",
+        author_id: "user-1",
+        views: "42",
+      }),
+    );
+
+    expect(capturedValues).toBeDefined();
+    expect(capturedValues!.views).toBe(42);
+  });
+
+  it("sets null for empty optional fields", async () => {
+    const db = mockDb();
+    let capturedValues: Record<string, unknown> | undefined;
+    const origInsert = db.insert.bind(db);
+    db.insert = vi.fn((table) => {
+      const builder = origInsert(table);
+      const origValues = builder.values;
+      builder.values = (vals) => {
+        capturedValues = vals;
+        return origValues(vals);
+      };
+      return builder;
+    });
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    await callAction(
+      config,
+      formData({
+        _action: "create",
+        _table: "posts",
+        title: "Test",
+        content: "",
+        author_id: "user-1",
+      }),
+    );
+
+    expect(capturedValues).toBeDefined();
+    // content has a default ("") so it's not required — empty string should become null
+    expect(capturedValues!.content).toBeNull();
+  });
+
+  it("returns error message on db failure", async () => {
+    const db = mockDbWithError("insert failed");
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "create",
+        _table: "posts",
+        title: "Test",
+        content: "Body",
+        author_id: "user-1",
+      }),
+    );
+
+    expect(result).toEqual({ error: "insert failed" });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Update action
+// ---------------------------------------------------------------------------
+
+describe("update action", () => {
+  it("returns error when _table missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "update", _id: "1" }),
+    );
+    expect(result).toEqual({ error: "Missing _table field." });
+  });
+
+  it("returns error when _id missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "update", _table: "posts" }),
+    );
+    expect(result).toEqual({ error: "Missing _id field." });
+  });
+
+  it("returns error for unknown table", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "update", _table: "nonexistent", _id: "1" }),
+    );
+    expect(result).toEqual({ error: 'Table "nonexistent" not found.' });
+  });
+
+  it("updates record and returns success", async () => {
+    const db = mockDb();
+    const updateSpy = vi.spyOn(db, "update");
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "update",
+        _table: "posts",
+        _id: "post-1",
+        title: "Updated",
+      }),
+    );
+
+    expect(result).toEqual({ success: "Updated Posts record." });
+    expect(updateSpy).toHaveBeenCalled();
+  });
+
+  it("returns error on db failure", async () => {
+    const db = mockDbWithError("update failed");
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "update",
+        _table: "posts",
+        _id: "post-1",
+        title: "Updated",
+      }),
+    );
+
+    expect(result).toEqual({ error: "update failed" });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Delete action
+// ---------------------------------------------------------------------------
+
+describe("delete action", () => {
+  it("returns error when _table missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "delete", _id: "1" }),
+    );
+    expect(result).toEqual({ error: "Missing _table field." });
+  });
+
+  it("returns error when _id missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "delete", _table: "posts" }),
+    );
+    expect(result).toEqual({ error: "Missing _id field." });
+  });
+
+  it("deletes record and returns success", async () => {
+    const db = mockDb();
+    const deleteSpy = vi.spyOn(db, "delete");
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "delete",
+        _table: "posts",
+        _id: "post-1",
+      }),
+    );
+
+    expect(result).toEqual({ success: "Deleted Posts record." });
+    expect(deleteSpy).toHaveBeenCalled();
+  });
+
+  it("returns error on db failure", async () => {
+    const db = mockDbWithError("delete failed");
+    const config = makeConfig({ db: vi.fn().mockReturnValue(db) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "delete",
+        _table: "posts",
+        _id: "post-1",
+      }),
+    );
+
+    expect(result).toEqual({ error: "delete failed" });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// setRole action
+// ---------------------------------------------------------------------------
+
+describe("setRole action", () => {
+  it("returns error when _id missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "setRole", role: "editor" }),
+    );
+    expect(result).toEqual({ error: "Missing _id field." });
+  });
+
+  it("returns error when role missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "setRole", _id: "user-1" }),
+    );
+    expect(result).toEqual({ error: "Missing role field." });
+  });
+
+  it("calls auth.setRole and returns success", async () => {
+    const auth = mockAuthConfig();
+    const config = makeConfig({ auth });
+
+    const result = await callAction(
+      config,
+      formData({ _action: "setRole", _id: "user-1", role: "editor" }),
+    );
+
+    expect(result).toEqual({ success: 'Role "editor" added to user.' });
+    expect(auth.setRole).toHaveBeenCalledWith("user-1", "editor");
+  });
+
+  it("returns error when auth.setRole throws", async () => {
+    const auth = mockAuthConfig({
+      setRole: vi.fn().mockRejectedValue(new Error("role conflict")),
+    });
+    const config = makeConfig({ auth });
+
+    const result = await callAction(
+      config,
+      formData({ _action: "setRole", _id: "user-1", role: "editor" }),
+    );
+
+    expect(result).toEqual({ error: "role conflict" });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// removeRole action
+// ---------------------------------------------------------------------------
+
+describe("removeRole action", () => {
+  it("returns error when _id missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "removeRole", role: "editor" }),
+    );
+    expect(result).toEqual({ error: "Missing _id field." });
+  });
+
+  it("returns error when role missing", async () => {
+    const config = makeConfig();
+    const result = await callAction(
+      config,
+      formData({ _action: "removeRole", _id: "user-1" }),
+    );
+    expect(result).toEqual({ error: "Missing role field." });
+  });
+
+  it("calls auth.removeRole and returns success", async () => {
+    const auth = mockAuthConfig();
+    const config = makeConfig({ auth });
+
+    const result = await callAction(
+      config,
+      formData({ _action: "removeRole", _id: "user-1", role: "editor" }),
+    );
+
+    expect(result).toEqual({ success: 'Role "editor" removed from user.' });
+    expect(auth.removeRole).toHaveBeenCalledWith("user-1", "editor");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// impersonate action
+// ---------------------------------------------------------------------------
+
+describe("impersonate action", () => {
+  it("calls auth.impersonate with admin id and target id", async () => {
+    const auth = mockAuthConfig();
+    const config = makeConfig({ auth });
+
+    const result = await callAction(
+      config,
+      formData({ _action: "impersonate", _id: "target-1" }),
+    );
+
+    expect(result).toBeInstanceOf(Response);
+    expect(auth.impersonate).toHaveBeenCalledWith(
+      "admin-1",
+      "target-1",
+      expect.any(Request),
+    );
+  });
+
+  it("throws 400 when _id missing", async () => {
+    const config = makeConfig();
+
+    try {
+      await callAction(config, formData({ _action: "impersonate" }));
+      expect.unreachable("should have thrown");
+    } catch (err) {
+      expect(err).toBeInstanceOf(Response);
+      const res = err as Response;
+      expect(res.status).toBe(400);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stopImpersonation action
+// ---------------------------------------------------------------------------
+
+describe("stopImpersonation action", () => {
+  it("calls auth.stopImpersonation", async () => {
+    const auth = mockAuthConfig();
+    const config = makeConfig({ auth });
+
+    const result = await callAction(
+      config,
+      formData({ _action: "stopImpersonation" }),
+    );
+
+    expect(result).toBeInstanceOf(Response);
+    expect(auth.stopImpersonation).toHaveBeenCalledWith(expect.any(Request));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Custom action
+// ---------------------------------------------------------------------------
+
+describe("custom action", () => {
+  function metasWithCustomAction(
+    handler = vi.fn().mockResolvedValue(undefined),
+  ): { metas: AdminTableMeta[]; handler: ReturnType<typeof vi.fn> } {
+    const metas = testTableMetas({
+      posts: {
+        actions: {
+          row: [{ label: "archive", action: handler }],
+        },
+      },
+    });
+    return { metas, handler };
+  }
+
+  it("returns error when _table missing", async () => {
+    const config = makeConfig();
+    const { metas } = metasWithCustomAction();
+    const result = await callAction(
+      config,
+      formData({ _action: "custom", _actionName: "archive", _id: "1" }),
+      metas,
+    );
+    expect(result).toEqual({ error: "Missing _table field." });
+  });
+
+  it("returns error when _actionName missing", async () => {
+    const config = makeConfig();
+    const { metas } = metasWithCustomAction();
+    const result = await callAction(
+      config,
+      formData({ _action: "custom", _table: "posts", _id: "1" }),
+      metas,
+    );
+    expect(result).toEqual({ error: "Missing _actionName field." });
+  });
+
+  it("returns error when _id missing", async () => {
+    const config = makeConfig();
+    const { metas } = metasWithCustomAction();
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+      }),
+      metas,
+    );
+    expect(result).toEqual({ error: "Missing _id field." });
+  });
+
+  it("returns error when table has no custom actions", async () => {
+    const config = makeConfig();
+    const metas = testTableMetas(); // no custom actions
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "1",
+      }),
+      metas,
+    );
+    expect(result).toEqual({
+      error: 'No custom actions defined for table "posts".',
+    });
+  });
+
+  it("executes custom row action handler and returns success", async () => {
+    const handler = vi.fn().mockResolvedValue(undefined);
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig();
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    expect(result).toEqual({ success: 'Action "archive" completed.' });
+    expect(handler).toHaveBeenCalledWith("post-1", expect.any(FormData));
+  });
+
+  it("returns error when action name not found", async () => {
+    const { metas } = metasWithCustomAction();
+    const config = makeConfig();
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "nonexistent",
+        _id: "1",
+      }),
+      metas,
+    );
+
+    expect(result).toEqual({
+      error: 'Action "nonexistent" not found for table "posts".',
+    });
+  });
+
+  it("returns error when custom action throws", async () => {
+    const handler = vi.fn().mockRejectedValue(new Error("action exploded"));
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig();
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    expect(result).toEqual({ error: "action exploded" });
+  });
+});
