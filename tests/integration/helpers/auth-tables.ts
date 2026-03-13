@@ -31,13 +31,15 @@ export async function applyAuthMigrations(db: D1Database): Promise<void> {
  * Deletes all rows from auth tables in dependency-safe order.
  */
 export async function resetAuthTables(db: D1Database): Promise<void> {
-  await db.exec("DELETE FROM impersonation_logs");
-  await db.exec("DELETE FROM roles");
-  await db.exec("DELETE FROM passkeys");
-  await db.exec("DELETE FROM verifications");
-  await db.exec("DELETE FROM accounts");
-  await db.exec("DELETE FROM sessions");
-  await db.exec("DELETE FROM users");
+  await db.batch([
+    db.prepare("DELETE FROM impersonation_logs"),
+    db.prepare("DELETE FROM roles"),
+    db.prepare("DELETE FROM passkeys"),
+    db.prepare("DELETE FROM verifications"),
+    db.prepare("DELETE FROM accounts"),
+    db.prepare("DELETE FROM sessions"),
+    db.prepare("DELETE FROM users"),
+  ]);
 }
 
 /**
@@ -51,4 +53,16 @@ export async function seedAuthUser(
     .prepare("INSERT INTO users (id, email, name) VALUES (?, ?, ?)")
     .bind(user.id, user.email, user.name)
     .run();
+}
+
+/**
+ * Insert multiple user rows in a single batch.
+ */
+export async function seedAuthUsers(
+  db: D1Database,
+  users: Array<{ id: string; email: string; name: string }>,
+): Promise<void> {
+  if (users.length === 0) return;
+  const stmt = db.prepare("INSERT INTO users (id, email, name) VALUES (?, ?, ?)");
+  await db.batch(users.map((u) => stmt.bind(u.id, u.email, u.name)));
 }

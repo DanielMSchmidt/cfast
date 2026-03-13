@@ -11,9 +11,11 @@ export async function applyMigrations(db: D1Database): Promise<void> {
 }
 
 export async function resetDatabase(db: D1Database): Promise<void> {
-  await db.exec("DELETE FROM comments");
-  await db.exec("DELETE FROM posts");
-  await db.exec("DELETE FROM users");
+  await db.batch([
+    db.prepare("DELETE FROM comments"),
+    db.prepare("DELETE FROM posts"),
+    db.prepare("DELETE FROM users"),
+  ]);
 }
 
 export type SeedUser = {
@@ -35,26 +37,16 @@ export async function seedUsers(
   db: D1Database,
   users: SeedUser[],
 ): Promise<void> {
-  for (const u of users) {
-    await db
-      .prepare(
-        "INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)",
-      )
-      .bind(u.id, u.email, u.name, u.role)
-      .run();
-  }
+  if (users.length === 0) return;
+  const stmt = db.prepare("INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)");
+  await db.batch(users.map((u) => stmt.bind(u.id, u.email, u.name, u.role)));
 }
 
 export async function seedPosts(
   db: D1Database,
   posts: SeedPost[],
 ): Promise<void> {
-  for (const p of posts) {
-    await db
-      .prepare(
-        "INSERT INTO posts (id, title, content, author_id, published) VALUES (?, ?, ?, ?, ?)",
-      )
-      .bind(p.id, p.title, p.content, p.authorId, p.published ? 1 : 0)
-      .run();
-  }
+  if (posts.length === 0) return;
+  const stmt = db.prepare("INSERT INTO posts (id, title, content, author_id, published) VALUES (?, ?, ?, ?, ?)");
+  await db.batch(posts.map((p) => stmt.bind(p.id, p.title, p.content, p.authorId, p.published ? 1 : 0)));
 }

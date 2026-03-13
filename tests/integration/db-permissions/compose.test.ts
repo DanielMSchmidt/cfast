@@ -1,28 +1,14 @@
 import { env } from "cloudflare:test";
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
-import { createDb, compose } from "@cfast/db";
-import { resolveGrants } from "@cfast/permissions";
+import { describe, it, expect, beforeAll } from "vitest";
+import { compose } from "@cfast/db";
 import { applyMigrations, resetDatabase, seedUsers, seedPosts } from "../helpers/d1";
-import { permissions, testUsers, testPosts } from "../helpers/permissions";
-import { posts, comments, schema } from "../helpers/schema";
-import type { Grant } from "@cfast/permissions";
-
-function dbAs(user: { id: string; role: string }, grants?: Grant[]) {
-  return createDb({
-    d1: env.DB,
-    schema,
-    grants: grants ?? resolveGrants(permissions, [user.role]),
-    user: { id: user.id },
-    cache: false,
-  });
-}
+import { testUsers, testPosts } from "../helpers/permissions";
+import { posts, comments } from "../helpers/schema";
+import { dbAs } from "../helpers/db";
 
 describe("compose", () => {
   beforeAll(async () => {
     await applyMigrations(env.DB);
-  });
-
-  beforeEach(async () => {
     await resetDatabase(env.DB);
     await seedUsers(env.DB, Object.values(testUsers));
     await seedPosts(env.DB, testPosts);
@@ -41,11 +27,9 @@ describe("compose", () => {
     });
 
     // Should have permission descriptors for both tables
-    expect(composed.permissions.length).toBe(2);
+    expect(composed.permissions).toHaveLength(2);
     const actions = composed.permissions.map((p) => p.action);
     expect(actions).toContain("read");
-    // Both are "read" actions but on different tables
-    expect(composed.permissions).toHaveLength(2);
   });
 
   it("compose executor receives run functions and returns combined result", async () => {

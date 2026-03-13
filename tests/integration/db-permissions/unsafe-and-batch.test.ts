@@ -1,21 +1,9 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
-import { createDb } from "@cfast/db";
-import { resolveGrants } from "@cfast/permissions";
 import { applyMigrations, resetDatabase, seedUsers, seedPosts } from "../helpers/d1";
-import { permissions, testUsers, testPosts } from "../helpers/permissions";
-import { posts, schema } from "../helpers/schema";
-import type { Grant } from "@cfast/permissions";
-
-function dbAs(user: { id: string; role: string }, grants?: Grant[]) {
-  return createDb({
-    d1: env.DB,
-    schema,
-    grants: grants ?? resolveGrants(permissions, [user.role]),
-    user: { id: user.id },
-    cache: false,
-  });
-}
+import { testUsers, testPosts } from "../helpers/permissions";
+import { posts } from "../helpers/schema";
+import { dbAs } from "../helpers/db";
 
 describe("unsafe-and-batch", () => {
   beforeAll(async () => {

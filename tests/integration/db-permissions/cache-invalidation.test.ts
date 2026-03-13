@@ -1,26 +1,9 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
-import { createDb } from "@cfast/db";
-import { resolveGrants } from "@cfast/permissions";
 import { applyMigrations, resetDatabase, seedUsers, seedPosts } from "../helpers/d1";
-import { permissions, testUsers, testPosts } from "../helpers/permissions";
-import { posts, schema } from "../helpers/schema";
-import type { Grant } from "@cfast/permissions";
-import type { CacheConfig } from "@cfast/db";
-
-function dbAs(
-  user: { id: string; role: string },
-  cacheConfig?: CacheConfig | false,
-  grants?: Grant[],
-) {
-  return createDb({
-    d1: env.DB,
-    schema,
-    grants: grants ?? resolveGrants(permissions, [user.role]),
-    user: { id: user.id },
-    cache: cacheConfig ?? false,
-  });
-}
+import { testUsers, testPosts } from "../helpers/permissions";
+import { posts } from "../helpers/schema";
+import { dbAs } from "../helpers/db";
 
 describe("cache-invalidation", () => {
   beforeAll(async () => {
@@ -37,7 +20,7 @@ describe("cache-invalidation", () => {
     // With cache enabled, two identical reads should return the same data
     const hits: string[] = [];
     const misses: string[] = [];
-    const db = dbAs(testUsers.bob, {
+    const db = dbAs(testUsers.bob, undefined, {
       backend: "cache-api",
       onHit: (key) => hits.push(key),
       onMiss: (key) => misses.push(key),
@@ -58,7 +41,7 @@ describe("cache-invalidation", () => {
   });
 
   it("mutation invalidates cache for that table", async () => {
-    const db = dbAs(testUsers.bob, { backend: "cache-api" });
+    const db = dbAs(testUsers.bob, undefined, { backend: "cache-api" });
 
     // First read → cache miss, populates cache
     const op1 = db.query(posts).findMany();
@@ -83,7 +66,7 @@ describe("cache-invalidation", () => {
   });
 
   it("cache: false per-query skips cache", async () => {
-    const db = dbAs(testUsers.bob, { backend: "cache-api" });
+    const db = dbAs(testUsers.bob, undefined, { backend: "cache-api" });
 
     // Query with cache: false — should bypass cache entirely
     const op = db.query(posts).findMany({ cache: false });
@@ -93,7 +76,7 @@ describe("cache-invalidation", () => {
   });
 
   it("manual cache invalidation via db.cache.invalidate()", async () => {
-    const db = dbAs(testUsers.bob, { backend: "cache-api" });
+    const db = dbAs(testUsers.bob, undefined, { backend: "cache-api" });
 
     // First read to populate cache
     const op1 = db.query(posts).findMany();
@@ -119,8 +102,8 @@ describe("cache-invalidation", () => {
   it("cache key includes role: different roles get isolated cache", async () => {
     // Bob (editor) and Charlie (user) should have separate cache entries
     // because the permission filters differ, resulting in different queries.
-    const dbBob = dbAs(testUsers.bob, { backend: "cache-api" });
-    const dbCharlie = dbAs(testUsers.charlie, { backend: "cache-api" });
+    const dbBob = dbAs(testUsers.bob, undefined, { backend: "cache-api" });
+    const dbCharlie = dbAs(testUsers.charlie, undefined, { backend: "cache-api" });
 
     const bobOp = dbBob.query(posts).findMany();
     const bobRows = (await bobOp.run({})) as Array<{ id: string }>;

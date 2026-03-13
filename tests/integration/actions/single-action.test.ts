@@ -1,35 +1,15 @@
 import { env } from "cloudflare:test";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { eq } from "drizzle-orm";
-import { createDb } from "@cfast/db";
 import { resolveGrants, ForbiddenError } from "@cfast/permissions";
 import { createActions, checkPermissionStatus } from "@cfast/actions";
 import { applyMigrations, resetDatabase, seedUsers, seedPosts } from "../helpers/d1";
 import { permissions, testUsers, testPosts } from "../helpers/permissions";
-import { posts, schema } from "../helpers/schema";
-import type { Grant } from "@cfast/permissions";
+import { posts } from "../helpers/schema";
+import { dbAs, makeGetContext } from "../helpers/db";
 import type { ActionContext } from "@cfast/actions";
 
 type TestUser = { id: string; role: string };
-
-function dbAs(user: TestUser, grants: Grant[]) {
-  return createDb({
-    d1: env.DB,
-    schema,
-    grants,
-    user: { id: user.id },
-    cache: false,
-  });
-}
-
-function makeGetContext(user: TestUser) {
-  const grants = resolveGrants(permissions, [user.role]);
-  return async (_args: { request: Request; params: Record<string, string | undefined> }) => ({
-    db: dbAs(user, grants),
-    user,
-    grants,
-  });
-}
 
 describe("single-action", () => {
   beforeAll(async () => {
