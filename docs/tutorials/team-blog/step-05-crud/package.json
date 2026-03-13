@@ -1,0 +1,44 @@
+{
+  "name": "team-blog-step-05",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "typecheck": "react-router typegen && tsc -b",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply DB --local"
+  },
+  "dependencies": {
+    "@cfast/actions": "workspace:*",
+    "@cfast/auth": "workspace:*",
+    "@cfast/db": "workspace:*",
+    "@cfast/env": "workspace:*",
+    "@cfast/forms": "workspace:*",
+    "@cfast/permissions": "workspace:*",
+    "@cfast/ui": "workspace:*",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/joy": "^5.0.0-beta.51",
+    "@mui/material": "^6.4.0",
+    "better-auth": "^1.2.0",
+    "drizzle-orm": "^0.45.1",
+    "isbot": "^5.1.31",
+    "nanoid": "^5.1.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router": "^7.13.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.13.7",
+    "@cloudflare/workers-types": "^4.20250620.0",
+    "@react-router/dev": "^7.13.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "drizzle-kit": "^0.31.9",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vite-tsconfig-paths": "^5.1.4",
+    "wrangler": "^4.40.2"
+  }
+}

@@ -1,0 +1,252 @@
+---
+title: "7. File Storage"
+description: "Add cover image uploads to blog posts using Cloudflare R2 and @cfast/storage."
+---
+
+Your blog has posts, permissions, CRUD actions, and an admin panel. But every post is plain text. In this step you will add cover image uploads using Cloudflare R2, with `@cfast/storage` handling validation, key generation, and the upload flow.
+
+## What you will build
+
+By the end of this step, your blog will have:
+- A `coverImageKey` column on posts pointing to an R2 object
+- A storage schema that defines accepted file types, size limits, and key patterns
+- An upload API route that validates and stores files
+- A file-serving route that streams images from R2
+- Cover images displayed on post detail pages
+
+## Why a storage schema
+
+Handling file uploads on Cloudflare Workers typically means parsing multipart form data by hand, validating MIME types with string comparisons, and managing R2 keys manually. Each upload endpoint reinvents the same logic.
+
+`@cfast/storage` gives you a declarative schema for file types --- similar to how Drizzle gives you a schema for database tables. You define which MIME types are accepted, the max file size, and the key pattern. The library handles validation, multipart parsing, and R2 uploads.
+
+## Add the R2 binding
+
+First, add an R2 bucket binding to your `wrangler.toml`:
+
+```toml
+# wrangler.toml (add to existing config)
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "team-blog-uploads"
+```
+
+And register it in your env schema:
+
+```typescript
+// app/env.ts
+import { defineEnv } from "@cfast/env";
+
+export const envSchema = {
+  DB: { type: "d1" as const },
+  UPLOADS: { type: "r2" as const },   // new
+  APP_URL: { type: "var" as const, default: "http://localhost:5173" },
+};
+
+export const env = defineEnv(envSchema);
+```
+
+## Install the package
+
+```bash
+pnpm add @cfast/storage
+```
+
+## Define the storage schema
+
+The storage schema declares what kinds of files your app accepts:
+
+```typescript
+// app/storage.server.ts
+import { defineStorage, filetype } from "@cfast/storage";
+
+export const storage = defineStorage({
+  postCoverImage: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png", "image/webp"],
+    maxSize: "10mb",
+    key: (file, ctx) =>
+      `covers/${ctx.input.postId}/${crypto.randomUUID()}-${file.name}`,
+    replace: true,
+  }),
+});
+```
+
+This defines a file type called `postCoverImage` with these constraints:
+- **bucket** --- which R2 binding to use (matches the binding name in `wrangler.toml`)
+- **accept** --- only JPEG, PNG, and WebP images are allowed
+- **maxSize** --- files larger than 10 MB are rejected before any bytes hit R2
+- **key** --- a function that generates the R2 object key from the file and context
+- **replace** --- uploading a new cover image replaces the previous one
+
+The `key` function receives a context object with `user` (the authenticated user) and `input` (additional data you pass at upload time). Here we include the post ID in the key path to organize files by post.
+
+## Add the cover image column
+
+Add a `coverImageKey` column to the posts table:
+
+```typescript
+// app/db/schema.ts (posts table)
+export const posts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  content: text("content").notNull().default(""),
+  excerpt: text("excerpt"),
+  coverImageKey: text("cover_image_key"),   // new
+  authorId: text("author_id").notNull().references(() => users.id),
+  published: integer("published", { mode: "boolean" }).notNull().default(false),
+  // ... timestamps
+});
+```
+
+Run `pnpm db:generate` to create the migration, then `pnpm db:migrate` to apply it.
+
+## Create the upload route
+
+The upload route uses `storage.handle()` to parse, validate, and store the file in one call:
+
+```typescript
+// app/routes/api.upload.tsx
+import type { ActionFunctionArgs } from "react-router";
+import { requireAuthContext } from "~/auth.helpers.server";
+import { storage } from "~/storage.server";
+import { env } from "~/env";
+
+export async function action({ request }: ActionFunctionArgs) {
+  const ctx = await requireAuthContext(request);
+  const e = env.get();
+
+  const result = await storage.handle("postCoverImage", request, {
+    env: e,
+    user: ctx.user,
+    input: { postId: new URL(request.url).searchParams.get("postId") ?? "" },
+  });
+
+  return Response.json({ key: result.key, url: `/api/file/${result.key}` });
+}
+```
+
+`storage.handle()` performs validation in layers:
+1. Checks the `Content-Type` header before reading the body
+2. Checks the `Content-Length` header before reading the body
+3. Verifies the MIME type by reading file magic bytes (prevents spoofed `Content-Type`)
+4. Verifies the actual byte count during streaming upload (prevents spoofed `Content-Length`)
+
+If any check fails, it throws a `StorageError` with a descriptive code like `FILE_TOO_LARGE` or `INVALID_MIME_TYPE`.
+
+## Create the file-serving route
+
+To display uploaded images, you need a route that streams them from R2:
+
+```typescript
+// app/routes/api.file.$.tsx
+import type { LoaderFunctionArgs } from "react-router";
+import { env } from "~/env";
+
+export async function loader({ params }: LoaderFunctionArgs) {
+  const key = params["*"];
+  if (!key) throw new Response("Not Found", { status: 404 });
+
+  const e = env.get();
+  const object = await e.UPLOADS.get(key);
+  if (!object) throw new Response("Not Found", { status: 404 });
+
+  const headers = new Headers();
+  headers.set(
+    "Content-Type",
+    object.httpMetadata?.contentType ?? "application/octet-stream",
+  );
+  headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+  return new Response(object.body, { headers });
+}
+```
+
+The long `Cache-Control` header works because the key includes a random UUID --- each upload produces a unique URL, so cached responses never go stale.
+
+## Register the new routes
+
+Add both API routes to your route configuration:
+
+```typescript
+// app/routes.ts
+export default [
+  // ... existing routes
+  route("admin", "routes/admin.tsx"),
+  route("api/upload", "routes/api.upload.tsx"),     // new
+  route("api/file/*", "routes/api.file.$.tsx"),     // new
+] satisfies RouteConfig;
+```
+
+## Display cover images
+
+On the post detail page, render the cover image when present:
+
+```tsx
+// In app/routes/posts/$id.tsx
+import AspectRatio from "@mui/joy/AspectRatio";
+
+// Inside the component:
+{post.coverImageKey && (
+  <AspectRatio ratio="16/9" sx={{ mb: 4, borderRadius: "md", overflow: "hidden" }}>
+    <img src={`/api/file/${post.coverImageKey}`} alt={post.title} />
+  </AspectRatio>
+)}
+```
+
+The `AspectRatio` component from Joy UI ensures the image maintains a 16:9 ratio regardless of its natural dimensions.
+
+## How the pieces fit together
+
+Here is the flow when a user uploads a cover image:
+
+1. The client sends a multipart POST to `/api/upload?postId=abc`
+2. The upload route authenticates the user via `requireAuthContext`
+3. `storage.handle("postCoverImage", ...)` validates the file against the schema
+4. If valid, the file is streamed to R2 at the generated key (e.g., `covers/abc/uuid-photo.jpg`)
+5. The route returns the key and URL
+6. The client saves the key to the post record via a separate update action
+7. When displaying the post, `<img src="/api/file/covers/abc/uuid-photo.jpg">` streams from R2
+
+## Client-side upload with `useUpload`
+
+For a richer upload experience, `@cfast/storage/client` provides a `useUpload` hook that adds client-side validation, progress tracking, and error handling:
+
+```tsx
+import { useUpload } from "@cfast/storage/client";
+
+function CoverImageUpload({ postId }: { postId: string }) {
+  const upload = useUpload("postCoverImage");
+
+  return (
+    <div>
+      <input
+        type="file"
+        accept={upload.accept}          // from schema
+        onChange={(e) => upload.start(e.target.files[0])}
+      />
+      {upload.validationError && <p>{upload.validationError}</p>}
+      {upload.isUploading && <progress value={upload.progress} max={100} />}
+      {upload.result && <img src={upload.result.url} alt="Cover" />}
+    </div>
+  );
+}
+```
+
+The hook validates file size and MIME type on the client before sending the request, providing instant feedback without a round trip.
+
+## Try it out
+
+```bash
+pnpm dev
+```
+
+1. Create or edit a post
+2. Upload a cover image via the upload form or API
+3. View the post --- the cover image should render at the top
+4. Try uploading an invalid file type (e.g., a PDF) --- the upload should be rejected
+
+## What is next
+
+Your blog now supports cover images stored in R2. In the next step, you will add email notifications so authors are notified when their posts are published.
