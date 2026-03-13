@@ -80,7 +80,7 @@ test.describe.serial("Admin Post Management", () => {
     await page.getByRole("button", { name: "Confirm" }).click();
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText("Post deleted successfully")).toBeVisible();
+    await expect(page.getByText("Post deleted successfully.")).toBeVisible();
   });
 
   test("deleted post disappears from the table", async ({ page, context }) => {

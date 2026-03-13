@@ -97,6 +97,10 @@ test.describe.serial("Post Publishing", () => {
 
     await page.getByRole("button", { name: "Publish" }).click();
 
+    // Confirm the publish action in the ConfirmDialog
+    await expect(page.getByText("Publish Post")).toBeVisible();
+    await page.getByRole("button", { name: "Confirm" }).click();
+
     // Wait for the page to revalidate and show the Unpublish button
     await expect(page.getByRole("button", { name: "Unpublish" })).toBeVisible({ timeout: 10000 });
   });
@@ -115,6 +119,10 @@ test.describe.serial("Post Publishing", () => {
     await page.goto(`/posts/${draftPost.slug}`);
 
     await page.getByRole("button", { name: "Unpublish" }).click();
+
+    // Confirm the unpublish action in the ConfirmDialog
+    await expect(page.getByText("Unpublish Post")).toBeVisible();
+    await page.getByRole("button", { name: "Confirm" }).click();
 
     // Draft chip should reappear
     await expect(page.getByText("Draft", { exact: true })).toBeVisible({ timeout: 10000 });
@@ -141,10 +149,12 @@ test.describe.serial("Post Deletion", () => {
     // Wait for the post detail page to fully load
     await expect(page.getByRole("heading", { level: 1 })).toContainText("My Test Post From Playwright");
 
-    // Handle the confirm dialog
-    page.on("dialog", (dialog) => dialog.accept());
-
+    // Click the delete button to open the ConfirmDialog
     await page.getByRole("button", { name: "Delete" }).click();
+
+    // Confirm deletion in the ConfirmDialog
+    await expect(page.getByText("Delete Post")).toBeVisible();
+    await page.getByRole("button", { name: "Confirm" }).click();
     await page.waitForURL("/");
   });
 
@@ -167,10 +177,12 @@ test.describe.serial("Post Deletion", () => {
     await loginAs(context, "admin");
     await page.goto(`/posts/${editorPost.slug}`);
 
-    page.on("dialog", (dialog) => dialog.accept());
-
     // Use first() to target the post delete button (not comment delete buttons)
     await page.getByRole("button", { name: "Delete" }).first().click();
+
+    // Confirm deletion in the ConfirmDialog
+    await expect(page.getByText("Delete Post")).toBeVisible();
+    await page.getByRole("button", { name: "Confirm" }).click();
     await page.waitForURL("/");
 
     // Verify it's gone
