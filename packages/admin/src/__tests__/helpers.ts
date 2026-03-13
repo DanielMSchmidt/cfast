@@ -1,8 +1,10 @@
 import { vi } from "vitest";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { getTableName } from "drizzle-orm";
-import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DrizzleTable = Record<string | symbol, any>;
 import { introspectSchema } from "../introspect.js";
 import type {
   AdminUser,
@@ -35,7 +37,7 @@ export const posts = sqliteTable("posts", {
   published: integer("published", { mode: "boolean" })
     .notNull()
     .default(false),
-  views: integer("views").default(0),
+  views: integer("views").notNull().default(0),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -100,15 +102,17 @@ export function mockDb(
 ): Db {
   const tableData = data ?? {};
 
-  function dataForTable(table: SQLiteTable): Record<string, unknown>[] {
-    const name = getTableName(table);
+  function dataForTable(table: DrizzleTable): Record<string, unknown>[] {
+    // getTableName expects a concrete Drizzle Table type; our mock receives the same
+    // real SQLiteTable objects at runtime, so the cast is safe here.
+    const name = getTableName(table as Parameters<typeof getTableName>[0]);
     return tableData[name] ?? [];
   }
 
   const runFn = () => vi.fn().mockResolvedValue(undefined);
 
   const db: Db = {
-    query(table: SQLiteTable) {
+    query(table: DrizzleTable) {
       const rows = dataForTable(table);
       return {
         findMany: () => ({
@@ -130,7 +134,7 @@ export function mockDb(
         }),
       };
     },
-    insert(_table: SQLiteTable) {
+    insert(_table: DrizzleTable) {
       const run = runFn();
       return {
         values: (_vals: Record<string, unknown>) => {
@@ -146,7 +150,7 @@ export function mockDb(
         },
       };
     },
-    update(_table: SQLiteTable) {
+    update(_table: DrizzleTable) {
       const run = runFn();
       return {
         set: (_vals: Record<string, unknown>) => ({
@@ -164,7 +168,7 @@ export function mockDb(
         }),
       };
     },
-    delete(_table: SQLiteTable) {
+    delete(_table: DrizzleTable) {
       const run = runFn();
       return {
         where: (_cond: unknown) => {
@@ -207,7 +211,7 @@ export function mockDbWithError(errorMessage: string): Db {
   const errorFn = () => vi.fn().mockRejectedValue(new Error(errorMessage));
 
   const db: Db = {
-    query(table: SQLiteTable) {
+    query(_table: DrizzleTable) {
       return {
         findMany: () => ({
           permissions: [],
@@ -228,7 +232,7 @@ export function mockDbWithError(errorMessage: string): Db {
         }),
       };
     },
-    insert(_table: SQLiteTable) {
+    insert(_table: DrizzleTable) {
       const run = errorFn();
       return {
         values: (_vals: Record<string, unknown>) => ({
@@ -241,7 +245,7 @@ export function mockDbWithError(errorMessage: string): Db {
         }),
       };
     },
-    update(_table: SQLiteTable) {
+    update(_table: DrizzleTable) {
       const run = errorFn();
       return {
         set: (_vals: Record<string, unknown>) => ({
@@ -256,7 +260,7 @@ export function mockDbWithError(errorMessage: string): Db {
         }),
       };
     },
-    delete(_table: SQLiteTable) {
+    delete(_table: DrizzleTable) {
       const run = errorFn();
       return {
         where: (_cond: unknown) => ({
@@ -272,7 +276,7 @@ export function mockDbWithError(errorMessage: string): Db {
     unsafe() {
       return db;
     },
-    batch(operations: unknown[]) {
+    batch(_operations: unknown[]) {
       return {
         permissions: [],
         run: vi.fn().mockRejectedValue(new Error(errorMessage)),
@@ -303,7 +307,7 @@ export function testTableMetas(
 export function formData(entries: Record<string, string>): FormData {
   const fd = new FormData();
   for (const [key, value] of Object.entries(entries)) {
-    fd.append(key, value);
+    fd.set(key, value);
   }
   return fd;
 }

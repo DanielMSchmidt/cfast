@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { createAdminAction } from "../action.js";
 import type { AdminConfig, AdminTableMeta } from "../types.js";
 import {
-  mockAdminUser,
   mockAuthConfig,
   mockDb,
   mockDbWithError,
@@ -134,10 +133,10 @@ describe("create action", () => {
     const db = mockDb();
     let capturedValues: Record<string, unknown> | undefined;
     const origInsert = db.insert.bind(db);
-    db.insert = vi.fn((table) => {
-      const builder = origInsert(table);
+    (db as Record<string, unknown>).insert = vi.fn((table: unknown) => {
+      const builder = origInsert(table as Parameters<typeof origInsert>[0]);
       const origValues = builder.values;
-      builder.values = (vals) => {
+      builder.values = (vals: Record<string, unknown>) => {
         capturedValues = vals;
         return origValues(vals);
       };
@@ -166,10 +165,10 @@ describe("create action", () => {
     const db = mockDb();
     let capturedValues: Record<string, unknown> | undefined;
     const origInsert = db.insert.bind(db);
-    db.insert = vi.fn((table) => {
-      const builder = origInsert(table);
+    (db as Record<string, unknown>).insert = vi.fn((table: unknown) => {
+      const builder = origInsert(table as Parameters<typeof origInsert>[0]);
       const origValues = builder.values;
-      builder.values = (vals) => {
+      builder.values = (vals: Record<string, unknown>) => {
         capturedValues = vals;
         return origValues(vals);
       };
@@ -197,10 +196,10 @@ describe("create action", () => {
     const db = mockDb();
     let capturedValues: Record<string, unknown> | undefined;
     const origInsert = db.insert.bind(db);
-    db.insert = vi.fn((table) => {
-      const builder = origInsert(table);
+    (db as Record<string, unknown>).insert = vi.fn((table: unknown) => {
+      const builder = origInsert(table as Parameters<typeof origInsert>[0]);
       const origValues = builder.values;
-      builder.values = (vals) => {
+      builder.values = (vals: Record<string, unknown>) => {
         capturedValues = vals;
         return origValues(vals);
       };
@@ -228,10 +227,10 @@ describe("create action", () => {
     const db = mockDb();
     let capturedValues: Record<string, unknown> | undefined;
     const origInsert = db.insert.bind(db);
-    db.insert = vi.fn((table) => {
-      const builder = origInsert(table);
+    (db as Record<string, unknown>).insert = vi.fn((table: unknown) => {
+      const builder = origInsert(table as Parameters<typeof origInsert>[0]);
       const origValues = builder.values;
-      builder.values = (vals) => {
+      builder.values = (vals: Record<string, unknown>) => {
         capturedValues = vals;
         return origValues(vals);
       };
