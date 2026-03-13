@@ -6,18 +6,23 @@
   "bin": {
     "create-cfast": "./dist/index.js"
   },
+  "files": ["dist", "templates"],
   "scripts": {
     "build": "tsup src/index.ts --format esm",
     "dev": "tsup src/index.ts --format esm --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "vitest run"
   },
   "dependencies": {
-    "prompts": "^2",
-    "kolorist": "^1"
+    "kolorist": "^1",
+    "prompts": "^2"
   },
   "devDependencies": {
+    "@types/node": "^22",
+    "@types/prompts": "^2",
     "tsup": "^8",
-    "typescript": "^5.7"
+    "typescript": "^5.7",
+    "vitest": "^3"
   }
 }
