@@ -1,6 +1,7 @@
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
 import type { FieldConfig } from "@cfast/forms";
+import type { Grant } from "@cfast/permissions";
 
 /**
  * A user representation for the admin panel, decoupled from `@cfast/auth`.
@@ -67,7 +68,7 @@ export type AdminAuthConfig = {
   /** Extracts the authenticated user and their permission grants from the request. Throws or redirects if unauthenticated. */
   requireUser: (
     request: Request,
-  ) => Promise<{ user: AdminUser; grants: unknown[] }>;
+  ) => Promise<{ user: AdminUser; grants: Grant[] }>;
   /** Checks whether the given user has a specific role. Used for the admin access guard. */
   hasRole: (user: AdminUser, role: string) => boolean;
   /** Fetches all roles assigned to a user by ID. Used in user management views. */
@@ -105,7 +106,7 @@ export type AdminAuthConfig = {
  * ```
  */
 export type CreateDbFn = (
-  grants: unknown[],
+  grants: Grant[],
   user: { id: string } | null,
 ) => Db;
 
