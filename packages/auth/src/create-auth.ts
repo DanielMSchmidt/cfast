@@ -15,6 +15,23 @@ import type {
 } from "./types";
 
 /**
+ * The subset of Better Auth's API surface used for magic link sign-in.
+ *
+ * Better Auth's plugin system dynamically extends `auth.api` at runtime,
+ * but the generated types don't always expose plugin methods on the
+ * `auth.api` object returned by `betterAuth()`. This type documents the
+ * exact shape we rely on so the cast is explicit and auditable.
+ *
+ * @internal — Better Auth API boundary; update if the upstream signature changes.
+ */
+type BetterAuthMagicLinkApi = {
+  signInMagicLink: (opts: {
+    body: { email: string; callbackURL: string };
+    headers: HeadersInit;
+  }) => Promise<unknown>;
+};
+
+/**
  * Parses a human-readable duration string into seconds.
  *
  * Supports suffixes: `s` (seconds), `m` (minutes), `h` (hours), `d` (days).
@@ -189,7 +206,11 @@ export function createAuth(config: AuthConfig) {
         throw new Response(null, { status: 302, headers });
       }
 
-      return ctx as AuthenticatedContext;
+      // After the null check above, ctx.user is narrowed to AuthUser.
+      // Destructure and rebuild to satisfy the AuthenticatedContext type
+      // without an `as` cast.
+      const { user, grants } = ctx;
+      return { user, grants };
     }
 
     const allowedImpersonationRoles =
@@ -225,14 +246,12 @@ export function createAuth(config: AuthConfig) {
             "Magic link plugin not configured. Add magicLink to createAuth config.",
           );
         }
-        await (
-          auth.api as unknown as {
-            signInMagicLink: (opts: {
-              body: { email: string; callbackURL: string };
-              headers: HeadersInit;
-            }) => Promise<unknown>;
-          }
-        ).signInMagicLink({
+        // Better Auth API boundary: the magic link plugin adds `signInMagicLink`
+        // to `auth.api` at runtime, but the static types from `betterAuth()` don't
+        // include plugin-contributed methods. This cast is the single point where
+        // we bridge that gap — see BetterAuthMagicLinkApi for the expected shape.
+        const magicLinkApi = auth.api as unknown as BetterAuthMagicLinkApi;
+        await magicLinkApi.signInMagicLink({
           body: {
             email: params.email,
             callbackURL:
