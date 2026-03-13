@@ -479,7 +479,9 @@ async function main() {
     const server = startDevServer(stepDir);
 
     try {
-      await waitForServer(BASE_URL, server);
+      // Check /__health-ish path — avoids permission-gated loaders on /
+      // Any non-5xx response (including 404) means the server is up
+      await waitForServer(`${BASE_URL}/__vite_ping`, server);
       // Extra delay for Workers runtime to fully initialize
       await new Promise((r) => setTimeout(r, 2000));
       log(stepName, "Dev server ready");
