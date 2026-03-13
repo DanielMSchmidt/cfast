@@ -28,6 +28,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser(request, env);
   const db = createDbClient(env.DB);
 
+  // Read fresh user data from DB (session may have stale name/avatar after profile updates)
+  const [freshUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, user.id))
+    .limit(1);
+
   const userPasskeys = await db
     .select({
       id: passkeys.id,
@@ -37,7 +44,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     .from(passkeys)
     .where(eq(passkeys.userId, user.id));
 
-  return { user, passkeys: userPasskeys };
+  return { user: { ...user, ...freshUser }, passkeys: userPasskeys };
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
