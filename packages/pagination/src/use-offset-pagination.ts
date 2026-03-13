@@ -27,6 +27,30 @@ export type UseOffsetPaginationResult<T> = {
 };
 
 /**
+ * Validates that a value conforms to the {@link OffsetPageData} shape.
+ * Returns a valid `OffsetPageData` or a fallback with sensible defaults.
+ */
+function asOffsetPageData(value: unknown): OffsetPageData {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    if (
+      Array.isArray(obj.items) &&
+      typeof obj.total === "number" &&
+      typeof obj.page === "number" &&
+      typeof obj.totalPages === "number"
+    ) {
+      return {
+        items: obj.items,
+        total: obj.total,
+        page: obj.page,
+        totalPages: obj.totalPages,
+      };
+    }
+  }
+  return { items: [], total: 0, page: 1, totalPages: 0 };
+}
+
+/**
  * React hook for offset-based (page number) pagination with React Router loader data.
  *
  * Reads the current page data from React Router's `useLoaderData()` and provides
@@ -51,7 +75,7 @@ export type UseOffsetPaginationResult<T> = {
  * ```
  */
 export function useOffsetPagination<T = unknown>(): UseOffsetPaginationResult<T> {
-  const data = useLoaderData() as OffsetPageData;
+  const data = asOffsetPageData(useLoaderData());
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -65,6 +89,8 @@ export function useOffsetPagination<T = unknown>(): UseOffsetPaginationResult<T>
   );
 
   return {
+    // Items come from loader data as unknown[]; the generic T is a trust boundary
+    // where the caller asserts their loader returns the correct item shape.
     items: data.items as T[],
     total: data.total,
     totalPages: data.totalPages,

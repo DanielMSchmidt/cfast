@@ -32,8 +32,37 @@ export type UsePaginationResult<T> = {
   isLoading: boolean;
 };
 
+/**
+ * Validates that a value conforms to the {@link CursorPageData} shape.
+ * Returns a valid `CursorPageData` or a fallback with empty items.
+ */
+function asCursorPageData(value: unknown): CursorPageData {
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    const obj = value as Record<string, unknown>;
+    if (Array.isArray(obj.items)) {
+      return {
+        items: obj.items,
+        nextCursor:
+          typeof obj.nextCursor === "string" ? obj.nextCursor : null,
+      };
+    }
+  }
+  return { items: [], nextCursor: null };
+}
+
+/**
+ * Default key extractor that reads the `id` property from an item.
+ * Uses an `in` check to safely narrow the type before accessing `id`.
+ */
 function defaultGetKey(item: unknown): string | number {
-  return (item as Record<string, unknown>).id as string | number;
+  if (item !== null && typeof item === "object" && "id" in item) {
+    // After the `in` check, TS narrows to `Record<"id", unknown>`
+    const { id } = item;
+    if (typeof id === "string" || typeof id === "number") {
+      return id;
+    }
+  }
+  return "";
 }
 
 function deduplicateItems<T>(
@@ -79,12 +108,13 @@ function deduplicateItems<T>(
 export function usePagination<T = unknown>(
   options?: UsePaginationOptions<T>,
 ): UsePaginationResult<T> {
-  const loaderData = useLoaderData() as CursorPageData;
+  const loaderData = asCursorPageData(useLoaderData());
   const fetcher = useFetcher<CursorPageData>();
   const location = useLocation();
-  const getKey = (options?.getKey ?? defaultGetKey) as (
-    item: T,
-  ) => string | number;
+  // defaultGetKey operates on `unknown` which is safe for any T,
+  // so the fallback assignment is type-compatible.
+  const getKey: (item: T) => string | number =
+    options?.getKey ?? (defaultGetKey as (item: T) => string | number);
 
   const [pages, setPages] = useState<CursorPageData[]>(() => [loaderData]);
 
@@ -105,7 +135,11 @@ export function usePagination<T = unknown>(
   }, [fetcher.data, fetcher.state]);
 
   const allItems = useMemo(
-    () => deduplicateItems(pages.flatMap((p) => p.items) as T[], getKey),
+    () =>
+      deduplicateItems(
+        pages.flatMap((p) => p.items) as T[],
+        getKey,
+      ),
     [pages, getKey],
   );
 
