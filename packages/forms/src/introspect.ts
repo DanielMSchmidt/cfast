@@ -1,5 +1,6 @@
 import { getTableColumns } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
+import { asDrizzleColumnMeta } from "./drizzle-internals";
 import type { FieldDefinition, InputType, ValidationRules } from "./types";
 import { getValidationRules } from "./validate";
 
@@ -57,15 +58,9 @@ export function introspectTable(table: SQLiteTable): FieldDefinition[] {
 
   for (const [key, column] of Object.entries(columns)) {
     const customRules = getValidationRules(column) ?? {};
-    const col = column as unknown as {
-      dataType: string;
-      columnType: string;
-      notNull: boolean;
-      hasDefault: boolean;
-      primary: boolean;
-      enumValues?: readonly string[] | string[];
-      config: { length?: number };
-    };
+    // Access Drizzle column internals via the typed boundary helper.
+    // See drizzle-internals.ts for documentation on why this is needed.
+    const col = asDrizzleColumnMeta(column);
 
     const validation: ValidationRules = { ...customRules };
 
