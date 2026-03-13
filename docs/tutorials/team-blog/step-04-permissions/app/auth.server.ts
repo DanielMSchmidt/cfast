@@ -1,9 +1,11 @@
 import { createAuth } from "@cfast/auth";
 import { permissions } from "./permissions";
 import { env } from "./env.server";
+import * as schema from "./schema";
 
 export const initAuth = createAuth({
   permissions,
+  schema,
   magicLink: {
     sendMagicLink: async ({ email, url }) => {
       // In development, log the magic link to the console

@@ -16,18 +16,13 @@ export default defineConfig({
     {
       name: "read-only",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: /^(?!.*(mutations|pagination|screenshots)).*\.spec\.ts$/,
+      testMatch: /^(?!.*(mutations|pagination)).*\.spec\.ts$/,
     },
     {
       name: "mutations",
       use: { ...devices["Desktop Chrome"] },
       testMatch: /(mutations|pagination)\.spec\.ts$/,
       dependencies: ["read-only"],
-    },
-    {
-      name: "screenshots",
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 720 } },
-      testMatch: /screenshots\.spec\.ts$/,
     },
   ],
   webServer: {

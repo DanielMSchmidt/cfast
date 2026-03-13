@@ -8,3 +8,4 @@ dist/
 !.env.example
 .dev.vars
 .claude/worktrees/
+docs/tutorials/team-blog/*/.react-router

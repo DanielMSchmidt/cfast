@@ -1,6 +1,7 @@
 import { createAuth } from "@cfast/auth";
 import { definePermissions } from "@cfast/permissions";
 import { env } from "./env.server";
+import * as schema from "./schema";
 
 // Minimal permissions for now -- we expand these in Step 4
 const permissions = definePermissions({
@@ -12,6 +13,7 @@ const permissions = definePermissions({
 
 export const initAuth = createAuth({
   permissions,
+  schema,
   magicLink: {
     sendMagicLink: async ({ email, url }) => {
       // In development, log the magic link to the console

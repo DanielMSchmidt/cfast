@@ -12,7 +12,7 @@
     "docs:dev": "pnpm --filter @cfast/docs dev",
     "docs:build": "pnpm --filter @cfast/docs build",
     "docs:preview": "pnpm --filter @cfast/docs preview",
-    "docs:screenshots": "pnpm --filter team-blog-after test:screenshots"
+    "docs:screenshots": "pnpm --filter @cfast/docs screenshots"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

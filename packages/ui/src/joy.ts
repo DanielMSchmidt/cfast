@@ -34,5 +34,8 @@ export { AvatarWithInitials } from "./joy/avatar-with-initials.js";
 export { RoleBadge } from "./joy/role-badge.js";
 export { ImpersonationBanner } from "./joy/impersonation-banner.js";
 
+// Permissions
+export { PermissionGate } from "./components/permission-gate.js";
+
 // Auth
 export { joyLoginComponents } from "./joy/login-components.js";

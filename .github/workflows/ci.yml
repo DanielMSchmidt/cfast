@@ -98,10 +98,6 @@ jobs:
       - name: Run E2E tests
         run: pnpm --filter ${{ matrix.example }} test:e2e
 
-      - name: Capture tutorial screenshots
-        if: matrix.example == 'team-blog-after'
-        run: pnpm --filter team-blog-after test:screenshots
-
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -110,9 +106,49 @@ jobs:
           path: examples/${{ matrix.example }}/playwright-report/
           retention-days: 14
 
+  screenshots:
+    name: Tutorial Screenshots
+    runs-on: ubuntu-latest
+    needs: ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Restore turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @cfast/docs exec npx playwright install --with-deps chromium
+
+      - name: Create .dev.vars for step projects
+        run: |
+          for step_dir in docs/tutorials/team-blog/step-*/; do
+            cat > "$step_dir/.dev.vars" <<'VARS'
+          MAILGUN_API_KEY=test-key
+          MAILGUN_DOMAIN=test.example.com
+          VARS
+            sed -i 's/^[[:space:]]*//' "$step_dir/.dev.vars"
+          done
+
+      - name: Capture tutorial screenshots
+        run: pnpm docs:screenshots
+
       - name: Upload tutorial screenshots
         uses: actions/upload-artifact@v4
-        if: matrix.example == 'team-blog-after'
         with:
           name: tutorial-screenshots
           path: docs/website/src/assets/tutorial/*.png
