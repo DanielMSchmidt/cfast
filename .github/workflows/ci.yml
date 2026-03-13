@@ -52,6 +52,13 @@ jobs:
       - name: Build docs
         run: pnpm turbo build --filter=@cfast/docs
 
+      - name: Verify docs base path
+        run: |
+          grep -q '="/cfast/' docs/website/dist/index.html || {
+            echo "::error::Docs site is missing the /cfast/ base path. Set base: \"/cfast\" in docs/website/astro.config.mjs"
+            exit 1
+          }
+
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
