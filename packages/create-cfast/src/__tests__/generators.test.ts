@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { mergePackageJsons, type PkgFragment } from "../generators/package-json";
 import { generateWranglerToml } from "../generators/wrangler-toml";
+import { generateEnv } from "../generators/env";
+import { generateCfastServer } from "../generators/cfast-server";
+import { generateViteConfig } from "../generators/vite-config";
+import { generateRootTsx } from "../generators/root-tsx";
+import { generateRoutesTs } from "../generators/routes-ts";
 import type { Config } from "../types";
 
 describe("mergePackageJsons", () => {
@@ -103,5 +108,138 @@ describe("generateWranglerToml", () => {
     };
     const result = generateWranglerToml(config);
     expect(result).toContain("MAILGUN_DOMAIN");
+  });
+});
+
+describe("generateEnv", () => {
+  it("always includes APP_URL", () => {
+    const result = generateEnv(baseConfig);
+    expect(result).toContain("APP_URL");
+  });
+
+  it("adds DB binding when db enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, db: true },
+    };
+    const result = generateEnv(config);
+    expect(result).toContain("DB");
+    expect(result).toContain('"d1"');
+  });
+
+  it("adds MAILGUN when email enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, email: true },
+    };
+    const result = generateEnv(config);
+    expect(result).toContain("MAILGUN_API_KEY");
+    expect(result).toContain("MAILGUN_DOMAIN");
+  });
+});
+
+describe("generateCfastServer", () => {
+  it("always imports createApp", () => {
+    const result = generateCfastServer(baseConfig);
+    expect(result).toContain("createApp");
+  });
+
+  it("adds auth plugin when auth enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, auth: true, db: true },
+    };
+    const result = generateCfastServer(config);
+    expect(result).toContain("authPlugin");
+    expect(result).toContain("initAuth");
+  });
+
+  it("adds db plugin when db enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, db: true },
+    };
+    const result = generateCfastServer(config);
+    expect(result).toContain("dbPlugin");
+    expect(result).toContain("createDb");
+  });
+});
+
+describe("generateViteConfig", () => {
+  it("always includes cloudflare and reactRouter plugins", () => {
+    const result = generateViteConfig(baseConfig);
+    expect(result).toContain("cloudflare");
+    expect(result).toContain("reactRouter");
+  });
+
+  it("adds optimizeDeps when ui enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, ui: true },
+      uiLibrary: "joy" as const,
+    };
+    const result = generateViteConfig(config);
+    expect(result).toContain("optimizeDeps");
+    expect(result).toContain("@cfast/ui/joy");
+  });
+});
+
+describe("generateRootTsx", () => {
+  it("generates plain root without ui", () => {
+    const result = generateRootTsx(baseConfig);
+    expect(result).not.toContain("CssVarsProvider");
+    expect(result).toContain("Outlet");
+  });
+
+  it("adds Joy UI providers when ui=joy", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, ui: true },
+      uiLibrary: "joy" as const,
+    };
+    const result = generateRootTsx(config);
+    expect(result).toContain("CssVarsProvider");
+    expect(result).toContain("CssBaseline");
+  });
+
+  it("adds AuthClientProvider when auth enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, auth: true, db: true },
+    };
+    const result = generateRootTsx(config);
+    expect(result).toContain("AuthClientProvider");
+  });
+});
+
+describe("generateRoutesTs", () => {
+  it("always includes index route", () => {
+    const result = generateRoutesTs(baseConfig);
+    expect(result).toContain("index(");
+  });
+
+  it("adds auth routes when auth enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, auth: true, db: true },
+    };
+    const result = generateRoutesTs(config);
+    expect(result).toContain("login");
+    expect(result).toContain("api/auth/*");
+  });
+
+  it("adds admin route when admin enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: {
+        ...baseConfig.features,
+        admin: true,
+        db: true,
+        auth: true,
+        ui: true,
+      },
+    };
+    const result = generateRoutesTs(config);
+    expect(result).toContain("admin");
   });
 });
