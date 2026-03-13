@@ -15,9 +15,12 @@ test.describe.serial("Profile Updates", () => {
 
     await page.fill('input[name="name"]', updatedName);
     await page.click('button:has-text("Update Profile")');
-    await page.waitForLoadState("networkidle");
 
     await expect(page.getByText("Profile updated successfully.")).toBeVisible();
+
+    // Verify the update persisted by reloading the page
+    await page.reload();
+    await expect(page.locator('input[name="name"]')).toHaveValue(updatedName);
   });
 
   test("name field cannot be empty", async ({ page, context }) => {
