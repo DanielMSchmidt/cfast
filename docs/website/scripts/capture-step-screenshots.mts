@@ -140,6 +140,7 @@ function startDevServer(cwd: string): ChildProcess {
   const child = spawn("pnpm", ["dev", "--port", String(PORT)], {
     cwd,
     stdio: "pipe",
+    detached: true, // create process group so we can kill the entire tree
     env: { ...process.env, PORT: String(PORT) },
   });
   child.stderr?.on("data", () => {}); // drain stderr
@@ -147,12 +148,36 @@ function startDevServer(cwd: string): ChildProcess {
   return child;
 }
 
-function stopServer(child: ChildProcess) {
-  child.kill("SIGTERM");
-  // Give it a moment, then force
-  setTimeout(() => {
-    if (!child.killed) child.kill("SIGKILL");
-  }, 3000);
+async function stopServer(child: ChildProcess): Promise<void> {
+  // Kill the entire process group (pnpm + vite + wrangler)
+  try {
+    process.kill(-child.pid!, "SIGTERM");
+  } catch {
+    // process may already be dead
+  }
+
+  // Wait up to 5s for the process to exit, then force kill
+  await new Promise<void>((resolve) => {
+    const timeout = setTimeout(() => {
+      try {
+        process.kill(-child.pid!, "SIGKILL");
+      } catch {
+        // already dead
+      }
+      resolve();
+    }, 5000);
+
+    child.on("exit", () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+
+    // If already exited
+    if (child.exitCode !== null) {
+      clearTimeout(timeout);
+      resolve();
+    }
+  });
 }
 
 function cleanupLocalDb(cwd: string) {
@@ -385,15 +410,16 @@ async function captureScreenshot(
   screenshot: ScreenshotDef,
 ) {
   await page.goto(`${BASE_URL}${screenshot.path}`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
+    timeout: 15_000,
   });
 
   if (screenshot.waitFor) {
-    await page.getByText(screenshot.waitFor).first().waitFor({ state: "visible" });
+    await page.getByText(screenshot.waitFor).first().waitFor({ state: "visible", timeout: 10_000 });
   }
 
-  // Small delay for animations to settle
-  await page.waitForTimeout(500);
+  // Small delay for animations/rendering to settle
+  await page.waitForTimeout(1000);
 
   const outputPath = path.join(SCREENSHOTS_DIR, `${screenshot.name}.png`);
   await page.screenshot({
@@ -483,9 +509,9 @@ async function main() {
       }
     } finally {
       log(stepName, "Stopping dev server...");
-      stopServer(server);
+      await stopServer(server);
       // Wait a moment for ports to free up
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 1000));
     }
 
     log(stepName, "Done\n");
