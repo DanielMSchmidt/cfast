@@ -1,4 +1,5 @@
 import { and, or } from "drizzle-orm";
+import type { SQL, SQLWrapper } from "drizzle-orm";
 import type { DrizzleTable, Grant, PermissionAction, PermissionDescriptor } from "@cfast/permissions";
 import { getTableName } from "@cfast/permissions";
 import { resolvePermissionFilters } from "./permissions";
@@ -28,18 +29,27 @@ export function buildPermissionFilter(
   table: DrizzleTable,
   user: User | null,
   unsafe: boolean,
-): unknown {
+): SQL | undefined {
   if (unsafe || !user) return undefined;
   const filters = resolvePermissionFilters(grants, action, table);
   if (filters.length === 0) return undefined;
   const columns = table as Record<string, unknown>;
-  const clauses = filters.map((fn) => fn(columns, user));
-  return clauses.length === 1 ? clauses[0] : or(...(clauses as [any, ...any[]]));
+  // Permission filter fns return DrizzleSQL (structurally { getSQL(): unknown }),
+  // which at runtime are Drizzle SQL expressions compatible with SQLWrapper.
+  const clauses = filters.map(
+    (fn) => fn(columns, user) as SQLWrapper | undefined,
+  );
+  return or(...clauses);
 }
 
-export function combineWhere(userCondition: unknown, permFilter: unknown): unknown {
-  if (permFilter && userCondition) return and(userCondition as any, permFilter as any);
-  return (permFilter ?? userCondition) as any;
+export function combineWhere(
+  userCondition: SQL | SQLWrapper | undefined,
+  permFilter: SQL | SQLWrapper | undefined,
+): SQL | undefined {
+  if (permFilter && userCondition) return and(userCondition, permFilter);
+  if (permFilter) return permFilter.getSQL();
+  if (userCondition) return userCondition.getSQL();
+  return undefined;
 }
 
 export function makePermissions(

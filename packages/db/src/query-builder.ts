@@ -19,11 +19,38 @@ type QueryBuilderConfig = {
   unsafe: boolean;
 };
 
+/**
+ * Minimal shape of a Drizzle relational query builder.
+ * Matches the `findMany` and `findFirst` methods we use from `db.query[tableName]`.
+ */
+type DrizzleRelationalQueryBuilder = {
+  findMany(config?: Record<string, unknown>): Promise<unknown[]>;
+  findFirst(config?: Record<string, unknown>): Promise<unknown>;
+};
+
+/**
+ * The `db.query` record after schema registration. Drizzle types this as a mapped type
+ * over the schema generic, but since we pass `Record<string, unknown>` we access via
+ * a typed record at this single boundary point.
+ */
+type DrizzleQueryMap = Record<string, DrizzleRelationalQueryBuilder>;
+
 function getTableKey(schema: Record<string, unknown>, table: DrizzleTable): string | undefined {
   for (const [key, val] of Object.entries(schema)) {
     if (val === table) return key;
   }
   return undefined;
+}
+
+/**
+ * Returns the relational query builder for a table key from a Drizzle db instance.
+ * Centralizes the single cast needed to access `db.query[key]` with a dynamic key.
+ */
+function getQueryTable(
+  db: ReturnType<typeof drizzle>,
+  key: string,
+): DrizzleRelationalQueryBuilder {
+  return (db.query as DrizzleQueryMap)[key];
 }
 
 function buildQueryOperation<TResult>(
@@ -45,7 +72,7 @@ function buildQueryOperation<TResult>(
       const permFilter = buildPermissionFilter(
         config.grants, "read", config.table, config.user, config.unsafe,
       );
-      const userWhere = options?.where;
+      const userWhere = options?.where as SQL | undefined;
       const combinedWhere = combineWhere(userWhere, permFilter);
 
       const queryOptions: Record<string, unknown> = { ...options };
@@ -54,7 +81,8 @@ function buildQueryOperation<TResult>(
       }
       delete queryOptions.cache;
 
-      const result = await (db.query as any)[tableKey][method](queryOptions);
+      const queryTable = getQueryTable(db, tableKey);
+      const result = await queryTable[method](queryOptions);
       return (method === "findFirst" ? result ?? undefined : result) as TResult;
     },
   };
@@ -70,7 +98,7 @@ function buildQueryOperation<TResult>(
  * @returns A query builder with `findMany`, `findFirst`, and `paginate` methods.
  */
 export function createQueryBuilder(config: QueryBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
+  const db = drizzle(config.d1, { schema: config.schema });
   const tableKey = getTableKey(config.schema, config.table);
 
   return {
@@ -105,17 +133,20 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
         return tableKey;
       }
 
-      function checkAndBuildWhere(extraWhere?: unknown) {
+      function checkAndBuildWhere(extraWhere?: SQL | undefined) {
         if (!config.unsafe) {
           checkOperationPermissions(config.grants, permissions);
         }
         const permFilter = buildPermissionFilter(
           config.grants, "read", config.table, config.user, config.unsafe,
         );
-        return combineWhere(combineWhere(options?.where, permFilter), extraWhere);
+        return combineWhere(
+          combineWhere(options?.where as SQL | undefined, permFilter),
+          extraWhere,
+        );
       }
 
-      function buildBaseQueryOptions(where: unknown) {
+      function buildBaseQueryOptions(where: SQL | undefined) {
         const qo: Record<string, unknown> = {};
         if (options?.columns) qo.columns = options.columns;
         if (options?.orderBy) qo.orderBy = options.orderBy;
@@ -140,17 +171,15 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
             const queryOptions = buildBaseQueryOptions(combinedWhere);
             queryOptions.limit = params.limit + 1;
 
-            const rows = await (db.query as any)[key].findMany(queryOptions) as unknown[];
+            const queryTable = getQueryTable(db, key);
+            const rows = await queryTable.findMany(queryOptions) as unknown[];
             const hasMore = rows.length > params.limit;
             const items = hasMore ? rows.slice(0, params.limit) : rows;
 
             let nextCursor: string | null = null;
             if (hasMore && items.length > 0) {
               const lastItem = items[items.length - 1] as Record<string, unknown>;
-              const values = cursorColumns.map((col) => {
-                const colName = (col as any).name as string;
-                return lastItem[colName];
-              });
+              const values = cursorColumns.map((col) => lastItem[col.name]);
               nextCursor = encodeCursor(values);
             }
 
@@ -173,10 +202,11 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
             .select({ count: count() })
             .from(config.table as SQLiteTable)
             .$dynamic();
-          if (combinedWhere) countQuery.where(combinedWhere as SQL);
+          if (combinedWhere) countQuery.where(combinedWhere);
 
+          const queryTable = getQueryTable(db, key);
           const [items, countResult] = await Promise.all([
-            (db.query as any)[key].findMany(queryOptions) as Promise<unknown[]>,
+            queryTable.findMany(queryOptions) as Promise<unknown[]>,
             countQuery,
           ]);
 
