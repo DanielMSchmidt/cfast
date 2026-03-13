@@ -1,4 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
+import type { SQL } from "drizzle-orm";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions, getTableName } from "./utils";
@@ -58,14 +60,14 @@ function buildMutationWithReturning(
  * @returns An insert builder with a `values()` method.
  */
 export function createInsertBuilder(config: MutateBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
+  const db = drizzle(config.d1, { schema: config.schema });
   const permissions = makePermissions(config.unsafe, "create", config.table);
   const tableName = getTableName(config.table);
 
   return {
     values(values: Record<string, unknown>) {
       return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
-        const query = db.insert(config.table as any).values(values);
+        const query = db.insert(config.table as SQLiteTable).values(values);
         if (returning) {
           return query.returning().get();
         }
@@ -85,7 +87,7 @@ export function createInsertBuilder(config: MutateBuilderConfig) {
  * @returns An update builder with a `set()` method that chains to `where()`.
  */
 export function createUpdateBuilder(config: MutateBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
+  const db = drizzle(config.d1, { schema: config.schema });
   const permissions = makePermissions(config.unsafe, "update", config.table);
   const tableName = getTableName(config.table);
 
@@ -96,10 +98,11 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
           const permFilter = buildPermissionFilter(
             config.grants, "update", config.table, config.user, config.unsafe,
           );
-          const combinedWhere = combineWhere(condition, permFilter);
+          const combinedWhere = combineWhere(condition as SQL | undefined, permFilter);
 
           return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
-            const query = db.update(config.table as any).set(values).where(combinedWhere as any);
+            const query = db.update(config.table as SQLiteTable).set(values);
+            if (combinedWhere) query.where(combinedWhere);
             if (returning) {
               return query.returning().get();
             }
@@ -121,7 +124,7 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
  * @returns A delete builder with a `where()` method.
  */
 export function createDeleteBuilder(config: MutateBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema as Record<string, any> });
+  const db = drizzle(config.d1, { schema: config.schema });
   const permissions = makePermissions(config.unsafe, "delete", config.table);
   const tableName = getTableName(config.table);
 
@@ -130,10 +133,11 @@ export function createDeleteBuilder(config: MutateBuilderConfig) {
       const permFilter = buildPermissionFilter(
         config.grants, "delete", config.table, config.user, config.unsafe,
       );
-      const combinedWhere = combineWhere(condition, permFilter);
+      const combinedWhere = combineWhere(condition as SQL | undefined, permFilter);
 
       return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
-        const query = db.delete(config.table as any).where(combinedWhere as any);
+        const query = db.delete(config.table as SQLiteTable);
+        if (combinedWhere) query.where(combinedWhere);
         if (returning) {
           return query.returning().get();
         }
