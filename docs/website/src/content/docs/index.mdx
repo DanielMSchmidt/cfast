@@ -3,7 +3,7 @@ title: CFast
 description: Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle ORM.
 template: splash
 hero:
-  tagline: Skip the boring parts. Build your Cloudflare Workers app.
+  tagline: Composable libraries for building full-stack apps on Cloudflare Workers — with React Router, Drizzle ORM, and Better Auth already wired together.
   actions:
     - text: Get Started
       link: /getting-started/
@@ -14,67 +14,41 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
-## The Stack
+## Built on tools you already know
 
-CFast is built around a specific, proven stack — Cloudflare Workers, React Router v7, Drizzle ORM on D1, Better Auth, and MUI Joy UI. It is opinionated where it matters and invisible where it doesn't.
-
-## Core
-
-<CardGrid>
-  <Card title="@cfast/env" icon="setting">
-    Type-safe Cloudflare bindings with runtime validation.
-  </Card>
-  <Card title="@cfast/permissions" icon="approve-check">
-    Isomorphic permission system with Drizzle-native row-level access control.
-  </Card>
-  <Card title="@cfast/auth" icon="open-book">
-    Authentication: magic email, passkeys, role management, impersonation.
-  </Card>
-  <Card title="@cfast/db" icon="document">
-    Permission-aware Drizzle queries for D1.
-  </Card>
-  <Card title="@cfast/storage" icon="cloud-upload">
-    Schema-driven file uploads to R2 with multipart support.
-  </Card>
-  <Card title="@cfast/core" icon="puzzle">
-    Plugin system that wires everything together.
-  </Card>
-</CardGrid>
-
-## UI &amp; Developer Experience
-
-<CardGrid>
-  <Card title="@cfast/actions" icon="rocket">
-    Multi-action routes and permission-aware action definitions.
-  </Card>
-  <Card title="@cfast/ui" icon="laptop">
-    Permission-aware component wrappers (ActionButton, PermissionGate).
-  </Card>
-  <Card title="@cfast/forms" icon="list-format">
-    Auto-generated forms from Drizzle schema.
-  </Card>
-  <Card title="@cfast/pagination" icon="right-arrow">
-    Cursor-based, offset-based pagination and infinite scroll.
-  </Card>
-  <Card title="@cfast/admin" icon="star">
-    Auto-generated admin UI from your Drizzle schema.
-  </Card>
-  <Card title="@cfast/email" icon="email">
-    Plugin-based email with react-email rendering.
-  </Card>
-</CardGrid>
-
-## Quick Start
+CFast doesn't reinvent the wheel. It connects **React Router v7** for SSR and routing, **Drizzle ORM** for type-safe queries on **Cloudflare D1**, **Better Auth** for authentication (magic links, passkeys), and **Joy UI** for components — then adds the glue you'd otherwise write yourself: permissions, storage, admin panels, forms, and pagination.
 
 ```bash
 npm create cfast@latest my-app
 ```
 
+## Server
+
+<CardGrid>
+  <LinkCard title="@cfast/core" description="Plugin system that wires React Router, Drizzle, and Better Auth together." href="/guides/core/" />
+  <LinkCard title="@cfast/env" description="Type-safe Cloudflare bindings (D1, R2, KV, secrets) with runtime validation." href="/guides/env/" />
+  <LinkCard title="@cfast/db" description="Permission-aware Drizzle queries for D1 with caching and pagination." href="/guides/db/" />
+  <LinkCard title="@cfast/auth" description="Better Auth integration: magic email, passkeys, role management, impersonation." href="/guides/auth/" />
+  <LinkCard title="@cfast/permissions" description="Isomorphic permission system with Drizzle-native row-level access control." href="/guides/permissions/" />
+  <LinkCard title="@cfast/storage" description="Schema-driven file uploads to R2 with validation and multipart support." href="/guides/storage/" />
+  <LinkCard title="@cfast/email" description="Transactional email with react-email templates." href="/guides/email/" />
+</CardGrid>
+
+## UI
+
+<CardGrid>
+  <LinkCard title="@cfast/ui" description="Joy UI components that respect your permission model (ActionButton, PermissionGate)." href="/guides/ui/" />
+  <LinkCard title="@cfast/forms" description="Auto-generated forms from your Drizzle schema." href="/guides/forms/" />
+  <LinkCard title="@cfast/actions" description="Multi-action React Router routes with permission checks." href="/guides/actions/" />
+  <LinkCard title="@cfast/pagination" description="Cursor, offset, and infinite scroll — hooks and server helpers." href="/guides/pagination/" />
+  <LinkCard title="@cfast/admin" description="Auto-generated admin panel from your Drizzle schema." href="/guides/admin/" />
+</CardGrid>
+
 ## Philosophy
 
-1. **Permissions are first-class.** Define them once. Enforce on the server. Reflect in the UI.
-2. **The database drives the UI.** Your Drizzle schema is the source of truth.
-3. **Common patterns, not configuration.** Multi-action routes, infinite scroll, pagination, auth — solved once, correctly.
-4. **Isomorphic by design.** Permission checks, validation, and data types work identically on client and server.
+1. **Permissions are first-class.** Define them once in your Drizzle schema. Enforce on the server. Reflect in the UI. No duplication.
+2. **The schema drives the app.** Drizzle tables generate forms, admin panels, and permission-aware queries automatically.
+3. **Solved once, correctly.** Auth flows, multi-action routes, infinite scroll, file uploads — common patterns you shouldn't rewrite per project.
+4. **Isomorphic by design.** Permission checks, validation, and types work identically on client and server.
