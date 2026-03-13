@@ -1,0 +1,42 @@
+---
+editUrl: false
+next: false
+prev: false
+title: "AppShellProps"
+---
+
+> **AppShellProps** = `object`
+
+Defined in: [packages/ui/src/types.ts:723](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L723)
+
+Props for the AppShell layout component.
+
+## Properties
+
+### children
+
+> **children**: `ReactNode`
+
+Defined in: [packages/ui/src/types.ts:725](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L725)
+
+Main content area.
+
+***
+
+### header?
+
+> `optional` **header**: `ReactNode`
+
+Defined in: [packages/ui/src/types.ts:729](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L729)
+
+Header element.
+
+***
+
+### sidebar?
+
+> `optional` **sidebar**: `ReactNode`
+
+Defined in: [packages/ui/src/types.ts:727](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L727)
+
+Sidebar navigation element.

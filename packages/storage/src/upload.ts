@@ -141,7 +141,7 @@ export async function replaceExisting(
     const listed = await bucket.list({ prefix, cursor });
 
     if (listed.objects.length > 0) {
-      const keys = listed.objects.map((obj) => obj.key);
+      const keys = listed.objects.map((obj: R2Object) => obj.key);
       await bucket.delete(keys);
     }
 
