@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@cfast/storage": "^0.1.0"
+  }
+}

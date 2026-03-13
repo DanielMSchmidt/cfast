@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@cfast/email": "^0.1.0",
+    "@react-email/components": "^1.0.0"
+  }
+}
