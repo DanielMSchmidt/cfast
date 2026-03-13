@@ -1,0 +1,34 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@cfast/env": ["../../packages/env/src/index.ts"],
+      "@cfast/permissions": ["../../packages/permissions/src/index.ts"],
+      "@cfast/permissions/client": ["../../packages/permissions/src/client.ts"],
+      "@cfast/core": ["../../packages/core/src/index.ts"],
+      "@cfast/core/client": ["../../packages/core/src/client/index.ts"],
+      "@cfast/db": ["../../packages/db/src/index.ts"],
+      "@cfast/auth": ["../../packages/auth/src/index.ts"],
+      "@cfast/auth/client": ["../../packages/auth/src/client.ts"],
+      "@cfast/auth/plugin": ["../../packages/auth/src/plugin.ts"],
+      "@cfast/auth/schema": ["../../packages/auth/src/schema.ts"],
+      "@cfast/storage": ["../../packages/storage/src/index.ts"],
+      "@cfast/storage/client": ["../../packages/storage/src/client.ts"],
+      "@cfast/actions": ["../../packages/actions/src/index.ts"],
+      "@cfast/actions/client": ["../../packages/actions/src/client.ts"],
+      "@cfast/ui": ["../../packages/ui/src/index.ts"],
+      "@cfast/ui/client": ["../../packages/ui/src/client.ts"],
+      "@cfast/ui/joy": ["../../packages/ui/src/joy.ts"],
+      "@cfast/forms": ["../../packages/forms/src/index.ts"],
+      "@cfast/forms/joy": ["../../packages/forms/src/joy.tsx"],
+      "@cfast/email": ["../../packages/email/src/index.ts"],
+      "@cfast/email/mailgun": ["../../packages/email/src/mailgun.ts"],
+      "@cfast/email/console": ["../../packages/email/src/console.ts"],
+      "@cfast/pagination": ["../../packages/pagination/src/index.ts"],
+      "@cfast/admin": ["../../packages/admin/src/index.ts"]
+    },
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["../../packages/*/src/**/*.ts", "../../packages/*/src/**/*.tsx"]
+}

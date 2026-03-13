@@ -1,0 +1,334 @@
+---
+title: "8. Email Notifications"
+description: "Send email notifications when posts are published using @cfast/email with react-email templates."
+---
+
+Your blog has CRUD, an admin panel, and file storage. The last piece is communication: notifying authors when their posts are published. In this step you will add email notifications using `@cfast/email`, with templates written as React components.
+
+## What you will build
+
+By the end of this step, your blog will have:
+- An email client configured with a development console provider
+- A react-email template for post-published notifications
+- The `publishPost` action updated to send an email after publishing
+- A clean path to swap in a production provider (Mailgun) when you deploy
+
+## Why `@cfast/email`
+
+Cloudflare Workers cannot use SMTP. Most email libraries assume Node.js and depend on `net`, `tls`, or `stream` --- none of which exist in the Workers runtime.
+
+`@cfast/email` is Workers-native. It renders templates with react-email (which outputs HTML via `@react-email/render`) and sends them through a pluggable provider backend using `fetch`. The console provider logs emails during development. The Mailgun provider sends real emails via Mailgun's HTTP API.
+
+## Install the packages
+
+```bash
+pnpm add @cfast/email @react-email/components
+```
+
+## Add env bindings for email
+
+Register the Mailgun credentials in your env schema. During development, you will use the console provider, so these do not need real values yet:
+
+```typescript
+// app/env.ts
+import { defineEnv } from "@cfast/env";
+
+export const envSchema = {
+  DB: { type: "d1" as const },
+  UPLOADS: { type: "r2" as const },
+  APP_URL: { type: "var" as const, default: "http://localhost:5173" },
+  MAILGUN_API_KEY: { type: "secret" as const },     // new
+  MAILGUN_DOMAIN: { type: "var" as const },          // new
+};
+
+export const env = defineEnv(envSchema);
+```
+
+Add the domain to `wrangler.toml` vars and set the API key in `.dev.vars`:
+
+```toml
+# wrangler.toml [vars]
+MAILGUN_DOMAIN = "mail.example.com"
+```
+
+```bash
+# .dev.vars (not committed)
+MAILGUN_API_KEY=test-key
+```
+
+## Create the email client
+
+The email client wraps a provider and a default sender address. Both use getter functions so env bindings are accessed lazily at send time, not at module load time (which would fail in Workers):
+
+```typescript
+// app/email.server.ts
+import { createEmailClient } from "@cfast/email";
+import { console as consoleProvider } from "@cfast/email/console";
+import type { EmailProvider } from "@cfast/email";
+import { env } from "~/env";
+
+let cachedProvider: EmailProvider | null = null;
+function getProvider(): EmailProvider {
+  if (!cachedProvider) {
+    // Use console provider for development
+    cachedProvider = consoleProvider();
+  }
+  return cachedProvider;
+}
+
+const lazyProvider: EmailProvider = {
+  name: "lazy",
+  send(message) {
+    return getProvider().send(message);
+  },
+};
+
+export const email = createEmailClient({
+  provider: lazyProvider,
+  from: () => `Team Blog <noreply@${env.get().MAILGUN_DOMAIN}>`,
+});
+```
+
+The lazy provider pattern is important. In Workers, env bindings are not available when the module is first imported --- they only become available within a request handler. By deferring the provider creation to the first `send()` call, you avoid accessing `env.get()` at module load time.
+
+## Write the email template
+
+Email templates are React components. You can use `@react-email/components` for structured layouts or plain JSX:
+
+```tsx
+// app/email/templates/post-published.tsx
+type PostPublishedEmailProps = {
+  authorName: string;
+  postTitle: string;
+  postUrl: string;
+};
+
+export function PostPublishedEmail({
+  authorName,
+  postTitle,
+  postUrl,
+}: PostPublishedEmailProps) {
+  return (
+    <html>
+      <head />
+      <body style={{ fontFamily: "sans-serif", padding: "20px" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <h2>Your post has been published!</h2>
+          <p>
+            Hi {authorName}, your post &quot;{postTitle}&quot; has been
+            published by an editor.
+          </p>
+          <a
+            href={postUrl}
+            style={{
+              display: "inline-block",
+              padding: "12px 24px",
+              backgroundColor: "#0070f3",
+              color: "#fff",
+              borderRadius: "6px",
+              textDecoration: "none",
+            }}
+          >
+            View Post
+          </a>
+          <hr />
+          <p style={{ color: "#666", fontSize: "12px" }}>Team Blog</p>
+        </div>
+      </body>
+    </html>
+  );
+}
+```
+
+The template is a regular React component. `@cfast/email` renders it to HTML and plain text using `@react-email/render` at send time.
+
+## Create the send helper
+
+A helper function that looks up the author and sends the email:
+
+```typescript
+// app/email/send.ts
+import { email } from "~/email.server";
+import { PostPublishedEmail } from "./templates/post-published";
+import type { Env } from "~/env";
+import { createDbClient } from "~/db/client";
+import { users } from "~/db/schema";
+import { eq } from "drizzle-orm";
+
+export async function sendPostPublishedEmail(
+  env: Env,
+  post: { title: string; slug: string; authorId: string },
+) {
+  const db = createDbClient(env.DB);
+  const author = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, post.authorId))
+    .get();
+  if (!author) return;
+
+  const postUrl = `${env.APP_URL}/posts/${post.slug}`;
+  await email.send({
+    to: author.email,
+    subject: `Your post "${post.title}" has been published!`,
+    react: PostPublishedEmail({
+      authorName: author.name,
+      postTitle: post.title,
+      postUrl,
+    }),
+  });
+}
+```
+
+The helper queries the author's email address from the database, builds the template props, and calls `email.send()`. The `react` property accepts any `ReactElement` --- `@cfast/email` renders it to HTML internally.
+
+## Update the publish action
+
+Now wire the email into the `publishPost` action. The action needs additional input fields (`title`, `slug`, `authorId`) so the email helper can look up the author:
+
+```typescript
+// app/actions/posts.ts (updated publishPost)
+import { sendPostPublishedEmail } from "~/email/send";
+import { env } from "~/env";
+
+export const publishPost = createAction<
+  { postId: string; title: string; slug: string; authorId: string },
+  { success: boolean }
+>((db, input) =>
+  compose(
+    [
+      db.update(posts)
+        .set({ published: true, publishedAt: new Date(), updatedAt: new Date() })
+        .where(eq(posts.id, input.postId)),
+    ],
+    async (runUpdate) => {
+      await runUpdate({});
+      // Send email notification to the author
+      const e = env.get();
+      await sendPostPublishedEmail(e, {
+        title: input.title,
+        slug: input.slug,
+        authorId: input.authorId,
+      });
+      return { success: true };
+    },
+  ),
+);
+```
+
+The email is sent after the database update succeeds. If the email fails, the post is still published --- email delivery is best-effort. In a production app, you might want to use a queue for reliable delivery.
+
+## Update the client to pass extra input
+
+The `ActionButton` for publishing now needs to pass the additional fields:
+
+```tsx
+// In app/routes/posts/$id.tsx
+<ActionButton
+  action={actions.publishPost({
+    postId: post.id,
+    title: post.title,
+    slug: post.slug,
+    authorId: post.authorId,
+  })}
+  color="success"
+  variant="soft"
+  size="sm"
+>
+  Publish
+</ActionButton>
+```
+
+## Switching to production
+
+When you are ready to send real emails, swap the console provider for Mailgun:
+
+```typescript
+// app/email.server.ts (production version)
+import { mailgun } from "@cfast/email/mailgun";
+
+function getProvider(): EmailProvider {
+  if (!cachedProvider) {
+    const e = env.get();
+    if (e.MAILGUN_API_KEY === "test-key") {
+      cachedProvider = consoleProvider();
+    } else {
+      cachedProvider = mailgun(() => ({
+        apiKey: env.get().MAILGUN_API_KEY,
+        domain: env.get().MAILGUN_DOMAIN,
+      }));
+    }
+  }
+  return cachedProvider;
+}
+```
+
+The Mailgun provider uses `fetch` and `FormData` under the hood --- no SMTP, no Node.js dependencies. It works natively in Cloudflare Workers.
+
+## Custom providers
+
+If you use a different email service, implementing a custom provider is straightforward:
+
+```typescript
+import type { EmailProvider, EmailMessage } from "@cfast/email";
+
+const myProvider: EmailProvider = {
+  name: "my-provider",
+  async send(message: EmailMessage): Promise<{ id: string }> {
+    const response = await fetch("https://api.myprovider.com/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        to: message.to,
+        from: message.from,
+        subject: message.subject,
+        html: message.html,
+        text: message.text,
+      }),
+    });
+    const data = await response.json();
+    return { id: data.id };
+  },
+};
+```
+
+A provider is just an object with a `name` and a `send` function that returns `{ id: string }`.
+
+## Try it out
+
+```bash
+pnpm dev
+```
+
+1. Sign in as an editor or admin
+2. Create a post (it starts as a draft)
+3. Click the "Publish" button
+4. Check your terminal --- you should see the console provider output:
+
+```
+[cfast/email] Email sent (dev mode):
+  ID: console-a1b2c3d4-...
+  To: author@example.com
+  From: Team Blog <noreply@mail.example.com>
+  Subject: Your post "My First Post" has been published!
+  HTML: 847 chars
+```
+
+The console provider prints the full email details without sending anything over the network.
+
+## What you have built
+
+Over these tutorial steps, you have built a team blog with:
+
+1. **Cloudflare Workers + React Router** --- SSR on the edge
+2. **D1 + Drizzle ORM** --- SQLite database with type-safe queries
+3. **Magic link auth** --- passwordless authentication with Better Auth
+4. **Role-based permissions** --- admin, editor, reader with hierarchical grants
+5. **Type-safe CRUD actions** --- permission-aware operations with `@cfast/actions`
+6. **Auto-generated admin panel** --- full CRUD UI from your schema
+7. **R2 file storage** --- cover image uploads with validation
+8. **Email notifications** --- react-email templates with pluggable providers
+
+Each piece composes with the others. The permission system flows through the database, the actions, the UI, and the admin panel. The env schema validates bindings once and provides type-safe access everywhere. The storage schema and email templates are React components.
+
+This is the CFast approach: small, composable libraries that share a consistent API and integrate deeply with each other.

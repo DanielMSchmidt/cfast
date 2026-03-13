@@ -1,0 +1,217 @@
+---
+title: "@cfast/auth"
+description: "Authentication with magic email, passkeys, roles, and impersonation"
+---
+
+## Overview
+
+`@cfast/auth` is a pre-configured [Better Auth](https://better-auth.com) setup purpose-built for Cloudflare Workers with D1. It handles magic email links and passkeys for passwordless login, session management on D1, and a complete role system that plugs directly into [`@cfast/permissions`](/guides/permissions/).
+
+You declare your roles in permissions, configure auth once, and the two packages stay in sync. Changing a user's role immediately changes what database operations they can run via [`@cfast/db`](/guides/db/).
+
+## Installation
+
+```bash
+pnpm add @cfast/auth
+```
+
+Peer dependencies: `@cfast/permissions`, `drizzle-orm`, `better-auth`, `react`, `react-router`.
+
+## Quick Setup
+
+### Server Configuration
+
+```typescript
+import { createAuth } from "@cfast/auth";
+import { permissions } from "./permissions";
+
+export const initAuth = createAuth({
+  permissions,
+  magicLink: {
+    sendMagicLink: async ({ email, url }) => {
+      // Send email with your provider (Mailgun, Resend, etc.)
+    },
+  },
+  passkeys: {
+    rpName: "MyApp",
+    rpId: "myapp.com",
+  },
+  session: { expiresIn: "30d" },
+  redirects: {
+    afterLogin: "/",
+    loginPath: "/login",
+  },
+});
+
+// In your request handler, initialize with D1:
+const auth = initAuth({ d1: env.DB, appUrl: "https://myapp.com" });
+```
+
+### Route Registration
+
+Add auth routes (magic link callback, passkey endpoints) in your `routes.ts`:
+
+```typescript
+// app/routes.ts
+import type { RouteConfig } from "@react-router/dev/routes";
+import { authRoutes } from "@cfast/auth/plugin";
+
+export default [
+  ...authRoutes({ handlerFile: "routes/auth.$.tsx" }),
+  // ... other routes
+] satisfies RouteConfig;
+```
+
+The handler file forwards requests to Better Auth:
+
+```typescript
+// routes/auth.$.tsx
+import { createAuthRouteHandlers } from "@cfast/auth";
+const { loader, action } = createAuthRouteHandlers(() => getAuth());
+export { loader, action };
+```
+
+### Client Setup
+
+Wrap the app root with the auth client provider:
+
+```typescript
+// root.tsx
+import { AuthClientProvider } from "@cfast/auth/client";
+import { authClient } from "~/auth.client";
+
+export default function App() {
+  return (
+    <AuthClientProvider authClient={authClient}>
+      <Outlet />
+    </AuthClientProvider>
+  );
+}
+```
+
+## Core Concepts
+
+### Passwordless Authentication
+
+Auth supports two passwordless methods, both offered on the login page:
+
+- **Magic email links** -- The user enters their email and receives a link. Clicking it verifies the token, creates or updates the user, and establishes a session. The callback route is injected automatically by `authRoutes()`.
+- **Passkeys (WebAuthn)** -- The user authenticates with a hardware key or platform biometric. The WebAuthn ceremony is managed by the `LoginPage` component. Users register passkeys from a settings page after their first login.
+
+### Cookie-Based Redirect Flow
+
+When an unauthenticated user visits a protected route, the intended path is stored in a `cfast_redirect_to` cookie (HttpOnly, Secure, SameSite=Lax, 10-minute TTL). After login, the user is redirected back to where they were going. If no cookie exists (direct visit to `/login`), the `afterLogin` default from config is used.
+
+### Roles Bridge Auth and Permissions
+
+Roles assigned via `@cfast/auth` directly determine what [`@cfast/permissions`](/guides/permissions/) grants apply. When you call `createDb({ user })`, the user's roles determine which Operations succeed and which rows are visible:
+
+```typescript
+export async function loader({ request, context }) {
+  const user = await auth.requireUser(request);
+
+  const db = createDb({
+    d1: context.env.DB,
+    schema,
+    permissions,
+    user, // roles from auth determine permission grants
+  });
+
+  const posts = await db.query(postsTable).findMany().run({});
+  return { user, posts };
+}
+```
+
+## Common Patterns
+
+### Protecting Routes with AuthGuard
+
+`AuthGuard` is a layout-level component that provides the user to all child routes via context:
+
+```typescript
+// routes/_protected.tsx
+import { AuthGuard } from "@cfast/auth/client";
+
+export async function loader({ request }) {
+  const ctx = await requireAuthContext(request);
+  return { user: ctx.user };
+}
+
+export default function ProtectedLayout() {
+  const { user } = useLoaderData<typeof loader>();
+  return (
+    <AuthGuard user={user}>
+      <Outlet />
+    </AuthGuard>
+  );
+}
+```
+
+Any route nested under `_protected` is automatically guarded. Access the user with `useCurrentUser()`:
+
+```typescript
+import { useCurrentUser } from "@cfast/auth/client";
+
+function Header() {
+  const user = useCurrentUser();
+  return <span>{user?.email}</span>;
+}
+```
+
+### Login Page with Component Slots
+
+Render `<LoginPage>` in your login route. Customize the UI by passing component slot overrides or use the pre-built Joy UI components from `@cfast/ui`:
+
+```typescript
+// routes/login.tsx
+import { LoginPage } from "@cfast/auth/client";
+import { joyLoginComponents } from "@cfast/ui/joy";
+import { authClient } from "~/auth.client";
+
+export default function Login() {
+  return (
+    <LoginPage
+      authClient={authClient}
+      components={joyLoginComponents}
+      title="Sign In"
+      subtitle="Sign in to My App"
+    />
+  );
+}
+```
+
+Individual slots (`Layout`, `EmailInput`, `PasskeyButton`, `MagicLinkButton`, `SuccessMessage`, `ErrorMessage`) can be overridden independently.
+
+### Role Management and Impersonation
+
+Control who can assign which roles, and let admins see exactly what a user sees:
+
+```typescript
+// Role grant rules -- restrict who can assign what
+const auth = createAuth({
+  permissions,
+  roleGrants: {
+    admin: ["admin", "editor", "user"],
+    editor: ["user"],
+  },
+});
+
+// Assign roles
+await auth.setRole(userId, "editor");
+await auth.setRoles(userId, ["editor", "moderator"]);
+
+// Impersonation for debugging and support
+await auth.impersonate(adminUserId, targetUserId);
+
+// Client-side: detect impersonation
+const user = useCurrentUser();
+// user.isImpersonating -- true when admin is impersonating
+// user.realUser -- { id, name } of the admin
+
+const { stopImpersonating } = useAuth();
+await stopImpersonating();
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

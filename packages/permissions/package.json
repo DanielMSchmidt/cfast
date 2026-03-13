@@ -1,0 +1,44 @@
+{
+  "name": "@cfast/permissions",
+  "version": "0.0.1",
+  "description": "Isomorphic, composable permission system with Drizzle-native row-level access control",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielMSchmidt/cfast.git",
+    "directory": "packages/permissions"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/client.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/client.ts --format esm --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "drizzle-orm": ">=0.35"
+  },
+  "devDependencies": {
+    "tsup": "^8",
+    "typescript": "^5.7",
+    "vitest": "^4.1.0"
+  }
+}

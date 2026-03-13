@@ -1,0 +1,188 @@
+---
+title: "@cfast/permissions"
+description: "Isomorphic permission system with row-level access control"
+---
+
+## Overview
+
+`@cfast/permissions` is an isomorphic, Drizzle-native permission system that brings application-level row-level security to Cloudflare D1. Permissions are not just boolean checks -- they compile down to Drizzle `where` clauses that filter data at the query level.
+
+You define permissions once. [`@cfast/db`](/guides/db/) enforces them as lazy operations. The same definitions that guard your database queries also tell your UI which buttons to show, with zero duplication.
+
+## Installation
+
+```bash
+pnpm add @cfast/permissions
+```
+
+Peer dependency: `drizzle-orm` (for `where` clause expressions).
+
+## Quick Setup
+
+Define your roles, their grants, and an optional hierarchy:
+
+```typescript
+import { definePermissions, grant } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+import { posts, comments } from "./schema";
+
+export const permissions = definePermissions({
+  roles: ["anonymous", "user", "editor", "admin"] as const,
+
+  grants: {
+    anonymous: [
+      grant("read", posts, { where: (post) => eq(post.published, true) }),
+      grant("read", comments),
+    ],
+
+    user: [
+      grant("read", posts, { where: (post) => eq(post.published, true) }),
+      grant("create", posts),
+      grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("delete", posts, { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("create", comments),
+    ],
+
+    editor: [
+      grant("read", posts),
+      grant("update", posts),
+      grant("create", posts),
+      grant("delete", posts),
+      grant("manage", comments),
+    ],
+
+    admin: [
+      grant("manage", "all"),
+    ],
+  },
+});
+```
+
+This `permissions` object is passed to [`createDb()`](/guides/db/) on the server and can be imported on the client for UI introspection.
+
+## Core Concepts
+
+### Actions and Subjects
+
+Each `grant()` call declares that a role can perform an action on a subject. The five actions map directly to database operations:
+
+| Action | SQL Operation | Notes |
+|---|---|---|
+| `"read"` | `SELECT` | `where` clause filters which rows are visible |
+| `"create"` | `INSERT` | Boolean check only (no existing row to filter) |
+| `"update"` | `UPDATE` | `where` clause restricts which rows can be modified |
+| `"delete"` | `DELETE` | `where` clause restricts which rows can be removed |
+| `"manage"` | All of the above | Shorthand for full CRUD access |
+
+The subject is either a Drizzle table reference or the string `"all"` to apply to every table.
+
+### Row-Level Filtering with `where`
+
+The `where` function receives the table's columns and the current user, returning a Drizzle filter expression. For `"read"` grants, this expression is automatically appended to every `SELECT` query on that table. Multiple read grants on the same table are `OR`'d together -- a more permissive grant always wins.
+
+```typescript
+// Users can only update their own posts
+grant("update", posts, {
+  where: (post, user) => eq(post.authorId, user.id),
+});
+
+// A grant without where means unrestricted access to all rows
+grant("read", posts);
+```
+
+### Two-Layer Permission Model
+
+The system has two layers that work together:
+
+1. **Structural layer** -- "does this role have *any* grant for `update` on `posts`?" This can be checked without concrete values and powers client-side UI adaptation (showing or hiding buttons).
+
+2. **Row-level layer** -- "does this role's grant include *this specific row*?" This is enforced at execution time by [`@cfast/db`](/guides/db/) when `.run()` is called with concrete parameter values.
+
+### Role Hierarchy
+
+Roles can inherit from other roles to avoid repetition. A role's effective grants equal its own grants plus all inherited grants, resolved recursively:
+
+```typescript
+export const permissions = definePermissions({
+  roles: ["anonymous", "user", "editor", "admin"] as const,
+
+  hierarchy: {
+    user: ["anonymous"],       // users get everything anonymous can do
+    editor: ["user"],          // editors get everything users can do
+    admin: ["editor"],         // admins get everything editors can do
+  },
+
+  grants: {
+    anonymous: [
+      grant("read", posts, { where: (post) => eq(post.published, true) }),
+    ],
+    // Only additional permissions per role
+    user: [
+      grant("create", posts),
+      grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }),
+    ],
+    editor: [
+      grant("read", posts),    // unrestricted, overrides anonymous's filtered read
+      grant("update", posts),  // unrestricted, overrides user's filtered update
+      grant("delete", posts),
+    ],
+    admin: [
+      grant("manage", "all"),
+    ],
+  },
+});
+```
+
+When multiple grants apply to the same action and table, their `where` clauses are `OR`'d. An unrestricted grant always takes precedence over filtered ones. Circular hierarchies are detected at runtime and throw an error.
+
+## Common Patterns
+
+### Checking Permissions Programmatically
+
+Use `checkPermissions()` for custom middleware, admin UIs, or tests:
+
+```typescript
+import { checkPermissions } from "@cfast/permissions";
+
+const result = checkPermissions("user", permissions, [
+  { action: "update", table: posts },
+  { action: "create", table: auditLogs },
+]);
+
+result.permitted;  // boolean -- true only if ALL descriptors pass
+result.denied;     // PermissionDescriptor[] -- which ones failed
+result.reasons;    // string[] -- human-readable denial reasons
+```
+
+### Handling Permission Errors
+
+When a permission check fails during `Operation.run()`, a `ForbiddenError` is thrown:
+
+```typescript
+import { ForbiddenError } from "@cfast/permissions";
+
+try {
+  await deletePostOp.run({ postId: "abc" });
+} catch (err) {
+  if (err instanceof ForbiddenError) {
+    err.action;      // "delete"
+    err.role;        // "user"
+    err.message;     // "Role 'user' cannot delete on 'posts'"
+  }
+}
+```
+
+`ForbiddenError` is JSON-serializable via `.toJSON()`, so it can cross the server/client boundary in action responses.
+
+### Client-Side Imports
+
+Import from `@cfast/permissions/client` in client bundles to avoid pulling in server-only code. The client entrypoint exports only types and the `ForbiddenError` class:
+
+```typescript
+import { ForbiddenError } from "@cfast/permissions/client";
+import type { PermissionDescriptor } from "@cfast/permissions/client";
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

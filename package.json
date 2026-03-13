@@ -1,0 +1,32 @@
+{
+  "name": "cfast",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck",
+    "test:integration": "pnpm --filter integration test",
+    "clean": "turbo clean",
+    "docs:dev": "pnpm --filter @cfast/docs dev",
+    "docs:build": "pnpm --filter @cfast/docs build",
+    "docs:preview": "pnpm --filter @cfast/docs preview",
+    "docs:screenshots": "pnpm --filter @cfast/docs screenshots",
+    "publish-packages": "turbo run build lint test && changeset version && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/cli": "^2.30.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "turbo": "^2",
+    "typescript": "^5.7",
+    "typescript-eslint": "^8.57.0"
+  },
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=20"
+  }
+}

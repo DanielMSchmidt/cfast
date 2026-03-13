@@ -1,0 +1,64 @@
+{
+  "name": "@cfast/admin",
+  "version": "0.0.1",
+  "description": "Auto-generated admin UI from your Drizzle schema with role management and impersonation",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielMSchmidt/cfast.git",
+    "directory": "packages/admin"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@mui/joy": ">=5.0.0-beta.0",
+    "react": ">=19",
+    "react-dom": ">=19",
+    "react-router": ">=7",
+    "drizzle-orm": ">=0.35"
+  },
+  "peerDependenciesMeta": {
+    "@mui/joy": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@cfast/db": "workspace:*",
+    "@cfast/forms": "workspace:*",
+    "@cfast/permissions": "workspace:*",
+    "@cfast/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/joy": "^5.0.0-beta.52",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "drizzle-orm": "^0.45.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.12.0",
+    "tsup": "^8",
+    "typescript": "^5.7",
+    "vitest": "^4.1.0"
+  }
+}

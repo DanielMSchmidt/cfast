@@ -1,0 +1,6 @@
+packages:
+  - "packages/*"
+  - "examples/*"
+  - "docs/website"
+  - "docs/tutorials/team-blog/*"
+  - "tests/*"

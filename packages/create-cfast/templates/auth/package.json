@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@cfast/auth": "^0.1.0",
+    "@better-auth/drizzle-adapter": "^1.5.3",
+    "@better-auth/passkey": "^1.5.3",
+    "better-auth": "^1.2.0"
+  }
+}

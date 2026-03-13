@@ -1,0 +1,217 @@
+import { describe, it, expect, vi } from "vitest";
+import { definePermissions } from "../define-permissions";
+import { grant } from "../grant";
+import { resolveGrants } from "../resolve-grants";
+import type { DrizzleSQL, DrizzleTable, WhereClause } from "../types";
+
+const posts: DrizzleTable = { _: { name: "posts" } };
+const comments: DrizzleTable = { _: { name: "comments" } };
+
+const fakeSql = (tag: string): DrizzleSQL => ({ getSQL: () => tag });
+
+describe("resolveGrants", () => {
+  const perms = definePermissions({
+    roles: ["anonymous", "author", "editor", "admin"] as const,
+    hierarchy: {
+      author: ["anonymous"],
+      editor: ["author"],
+      admin: ["editor"],
+    },
+    grants: {
+      anonymous: [grant("read", posts)],
+      author: [grant("create", posts)],
+      editor: [grant("update", posts)],
+      admin: [grant("manage", "all")],
+    },
+  });
+
+  it("returns grants for a single role", () => {
+    const result = resolveGrants(perms, ["anonymous"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].action).toBe("read");
+    expect(result[0].subject).toBe(posts);
+  });
+
+  it("merges grants from multiple roles (no overlap)", () => {
+    // anonymous has read:posts, author has read:posts + create:posts (via hierarchy)
+    // But let's use two roles that have non-overlapping grants
+    const p = definePermissions({
+      roles: ["reader", "writer"] as const,
+      grants: {
+        reader: [grant("read", posts)],
+        writer: [grant("create", comments)],
+      },
+    });
+
+    const result = resolveGrants(p, ["reader", "writer"]);
+    expect(result).toHaveLength(2);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "read", subject: posts }),
+        expect.objectContaining({ action: "create", subject: comments }),
+      ]),
+    );
+  });
+
+  it("deduplicates same action+subject without where clauses", () => {
+    const p = definePermissions({
+      roles: ["a", "b"] as const,
+      grants: {
+        a: [grant("read", posts)],
+        b: [grant("read", posts)],
+      },
+    });
+
+    const result = resolveGrants(p, ["a", "b"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].action).toBe("read");
+    expect(result[0].subject).toBe(posts);
+    expect(result[0].where).toBeUndefined();
+  });
+
+  it("unrestricted grant overrides restricted grant (no where wins)", () => {
+    const where1 = vi.fn(() => fakeSql("where1"));
+    const p = definePermissions({
+      roles: ["restricted", "unrestricted"] as const,
+      grants: {
+        restricted: [grant("read", posts, { where: where1 })],
+        unrestricted: [grant("read", posts)],
+      },
+    });
+
+    const result = resolveGrants(p, ["restricted", "unrestricted"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].action).toBe("read");
+    expect(result[0].where).toBeUndefined();
+  });
+
+  it("OR-merges where clauses when all grants are restricted", () => {
+    const where1: WhereClause = vi.fn((_cols: Record<string, unknown>, _user: unknown) => fakeSql("w1"));
+    const where2: WhereClause = vi.fn((_cols: Record<string, unknown>, _user: unknown) => fakeSql("w2"));
+
+    const p = definePermissions({
+      roles: ["a", "b"] as const,
+      grants: {
+        a: [grant("read", posts, { where: where1 })],
+        b: [grant("read", posts, { where: where2 })],
+      },
+    });
+
+    const result = resolveGrants(p, ["a", "b"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].where).toBeDefined();
+
+    // Call the merged where and verify both originals are called
+    const cols = { id: "col" };
+    const user = { id: "user1" };
+    result[0].where!(cols, user);
+
+    expect(where1).toHaveBeenCalledWith(cols, user);
+    expect(where2).toHaveBeenCalledWith(cols, user);
+  });
+
+  it("returns empty array for empty roles list", () => {
+    const result = resolveGrants(perms, []);
+    expect(result).toEqual([]);
+  });
+
+  it("returns empty array for unknown roles", () => {
+    const result = resolveGrants(perms, ["nonexistent"]);
+    expect(result).toEqual([]);
+  });
+
+  it("handles mix of known and unknown roles", () => {
+    const result = resolveGrants(perms, ["anonymous", "nonexistent"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].action).toBe("read");
+  });
+
+  it("uses resolvedGrants (hierarchy already expanded)", () => {
+    // editor's resolvedGrants should include inherited grants from author and anonymous
+    const result = resolveGrants(perms, ["editor"]);
+    expect(result).toHaveLength(3); // read + create + update
+  });
+
+  it("keeps grants with different action+subject pairs independent", () => {
+    const p = definePermissions({
+      roles: ["a", "b"] as const,
+      grants: {
+        a: [grant("read", posts), grant("create", comments)],
+        b: [grant("update", posts), grant("delete", comments)],
+      },
+    });
+
+    const result = resolveGrants(p, ["a", "b"]);
+    expect(result).toHaveLength(4);
+  });
+
+  it("handles manage:all grants", () => {
+    const result = resolveGrants(perms, ["admin"]);
+    // admin's resolvedGrants: read:posts, create:posts, update:posts, manage:all
+    expect(result).toHaveLength(4);
+    expect(result).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: "manage", subject: "all" }),
+      ]),
+    );
+  });
+
+  it("deduplicates manage:all from multiple roles", () => {
+    const p = definePermissions({
+      roles: ["superadmin", "admin"] as const,
+      grants: {
+        superadmin: [grant("manage", "all")],
+        admin: [grant("manage", "all")],
+      },
+    });
+
+    const result = resolveGrants(p, ["superadmin", "admin"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].action).toBe("manage");
+    expect(result[0].subject).toBe("all");
+  });
+
+  it("groups by subject reference equality for tables", () => {
+    // Two different table objects with the same name should NOT be merged
+    const posts2: DrizzleTable = { _: { name: "posts" } };
+
+    const p = definePermissions({
+      roles: ["a", "b"] as const,
+      grants: {
+        a: [grant("read", posts)],
+        b: [grant("read", posts2)],
+      },
+    });
+
+    const result = resolveGrants(p, ["a", "b"]);
+    // Different object references = not merged
+    expect(result).toHaveLength(2);
+  });
+
+  it("OR-merges where clauses from three roles", () => {
+    const where1 = vi.fn(() => fakeSql("w1"));
+    const where2 = vi.fn(() => fakeSql("w2"));
+    const where3 = vi.fn(() => fakeSql("w3"));
+
+    const p = definePermissions({
+      roles: ["a", "b", "c"] as const,
+      grants: {
+        a: [grant("read", posts, { where: where1 })],
+        b: [grant("read", posts, { where: where2 })],
+        c: [grant("read", posts, { where: where3 })],
+      },
+    });
+
+    const result = resolveGrants(p, ["a", "b", "c"]);
+    expect(result).toHaveLength(1);
+    expect(result[0].where).toBeDefined();
+
+    const cols = {};
+    const user = {};
+    result[0].where!(cols, user);
+
+    expect(where1).toHaveBeenCalledOnce();
+    expect(where2).toHaveBeenCalledOnce();
+    expect(where3).toHaveBeenCalledOnce();
+  });
+});

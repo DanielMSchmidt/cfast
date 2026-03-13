@@ -1,0 +1,185 @@
+---
+title: "@cfast/db"
+description: "Permission-aware Drizzle queries for Cloudflare D1"
+---
+
+## Overview
+
+`@cfast/db` wraps Drizzle ORM and returns lazy `Operation` objects instead of promises. An Operation knows which permissions it requires (`.permissions`) and can be inspected before execution. When you call `.run()`, permissions are checked first -- if denied, a `ForbiddenError` is thrown before any SQL touches the database.
+
+This is application-level Row-Level Security for D1, which has no native RLS. The permission check is structural: you cannot get a query result without going through `.run()`, and `.run()` always checks [`@cfast/permissions`](/guides/permissions/) grants.
+
+## Installation
+
+```bash
+pnpm add @cfast/db
+```
+
+Peer dependencies: `drizzle-orm`, `@cfast/permissions`.
+
+## Quick Setup
+
+Create a permission-aware database instance per request:
+
+```typescript
+import { createDb } from "@cfast/db";
+import { permissions } from "./permissions";
+import * as schema from "./schema";
+
+export async function loader({ context, request }) {
+  const user = await auth.requireUser(request);
+
+  const db = createDb({
+    d1: context.env.DB,
+    schema,
+    permissions,
+    user,
+  });
+
+  // Permission filters applied automatically based on user's role
+  const visiblePosts = await db.query(posts).findMany().run({});
+  return { posts: visiblePosts };
+}
+```
+
+The `Db` instance captures the user at creation time. Permission checks and WHERE clause injection use this captured user, so you must create a new instance per request.
+
+## Core Concepts
+
+### Lazy Operations
+
+Every method on `db` returns an `Operation<TResult>` with two properties:
+
+- **`.permissions`** -- An array of `PermissionDescriptor` objects available immediately, without executing any SQL. Each descriptor has `{ action, table }`.
+- **`.run(params)`** -- Checks permissions, applies permission WHERE clauses, executes via Drizzle, and returns results. Throws `ForbiddenError` if the user's role lacks a required grant.
+
+This two-phase design enables UI adaptation (check `.permissions` on the client to decide whether to show an edit button), upfront composition (merge permissions from multiple operations before any SQL runs), and introspection for logging and admin dashboards.
+
+### Automatic WHERE Injection
+
+For `"read"` grants with a `where` clause, the filter is automatically appended to every `SELECT` query on that table. The resulting SQL combines the user's filter and permission filters:
+
+```
+user_filter AND (perm_filter_1 OR perm_filter_2)
+```
+
+If any matching grant has no `where` clause, the user has unrestricted access -- no permission filter is added. For `"update"` and `"delete"` grants, the permission `where` clause is AND'd with the user-supplied condition, narrowing which rows can be affected.
+
+### Caching
+
+The cache layer manages table-level version counters. Mutations automatically bump the version for affected tables, causing subsequent reads to generate different cache keys:
+
+```typescript
+const db = createDb({
+  d1: env.DB,
+  schema,
+  permissions,
+  user,
+  cache: {
+    backend: "cache-api",       // "cache-api" | "kv"
+    ttl: "30s",
+    staleWhileRevalidate: "5m",
+    exclude: ["sessions"],      // tables that should never be cached
+  },
+});
+```
+
+Cache keys embed the user's role and table version: `cfast:{role}:v{version}:{hash(sql)}`. An anonymous user's cached result can never be served to an editor.
+
+## Common Patterns
+
+### Reading Data
+
+```typescript
+// Find many with options
+const techPosts = db.query(posts).findMany({
+  columns: { id: true, title: true },
+  where: eq(posts.category, "tech"),
+  orderBy: desc(posts.createdAt),
+  limit: 10,
+  with: { comments: true },
+});
+
+await techPosts.run({});
+
+// Find first
+const post = db.query(posts).findFirst({
+  where: eq(posts.id, "abc-123"),
+});
+
+await post.run({}); // returns TResult | undefined
+```
+
+### Writing Data
+
+```typescript
+// Insert
+const createPost = db.insert(posts)
+  .values({ title: "Hello World", authorId: user.id })
+  .returning();
+
+const inserted = await createPost.run({});
+
+// Update with row-level permission filtering
+const publishPost = db.update(posts)
+  .set({ published: true })
+  .where(eq(posts.id, "abc-123"));
+
+await publishPost.run({});
+// User role: WHERE id = 'abc-123' AND author_id = 'user-123'
+// Editor role: WHERE id = 'abc-123' (unrestricted grant)
+
+// Delete
+const removePost = db.delete(posts)
+  .where(eq(posts.id, "abc-123"));
+
+await removePost.run({});
+```
+
+### Composing Operations
+
+Use `compose()` to merge multiple operations into one with combined, deduplicated permissions. The executor function lets you wire data dependencies between sub-operations:
+
+```typescript
+import { compose } from "@cfast/db";
+
+const publishWorkflow = compose(
+  [
+    db.update(posts).set({ published: true }).where(eq(posts.id, "abc")),
+    db.insert(auditLogs).values({
+      id: crypto.randomUUID(),
+      action: "publish",
+      targetId: "abc",
+      userId: user.id,
+    }),
+  ],
+  async (doUpdate, doAudit) => {
+    await doUpdate({});
+    await doAudit({});
+    return { published: true };
+  },
+);
+
+publishWorkflow.permissions;
+// [{ action: "update", table: posts }, { action: "create", table: auditLogs }]
+
+await publishWorkflow.run({});
+```
+
+Composed operations can themselves be nested inside other `compose()` calls.
+
+### Bypassing Permissions with `unsafe()`
+
+For system operations without an authenticated user (cron jobs, migrations, background tasks), use `db.unsafe()`:
+
+```typescript
+const op = db.unsafe().delete(posts).where(eq(posts.id, "abc"));
+op.permissions; // [] -- empty, no permissions required
+await op.run({}); // executes without any permission check
+```
+
+`unsafe()` returns a scoped `Db` instance -- it does not affect the original. Use `git grep '.unsafe()'` to audit every permission bypass in your codebase.
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

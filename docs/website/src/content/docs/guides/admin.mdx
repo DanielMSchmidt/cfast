@@ -1,0 +1,180 @@
+---
+title: "@cfast/admin"
+description: "Auto-generated admin UI from your Drizzle schema with role management and impersonation"
+---
+
+## Overview
+
+`@cfast/admin` generates a production-ready admin panel from your Drizzle schema. It is not a generic CRUD generator -- it understands your permission system, your auth setup, and your data relationships. Every table gets a list view, detail view, create form, and edit form. Users get a role management panel. Admins get impersonation.
+
+You add one route to your React Router app, and you have an admin panel. The admin is not a separate application. It runs as a React Router route that uses the same database, permissions, and auth as the rest of your app.
+
+## Installation
+
+```bash
+pnpm add @cfast/admin
+```
+
+Peer dependencies: `@cfast/db`, `@cfast/auth`, `@cfast/ui`, `@cfast/forms`, `@cfast/actions`, `@cfast/permissions`, `@cfast/pagination`, `@mui/joy`, `react-router`, `drizzle-orm`
+
+## Quick Setup
+
+Mount the admin as a single React Router route:
+
+```typescript
+// app/routes/admin.tsx
+import { createAdmin } from "@cfast/admin";
+import * as schema from "~/schema";
+
+const admin = createAdmin({
+  db(grants, user) {
+    return createDb({ d1: env.DB, schema, grants, user });
+  },
+  auth: {
+    async requireUser(request) {
+      const session = await getSession(request);
+      return { user: session.user, grants: session.grants };
+    },
+    hasRole: (user, role) => user.roles.includes(role),
+    getRoles: (userId) => authInstance.getRoles(userId),
+    setRole: (userId, role) => authInstance.setRole(userId, role),
+    removeRole: (userId, role) => authInstance.removeRole(userId, role),
+    setRoles: (userId, roles) => authInstance.setRoles(userId, roles),
+    impersonate: (adminId, targetId, request) => { /* start session */ },
+    stopImpersonation: (request) => { /* end session */ },
+  },
+  schema,
+  requiredRole: "admin",
+});
+
+export const loader = admin.loader;
+export const action = admin.action;
+export default admin.Component;
+```
+
+That is the complete setup. `createAdmin` returns a `loader`, `action`, and `Component` that React Router uses directly. The admin introspects your schema and generates everything else.
+
+## Core Concepts
+
+### Schema Introspection
+
+`@cfast/admin` reads your Drizzle schema to generate configuration: which columns to show in list views, which fields to use in forms, which relations to resolve, and which actions to offer. Column types determine display rendering (dates, booleans, relations), and nullability determines required fields in forms.
+
+Auth-internal tables (session, account, verification, passkey) are excluded automatically.
+
+### Permission-Aware by Default
+
+The admin panel uses `@cfast/db` for all data access, which means every query goes through your permission system. An admin sees everything. A moderator sees what moderators see. The admin UI does not bypass permissions -- it uses them. This is not a separate security model; it is your application's security model.
+
+### Delegation to @cfast/ui and @cfast/forms
+
+Admin's job is schema-to-configuration. Rendering is handled entirely by `@cfast/ui` components (`ListView`, `DetailView`, `DataTable`, `AppShell`) and `@cfast/forms` (`AutoForm`). This means apps that do not use the admin panel still get these components, and custom admin overrides use the same components as the rest of the app.
+
+### Built-In User Management
+
+The admin automatically provides a user list with search and filters, user detail pages with profile info, role assignment (respecting `roleGrants` from `@cfast/auth`), and impersonation for authorized roles.
+
+## Common Patterns
+
+### Customizing Table Views
+
+Override how specific tables appear in the admin by passing a `tables` configuration:
+
+```typescript
+createAdmin({
+  db,
+  auth,
+  schema,
+  tables: {
+    posts: {
+      label: "Blog Posts",
+      listColumns: ["title", "author", "published", "createdAt"],
+      searchable: ["title", "content"],
+      defaultSort: { column: "createdAt", direction: "desc" },
+      fields: {
+        content: { component: RichTextEditor },
+      },
+    },
+    // Tables not listed here use sensible defaults
+  },
+});
+```
+
+You can also exclude tables entirely with `exclude: true`, or customize individual field rendering.
+
+### Custom Row and Table Actions
+
+Add custom actions at the row level (per-record) or table level (for bulk operations):
+
+```typescript
+createAdmin({
+  // ...
+  tables: {
+    posts: {
+      actions: {
+        row: [
+          {
+            label: "Publish",
+            action: async (id, formData) => { /* publish logic */ },
+            confirm: "Are you sure you want to publish?",
+            variant: "default",
+          },
+        ],
+        table: [
+          {
+            label: "Export CSV",
+            handler: async (selectedIds) => { /* export logic */ },
+          },
+        ],
+      },
+    },
+  },
+});
+```
+
+### Dashboard Widgets
+
+The admin index page shows a configurable dashboard with count and recent-records widgets:
+
+```typescript
+createAdmin({
+  // ...
+  dashboard: {
+    widgets: [
+      { type: "count", table: "users", label: "Total Users" },
+      { type: "count", table: "posts", label: "Published Posts", where: { published: true } },
+      { type: "recent", table: "posts", limit: 5, label: "Recent Posts" },
+    ],
+  },
+});
+```
+
+### Server/Client Code Splitting
+
+For React Router apps where server code must not leak into client bundles, use the individual factories instead of `createAdmin`:
+
+```typescript
+// app/admin.server.ts
+import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
+
+const tableMetas = introspectSchema(schema);
+export const adminLoader = createAdminLoader(config, tableMetas);
+export const adminAction = createAdminAction(config, tableMetas);
+```
+
+```typescript
+// app/routes/admin.tsx
+import { createAdminComponent, introspectSchema } from "@cfast/admin";
+import { adminLoader, adminAction } from "~/admin.server";
+
+const tableMetas = introspectSchema(schema);
+const AdminComponent = createAdminComponent(tableMetas);
+
+export const loader = adminLoader;
+export const action = adminAction;
+export default AdminComponent;
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

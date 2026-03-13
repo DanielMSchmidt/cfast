@@ -1,0 +1,46 @@
+/* CFast brand colors */
+:root {
+  --cfast-orange: #F6821F;
+  --cfast-amber: #FBAD41;
+  --cfast-dark: #0f1117;
+}
+
+/* Hero section with dark background and speed-streak bg */
+[data-page-type="splash"] .hero {
+  position: relative;
+  background: var(--cfast-dark);
+  background-image: url('../assets/hero-bg.svg');
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid rgba(246, 130, 31, 0.15);
+  padding-block: 4rem;
+}
+
+/* Override tagline color on dark hero bg */
+[data-page-type="splash"] .hero .tagline {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Primary CTA button with orange gradient */
+[data-page-type="splash"] .hero a[class*="primary"] {
+  background: linear-gradient(135deg, var(--cfast-orange), var(--cfast-amber));
+  border: none;
+  color: white;
+}
+
+[data-page-type="splash"] .hero a[class*="primary"]:hover {
+  background: linear-gradient(135deg, #e5750f, var(--cfast-orange));
+}
+
+/* Starlight accent color override for brand consistency */
+:root {
+  --sl-color-accent-low: #2a1a08;
+  --sl-color-accent: var(--cfast-orange);
+  --sl-color-accent-high: var(--cfast-amber);
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #fef3e6;
+  --sl-color-accent: var(--cfast-orange);
+  --sl-color-accent-high: #7a3d08;
+}

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@cfast/admin": "^0.1.0",
+    "nanoid": "^5.1.0"
+  }
+}

@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Extracts expected GitHub Actions check names from the CI workflow YAML.
+# Handles jobs with and without matrix strategies (including multi-dimension
+# matrices, include/exclude). Outputs one check name per line.
+#
+# Requires: ruby (macOS built-in), jq
+#
+# Usage: scripts/ci-check-names [path/to/workflow.yml]
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKFLOW="${1:-$SCRIPT_DIR/../.github/workflows/ci.yml}"
+
+for cmd in ruby jq; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "Error: $cmd is required but not installed" >&2
+    exit 1
+  fi
+done
+
+if [[ ! -f "$WORKFLOW" ]]; then
+  echo "Error: workflow file not found: $WORKFLOW" >&2
+  exit 1
+fi
+
+# Convert YAML to JSON via ruby (which has yaml in stdlib), then extract
+# check names with jq — handling matrix expansion, include, and exclude.
+ruby -ryaml -rjson -e 'puts JSON.dump(YAML.safe_load(File.read(ARGV[0])))' "$WORKFLOW" \
+  | jq -r '
+  .jobs | to_entries[] | .value as $job | .key as $key |
+  ($job.name // $key) as $name_tpl |
+
+  if $job.strategy.matrix then
+    # Collect dimension arrays (skip include/exclude)
+    ($job.strategy.matrix | to_entries
+      | map(select(.key != "include" and .key != "exclude" and (.value | type == "array")))
+    ) as $dims |
+
+    # Cartesian product of all dimensions
+    (reduce $dims[] as $d (
+      [{}];
+      [.[] as $combo | $d.value[] as $val | ($combo + {($d.key): $val})]
+    )) as $combos |
+
+    # Apply excludes
+    ($job.strategy.matrix.exclude // []) as $excludes |
+    [$combos[] | . as $c | select(
+      [$excludes[] | . as $ex |
+        [to_entries[] | select($c[.key] == .value)] | length == (. | length)
+      ] | any | not
+    )] as $filtered |
+
+    # Apply includes (append extra combos)
+    ($filtered + ($job.strategy.matrix.include // [])) |
+
+    # Expand template for each combo
+    .[] | . as $combo |
+    $name_tpl | reduce ($combo | to_entries[]) as $e (
+      .;
+      gsub("\\$\\{\\{\\s*matrix\\." + $e.key + "\\s*\\}\\}"; $e.value | tostring)
+    )
+  else
+    $name_tpl
+  end
+'

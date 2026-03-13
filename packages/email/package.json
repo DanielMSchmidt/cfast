@@ -1,0 +1,61 @@
+{
+  "name": "@cfast/email",
+  "version": "0.0.1",
+  "description": "Plugin-based email for Cloudflare Workers with react-email rendering",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielMSchmidt/cfast.git",
+    "directory": "packages/email"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./mailgun": {
+      "import": "./dist/mailgun.js",
+      "types": "./dist/mailgun.d.ts"
+    },
+    "./console": {
+      "import": "./dist/console.js",
+      "types": "./dist/console.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/mailgun.ts src/console.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/mailgun.ts src/console.ts --format esm --dts --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "@react-email/components": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@react-email/components": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@react-email/render": "^2.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260305.1",
+    "@react-email/components": "^1.0.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "tsup": "^8",
+    "typescript": "^5.7",
+    "vitest": "^4.1.0"
+  }
+}
