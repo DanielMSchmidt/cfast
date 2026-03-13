@@ -3,6 +3,8 @@ import starlight from "@astrojs/starlight";
 import starlightTypeDoc, { typeDocSidebarGroup } from "starlight-typedoc";
 
 export default defineConfig({
+  site: "https://danielmschmidt.github.io",
+  base: "/cfast",
   integrations: [
     starlight({
       title: "CFast",
@@ -14,10 +16,10 @@ export default defineConfig({
       },
       favicon: "/favicon.ico",
       head: [
-        { tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" } },
-        { tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" } },
-        { tag: "link", attrs: { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" } },
-        { tag: "link", attrs: { rel: "manifest", href: "/site.webmanifest" } },
+        { tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "32x32", href: "/cfast/favicon-32x32.png" } },
+        { tag: "link", attrs: { rel: "icon", type: "image/png", sizes: "16x16", href: "/cfast/favicon-16x16.png" } },
+        { tag: "link", attrs: { rel: "apple-touch-icon", sizes: "180x180", href: "/cfast/apple-touch-icon.png" } },
+        { tag: "link", attrs: { rel: "manifest", href: "/cfast/site.webmanifest" } },
       ],
       customCss: ["./src/styles/custom.css"],
       social: [
