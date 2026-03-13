@@ -65,20 +65,24 @@ export async function promptForConfig(args: CliArgs): Promise<Config | null> {
     console.log(green(`  Added automatically: ${autoAdded.join(", ")}`));
   }
 
-  // UI library
+  // UI library — default to joy when running fully non-interactive (--all or --ui flag)
   let uiLibrary: UiLibrary | null = null;
   if (resolved.ui) {
-    const result = await prompts({
-      type: "select",
-      name: "uiLibrary",
-      message: "UI library:",
-      choices: [
-        { title: "MUI Joy UI", value: "joy" },
-        { title: "Headless (bring your own)", value: "headless" },
-      ],
-    });
-    if (result.uiLibrary === undefined) return null;
-    uiLibrary = result.uiLibrary as UiLibrary;
+    if (hasAnyFeatureFlag) {
+      uiLibrary = "joy";
+    } else {
+      const result = await prompts({
+        type: "select",
+        name: "uiLibrary",
+        message: "UI library:",
+        choices: [
+          { title: "MUI Joy UI", value: "joy" },
+          { title: "Headless (bring your own)", value: "headless" },
+        ],
+      });
+      if (result.uiLibrary === undefined) return null;
+      uiLibrary = result.uiLibrary as UiLibrary;
+    }
   }
 
   const targetDir = projectName;
