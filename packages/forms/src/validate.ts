@@ -1,5 +1,6 @@
 import type { Column } from "drizzle-orm";
 import type { ColumnBuilderBase } from "drizzle-orm/column-builder";
+import { asBuilderInternal, asColumnInternal } from "./drizzle-internals";
 import type { ValidationRules } from "./types";
 
 /**
@@ -38,9 +39,9 @@ export function v<T extends ColumnBuilderBase>(
   builder: T,
   rules: ValidationRules,
 ): T {
-  (
-    (builder as unknown as { config: Record<symbol, unknown> }).config
-  )[VALIDATE_SYMBOL] = rules;
+  // Access the protected config via the typed boundary helper.
+  // See drizzle-internals.ts for documentation on why this is needed.
+  asBuilderInternal(builder).config[VALIDATE_SYMBOL] = rules;
   return builder;
 }
 
@@ -55,7 +56,11 @@ export function v<T extends ColumnBuilderBase>(
 export function getValidationRules(
   column: Column,
 ): ValidationRules | undefined {
-  return (column as unknown as { config: Record<symbol, unknown> }).config[
-    VALIDATE_SYMBOL
-  ] as ValidationRules | undefined;
+  // Access the protected config via the typed boundary helper.
+  // See drizzle-internals.ts for documentation on why this is needed.
+  const value = asColumnInternal(column).config[VALIDATE_SYMBOL];
+  if (value === undefined) {
+    return undefined;
+  }
+  return value as ValidationRules;
 }

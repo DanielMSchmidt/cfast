@@ -108,15 +108,21 @@ export function createResolver(
     }
 
     if (hasErrors) {
+      // On validation failure, react-hook-form expects an empty `values` object
+      // (typed as Record<string, never> in ResolverError).
+      const emptyValues: Record<string, never> = {};
       return {
-        values: {} as Record<string, never>,
+        values: emptyValues,
         errors,
       };
     }
 
+    // On success, react-hook-form expects an empty `errors` object
+    // (typed as Record<string, never> in ResolverSuccess).
+    const noErrors: Record<string, never> = {};
     return {
       values,
-      errors: {} as Record<string, never>,
+      errors: noErrors,
     };
   };
 }
