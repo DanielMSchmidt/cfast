@@ -28,5 +28,10 @@ export function useApp<T = Record<string, unknown>>(): T {
         "Wrap your app with the Provider from createApp().",
     );
   }
+  // Type boundary: CoreContext stores Record<string, unknown> because React's
+  // createContext cannot carry the full generic plugin type from createApp().
+  // The caller narrows T to their app's actual client context type, which is
+  // guaranteed to match at runtime because createCoreProvider populates the
+  // context value from the registered plugins' client exports.
   return ctx as T;
 }
