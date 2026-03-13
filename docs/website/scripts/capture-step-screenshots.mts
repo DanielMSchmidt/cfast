@@ -190,7 +190,7 @@ async function signUpWithRetry(
   baseUrl: string,
   email: string,
   name: string,
-  maxRetries = 5,
+  maxRetries = 10,
 ): Promise<Response> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const res = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
@@ -199,8 +199,8 @@ async function signUpWithRetry(
       body: JSON.stringify({ email, name, password: TEST_PASSWORD }),
     });
     if (res.ok) return res;
-    // 500 may mean Workers runtime not ready yet — retry
-    if (res.status >= 500 && attempt < maxRetries) {
+    // 404 = route not loaded yet (Workers runtime still starting), 500+ = server error — retry both
+    if ((res.status === 404 || res.status >= 500) && attempt < maxRetries) {
       console.warn(`  Attempt ${attempt} failed (${res.status}), retrying...`);
       await new Promise((r) => setTimeout(r, 2000));
       continue;
@@ -362,7 +362,11 @@ function seedPosts(stepDir: string, userIds: Record<Role, string>, schema: Posts
 
 // --- Screenshot capture ---
 
-async function loginAs(context: BrowserContext, cookie: string) {
+async function loginAs(context: BrowserContext, cookie: string | undefined) {
+  if (!cookie) {
+    console.warn("  Warning: no session cookie available, skipping login");
+    return;
+  }
   await context.addCookies([
     {
       name: "better-auth.session_token",
