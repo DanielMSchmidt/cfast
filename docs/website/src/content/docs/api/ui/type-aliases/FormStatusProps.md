@@ -7,7 +7,7 @@ title: "FormStatusProps"
 
 > **FormStatusProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1087](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1087)
+Defined in: [packages/ui/src/types.ts:1087](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1087)
 
 Props for the FormStatus component.
 
@@ -25,6 +25,6 @@ keyed list. Uses the [AlertSlotProps](/api/ui/type-aliases/alertslotprops/) slot
 
 > **data**: [`FormStatusData`](/api/ui/type-aliases/formstatusdata/) \| `null` \| `undefined`
 
-Defined in: [packages/ui/src/types.ts:1089](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1089)
+Defined in: [packages/ui/src/types.ts:1089](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1089)
 
 Action result data, or null/undefined when no result is available.

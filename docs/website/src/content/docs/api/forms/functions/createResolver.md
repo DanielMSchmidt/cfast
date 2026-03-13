@@ -7,7 +7,7 @@ title: "createResolver"
 
 > **createResolver**(`fields`, `fieldOverrides?`): `Resolver`\<`FieldValues`\>
 
-Defined in: [packages/forms/src/resolver.ts:81](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/resolver.ts#L81)
+Defined in: [packages/forms/src/resolver.ts:81](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/resolver.ts#L81)
 
 Create a react-hook-form resolver that validates form values against
 introspected [FieldDefinition](/api/forms/type-aliases/fielddefinition/) rules.

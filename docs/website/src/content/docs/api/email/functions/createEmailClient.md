@@ -7,7 +7,7 @@ title: "createEmailClient"
 
 > **createEmailClient**(`config`): [`EmailClient`](/api/email/type-aliases/emailclient/)
 
-Defined in: [packages/email/src/create-email-client.ts:35](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/create-email-client.ts#L35)
+Defined in: [packages/email/src/create-email-client.ts:35](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/create-email-client.ts#L35)
 
 Create an email client that renders react-email templates and delivers them
 through a pluggable [EmailProvider](/api/email/type-aliases/emailprovider/).

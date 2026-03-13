@@ -7,7 +7,7 @@ title: "TooltipSlotProps"
 
 > **TooltipSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L112)
+Defined in: [packages/ui/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L112)
 
 Props for the tooltip plugin slot.
 
@@ -24,7 +24,7 @@ and truncated text fields.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:116](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L116)
+Defined in: [packages/ui/src/types.ts:116](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L116)
 
 Element that triggers the tooltip.
 
@@ -34,6 +34,6 @@ Element that triggers the tooltip.
 
 > **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L114)
+Defined in: [packages/ui/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L114)
 
 Tooltip text displayed on hover.

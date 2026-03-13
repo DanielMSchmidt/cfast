@@ -9,3 +9,6 @@ dist/
 .dev.vars
 .claude/worktrees/
 docs/tutorials/team-blog/*/.react-router
+build/
+storybook-static/
+worker-configuration.d.ts

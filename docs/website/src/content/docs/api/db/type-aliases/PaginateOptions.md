@@ -7,7 +7,7 @@ title: "PaginateOptions"
 
 > **PaginateOptions** = `object`
 
-Defined in: [packages/db/src/types.ts:333](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L333)
+Defined in: [packages/db/src/types.ts:333](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L333)
 
 Options for `db.query(table).paginate()`.
 
@@ -32,7 +32,7 @@ db.query(posts).paginate(params, {
 
 > `optional` **cache**: [`QueryCacheOptions`](/api/db/type-aliases/querycacheoptions/)
 
-Defined in: [packages/db/src/types.ts:351](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L351)
+Defined in: [packages/db/src/types.ts:351](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L351)
 
 Per-query cache control. Pass `false` to skip caching, or an object to customize.
 
@@ -42,7 +42,7 @@ Per-query cache control. Pass `false` to skip caching, or an object to customize
 
 > `optional` **columns**: `Record`\<`string`, `boolean`\>
 
-Defined in: [packages/db/src/types.ts:335](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L335)
+Defined in: [packages/db/src/types.ts:335](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L335)
 
 Column selection (e.g., `{ id: true, title: true }`). Omit to select all columns.
 
@@ -52,7 +52,7 @@ Column selection (e.g., `{ id: true, title: true }`). Omit to select all columns
 
 > `optional` **cursorColumns**: `unknown`[]
 
-Defined in: [packages/db/src/types.ts:341](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L341)
+Defined in: [packages/db/src/types.ts:341](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L341)
 
 Drizzle column references used for cursor-based ordering and comparison.
 
@@ -62,7 +62,7 @@ Drizzle column references used for cursor-based ordering and comparison.
 
 > `optional` **orderBy**: `unknown`
 
-Defined in: [packages/db/src/types.ts:339](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L339)
+Defined in: [packages/db/src/types.ts:339](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L339)
 
 Ordering expression for offset pagination. Ignored for cursor pagination (uses `cursorColumns` instead).
 
@@ -72,7 +72,7 @@ Ordering expression for offset pagination. Ignored for cursor pagination (uses `
 
 > `optional` **orderDirection**: `"asc"` \| `"desc"`
 
-Defined in: [packages/db/src/types.ts:343](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L343)
+Defined in: [packages/db/src/types.ts:343](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L343)
 
 Sort direction for cursor pagination. Defaults to `"desc"`.
 
@@ -82,7 +82,7 @@ Sort direction for cursor pagination. Defaults to `"desc"`.
 
 > `optional` **where**: `unknown`
 
-Defined in: [packages/db/src/types.ts:337](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L337)
+Defined in: [packages/db/src/types.ts:337](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L337)
 
 User-supplied filter condition (AND'd with permission filters at `.run()` time).
 
@@ -92,7 +92,7 @@ User-supplied filter condition (AND'd with permission filters at `.run()` time).
 
 > `optional` **with**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/db/src/types.ts:349](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L349)
+Defined in: [packages/db/src/types.ts:349](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L349)
 
 Drizzle relational query includes (e.g., `{ comments: true }`).
 

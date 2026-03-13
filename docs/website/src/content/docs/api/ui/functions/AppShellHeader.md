@@ -7,7 +7,7 @@ title: "AppShellHeader"
 
 > **AppShellHeader**(`__namedParameters`): `Element`
 
-Defined in: [packages/ui/src/components/app-shell.tsx:101](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/app-shell.tsx#L101)
+Defined in: [packages/ui/src/components/app-shell.tsx:101](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/components/app-shell.tsx#L101)
 
 Header bar for [AppShell](/api/ui/functions/appshell/) with flexible content and an optional user menu.
 

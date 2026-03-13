@@ -7,7 +7,7 @@ title: "useOffsetPagination"
 
 > **useOffsetPagination**\<`T`\>(): [`UseOffsetPaginationResult`](/api/pagination/type-aliases/useoffsetpaginationresult/)\<`T`\>
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:53](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-offset-pagination.ts#L53)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:53](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-offset-pagination.ts#L53)
 
 React hook for offset-based (page number) pagination with React Router loader data.
 

@@ -159,9 +159,15 @@ export function createAdminAction(
         return handleRemoveRole(config, formData);
 
       case "impersonate":
+        if (!config.auth.impersonate) {
+          return { error: "Impersonation is not configured." };
+        }
         return handleImpersonate(config, user.id, formData, request);
 
       case "stopImpersonation":
+        if (!config.auth.stopImpersonation) {
+          return { error: "Impersonation is not configured." };
+        }
         return config.auth.stopImpersonation(request);
 
       case "custom":
@@ -351,7 +357,7 @@ async function handleImpersonate(
     throw new Response("Missing _id for impersonation", { status: 400 });
   }
 
-  return config.auth.impersonate(adminId, targetId, request);
+  return config.auth.impersonate!(adminId, targetId, request);
 }
 
 /**

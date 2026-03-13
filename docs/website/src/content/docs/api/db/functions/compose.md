@@ -7,7 +7,7 @@ title: "compose"
 
 > **compose**\<`TResult`\>(`operations`, `executor`): [`Operation`](/api/db/type-aliases/operation/)\<`TResult`\>
 
-Defined in: [packages/db/src/compose.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/compose.ts#L47)
+Defined in: [packages/db/src/compose.ts:47](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/compose.ts#L47)
 
 Merges multiple [Operations](/api/db/type-aliases/operation/) into a single operation with combined,
 deduplicated permissions and an executor function for controlling data flow.

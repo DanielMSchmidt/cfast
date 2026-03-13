@@ -7,7 +7,7 @@ title: "createImpersonationManager"
 
 > **createImpersonationManager**(`d1`, `options?`): `object`
 
-Defined in: [packages/auth/src/impersonation.ts:41](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/impersonation.ts#L41)
+Defined in: [packages/auth/src/impersonation.ts:41](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/impersonation.ts#L41)
 
 Creates an impersonation manager backed by a Cloudflare D1 database.
 

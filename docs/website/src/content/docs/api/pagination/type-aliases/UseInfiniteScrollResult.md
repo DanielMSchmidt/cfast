@@ -7,7 +7,7 @@ title: "UseInfiniteScrollResult"
 
 > **UseInfiniteScrollResult**\<`T`\> = `object`
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:22](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-infinite-scroll.ts#L22)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:22](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-infinite-scroll.ts#L22)
 
 Return value of the [useInfiniteScroll](/api/pagination/functions/useinfinitescroll/) hook.
 
@@ -25,7 +25,7 @@ The item type in the paginated list.
 
 > **hasMore**: `boolean`
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:28](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-infinite-scroll.ts#L28)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:28](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-infinite-scroll.ts#L28)
 
 `true` if there are more pages to fetch.
 
@@ -35,7 +35,7 @@ Defined in: [packages/pagination/src/use-infinite-scroll.ts:28](https://github.c
 
 > **isLoading**: `boolean`
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-infinite-scroll.ts#L30)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:30](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-infinite-scroll.ts#L30)
 
 `true` while a page fetch is in flight.
 
@@ -45,7 +45,7 @@ Defined in: [packages/pagination/src/use-infinite-scroll.ts:30](https://github.c
 
 > **items**: `T`[]
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:24](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-infinite-scroll.ts#L24)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:24](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-infinite-scroll.ts#L24)
 
 Accumulated, deduplicated items from all loaded pages.
 
@@ -55,6 +55,6 @@ Accumulated, deduplicated items from all loaded pages.
 
 > **sentinelRef**: `RefObject`\<`Element` \| `null`\>
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:26](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-infinite-scroll.ts#L26)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:26](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-infinite-scroll.ts#L26)
 
 Ref to attach to a sentinel DOM element. Loading triggers when it enters the viewport.

@@ -7,7 +7,7 @@ title: "FieldDefinition"
 
 > **FieldDefinition** = `object`
 
-Defined in: [packages/forms/src/types.ts:48](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L48)
+Defined in: [packages/forms/src/types.ts:48](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L48)
 
 A field definition produced by [introspectTable](/api/forms/functions/introspecttable/), describing a single form field.
 
@@ -21,7 +21,7 @@ schema and any rules attached via [v](/api/forms/functions/v/).
 
 > `optional` **enumValues**: `string`[]
 
-Defined in: [packages/forms/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L62)
+Defined in: [packages/forms/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L62)
 
 Available options for enum/select fields, copied from the Drizzle column definition.
 
@@ -31,7 +31,7 @@ Available options for enum/select fields, copied from the Drizzle column definit
 
 > **hasDefault**: `boolean`
 
-Defined in: [packages/forms/src/types.ts:58](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L58)
+Defined in: [packages/forms/src/types.ts:58](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L58)
 
 Whether the column has a default value defined in the schema.
 
@@ -41,7 +41,7 @@ Whether the column has a default value defined in the schema.
 
 > **inputType**: [`InputType`](/api/forms/type-aliases/inputtype/)
 
-Defined in: [packages/forms/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L52)
+Defined in: [packages/forms/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L52)
 
 The resolved input type based on the Drizzle column type.
 
@@ -51,7 +51,7 @@ The resolved input type based on the Drizzle column type.
 
 > **isPrimaryKey**: `boolean`
 
-Defined in: [packages/forms/src/types.ts:60](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L60)
+Defined in: [packages/forms/src/types.ts:60](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L60)
 
 Whether the column is the table's primary key.
 
@@ -61,7 +61,7 @@ Whether the column is the table's primary key.
 
 > **label**: `string`
 
-Defined in: [packages/forms/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L54)
+Defined in: [packages/forms/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L54)
 
 Human-readable label derived from the column name (e.g., `"Author Id"` from `"authorId"`).
 
@@ -71,7 +71,7 @@ Human-readable label derived from the column name (e.g., `"Author Id"` from `"au
 
 > **name**: `string`
 
-Defined in: [packages/forms/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L50)
+Defined in: [packages/forms/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L50)
 
 The column key from the Drizzle table (e.g., `"title"`, `"authorId"`).
 
@@ -81,7 +81,7 @@ The column key from the Drizzle table (e.g., `"title"`, `"authorId"`).
 
 > **required**: `boolean`
 
-Defined in: [packages/forms/src/types.ts:56](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L56)
+Defined in: [packages/forms/src/types.ts:56](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L56)
 
 Whether the column is NOT NULL (and therefore required in the form).
 
@@ -91,6 +91,6 @@ Whether the column is NOT NULL (and therefore required in the form).
 
 > **validation**: [`ValidationRules`](/api/forms/type-aliases/validationrules/)
 
-Defined in: [packages/forms/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L64)
+Defined in: [packages/forms/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L64)
 
 Merged validation rules from schema introspection and [v](/api/forms/functions/v/) annotations.

@@ -17,8 +17,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   );
 
   const visiblePosts = await db.query(posts).findMany({
-    orderBy: (cols, { desc }) => desc(cols.createdAt),
-  }).run({});
+    orderBy: (cols: Record<string, unknown>, { desc }: { desc: (col: unknown) => unknown }) => desc(cols.createdAt),
+  }).run({}) as Array<{ id: string; title: string; content: string; createdAt: string }>;
 
   return {
     posts: visiblePosts,

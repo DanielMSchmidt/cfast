@@ -7,7 +7,7 @@ title: "EmailClient"
 
 > **EmailClient** = `object`
 
-Defined in: [packages/email/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L93)
+Defined in: [packages/email/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L93)
 
 An email client instance returned by [createEmailClient](/api/email/functions/createemailclient/).
 
@@ -20,7 +20,7 @@ Renders react-email components and delivers them through the configured
 
 > **send**: (`options`) => `Promise`\<\{ `id`: `string`; \}\>
 
-Defined in: [packages/email/src/types.ts:100](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L100)
+Defined in: [packages/email/src/types.ts:100](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L100)
 
 Render a react-email component and send the resulting email.
 

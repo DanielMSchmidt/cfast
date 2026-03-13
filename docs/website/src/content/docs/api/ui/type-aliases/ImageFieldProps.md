@@ -7,7 +7,7 @@ title: "ImageFieldProps"
 
 > **ImageFieldProps** = [`BaseFieldProps`](/api/ui/type-aliases/basefieldprops/) & `object`
 
-Defined in: [packages/ui/src/types.ts:780](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L780)
+Defined in: [packages/ui/src/types.ts:780](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L780)
 
 Props for the ImageField read-only display component.
 

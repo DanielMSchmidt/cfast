@@ -29,7 +29,7 @@ export type PageContainerProps = {
  *   ]}
  *   actions={<ActionButton action={deletePost} input={{ postId }} />}
  * >
- *   {/* page content *​/}
+ *   ...
  * </PageContainer>
  * ```
  */

@@ -7,7 +7,7 @@ title: "App"
 
 > **App**\<`TSchema`, `TPermissions`, `TPluginContext`, `TClientContext`\> = `object`
 
-Defined in: [packages/core/src/types.ts:120](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L120)
+Defined in: [packages/core/src/types.ts:120](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L120)
 
 The app object returned by `createApp()` and extended by `.use()` calls.
 
@@ -46,7 +46,7 @@ The accumulated client-side context type.
 
 > **permissions**: `TPermissions`
 
-Defined in: [packages/core/src/types.ts:165](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L165)
+Defined in: [packages/core/src/types.ts:165](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L165)
 
 The permissions config passed to `createApp()`.
 
@@ -56,7 +56,7 @@ The permissions config passed to `createApp()`.
 
 > **Provider**: `ComponentType`\<\{ `children`: `ReactNode`; \}\>
 
-Defined in: [packages/core/src/types.ts:163](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L163)
+Defined in: [packages/core/src/types.ts:163](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L163)
 
 Composed React provider tree from all registered plugins.
 
@@ -66,7 +66,7 @@ Composed React provider tree from all registered plugins.
 
 > **action**\<`T`\>(`fn`): (`args`) => `Promise`\<`T`\>
 
-Defined in: [packages/core/src/types.ts:143](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L143)
+Defined in: [packages/core/src/types.ts:143](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L143)
 
 Convenience wrapper for React Router actions that auto-creates the app context.
 
@@ -102,7 +102,7 @@ Convenience wrapper for React Router actions that auto-creates the app context.
 
 > **context**(`request`, `context?`): `Promise`\<[`AppContext`](/api/core/type-aliases/appcontext/)\<`TSchema`, `TPluginContext`\>\>
 
-Defined in: [packages/core/src/types.ts:131](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L131)
+Defined in: [packages/core/src/types.ts:131](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L131)
 
 Builds the per-request context by running each plugin's `setup()` in order.
 
@@ -126,7 +126,7 @@ Builds the per-request context by running each plugin's `setup()` in order.
 
 > **env**(): [`ParsedEnv`](/api/env/type-aliases/parsedenv/)\<`TSchema`\>
 
-Defined in: [packages/core/src/types.ts:129](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L129)
+Defined in: [packages/core/src/types.ts:129](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L129)
 
 Returns the typed, validated environment.
 
@@ -140,7 +140,7 @@ Returns the typed, validated environment.
 
 > **init**(`rawEnv`): `void`
 
-Defined in: [packages/core/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L127)
+Defined in: [packages/core/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L127)
 
 Validates and initializes environment bindings. Call once in the Workers entry point.
 
@@ -160,7 +160,7 @@ Validates and initializes environment bindings. Call once in the Workers entry p
 
 > **loader**\<`T`\>(`fn`): (`args`) => `Promise`\<`T`\>
 
-Defined in: [packages/core/src/types.ts:136](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L136)
+Defined in: [packages/core/src/types.ts:136](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L136)
 
 Convenience wrapper for React Router loaders that auto-creates the app context.
 
@@ -196,7 +196,7 @@ Convenience wrapper for React Router loaders that auto-creates the app context.
 
 > **use**\<`TName`, `TProvides`, `TClient`\>(`plugin`): `App`\<`TSchema`, `TPermissions`, `TPluginContext` & `{ [K in string]: TProvides }`, `TClientContext` & `TClient` *extends* `object` ? `{ [K in string]: TClient }` : `unknown`\>
 
-Defined in: [packages/core/src/types.ts:150](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L150)
+Defined in: [packages/core/src/types.ts:150](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/core/src/types.ts#L150)
 
 Registers a plugin, extending the app's context type. Throws on duplicate names.
 

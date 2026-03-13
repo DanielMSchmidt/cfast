@@ -7,7 +7,7 @@ title: "FilterBarProps"
 
 > **FilterBarProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:546](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L546)
+Defined in: [packages/ui/src/types.ts:546](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L546)
 
 Props for the FilterBar component.
 
@@ -26,7 +26,7 @@ management required. Use `values`/`onChange` for controlled mode instead.
 
 > **filters**: [`FilterDef`](/api/ui/type-aliases/filterdef/)[]
 
-Defined in: [packages/ui/src/types.ts:550](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L550)
+Defined in: [packages/ui/src/types.ts:550](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L550)
 
 Filter definitions specifying which columns to filter and how.
 
@@ -36,7 +36,7 @@ Filter definitions specifying which columns to filter and how.
 
 > `optional` **onChange**: (`values`) => `void`
 
-Defined in: [packages/ui/src/types.ts:556](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L556)
+Defined in: [packages/ui/src/types.ts:556](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L556)
 
 Callback when filter values change (controlled mode).
 
@@ -56,7 +56,7 @@ Callback when filter values change (controlled mode).
 
 > `optional` **searchable**: `string`[]
 
-Defined in: [packages/ui/src/types.ts:552](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L552)
+Defined in: [packages/ui/src/types.ts:552](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L552)
 
 Column names that support full-text search.
 
@@ -66,7 +66,7 @@ Column names that support full-text search.
 
 > `optional` **table**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:548](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L548)
+Defined in: [packages/ui/src/types.ts:548](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L548)
 
 Drizzle table for filter type inference.
 
@@ -76,6 +76,6 @@ Drizzle table for filter type inference.
 
 > `optional` **values**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/ui/src/types.ts:554](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L554)
+Defined in: [packages/ui/src/types.ts:554](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L554)
 
 Current filter values (controlled mode).

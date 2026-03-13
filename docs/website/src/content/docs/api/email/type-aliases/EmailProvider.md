@@ -7,7 +7,7 @@ title: "EmailProvider"
 
 > **EmailProvider** = `object`
 
-Defined in: [packages/email/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L46)
+Defined in: [packages/email/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L46)
 
 A pluggable email delivery backend.
 
@@ -39,7 +39,7 @@ const myProvider: EmailProvider = {
 
 > **name**: `string`
 
-Defined in: [packages/email/src/types.ts:48](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L48)
+Defined in: [packages/email/src/types.ts:48](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L48)
 
 Unique name identifying the provider (e.g. `"mailgun"`, `"console"`).
 
@@ -49,7 +49,7 @@ Unique name identifying the provider (e.g. `"mailgun"`, `"console"`).
 
 > **send**: (`message`) => `Promise`\<\{ `id`: `string`; \}\>
 
-Defined in: [packages/email/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L50)
+Defined in: [packages/email/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L50)
 
 Deliver a rendered email message. Returns a provider-specific message ID.
 

@@ -7,7 +7,7 @@ title: "UsePaginationResult"
 
 > **UsePaginationResult**\<`T`\> = `object`
 
-Defined in: [packages/pagination/src/use-pagination.ts:24](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-pagination.ts#L24)
+Defined in: [packages/pagination/src/use-pagination.ts:24](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-pagination.ts#L24)
 
 Return value of the [usePagination](/api/pagination/functions/usepagination/) hook.
 
@@ -25,7 +25,7 @@ The item type in the paginated list.
 
 > **hasMore**: `boolean`
 
-Defined in: [packages/pagination/src/use-pagination.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-pagination.ts#L30)
+Defined in: [packages/pagination/src/use-pagination.ts:30](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-pagination.ts#L30)
 
 `true` if there are more pages to fetch (a `nextCursor` exists).
 
@@ -35,7 +35,7 @@ Defined in: [packages/pagination/src/use-pagination.ts:30](https://github.com/Da
 
 > **isLoading**: `boolean`
 
-Defined in: [packages/pagination/src/use-pagination.ts:32](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-pagination.ts#L32)
+Defined in: [packages/pagination/src/use-pagination.ts:32](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-pagination.ts#L32)
 
 `true` while a page fetch is in flight.
 
@@ -45,7 +45,7 @@ Defined in: [packages/pagination/src/use-pagination.ts:32](https://github.com/Da
 
 > **items**: `T`[]
 
-Defined in: [packages/pagination/src/use-pagination.ts:26](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-pagination.ts#L26)
+Defined in: [packages/pagination/src/use-pagination.ts:26](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-pagination.ts#L26)
 
 Accumulated, deduplicated items from all loaded pages.
 
@@ -55,7 +55,7 @@ Accumulated, deduplicated items from all loaded pages.
 
 > **loadMore**: () => `void`
 
-Defined in: [packages/pagination/src/use-pagination.ts:28](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-pagination.ts#L28)
+Defined in: [packages/pagination/src/use-pagination.ts:28](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-pagination.ts#L28)
 
 Fetches the next page of results. No-op if already loading or no more pages.
 

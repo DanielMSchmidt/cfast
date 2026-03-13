@@ -7,7 +7,7 @@ title: "KeyContext"
 
 > **KeyContext**\<`TInput`\> = `object`
 
-Defined in: [packages/storage/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L93)
+Defined in: [packages/storage/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L93)
 
 Context passed to the `key` function when generating an R2 object key.
 
@@ -25,7 +25,7 @@ The shape of caller-provided input data.
 
 > **input**: `TInput`
 
-Defined in: [packages/storage/src/types.ts:97](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L97)
+Defined in: [packages/storage/src/types.ts:97](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L97)
 
 Caller-provided input data (e.g. a `postId`).
 
@@ -35,7 +35,7 @@ Caller-provided input data (e.g. a `postId`).
 
 > **user**: `object`
 
-Defined in: [packages/storage/src/types.ts:95](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L95)
+Defined in: [packages/storage/src/types.ts:95](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L95)
 
 The authenticated user performing the upload.
 

@@ -7,7 +7,7 @@ title: "AdminTableMeta"
 
 > **AdminTableMeta** = `object`
 
-Defined in: [packages/admin/src/types.ts:350](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L350)
+Defined in: [packages/admin/src/types.ts:350](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L350)
 
 Complete metadata for a database table, produced by [introspectSchema](/api/admin/functions/introspectschema/).
 
@@ -20,7 +20,7 @@ Used by the admin loader, action, and component to render views.
 
 > **columns**: [`AdminColumnConfig`](/api/admin/type-aliases/admincolumnconfig/)[]
 
-Defined in: [packages/admin/src/types.ts:358](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L358)
+Defined in: [packages/admin/src/types.ts:358](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L358)
 
 Introspected column metadata for every column in this table.
 
@@ -30,7 +30,7 @@ Introspected column metadata for every column in this table.
 
 > **defaultSort**: `object`
 
-Defined in: [packages/admin/src/types.ts:366](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L366)
+Defined in: [packages/admin/src/types.ts:366](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L366)
 
 Default sort order for the list view.
 
@@ -48,7 +48,7 @@ Default sort order for the list view.
 
 > **drizzleTable**: `SQLiteTable`
 
-Defined in: [packages/admin/src/types.ts:356](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L356)
+Defined in: [packages/admin/src/types.ts:356](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L356)
 
 The original Drizzle table object, used for queries and form generation.
 
@@ -58,7 +58,7 @@ The original Drizzle table object, used for queries and form generation.
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:354](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L354)
+Defined in: [packages/admin/src/types.ts:354](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L354)
 
 Human-readable label for display in the sidebar and views (e.g., `"Blog Posts"`).
 
@@ -68,7 +68,7 @@ Human-readable label for display in the sidebar and views (e.g., `"Blog Posts"`)
 
 > **listColumns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:364](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L364)
+Defined in: [packages/admin/src/types.ts:364](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L364)
 
 Column names shown in the list view.
 
@@ -78,7 +78,7 @@ Column names shown in the list view.
 
 > **name**: `string`
 
-Defined in: [packages/admin/src/types.ts:352](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L352)
+Defined in: [packages/admin/src/types.ts:352](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L352)
 
 The Drizzle table name (e.g., `"posts"`).
 
@@ -88,7 +88,7 @@ The Drizzle table name (e.g., `"posts"`).
 
 > **overrides**: [`TableOverrides`](/api/admin/type-aliases/tableoverrides/)
 
-Defined in: [packages/admin/src/types.ts:368](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L368)
+Defined in: [packages/admin/src/types.ts:368](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L368)
 
 User-provided overrides applied to this table. See [TableOverrides](/api/admin/type-aliases/tableoverrides/).
 
@@ -98,7 +98,7 @@ User-provided overrides applied to this table. See [TableOverrides](/api/admin/t
 
 > **primaryKey**: `string`
 
-Defined in: [packages/admin/src/types.ts:360](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L360)
+Defined in: [packages/admin/src/types.ts:360](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L360)
 
 The name of the primary key column (e.g., `"id"`).
 
@@ -108,6 +108,6 @@ The name of the primary key column (e.g., `"id"`).
 
 > **searchableColumns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:362](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L362)
+Defined in: [packages/admin/src/types.ts:362](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L362)
 
 Column names that support text search in the list view.

@@ -7,7 +7,7 @@ title: "AuthUser"
 
 > **AuthUser** = `object`
 
-Defined in: [packages/auth/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L10)
+Defined in: [packages/auth/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L10)
 
 The authenticated user object available throughout the application.
 
@@ -21,7 +21,7 @@ and is the same object passed to `createDb({ user })` for permission resolution.
 
 > **avatarUrl**: `string` \| `null`
 
-Defined in: [packages/auth/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L18)
+Defined in: [packages/auth/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L18)
 
 URL to the user's avatar image, or `null` if not set.
 
@@ -31,7 +31,7 @@ URL to the user's avatar image, or `null` if not set.
 
 > **email**: `string`
 
-Defined in: [packages/auth/src/types.ts:14](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L14)
+Defined in: [packages/auth/src/types.ts:14](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L14)
 
 The user's email address, used for magic link authentication.
 
@@ -41,7 +41,7 @@ The user's email address, used for magic link authentication.
 
 > **id**: `string`
 
-Defined in: [packages/auth/src/types.ts:12](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L12)
+Defined in: [packages/auth/src/types.ts:12](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L12)
 
 Unique user identifier (UUID from Better Auth).
 
@@ -51,7 +51,7 @@ Unique user identifier (UUID from Better Auth).
 
 > `optional` **isImpersonating**: `boolean`
 
-Defined in: [packages/auth/src/types.ts:22](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L22)
+Defined in: [packages/auth/src/types.ts:22](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L22)
 
 Whether an admin is currently impersonating this user.
 
@@ -61,7 +61,7 @@ Whether an admin is currently impersonating this user.
 
 > **name**: `string`
 
-Defined in: [packages/auth/src/types.ts:16](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L16)
+Defined in: [packages/auth/src/types.ts:16](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L16)
 
 Display name for the user.
 
@@ -71,7 +71,7 @@ Display name for the user.
 
 > `optional` **realUser**: `object`
 
-Defined in: [packages/auth/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L24)
+Defined in: [packages/auth/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L24)
 
 The real admin user performing the impersonation, if active.
 
@@ -89,6 +89,6 @@ The real admin user performing the impersonation, if active.
 
 > **roles**: `string`[]
 
-Defined in: [packages/auth/src/types.ts:20](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L20)
+Defined in: [packages/auth/src/types.ts:20](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L20)
 
 Roles assigned to this user, matching role names from `@cfast/permissions`.

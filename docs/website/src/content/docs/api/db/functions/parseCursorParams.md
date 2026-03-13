@@ -7,7 +7,7 @@ title: "parseCursorParams"
 
 > **parseCursorParams**(`request`, `options?`): [`CursorParams`](/api/db/type-aliases/cursorparams/)
 
-Defined in: [packages/db/src/paginate.ts:46](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/paginate.ts#L46)
+Defined in: [packages/db/src/paginate.ts:46](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/paginate.ts#L46)
 
 Parses cursor-based pagination parameters from a request URL's search params.
 

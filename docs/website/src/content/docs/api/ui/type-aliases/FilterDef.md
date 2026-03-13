@@ -7,7 +7,7 @@ title: "FilterDef"
 
 > **FilterDef** = `object`
 
-Defined in: [packages/ui/src/types.ts:474](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L474)
+Defined in: [packages/ui/src/types.ts:474](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L474)
 
 Definition of a single filter in a [FilterBarProps](/api/ui/type-aliases/filterbarprops/).
 
@@ -27,7 +27,7 @@ as Drizzle `where` clauses in the loader.
 
 > **column**: `string`
 
-Defined in: [packages/ui/src/types.ts:476](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L476)
+Defined in: [packages/ui/src/types.ts:476](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L476)
 
 Column name this filter applies to.
 
@@ -37,7 +37,7 @@ Column name this filter applies to.
 
 > `optional` **display**: `string`
 
-Defined in: [packages/ui/src/types.ts:486](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L486)
+Defined in: [packages/ui/src/types.ts:486](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L486)
 
 Display field name for relation filters.
 
@@ -47,7 +47,7 @@ Display field name for relation filters.
 
 > `optional` **label**: `string`
 
-Defined in: [packages/ui/src/types.ts:480](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L480)
+Defined in: [packages/ui/src/types.ts:480](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L480)
 
 Optional label override (defaults to column name).
 
@@ -57,7 +57,7 @@ Optional label override (defaults to column name).
 
 > `optional` **options**: [`FilterOption`](/api/ui/type-aliases/filteroption/)[]
 
-Defined in: [packages/ui/src/types.ts:482](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L482)
+Defined in: [packages/ui/src/types.ts:482](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L482)
 
 Options for select/multiSelect filters.
 
@@ -67,7 +67,7 @@ Options for select/multiSelect filters.
 
 > `optional` **placeholder**: `string`
 
-Defined in: [packages/ui/src/types.ts:488](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L488)
+Defined in: [packages/ui/src/types.ts:488](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L488)
 
 Placeholder text for the filter input.
 
@@ -77,7 +77,7 @@ Placeholder text for the filter input.
 
 > `optional` **table**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:484](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L484)
+Defined in: [packages/ui/src/types.ts:484](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L484)
 
 Drizzle table for relation filters (async select).
 
@@ -87,6 +87,6 @@ Drizzle table for relation filters (async select).
 
 > **type**: [`FilterType`](/api/ui/type-aliases/filtertype/)
 
-Defined in: [packages/ui/src/types.ts:478](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L478)
+Defined in: [packages/ui/src/types.ts:478](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L478)
 
 Input type determining the filter UI.

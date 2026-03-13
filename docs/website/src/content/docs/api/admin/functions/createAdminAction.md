@@ -7,7 +7,7 @@ title: "createAdminAction"
 
 > **createAdminAction**(`config`, `tableMetas`): (`request`) => `Promise`\<`Response` \| [`AdminActionResult`](/api/admin/type-aliases/adminactionresult/)\>
 
-Defined in: [packages/admin/src/action.ts:121](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/action.ts#L121)
+Defined in: [packages/admin/src/action.ts:121](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/action.ts#L121)
 
 Create an admin action function from config and introspected table metadata.
 

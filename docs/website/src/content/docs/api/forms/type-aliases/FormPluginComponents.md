@@ -7,7 +7,7 @@ title: "FormPluginComponents"
 
 > **FormPluginComponents** = `object`
 
-Defined in: [packages/forms/src/types.ts:144](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L144)
+Defined in: [packages/forms/src/types.ts:144](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L144)
 
 The set of UI components a [FormPlugin](/api/forms/type-aliases/formplugin/) must provide.
 
@@ -33,7 +33,7 @@ const components: FormPluginComponents = {
 
 > **checkbox**: `React.ComponentType`\<[`FieldComponentProps`](/api/forms/type-aliases/fieldcomponentprops/)\>
 
-Defined in: [packages/forms/src/types.ts:152](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L152)
+Defined in: [packages/forms/src/types.ts:152](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L152)
 
 Component for rendering boolean column inputs as a checkbox.
 
@@ -43,7 +43,7 @@ Component for rendering boolean column inputs as a checkbox.
 
 > **form**: `React.ComponentType`\<[`FormWrapperProps`](/api/forms/type-aliases/formwrapperprops/)\>
 
-Defined in: [packages/forms/src/types.ts:154](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L154)
+Defined in: [packages/forms/src/types.ts:154](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L154)
 
 Wrapper component for the entire form element. Receives `onSubmit` and children.
 
@@ -53,7 +53,7 @@ Wrapper component for the entire form element. Receives `onSubmit` and children.
 
 > **numberInput**: `React.ComponentType`\<[`FieldComponentProps`](/api/forms/type-aliases/fieldcomponentprops/)\>
 
-Defined in: [packages/forms/src/types.ts:148](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L148)
+Defined in: [packages/forms/src/types.ts:148](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L148)
 
 Component for rendering integer/number column inputs.
 
@@ -63,7 +63,7 @@ Component for rendering integer/number column inputs.
 
 > **select**: `React.ComponentType`\<[`FieldComponentProps`](/api/forms/type-aliases/fieldcomponentprops/)\>
 
-Defined in: [packages/forms/src/types.ts:150](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L150)
+Defined in: [packages/forms/src/types.ts:150](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L150)
 
 Component for rendering enum column inputs as a dropdown select.
 
@@ -73,7 +73,7 @@ Component for rendering enum column inputs as a dropdown select.
 
 > **submitButton**: `React.ComponentType`\<[`SubmitButtonProps`](/api/forms/type-aliases/submitbuttonprops/)\>
 
-Defined in: [packages/forms/src/types.ts:156](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L156)
+Defined in: [packages/forms/src/types.ts:156](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L156)
 
 Component for the form's submit button. Receives loading state and label.
 
@@ -83,6 +83,6 @@ Component for the form's submit button. Receives loading state and label.
 
 > **textInput**: `React.ComponentType`\<[`FieldComponentProps`](/api/forms/type-aliases/fieldcomponentprops/)\>
 
-Defined in: [packages/forms/src/types.ts:146](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L146)
+Defined in: [packages/forms/src/types.ts:146](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/types.ts#L146)
 
 Component for rendering text/varchar column inputs.

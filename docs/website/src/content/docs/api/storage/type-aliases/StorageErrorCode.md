@@ -7,7 +7,7 @@ title: "StorageErrorCode"
 
 > **StorageErrorCode** = `"FILE_TOO_LARGE"` \| `"INVALID_MIME_TYPE"` \| `"UPLOAD_FAILED"`
 
-Defined in: [packages/storage/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L8)
+Defined in: [packages/storage/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L8)
 
 Machine-readable error codes produced by the storage validation and upload pipeline.
 

@@ -7,7 +7,7 @@ title: "PermissionDescriptor"
 
 > **PermissionDescriptor** = `object`
 
-Defined in: [packages/permissions/src/types.ts:117](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L117)
+Defined in: [packages/permissions/src/types.ts:117](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/types.ts#L117)
 
 Structural description of a permission requirement.
 
@@ -30,7 +30,7 @@ const descriptor: PermissionDescriptor = {
 
 > **action**: [`PermissionAction`](/api/permissions/type-aliases/permissionaction/)
 
-Defined in: [packages/permissions/src/types.ts:119](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L119)
+Defined in: [packages/permissions/src/types.ts:119](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/types.ts#L119)
 
 The operation being checked.
 
@@ -40,6 +40,6 @@ The operation being checked.
 
 > **table**: [`DrizzleTable`](/api/permissions/type-aliases/drizzletable/)
 
-Defined in: [packages/permissions/src/types.ts:121](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L121)
+Defined in: [packages/permissions/src/types.ts:121](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/types.ts#L121)
 
 The Drizzle table the operation targets.

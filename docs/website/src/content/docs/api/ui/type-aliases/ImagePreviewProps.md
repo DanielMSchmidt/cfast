@@ -7,7 +7,7 @@ title: "ImagePreviewProps"
 
 > **ImagePreviewProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1226](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1226)
+Defined in: [packages/ui/src/types.ts:1226](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1226)
 
 Props for the ImagePreview component.
 
@@ -26,7 +26,7 @@ element when no image is available.
 
 > `optional` **alt**: `string`
 
-Defined in: [packages/ui/src/types.ts:1242](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1242)
+Defined in: [packages/ui/src/types.ts:1242](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1242)
 
 Alt text for the image.
 
@@ -36,7 +36,7 @@ Alt text for the image.
 
 > `optional` **fallback**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:1240](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1240)
+Defined in: [packages/ui/src/types.ts:1240](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1240)
 
 Fallback element when no image is available.
 
@@ -46,7 +46,7 @@ Fallback element when no image is available.
 
 > `optional` **fileKey**: `string` \| `null`
 
-Defined in: [packages/ui/src/types.ts:1228](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1228)
+Defined in: [packages/ui/src/types.ts:1228](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1228)
 
 Storage file key for signed URL resolution.
 
@@ -56,7 +56,7 @@ Storage file key for signed URL resolution.
 
 > `optional` **getUrl**: (`key`) => `string`
 
-Defined in: [packages/ui/src/types.ts:1234](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1234)
+Defined in: [packages/ui/src/types.ts:1234](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1234)
 
 Function to resolve a file key to a URL.
 
@@ -76,7 +76,7 @@ Function to resolve a file key to a URL.
 
 > `optional` **height**: `number`
 
-Defined in: [packages/ui/src/types.ts:1238](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1238)
+Defined in: [packages/ui/src/types.ts:1238](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1238)
 
 Display height in pixels. Defaults to 200.
 
@@ -86,7 +86,7 @@ Display height in pixels. Defaults to 200.
 
 > `optional` **src**: `string` \| `null`
 
-Defined in: [packages/ui/src/types.ts:1230](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1230)
+Defined in: [packages/ui/src/types.ts:1230](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1230)
 
 Direct image source URL.
 
@@ -96,7 +96,7 @@ Direct image source URL.
 
 > `optional` **storage**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:1232](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1232)
+Defined in: [packages/ui/src/types.ts:1232](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1232)
 
 Storage configuration for URL resolution.
 
@@ -106,6 +106,6 @@ Storage configuration for URL resolution.
 
 > `optional` **width**: `number`
 
-Defined in: [packages/ui/src/types.ts:1236](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1236)
+Defined in: [packages/ui/src/types.ts:1236](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1236)
 
 Display width in pixels. Defaults to 200.

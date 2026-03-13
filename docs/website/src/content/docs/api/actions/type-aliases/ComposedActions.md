@@ -7,7 +7,7 @@ title: "ComposedActions"
 
 > **ComposedActions**\<`TActions`\> = `object`
 
-Defined in: [packages/actions/src/types.ts:220](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L220)
+Defined in: [packages/actions/src/types.ts:220](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L220)
 
 The result of combining multiple [action definitions](/api/actions/type-aliases/actiondefinition/)
 via `composeActions()`.
@@ -43,7 +43,7 @@ A record mapping action names to their [ActionDefinition](/api/actions/type-alia
 
 > **action**: (`args`) => `Promise`\<`unknown`\>
 
-Defined in: [packages/actions/src/types.ts:222](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L222)
+Defined in: [packages/actions/src/types.ts:222](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L222)
 
 Combined action handler that dispatches to the correct action based on `_action` field.
 
@@ -63,7 +63,7 @@ Combined action handler that dispatches to the correct action based on `_action`
 
 > **actions**: `TActions`
 
-Defined in: [packages/actions/src/types.ts:235](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L235)
+Defined in: [packages/actions/src/types.ts:235](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L235)
 
 The original action definitions, keyed by name.
 
@@ -73,7 +73,7 @@ The original action definitions, keyed by name.
 
 > **client**: [`ClientDescriptor`](/api/actions/type-aliases/clientdescriptor/)
 
-Defined in: [packages/actions/src/types.ts:233](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L233)
+Defined in: [packages/actions/src/types.ts:233](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L233)
 
 Opaque descriptor covering all composed action names, for the `useActions` client hook.
 
@@ -83,7 +83,7 @@ Opaque descriptor covering all composed action names, for the `useActions` clien
 
 > **loader**: \<`TLoaderData`\>(`loaderFn`) => (`args`) => `Promise`\<`TLoaderData` & `object`\>
 
-Defined in: [packages/actions/src/types.ts:229](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L229)
+Defined in: [packages/actions/src/types.ts:229](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L229)
 
 Wraps a loader function to inject [ActionPermissionsMap](/api/actions/type-aliases/actionpermissionsmap/) for all composed actions.
 

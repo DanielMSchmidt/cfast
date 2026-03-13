@@ -7,7 +7,7 @@ title: "OffsetPage"
 
 > **OffsetPage**\<`T`\> = `object`
 
-Defined in: [packages/db/src/types.ts:305](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L305)
+Defined in: [packages/db/src/types.ts:305](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L305)
 
 A page of results from offset-based pagination.
 
@@ -37,7 +37,7 @@ The row type.
 
 > **items**: `T`[]
 
-Defined in: [packages/db/src/types.ts:307](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L307)
+Defined in: [packages/db/src/types.ts:307](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L307)
 
 The items on this page.
 
@@ -47,7 +47,7 @@ The items on this page.
 
 > **page**: `number`
 
-Defined in: [packages/db/src/types.ts:311](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L311)
+Defined in: [packages/db/src/types.ts:311](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L311)
 
 The current 1-based page number.
 
@@ -57,7 +57,7 @@ The current 1-based page number.
 
 > **total**: `number`
 
-Defined in: [packages/db/src/types.ts:309](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L309)
+Defined in: [packages/db/src/types.ts:309](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L309)
 
 Total number of matching rows across all pages.
 
@@ -67,6 +67,6 @@ Total number of matching rows across all pages.
 
 > **totalPages**: `number`
 
-Defined in: [packages/db/src/types.ts:313](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L313)
+Defined in: [packages/db/src/types.ts:313](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L313)
 
 Total number of pages (computed as `Math.ceil(total / limit)`).

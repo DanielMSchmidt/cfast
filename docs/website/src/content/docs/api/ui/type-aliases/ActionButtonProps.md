@@ -7,7 +7,7 @@ title: "ActionButtonProps"
 
 > **ActionButtonProps** = `object` & `Omit`\<[`ButtonSlotProps`](/api/ui/type-aliases/buttonslotprops/), `ActionButtonControlledProps`\>
 
-Defined in: [packages/ui/src/types.ts:1026](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1026)
+Defined in: [packages/ui/src/types.ts:1026](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1026)
 
 Props for the ActionButton component.
 

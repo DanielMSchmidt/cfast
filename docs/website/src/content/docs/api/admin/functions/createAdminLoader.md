@@ -7,7 +7,7 @@ title: "createAdminLoader"
 
 > **createAdminLoader**(`config`, `tableMetas`): (`request`) => `Promise`\<[`AdminLoaderData`](/api/admin/type-aliases/adminloaderdata/)\>
 
-Defined in: [packages/admin/src/loader.ts:573](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/loader.ts#L573)
+Defined in: [packages/admin/src/loader.ts:573](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/loader.ts#L573)
 
 Create an admin loader function from config and introspected table metadata.
 

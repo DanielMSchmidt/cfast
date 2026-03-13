@@ -7,7 +7,7 @@ title: "AvatarWithInitials"
 
 > **AvatarWithInitials**(`props`): `Element`
 
-Defined in: [packages/ui/src/components/avatar-with-initials.tsx:46](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/avatar-with-initials.tsx#L46)
+Defined in: [packages/ui/src/components/avatar-with-initials.tsx:46](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/components/avatar-with-initials.tsx#L46)
 
 Avatar component with automatic initials fallback.
 

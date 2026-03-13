@@ -5,7 +5,7 @@ prev: false
 title: "EmailDeliveryError"
 ---
 
-Defined in: [packages/email/src/errors.ts:22](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/errors.ts#L22)
+Defined in: [packages/email/src/errors.ts:22](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/errors.ts#L22)
 
 Error thrown when an [EmailProvider](/api/email/type-aliases/emailprovider/) fails to deliver a message.
 
@@ -38,7 +38,7 @@ try {
 
 > **new EmailDeliveryError**(`message`, `options`): `EmailDeliveryError`
 
-Defined in: [packages/email/src/errors.ts:34](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/errors.ts#L34)
+Defined in: [packages/email/src/errors.ts:34](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/errors.ts#L34)
 
 #### Parameters
 
@@ -114,7 +114,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **provider**: `string`
 
-Defined in: [packages/email/src/errors.ts:24](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/errors.ts#L24)
+Defined in: [packages/email/src/errors.ts:24](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/errors.ts#L24)
 
 The name of the provider that failed (e.g. `"mailgun"`).
 
@@ -124,7 +124,7 @@ The name of the provider that failed (e.g. `"mailgun"`).
 
 > `readonly` `optional` **response**: `string`
 
-Defined in: [packages/email/src/errors.ts:28](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/errors.ts#L28)
+Defined in: [packages/email/src/errors.ts:28](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/errors.ts#L28)
 
 Raw response body from the provider's API, if available.
 
@@ -146,6 +146,6 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` `optional` **statusCode**: `number`
 
-Defined in: [packages/email/src/errors.ts:26](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/errors.ts#L26)
+Defined in: [packages/email/src/errors.ts:26](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/errors.ts#L26)
 
 HTTP status code returned by the provider's API, if available.

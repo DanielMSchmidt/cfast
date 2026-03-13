@@ -79,13 +79,13 @@ export type AdminAuthConfig = {
   /** Replaces all roles for a user with the given set. Used for bulk role assignment. */
   setRoles: (userId: string, roles: string[]) => Promise<void>;
   /** Starts an impersonation session. Should return a redirect `Response` that sets the impersonation cookie/session. */
-  impersonate: (
+  impersonate?: (
     adminId: string,
     targetId: string,
     request: Request,
   ) => Promise<Response>;
   /** Ends the current impersonation session. Should return a redirect `Response` that restores the admin session. */
-  stopImpersonation: (request: Request) => Promise<Response>;
+  stopImpersonation?: (request: Request) => Promise<Response>;
 };
 
 /**

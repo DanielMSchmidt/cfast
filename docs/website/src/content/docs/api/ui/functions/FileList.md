@@ -7,7 +7,7 @@ title: "FileList"
 
 > **FileList**(`props`): `Element`
 
-Defined in: [packages/ui/src/components/file-list.tsx:26](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/file-list.tsx#L26)
+Defined in: [packages/ui/src/components/file-list.tsx:26](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/components/file-list.tsx#L26)
 
 Displays a list of uploaded files with metadata, formatted sizes, and download links.
 

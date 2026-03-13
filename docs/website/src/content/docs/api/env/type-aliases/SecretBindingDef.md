@@ -7,7 +7,7 @@ title: "SecretBindingDef"
 
 > **SecretBindingDef** = `object`
 
-Defined in: [packages/env/src/types.ts:125](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L125)
+Defined in: [packages/env/src/types.ts:125](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/env/src/types.ts#L125)
 
 Binding definition for a secret (non-empty string, no defaults allowed).
 
@@ -27,6 +27,6 @@ const schema = {
 
 > **type**: `"secret"`
 
-Defined in: [packages/env/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L127)
+Defined in: [packages/env/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/env/src/types.ts#L127)
 
 Must be `"secret"` to identify this as a secret string binding.

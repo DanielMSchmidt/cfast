@@ -7,7 +7,7 @@ title: "introspectTable"
 
 > **introspectTable**(`table`): [`FieldDefinition`](/api/forms/type-aliases/fielddefinition/)[]
 
-Defined in: [packages/forms/src/introspect.ts:54](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/introspect.ts#L54)
+Defined in: [packages/forms/src/introspect.ts:54](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/forms/src/introspect.ts#L54)
 
 Introspect a Drizzle SQLite table and produce field definitions for form generation.
 

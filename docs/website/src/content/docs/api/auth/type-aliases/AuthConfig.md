@@ -7,7 +7,7 @@ title: "AuthConfig"
 
 > **AuthConfig** = `object`
 
-Defined in: [packages/auth/src/types.ts:61](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L61)
+Defined in: [packages/auth/src/types.ts:61](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L61)
 
 Configuration for [createAuth](/api/auth/functions/createauth/).
 
@@ -20,7 +20,7 @@ and integration with `@cfast/permissions`.
 
 > `optional` **anonymousRoles**: `string`[]
 
-Defined in: [packages/auth/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L91)
+Defined in: [packages/auth/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L91)
 
 Roles assigned to unauthenticated (anonymous) requests for permission resolution.
 
@@ -30,7 +30,7 @@ Roles assigned to unauthenticated (anonymous) requests for permission resolution
 
 > `optional` **defaultRoles**: `string`[]
 
-Defined in: [packages/auth/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L93)
+Defined in: [packages/auth/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L93)
 
 Default roles assigned to authenticated users who have no explicit role assignments. Defaults to `["reader"]`.
 
@@ -40,7 +40,7 @@ Default roles assigned to authenticated users who have no explicit role assignme
 
 > `optional` **impersonation**: `object`
 
-Defined in: [packages/auth/src/types.ts:99](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L99)
+Defined in: [packages/auth/src/types.ts:99](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L99)
 
 Impersonation feature configuration.
 
@@ -56,7 +56,7 @@ Roles permitted to impersonate other users. Defaults to `["admin"]`.
 
 > `optional` **magicLink**: `object`
 
-Defined in: [packages/auth/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L74)
+Defined in: [packages/auth/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L74)
 
 Magic link email configuration. Required to enable magic link authentication.
 
@@ -88,7 +88,7 @@ Callback to send the magic link email. Receives the user's email and the login U
 
 > `optional` **passkeys**: `object`
 
-Defined in: [packages/auth/src/types.ts:67](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L67)
+Defined in: [packages/auth/src/types.ts:67](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L67)
 
 WebAuthn passkey configuration. Required to enable passkey authentication.
 
@@ -110,7 +110,7 @@ Relying party display name shown during WebAuthn registration.
 
 > **permissions**: [`Permissions`](/api/permissions/type-aliases/permissions/)
 
-Defined in: [packages/auth/src/types.ts:63](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L63)
+Defined in: [packages/auth/src/types.ts:63](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L63)
 
 The permissions config from `definePermissions()`. Roles are inferred from this.
 
@@ -120,7 +120,7 @@ The permissions config from `definePermissions()`. Roles are inferred from this.
 
 > `optional` **redirects**: `object`
 
-Defined in: [packages/auth/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L84)
+Defined in: [packages/auth/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L84)
 
 Redirect paths for the authentication flow.
 
@@ -142,7 +142,7 @@ Where to send unauthenticated users. Defaults to `"/login"`.
 
 > `optional` **roleGrants**: `Record`\<`string`, `string`[]\>
 
-Defined in: [packages/auth/src/types.ts:97](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L97)
+Defined in: [packages/auth/src/types.ts:97](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L97)
 
 Maps each role to the set of roles it is allowed to assign. Controls who can promote whom.
 
@@ -152,7 +152,7 @@ Maps each role to the set of roles it is allowed to assign. Controls who can pro
 
 > `optional` **roleTableName**: `string`
 
-Defined in: [packages/auth/src/types.ts:95](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L95)
+Defined in: [packages/auth/src/types.ts:95](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L95)
 
 Custom table name for storing role assignments. Defaults to `"roles"`.
 
@@ -162,7 +162,7 @@ Custom table name for storing role assignments. Defaults to `"roles"`.
 
 > `optional` **schema**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/auth/src/types.ts:65](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L65)
+Defined in: [packages/auth/src/types.ts:65](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L65)
 
 Optional Drizzle schema override for the Better Auth database adapter.
 
@@ -172,7 +172,7 @@ Optional Drizzle schema override for the Better Auth database adapter.
 
 > `optional` **session**: `object`
 
-Defined in: [packages/auth/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L79)
+Defined in: [packages/auth/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L79)
 
 Session lifetime configuration.
 
@@ -188,7 +188,7 @@ How long sessions last before expiring (e.g., `"30d"`, `"12h"`, `"60m"`). Defaul
 
 > `optional` **templates**: `object`
 
-Defined in: [packages/auth/src/types.ts:104](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/types.ts#L104)
+Defined in: [packages/auth/src/types.ts:104](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/types.ts#L104)
 
 Custom email template functions.
 

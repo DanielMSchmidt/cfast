@@ -7,7 +7,7 @@ title: "createRoleManager"
 
 > **createRoleManager**(`d1`, `options?`): `object`
 
-Defined in: [packages/auth/src/roles.ts:68](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/roles.ts#L68)
+Defined in: [packages/auth/src/roles.ts:68](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/auth/src/roles.ts#L68)
 
 Creates a role manager backed by a Cloudflare D1 database.
 

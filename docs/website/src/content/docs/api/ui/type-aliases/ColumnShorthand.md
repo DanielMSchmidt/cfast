@@ -7,7 +7,7 @@ title: "ColumnShorthand"
 
 > **ColumnShorthand**\<`T`\> = `string` \| [`ColumnDef`](/api/ui/type-aliases/columndef/)\<`T`\>
 
-Defined in: [packages/ui/src/types.ts:420](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L420)
+Defined in: [packages/ui/src/types.ts:420](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L420)
 
 Column definition shorthand: either a plain column key string or a full [ColumnDef](/api/ui/type-aliases/columndef/).
 

@@ -7,7 +7,7 @@ title: "FilterType"
 
 > **FilterType** = `"text"` \| `"select"` \| `"multiSelect"` \| `"relation"` \| `"dateRange"` \| `"boolean"` \| `"number"`
 
-Defined in: [packages/ui/src/types.ts:440](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L440)
+Defined in: [packages/ui/src/types.ts:440](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L440)
 
 Supported filter input types for [FilterBarProps](/api/ui/type-aliases/filterbarprops/).
 

@@ -7,7 +7,7 @@ title: "createAdminComponent"
 
 > **createAdminComponent**(`tableMetas`): () => `ReactElement`
 
-Defined in: [packages/admin/src/components/admin-root.tsx:48](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/components/admin-root.tsx#L48)
+Defined in: [packages/admin/src/components/admin-root.tsx:48](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/components/admin-root.tsx#L48)
 
 Create the root admin React component from introspected table metadata.
 

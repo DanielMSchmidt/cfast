@@ -7,7 +7,7 @@ title: "QueryBuilder"
 
 > **QueryBuilder** = `object`
 
-Defined in: [packages/db/src/types.ts:428](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L428)
+Defined in: [packages/db/src/types.ts:428](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L428)
 
 Builder for read queries on a single table.
 
@@ -35,7 +35,7 @@ const page = await builder.paginate(params, { orderBy: desc(posts.createdAt) }).
 
 > **findFirst**: (`options?`) => [`Operation`](/api/db/type-aliases/operation/)\<`unknown` \| `undefined`\>
 
-Defined in: [packages/db/src/types.ts:432](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L432)
+Defined in: [packages/db/src/types.ts:432](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L432)
 
 Returns an [Operation](/api/db/type-aliases/operation/) that fetches the first matching row, or `undefined` if none match.
 
@@ -55,7 +55,7 @@ Returns an [Operation](/api/db/type-aliases/operation/) that fetches the first m
 
 > **findMany**: (`options?`) => [`Operation`](/api/db/type-aliases/operation/)\<`unknown`[]\>
 
-Defined in: [packages/db/src/types.ts:430](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L430)
+Defined in: [packages/db/src/types.ts:430](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L430)
 
 Returns an [Operation](/api/db/type-aliases/operation/) that fetches multiple rows matching the given options.
 
@@ -75,7 +75,7 @@ Returns an [Operation](/api/db/type-aliases/operation/) that fetches multiple ro
 
 > **paginate**: (`params`, `options?`) => [`Operation`](/api/db/type-aliases/operation/)\<[`CursorPage`](/api/db/type-aliases/cursorpage/)\<`unknown`\>\> \| [`Operation`](/api/db/type-aliases/operation/)\<[`OffsetPage`](/api/db/type-aliases/offsetpage/)\<`unknown`\>\>
 
-Defined in: [packages/db/src/types.ts:439](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L439)
+Defined in: [packages/db/src/types.ts:439](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L439)
 
 Returns a paginated [Operation](/api/db/type-aliases/operation/) using either cursor-based or offset-based strategy.
 

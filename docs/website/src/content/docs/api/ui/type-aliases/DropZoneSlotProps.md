@@ -7,7 +7,7 @@ title: "DropZoneSlotProps"
 
 > **DropZoneSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:339](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L339)
+Defined in: [packages/ui/src/types.ts:339](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L339)
 
 Props for the drop zone plugin slot.
 
@@ -26,7 +26,7 @@ application code; this type is for plugin implementors.
 
 > `optional` **accept**: `string`
 
-Defined in: [packages/ui/src/types.ts:355](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L355)
+Defined in: [packages/ui/src/types.ts:355](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L355)
 
 MIME type filter for accepted files.
 
@@ -36,7 +36,7 @@ MIME type filter for accepted files.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:341](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L341)
+Defined in: [packages/ui/src/types.ts:341](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L341)
 
 Drop zone content (instructions or file preview).
 
@@ -46,7 +46,7 @@ Drop zone content (instructions or file preview).
 
 > **isDragOver**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:343](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L343)
+Defined in: [packages/ui/src/types.ts:343](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L343)
 
 Whether a file is currently being dragged over the zone.
 
@@ -56,7 +56,7 @@ Whether a file is currently being dragged over the zone.
 
 > **isInvalid**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:345](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L345)
+Defined in: [packages/ui/src/types.ts:345](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L345)
 
 Whether the dragged file is invalid (wrong type).
 
@@ -66,7 +66,7 @@ Whether the dragged file is invalid (wrong type).
 
 > **onClick**: () => `void`
 
-Defined in: [packages/ui/src/types.ts:353](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L353)
+Defined in: [packages/ui/src/types.ts:353](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L353)
 
 Handler called when the zone is clicked (opens file picker).
 
@@ -80,7 +80,7 @@ Handler called when the zone is clicked (opens file picker).
 
 > **onDragLeave**: () => `void`
 
-Defined in: [packages/ui/src/types.ts:351](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L351)
+Defined in: [packages/ui/src/types.ts:351](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L351)
 
 Handler called when the drag leaves the zone.
 
@@ -94,7 +94,7 @@ Handler called when the drag leaves the zone.
 
 > **onDragOver**: (`e`) => `void`
 
-Defined in: [packages/ui/src/types.ts:349](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L349)
+Defined in: [packages/ui/src/types.ts:349](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L349)
 
 Handler called during dragover for visual feedback.
 
@@ -114,7 +114,7 @@ Handler called during dragover for visual feedback.
 
 > **onDrop**: (`files`) => `void`
 
-Defined in: [packages/ui/src/types.ts:347](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L347)
+Defined in: [packages/ui/src/types.ts:347](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L347)
 
 Handler called when files are dropped.
 

@@ -7,7 +7,7 @@ title: "SendOptions"
 
 > **SendOptions** = `object`
 
-Defined in: [packages/email/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L76)
+Defined in: [packages/email/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L76)
 
 Options passed to [EmailClient.send](/api/email/type-aliases/emailclient/#send) to compose and deliver an email.
 
@@ -17,7 +17,7 @@ Options passed to [EmailClient.send](/api/email/type-aliases/emailclient/#send) 
 
 > `optional` **from**: `string`
 
-Defined in: [packages/email/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L84)
+Defined in: [packages/email/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L84)
 
 Override the default sender address for this message.
 
@@ -27,7 +27,7 @@ Override the default sender address for this message.
 
 > **react**: `ReactElement`
 
-Defined in: [packages/email/src/types.ts:82](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L82)
+Defined in: [packages/email/src/types.ts:82](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L82)
 
 A react-email component to render as the email body (HTML + plain text).
 
@@ -37,7 +37,7 @@ A react-email component to render as the email body (HTML + plain text).
 
 > **subject**: `string`
 
-Defined in: [packages/email/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L80)
+Defined in: [packages/email/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L80)
 
 Email subject line.
 
@@ -47,6 +47,6 @@ Email subject line.
 
 > **to**: `string`
 
-Defined in: [packages/email/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L78)
+Defined in: [packages/email/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/email/src/types.ts#L78)
 
 Recipient email address.

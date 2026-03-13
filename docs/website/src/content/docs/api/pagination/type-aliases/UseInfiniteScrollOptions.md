@@ -7,7 +7,7 @@ title: "UseInfiniteScrollOptions"
 
 > **UseInfiniteScrollOptions**\<`T`\> = [`UsePaginationOptions`](/api/pagination/type-aliases/usepaginationoptions/)\<`T`\> & `object`
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:12](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/pagination/src/use-infinite-scroll.ts#L12)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:12](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/pagination/src/use-infinite-scroll.ts#L12)
 
 Options for the [useInfiniteScroll](/api/pagination/functions/useinfinitescroll/) hook.
 

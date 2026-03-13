@@ -7,7 +7,7 @@ title: "UserManagementConfig"
 
 > **UserManagementConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:213](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L213)
+Defined in: [packages/admin/src/types.ts:213](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L213)
 
 Configuration for the built-in user management views.
 
@@ -28,6 +28,6 @@ const users: UserManagementConfig = {
 
 > `optional` **assignableRoles**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:215](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L215)
+Defined in: [packages/admin/src/types.ts:215](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L215)
 
 The list of role names that can be assigned/removed via the admin user management UI. Defaults to an empty array (no role management).

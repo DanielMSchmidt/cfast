@@ -7,7 +7,7 @@ title: "DropZoneProps"
 
 > **DropZoneProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1190](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1190)
+Defined in: [packages/ui/src/types.ts:1190](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1190)
 
 Props for the DropZone component.
 
@@ -27,7 +27,7 @@ Manages drag state, file preview, validation errors, and upload progress interna
 
 > `optional` **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:1213](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1213)
+Defined in: [packages/ui/src/types.ts:1213](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1213)
 
 Custom content to display inside the drop zone.
 
@@ -37,7 +37,7 @@ Custom content to display inside the drop zone.
 
 > `optional` **multiple**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:1211](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1211)
+Defined in: [packages/ui/src/types.ts:1211](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1211)
 
 Whether to allow multiple file uploads.
 
@@ -47,7 +47,7 @@ Whether to allow multiple file uploads.
 
 > **upload**: `object`
 
-Defined in: [packages/ui/src/types.ts:1192](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1192)
+Defined in: [packages/ui/src/types.ts:1192](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L1192)
 
 Upload hook result from `@cfast/storage/client`.
 

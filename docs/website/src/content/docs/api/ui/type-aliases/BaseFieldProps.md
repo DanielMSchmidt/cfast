@@ -7,7 +7,7 @@ title: "BaseFieldProps"
 
 > **BaseFieldProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:660](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L660)
+Defined in: [packages/ui/src/types.ts:660](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L660)
 
 Base props shared by all TypedField read-only display components.
 
@@ -22,7 +22,7 @@ and [JsonFieldProps](/api/ui/type-aliases/jsonfieldprops/).
 
 > `optional` **className**: `string`
 
-Defined in: [packages/ui/src/types.ts:664](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L664)
+Defined in: [packages/ui/src/types.ts:664](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L664)
 
 CSS class name for custom styling.
 
@@ -32,6 +32,6 @@ CSS class name for custom styling.
 
 > `optional` **label**: `string`
 
-Defined in: [packages/ui/src/types.ts:662](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L662)
+Defined in: [packages/ui/src/types.ts:662](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L662)
 
 Optional label displayed above the field value.

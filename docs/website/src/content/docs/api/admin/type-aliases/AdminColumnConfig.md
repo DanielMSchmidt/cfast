@@ -7,7 +7,7 @@ title: "AdminColumnConfig"
 
 > **AdminColumnConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:321](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L321)
+Defined in: [packages/admin/src/types.ts:321](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L321)
 
 Metadata for a single column, produced by [introspectSchema](/api/admin/functions/introspectschema/).
 
@@ -20,7 +20,7 @@ and detail views for a database column.
 
 > **columnType**: `string`
 
-Defined in: [packages/admin/src/types.ts:329](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L329)
+Defined in: [packages/admin/src/types.ts:329](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L329)
 
 The Drizzle column type (e.g., `"SQLiteText"`, `"SQLiteInteger"`, `"SQLiteBoolean"`).
 
@@ -30,7 +30,7 @@ The Drizzle column type (e.g., `"SQLiteText"`, `"SQLiteInteger"`, `"SQLiteBoolea
 
 > **dataType**: `string`
 
-Defined in: [packages/admin/src/types.ts:327](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L327)
+Defined in: [packages/admin/src/types.ts:327](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L327)
 
 The Drizzle data type (e.g., `"string"`, `"number"`, `"boolean"`).
 
@@ -40,7 +40,7 @@ The Drizzle data type (e.g., `"string"`, `"number"`, `"boolean"`).
 
 > `optional` **enumValues**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:337](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L337)
+Defined in: [packages/admin/src/types.ts:337](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L337)
 
 Allowed enum values, if the column is an enum/text with constrained values.
 
@@ -50,7 +50,7 @@ Allowed enum values, if the column is an enum/text with constrained values.
 
 > **hasDefault**: `boolean`
 
-Defined in: [packages/admin/src/types.ts:333](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L333)
+Defined in: [packages/admin/src/types.ts:333](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L333)
 
 Whether this column has a default value defined in the schema.
 
@@ -60,7 +60,7 @@ Whether this column has a default value defined in the schema.
 
 > **isPrimaryKey**: `boolean`
 
-Defined in: [packages/admin/src/types.ts:335](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L335)
+Defined in: [packages/admin/src/types.ts:335](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L335)
 
 Whether this column is the table's primary key.
 
@@ -70,7 +70,7 @@ Whether this column is the table's primary key.
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:325](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L325)
+Defined in: [packages/admin/src/types.ts:325](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L325)
 
 Human-readable label auto-generated from the column name (e.g., `"Created At"`).
 
@@ -80,7 +80,7 @@ Human-readable label auto-generated from the column name (e.g., `"Created At"`).
 
 > **name**: `string`
 
-Defined in: [packages/admin/src/types.ts:323](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L323)
+Defined in: [packages/admin/src/types.ts:323](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L323)
 
 The column name as defined in the Drizzle schema (e.g., `"created_at"`).
 
@@ -90,7 +90,7 @@ The column name as defined in the Drizzle schema (e.g., `"created_at"`).
 
 > `optional` **referencesColumn**: `string`
 
-Defined in: [packages/admin/src/types.ts:341](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L341)
+Defined in: [packages/admin/src/types.ts:341](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L341)
 
 The name of the foreign column this column references, if it's a foreign key.
 
@@ -100,7 +100,7 @@ The name of the foreign column this column references, if it's a foreign key.
 
 > `optional` **referencesTable**: `string`
 
-Defined in: [packages/admin/src/types.ts:339](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L339)
+Defined in: [packages/admin/src/types.ts:339](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L339)
 
 The name of the foreign table this column references, if it's a foreign key.
 
@@ -110,6 +110,6 @@ The name of the foreign table this column references, if it's a foreign key.
 
 > **required**: `boolean`
 
-Defined in: [packages/admin/src/types.ts:331](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L331)
+Defined in: [packages/admin/src/types.ts:331](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L331)
 
 Whether this column is required in create/edit forms (non-null and no default).

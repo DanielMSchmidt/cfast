@@ -7,7 +7,7 @@ title: "ClientFiletypeConfig"
 
 > **ClientFiletypeConfig** = `object`
 
-Defined in: [packages/storage/src/types.ts:167](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L167)
+Defined in: [packages/storage/src/types.ts:167](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L167)
 
 Client-safe subset of a file type's configuration, used for client-side validation.
 
@@ -21,7 +21,7 @@ bucket names, key functions, or other server-only details.
 
 > **accept**: readonly `string`[]
 
-Defined in: [packages/storage/src/types.ts:169](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L169)
+Defined in: [packages/storage/src/types.ts:169](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L169)
 
 MIME types accepted for this file type.
 
@@ -31,7 +31,7 @@ MIME types accepted for this file type.
 
 > **maxSize**: `string`
 
-Defined in: [packages/storage/src/types.ts:171](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L171)
+Defined in: [packages/storage/src/types.ts:171](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L171)
 
 Human-readable maximum size string (e.g. `"10mb"`).
 
@@ -41,6 +41,6 @@ Human-readable maximum size string (e.g. `"10mb"`).
 
 > **maxSizeBytes**: `number`
 
-Defined in: [packages/storage/src/types.ts:173](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L173)
+Defined in: [packages/storage/src/types.ts:173](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/types.ts#L173)
 
 Maximum size in bytes (pre-parsed for efficient client validation).

@@ -9,7 +9,7 @@ title: "definePermissions"
 
 > **definePermissions**\<`TRoles`\>(`config`): [`Permissions`](/api/permissions/type-aliases/permissions/)\<`TRoles`\>
 
-Defined in: [packages/permissions/src/define-permissions.ts:56](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/define-permissions.ts#L56)
+Defined in: [packages/permissions/src/define-permissions.ts:56](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/define-permissions.ts#L56)
 
 Creates a permission configuration that can be shared between server-side
 enforcement (`@cfast/db`) and client-side introspection (`@cfast/actions`).
@@ -65,7 +65,7 @@ const permissions = definePermissions({
 
 > **definePermissions**\<`TUser`\>(): \<`TRoles`\>(`config`) => [`Permissions`](/api/permissions/type-aliases/permissions/)\<`TRoles`\>
 
-Defined in: [packages/permissions/src/define-permissions.ts:59](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/define-permissions.ts#L59)
+Defined in: [packages/permissions/src/define-permissions.ts:59](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/define-permissions.ts#L59)
 
 Creates a permission configuration that can be shared between server-side
 enforcement (`@cfast/db`) and client-side introspection (`@cfast/actions`).

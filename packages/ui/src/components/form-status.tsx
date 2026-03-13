@@ -18,7 +18,7 @@ import type { FormStatusProps } from "../types.js";
  *   return (
  *     <Form method="post">
  *       <FormStatus data={actionData} />
- *       {/* form fields *​/}
+ *       ...
  *     </Form>
  *   );
  * }

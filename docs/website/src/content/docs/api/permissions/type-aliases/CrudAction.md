@@ -7,7 +7,7 @@ title: "CrudAction"
 
 > **CrudAction** = `Exclude`\<[`PermissionAction`](/api/permissions/type-aliases/permissionaction/), `"manage"`\>
 
-Defined in: [packages/permissions/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L47)
+Defined in: [packages/permissions/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/types.ts#L47)
 
 A CRUD-only permission action (excludes `"manage"`).
 

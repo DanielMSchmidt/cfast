@@ -7,7 +7,7 @@ title: "getTableName"
 
 > **getTableName**(`table`): `string`
 
-Defined in: [packages/permissions/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L26)
+Defined in: [packages/permissions/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/permissions/src/types.ts#L26)
 
 Extracts the table name string from a Drizzle table reference.
 

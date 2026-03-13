@@ -7,7 +7,7 @@ title: "ActionDefinition"
 
 > **ActionDefinition**\<`TInput`, `TResult`, `TUser`\> = `object`
 
-Defined in: [packages/actions/src/types.ts:178](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L178)
+Defined in: [packages/actions/src/types.ts:178](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L178)
 
 A single action definition returned by `createAction()`.
 
@@ -58,7 +58,7 @@ The shape of the authenticated user object.
 
 > **action**: (`args`) => `Promise`\<`TResult`\>
 
-Defined in: [packages/actions/src/types.ts:180](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L180)
+Defined in: [packages/actions/src/types.ts:180](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L180)
 
 React Router action handler. Parses input, resolves context, and runs the operation.
 
@@ -78,7 +78,7 @@ React Router action handler. Parses input, resolves context, and runs the operat
 
 > **buildOperation**: (`db`, `input`, `ctx`) => [`Operation`](/api/db/type-aliases/operation/)\<`TResult`\>
 
-Defined in: [packages/actions/src/types.ts:194](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L194)
+Defined in: [packages/actions/src/types.ts:194](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L194)
 
 Builds the raw [Operation](/api/db/type-aliases/operation/) for this action, useful for cross-action composition.
 
@@ -106,7 +106,7 @@ Builds the raw [Operation](/api/db/type-aliases/operation/) for this action, use
 
 > **client**: [`ClientDescriptor`](/api/actions/type-aliases/clientdescriptor/)
 
-Defined in: [packages/actions/src/types.ts:192](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L192)
+Defined in: [packages/actions/src/types.ts:192](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L192)
 
 Opaque descriptor for the `useActions` client hook.
 
@@ -116,7 +116,7 @@ Opaque descriptor for the `useActions` client hook.
 
 > **loader**: \<`TLoaderData`\>(`loaderFn`) => (`args`) => `Promise`\<`TLoaderData` & `object`\>
 
-Defined in: [packages/actions/src/types.ts:188](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L188)
+Defined in: [packages/actions/src/types.ts:188](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L188)
 
 Wraps a loader function to inject [ActionPermissionsMap](/api/actions/type-aliases/actionpermissionsmap/) into its return value.
 

@@ -7,7 +7,7 @@ title: "InsertBuilder"
 
 > **InsertBuilder** = `object`
 
-Defined in: [packages/db/src/types.ts:463](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L463)
+Defined in: [packages/db/src/types.ts:463](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L463)
 
 Builder for insert operations on a single table.
 
@@ -33,7 +33,7 @@ const row = await db.insert(posts)
 
 > **values**: (`values`) => [`InsertReturningBuilder`](/api/db/type-aliases/insertreturningbuilder/)
 
-Defined in: [packages/db/src/types.ts:465](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L465)
+Defined in: [packages/db/src/types.ts:465](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L465)
 
 Specifies the column values to insert, returning an [InsertReturningBuilder](/api/db/type-aliases/insertreturningbuilder/).
 

@@ -7,7 +7,7 @@ title: "AlertSlotProps"
 
 > **AlertSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:320](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L320)
+Defined in: [packages/ui/src/types.ts:320](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L320)
 
 Props for the alert plugin slot.
 
@@ -24,7 +24,7 @@ Used by [FormStatusProps](/api/ui/type-aliases/formstatusprops/) to display acti
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:322](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L322)
+Defined in: [packages/ui/src/types.ts:322](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L322)
 
 Alert message content.
 
@@ -34,7 +34,7 @@ Alert message content.
 
 > `optional` **color**: `"success"` \| `"danger"` \| `"warning"` \| `"neutral"`
 
-Defined in: [packages/ui/src/types.ts:324](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L324)
+Defined in: [packages/ui/src/types.ts:324](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L324)
 
 Semantic color indicating the alert type.
 
@@ -44,6 +44,6 @@ Semantic color indicating the alert type.
 
 > `optional` **variant**: `"soft"` \| `"solid"` \| `"outlined"`
 
-Defined in: [packages/ui/src/types.ts:326](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L326)
+Defined in: [packages/ui/src/types.ts:326](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L326)
 
 Visual style variant.

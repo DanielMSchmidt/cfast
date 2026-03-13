@@ -7,7 +7,7 @@ title: "TableAction"
 
 > **TableAction** = `object`
 
-Defined in: [packages/admin/src/types.ts:156](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L156)
+Defined in: [packages/admin/src/types.ts:156](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L156)
 
 A bulk action that operates on multiple selected rows in a table's list view.
 
@@ -30,7 +30,7 @@ const exportAction: TableAction = {
 
 > **handler**: (`selectedIds`) => `Promise`\<`unknown`\>
 
-Defined in: [packages/admin/src/types.ts:160](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L160)
+Defined in: [packages/admin/src/types.ts:160](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L160)
 
 Async handler called with the array of selected record IDs.
 
@@ -50,6 +50,6 @@ Async handler called with the array of selected record IDs.
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:158](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L158)
+Defined in: [packages/admin/src/types.ts:158](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L158)
 
 Display label for the bulk action button.

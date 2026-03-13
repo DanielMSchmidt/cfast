@@ -7,7 +7,7 @@ title: "CacheConfig"
 
 > **CacheConfig** = `object`
 
-Defined in: [packages/db/src/types.ts:71](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L71)
+Defined in: [packages/db/src/types.ts:71](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L71)
 
 Configuration for the database cache layer.
 
@@ -37,7 +37,7 @@ const db = createDb({
 
 > **backend**: [`CacheBackend`](/api/db/type-aliases/cachebackend/)
 
-Defined in: [packages/db/src/types.ts:73](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L73)
+Defined in: [packages/db/src/types.ts:73](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L73)
 
 Which cache backend to use: edge-local Cache API or global KV.
 
@@ -47,7 +47,7 @@ Which cache backend to use: edge-local Cache API or global KV.
 
 > `optional` **exclude**: `string`[]
 
-Defined in: [packages/db/src/types.ts:81](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L81)
+Defined in: [packages/db/src/types.ts:81](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L81)
 
 Table names that should never be cached (e.g., `["sessions", "tokens"]`).
 
@@ -57,7 +57,7 @@ Table names that should never be cached (e.g., `["sessions", "tokens"]`).
 
 > `optional` **kv**: `KVNamespace`
 
-Defined in: [packages/db/src/types.ts:75](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L75)
+Defined in: [packages/db/src/types.ts:75](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L75)
 
 KV namespace binding. Required when [backend](/api/db/type-aliases/cacheconfig/#backend) is `"kv"`.
 
@@ -67,7 +67,7 @@ KV namespace binding. Required when [backend](/api/db/type-aliases/cacheconfig/#
 
 > `optional` **onHit**: (`key`, `table`) => `void`
 
-Defined in: [packages/db/src/types.ts:83](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L83)
+Defined in: [packages/db/src/types.ts:83](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L83)
 
 Observability hook called on cache hits.
 
@@ -91,7 +91,7 @@ Observability hook called on cache hits.
 
 > `optional` **onInvalidate**: (`tables`) => `void`
 
-Defined in: [packages/db/src/types.ts:87](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L87)
+Defined in: [packages/db/src/types.ts:87](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L87)
 
 Observability hook called when tables are invalidated by mutations.
 
@@ -111,7 +111,7 @@ Observability hook called when tables are invalidated by mutations.
 
 > `optional` **onMiss**: (`key`, `table`) => `void`
 
-Defined in: [packages/db/src/types.ts:85](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L85)
+Defined in: [packages/db/src/types.ts:85](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L85)
 
 Observability hook called on cache misses.
 
@@ -135,7 +135,7 @@ Observability hook called on cache misses.
 
 > `optional` **staleWhileRevalidate**: `string`
 
-Defined in: [packages/db/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L79)
+Defined in: [packages/db/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L79)
 
 Stale-while-revalidate window (e.g., `"5m"`). Serves stale data while revalidating in the background.
 
@@ -145,6 +145,6 @@ Stale-while-revalidate window (e.g., `"5m"`). Serves stale data while revalidati
 
 > `optional` **ttl**: `string`
 
-Defined in: [packages/db/src/types.ts:77](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L77)
+Defined in: [packages/db/src/types.ts:77](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/db/src/types.ts#L77)
 
 Default TTL for cached queries (e.g., `"30s"`, `"5m"`, `"1h"`). Defaults to `"60s"`.

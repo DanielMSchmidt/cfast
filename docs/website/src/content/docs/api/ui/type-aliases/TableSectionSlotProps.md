@@ -7,7 +7,7 @@ title: "TableSectionSlotProps"
 
 > **TableSectionSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:169](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L169)
+Defined in: [packages/ui/src/types.ts:169](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L169)
 
 Props for the table head and table body plugin slots.
 
@@ -20,6 +20,6 @@ Contains [TableRowSlotProps](/api/ui/type-aliases/tablerowslotprops/) children.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:171](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L171)
+Defined in: [packages/ui/src/types.ts:171](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L171)
 
 Table rows within this section.

@@ -7,7 +7,7 @@ title: "OperationsFn"
 
 > **OperationsFn**\<`TInput`, `TResult`, `TUser`\> = (`db`, `input`, `ctx`) => [`Operation`](/api/db/type-aliases/operation/)\<`TResult`\>
 
-Defined in: [packages/actions/src/types.ts:107](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L107)
+Defined in: [packages/actions/src/types.ts:107](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L107)
 
 A function that builds a database [Operation](/api/db/type-aliases/operation/) for an action.
 

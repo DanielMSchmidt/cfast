@@ -7,7 +7,7 @@ title: "DashboardConfig"
 
 > **DashboardConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:272](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L272)
+Defined in: [packages/admin/src/types.ts:272](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L272)
 
 Configuration for the admin dashboard (the admin index page).
 
@@ -31,6 +31,6 @@ const dashboard: DashboardConfig = {
 
 > `optional` **widgets**: [`DashboardWidget`](/api/admin/type-aliases/dashboardwidget/)[]
 
-Defined in: [packages/admin/src/types.ts:274](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L274)
+Defined in: [packages/admin/src/types.ts:274](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L274)
 
 Dashboard widget definitions. When omitted, the admin auto-generates widgets from the schema.

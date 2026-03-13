@@ -7,7 +7,7 @@ title: "AppShellSlotProps"
 
 > **AppShellSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:238](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L238)
+Defined in: [packages/ui/src/types.ts:238](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L238)
 
 Props for the application shell plugin slot.
 
@@ -25,7 +25,7 @@ this type is for plugin implementors.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:240](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L240)
+Defined in: [packages/ui/src/types.ts:240](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L240)
 
 Main content area.
 
@@ -35,7 +35,7 @@ Main content area.
 
 > `optional` **header**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:244](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L244)
+Defined in: [packages/ui/src/types.ts:244](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L244)
 
 Header element.
 
@@ -45,6 +45,6 @@ Header element.
 
 > `optional` **sidebar**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:242](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L242)
+Defined in: [packages/ui/src/types.ts:242](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/types.ts#L242)
 
 Sidebar navigation element.

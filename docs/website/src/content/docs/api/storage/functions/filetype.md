@@ -7,7 +7,7 @@ title: "filetype"
 
 > **filetype**\<`TInput`\>(`config`): [`FiletypeConfig`](/api/storage/type-aliases/filetypeconfig/)\<`TInput`\> & `object`
 
-Defined in: [packages/storage/src/schema.ts:64](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/schema.ts#L64)
+Defined in: [packages/storage/src/schema.ts:64](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/storage/src/schema.ts#L64)
 
 Define a file type with its constraints and key generation strategy.
 

@@ -7,7 +7,7 @@ title: "fieldForColumn"
 
 > **fieldForColumn**(`column`): `ComponentType`\<`any`\>
 
-Defined in: [packages/ui/src/fields/field-for-column.ts:40](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/fields/field-for-column.ts#L40)
+Defined in: [packages/ui/src/fields/field-for-column.ts:40](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/ui/src/fields/field-for-column.ts#L40)
 
 Maps a Drizzle column's metadata to the appropriate TypedField component.
 

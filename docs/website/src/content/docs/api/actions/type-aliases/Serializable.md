@@ -7,7 +7,7 @@ title: "Serializable"
 
 > **Serializable** = `string` \| `number` \| `boolean` \| `null` \| `Serializable`[] \| \{\[`key`: `string`\]: `Serializable`; \}
 
-Defined in: [packages/actions/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L10)
+Defined in: [packages/actions/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/actions/src/types.ts#L10)
 
 A JSON-serializable value that can safely cross the server/client boundary.
 

@@ -7,7 +7,7 @@ title: "AdminUser"
 
 > **AdminUser** = `object`
 
-Defined in: [packages/admin/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L23)
+Defined in: [packages/admin/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L23)
 
 A user representation for the admin panel, decoupled from `@cfast/auth`.
 
@@ -33,7 +33,7 @@ const adminUser: AdminUser = {
 
 > **avatarUrl**: `string` \| `null`
 
-Defined in: [packages/admin/src/types.ts:31](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L31)
+Defined in: [packages/admin/src/types.ts:31](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L31)
 
 URL to the user's avatar image, or `null` if none is set.
 
@@ -43,7 +43,7 @@ URL to the user's avatar image, or `null` if none is set.
 
 > **email**: `string`
 
-Defined in: [packages/admin/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L27)
+Defined in: [packages/admin/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L27)
 
 The user's email address, displayed in the admin sidebar and user views.
 
@@ -53,7 +53,7 @@ The user's email address, displayed in the admin sidebar and user views.
 
 > **id**: `string`
 
-Defined in: [packages/admin/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L25)
+Defined in: [packages/admin/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L25)
 
 Unique user identifier (typically from the `user` table primary key).
 
@@ -63,7 +63,7 @@ Unique user identifier (typically from the `user` table primary key).
 
 > `optional` **isImpersonating**: `boolean`
 
-Defined in: [packages/admin/src/types.ts:35](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L35)
+Defined in: [packages/admin/src/types.ts:35](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L35)
 
 Whether this session is an impersonation session started by another admin.
 
@@ -73,7 +73,7 @@ Whether this session is an impersonation session started by another admin.
 
 > **name**: `string`
 
-Defined in: [packages/admin/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L29)
+Defined in: [packages/admin/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L29)
 
 Display name shown in the admin header and user management views.
 
@@ -83,7 +83,7 @@ Display name shown in the admin header and user management views.
 
 > `optional` **realUser**: `object`
 
-Defined in: [packages/admin/src/types.ts:37](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L37)
+Defined in: [packages/admin/src/types.ts:37](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L37)
 
 The real admin user behind an impersonation session. Present only when [isImpersonating](/api/admin/type-aliases/adminuser/#isimpersonating) is `true`.
 
@@ -101,6 +101,6 @@ The real admin user behind an impersonation session. Present only when [isImpers
 
 > **roles**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:33](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L33)
+Defined in: [packages/admin/src/types.ts:33](https://github.com/DanielMSchmidt/cfast/blob/411313cb52fffba4d319391ba8501eaf3ea7c30b/packages/admin/src/types.ts#L33)
 
 List of role names assigned to this user (e.g., `["admin", "editor"]`).

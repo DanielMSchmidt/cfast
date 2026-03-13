@@ -139,7 +139,7 @@ export function LoginPage({
     setPasskeyLoading(true);
     setError(null);
     try {
-      const result = await authClient.signIn.passkey();
+      const result = await authClient.signIn.passkey?.();
       if (result?.error) {
         setError(result.error.message ?? "Passkey sign-in failed.");
       } else {
@@ -167,9 +167,11 @@ export function LoginPage({
           <div style={{ marginTop: 8 }}>
             <MagicLinkBtn onClick={handleMagicLink} loading={loading} />
           </div>
-          <div style={{ marginTop: 8 }}>
-            <PasskeyBtn onClick={handlePasskey} loading={passkeyLoading} />
-          </div>
+          {authClient.signIn.passkey && (
+            <div style={{ marginTop: 8 }}>
+              <PasskeyBtn onClick={handlePasskey} loading={passkeyLoading} />
+            </div>
+          )}
         </div>
       )}
     </Layout>
