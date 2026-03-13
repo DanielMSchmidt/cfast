@@ -7,7 +7,7 @@ title: "TableOverrides"
 
 > **TableOverrides** = `object`
 
-Defined in: [packages/admin/src/types.ts:57](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L57)
+Defined in: [packages/admin/src/types.ts:57](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L57)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:57](https://github.com/DanielMSchmidt/c
 
 > `optional` **actions**: `object`
 
-Defined in: [packages/admin/src/types.ts:63](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L63)
+Defined in: [packages/admin/src/types.ts:63](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L63)
 
 #### row?
 
@@ -31,7 +31,7 @@ Defined in: [packages/admin/src/types.ts:63](https://github.com/DanielMSchmidt/c
 
 > `optional` **defaultSort**: `object`
 
-Defined in: [packages/admin/src/types.ts:61](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L61)
+Defined in: [packages/admin/src/types.ts:61](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L61)
 
 #### column
 
@@ -47,7 +47,7 @@ Defined in: [packages/admin/src/types.ts:61](https://github.com/DanielMSchmidt/c
 
 > `optional` **exclude**: `boolean`
 
-Defined in: [packages/admin/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L64)
+Defined in: [packages/admin/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L64)
 
 ***
 
@@ -55,7 +55,7 @@ Defined in: [packages/admin/src/types.ts:64](https://github.com/DanielMSchmidt/c
 
 > `optional` **fields**: `Record`\<`string`, [`FieldConfig`](/api/forms/src/type-aliases/fieldconfig/)\>
 
-Defined in: [packages/admin/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L62)
+Defined in: [packages/admin/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L62)
 
 ***
 
@@ -63,7 +63,7 @@ Defined in: [packages/admin/src/types.ts:62](https://github.com/DanielMSchmidt/c
 
 > `optional` **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:58](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L58)
+Defined in: [packages/admin/src/types.ts:58](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L58)
 
 ***
 
@@ -71,7 +71,7 @@ Defined in: [packages/admin/src/types.ts:58](https://github.com/DanielMSchmidt/c
 
 > `optional` **listColumns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:59](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L59)
+Defined in: [packages/admin/src/types.ts:59](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L59)
 
 ***
 
@@ -79,4 +79,4 @@ Defined in: [packages/admin/src/types.ts:59](https://github.com/DanielMSchmidt/c
 
 > `optional` **searchable**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:60](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L60)
+Defined in: [packages/admin/src/types.ts:60](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L60)

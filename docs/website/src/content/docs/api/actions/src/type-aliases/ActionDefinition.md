@@ -7,7 +7,7 @@ title: "ActionDefinition"
 
 > **ActionDefinition**\<`TInput`, `TResult`, `TUser`\> = `object`
 
-Defined in: [packages/actions/src/types.ts:73](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/actions/src/types.ts#L73)
+Defined in: [packages/actions/src/types.ts:73](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L73)
 
 ## Type Parameters
 
@@ -29,7 +29,7 @@ Defined in: [packages/actions/src/types.ts:73](https://github.com/DanielMSchmidt
 
 > **action**: (`args`) => `Promise`\<`TResult`\>
 
-Defined in: [packages/actions/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/actions/src/types.ts#L74)
+Defined in: [packages/actions/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L74)
 
 #### Parameters
 
@@ -47,7 +47,7 @@ Defined in: [packages/actions/src/types.ts:74](https://github.com/DanielMSchmidt
 
 > **buildOperation**: (`db`, `input`, `ctx`) => [`Operation`](/api/db/src/type-aliases/operation/)\<`TResult`\>
 
-Defined in: [packages/actions/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/actions/src/types.ts#L79)
+Defined in: [packages/actions/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L79)
 
 #### Parameters
 
@@ -73,7 +73,7 @@ Defined in: [packages/actions/src/types.ts:79](https://github.com/DanielMSchmidt
 
 > **client**: [`ClientDescriptor`](/api/actions/src/type-aliases/clientdescriptor/)
 
-Defined in: [packages/actions/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/actions/src/types.ts#L78)
+Defined in: [packages/actions/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L78)
 
 ***
 
@@ -81,7 +81,7 @@ Defined in: [packages/actions/src/types.ts:78](https://github.com/DanielMSchmidt
 
 > **loader**: \<`TLoaderData`\>(`loaderFn`) => (`args`) => `Promise`\<`TLoaderData` & `object`\>
 
-Defined in: [packages/actions/src/types.ts:75](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/actions/src/types.ts#L75)
+Defined in: [packages/actions/src/types.ts:75](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L75)
 
 #### Type Parameters
 

@@ -7,7 +7,7 @@ title: "AdminTableMeta"
 
 > **AdminTableMeta** = `object`
 
-Defined in: [packages/admin/src/types.ts:115](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L115)
+Defined in: [packages/admin/src/types.ts:115](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L115)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:115](https://github.com/DanielMSchmidt/
 
 > **columns**: [`AdminColumnConfig`](/api/admin/src/type-aliases/admincolumnconfig/)[]
 
-Defined in: [packages/admin/src/types.ts:119](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L119)
+Defined in: [packages/admin/src/types.ts:119](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L119)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [packages/admin/src/types.ts:119](https://github.com/DanielMSchmidt/
 
 > **defaultSort**: `object`
 
-Defined in: [packages/admin/src/types.ts:123](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L123)
+Defined in: [packages/admin/src/types.ts:123](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L123)
 
 #### column
 
@@ -39,7 +39,7 @@ Defined in: [packages/admin/src/types.ts:123](https://github.com/DanielMSchmidt/
 
 > **drizzleTable**: `SQLiteTable`
 
-Defined in: [packages/admin/src/types.ts:118](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L118)
+Defined in: [packages/admin/src/types.ts:118](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L118)
 
 ***
 
@@ -47,7 +47,7 @@ Defined in: [packages/admin/src/types.ts:118](https://github.com/DanielMSchmidt/
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:117](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L117)
+Defined in: [packages/admin/src/types.ts:117](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L117)
 
 ***
 
@@ -55,7 +55,7 @@ Defined in: [packages/admin/src/types.ts:117](https://github.com/DanielMSchmidt/
 
 > **listColumns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:122](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L122)
+Defined in: [packages/admin/src/types.ts:122](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L122)
 
 ***
 
@@ -63,7 +63,7 @@ Defined in: [packages/admin/src/types.ts:122](https://github.com/DanielMSchmidt/
 
 > **name**: `string`
 
-Defined in: [packages/admin/src/types.ts:116](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L116)
+Defined in: [packages/admin/src/types.ts:116](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L116)
 
 ***
 
@@ -71,7 +71,7 @@ Defined in: [packages/admin/src/types.ts:116](https://github.com/DanielMSchmidt/
 
 > **overrides**: [`TableOverrides`](/api/admin/src/type-aliases/tableoverrides/)
 
-Defined in: [packages/admin/src/types.ts:124](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L124)
+Defined in: [packages/admin/src/types.ts:124](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L124)
 
 ***
 
@@ -79,7 +79,7 @@ Defined in: [packages/admin/src/types.ts:124](https://github.com/DanielMSchmidt/
 
 > **primaryKey**: `string`
 
-Defined in: [packages/admin/src/types.ts:120](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L120)
+Defined in: [packages/admin/src/types.ts:120](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L120)
 
 ***
 
@@ -87,4 +87,4 @@ Defined in: [packages/admin/src/types.ts:120](https://github.com/DanielMSchmidt/
 
 > **searchableColumns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:121](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L121)
+Defined in: [packages/admin/src/types.ts:121](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L121)

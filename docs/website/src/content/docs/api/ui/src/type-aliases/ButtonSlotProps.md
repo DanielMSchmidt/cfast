@@ -7,7 +7,7 @@ title: "ButtonSlotProps"
 
 > **ButtonSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L62)
+Defined in: [packages/ui/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L62)
 
 Props for the button plugin slot.
 
@@ -17,7 +17,7 @@ Props for the button plugin slot.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L64)
+Defined in: [packages/ui/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L64)
 
 Button content.
 
@@ -27,7 +27,7 @@ Button content.
 
 > `optional` **color**: `"primary"` \| `"neutral"` \| `"danger"` \| `"success"` \| `"warning"`
 
-Defined in: [packages/ui/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L74)
+Defined in: [packages/ui/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L74)
 
 Color theme.
 
@@ -37,7 +37,7 @@ Color theme.
 
 > `optional` **disabled**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L68)
+Defined in: [packages/ui/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L68)
 
 Whether the button is disabled.
 
@@ -47,7 +47,7 @@ Whether the button is disabled.
 
 > `optional` **loading**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:70](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L70)
+Defined in: [packages/ui/src/types.ts:70](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L70)
 
 Whether the button is in a loading state.
 
@@ -57,7 +57,7 @@ Whether the button is in a loading state.
 
 > `optional` **onClick**: () => `void`
 
-Defined in: [packages/ui/src/types.ts:66](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L66)
+Defined in: [packages/ui/src/types.ts:66](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L66)
 
 Click handler.
 
@@ -71,7 +71,7 @@ Click handler.
 
 > `optional` **size**: `"sm"` \| `"md"` \| `"lg"`
 
-Defined in: [packages/ui/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L76)
+Defined in: [packages/ui/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L76)
 
 Size of the button.
 
@@ -81,7 +81,7 @@ Size of the button.
 
 > `optional` **startDecorator**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L80)
+Defined in: [packages/ui/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L80)
 
 Element rendered before the button label.
 
@@ -91,7 +91,7 @@ Element rendered before the button label.
 
 > `optional` **type**: `"button"` \| `"submit"`
 
-Defined in: [packages/ui/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L78)
+Defined in: [packages/ui/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L78)
 
 HTML button type attribute.
 
@@ -101,6 +101,6 @@ HTML button type attribute.
 
 > `optional` **variant**: `"solid"` \| `"soft"` \| `"outlined"` \| `"plain"`
 
-Defined in: [packages/ui/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L72)
+Defined in: [packages/ui/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L72)
 
 Visual style variant.

@@ -7,7 +7,7 @@ title: "AppShellHeader"
 
 > **AppShellHeader**(`__namedParameters`): `Element`
 
-Defined in: [packages/ui/src/components/app-shell.tsx:59](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/components/app-shell.tsx#L59)
+Defined in: [packages/ui/src/components/app-shell.tsx:59](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/components/app-shell.tsx#L59)
 
 Header slot for AppShell.
 

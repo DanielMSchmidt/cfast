@@ -7,7 +7,7 @@ title: "ColumnDef"
 
 > **ColumnDef**\<`T`\> = `object`
 
-Defined in: [packages/ui/src/types.ts:251](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L251)
+Defined in: [packages/ui/src/types.ts:251](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L251)
 
 Full column definition for DataTable and DetailView.
 Specifies the column key, display label, sorting, and custom rendering.
@@ -24,7 +24,7 @@ Specifies the column key, display label, sorting, and custom rendering.
 
 > **key**: `string`
 
-Defined in: [packages/ui/src/types.ts:253](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L253)
+Defined in: [packages/ui/src/types.ts:253](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L253)
 
 Property key on the row object.
 
@@ -34,7 +34,7 @@ Property key on the row object.
 
 > `optional` **label**: `string`
 
-Defined in: [packages/ui/src/types.ts:255](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L255)
+Defined in: [packages/ui/src/types.ts:255](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L255)
 
 Human-readable column header label.
 
@@ -44,7 +44,7 @@ Human-readable column header label.
 
 > `optional` **priority**: `number`
 
-Defined in: [packages/ui/src/types.ts:263](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L263)
+Defined in: [packages/ui/src/types.ts:263](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L263)
 
 Responsive priority; lower numbers stay visible on small screens.
 
@@ -54,7 +54,7 @@ Responsive priority; lower numbers stay visible on small screens.
 
 > `optional` **render**: (`value`, `row`) => `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:259](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L259)
+Defined in: [packages/ui/src/types.ts:259](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L259)
 
 Custom render function for the cell value.
 
@@ -78,7 +78,7 @@ Custom render function for the cell value.
 
 > `optional` **sortable**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:257](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L257)
+Defined in: [packages/ui/src/types.ts:257](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L257)
 
 Whether this column supports sorting. Defaults to true.
 
@@ -88,6 +88,6 @@ Whether this column supports sorting. Defaults to true.
 
 > `optional` **width**: `string` \| `number`
 
-Defined in: [packages/ui/src/types.ts:261](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L261)
+Defined in: [packages/ui/src/types.ts:261](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L261)
 
 Fixed column width (CSS value or pixel number).

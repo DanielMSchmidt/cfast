@@ -7,7 +7,7 @@ title: "parseOffsetParams"
 
 > **parseOffsetParams**(`request`, `options?`): [`OffsetParams`](/api/db/src/type-aliases/offsetparams/)
 
-Defined in: [packages/db/src/paginate.ts:65](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/db/src/paginate.ts#L65)
+Defined in: [packages/db/src/paginate.ts:65](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/paginate.ts#L65)
 
 Parses offset-based pagination parameters from a request URL's search params.
 

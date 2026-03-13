@@ -7,7 +7,7 @@ title: "defineStorage"
 
 > **defineStorage**\<`T`\>(`schema`): [`StorageInstance`](/api/storage/src/type-aliases/storageinstance/)\<`T`\>
 
-Defined in: [packages/storage/src/schema.ts:87](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/schema.ts#L87)
+Defined in: [packages/storage/src/schema.ts:87](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/schema.ts#L87)
 
 Create a type-safe storage instance from a schema of named file types.
 

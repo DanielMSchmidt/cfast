@@ -7,7 +7,7 @@ title: "introspectSchema"
 
 > **introspectSchema**(`schema`, `tableOverrides?`): [`AdminTableMeta`](/api/admin/src/type-aliases/admintablemeta/)[]
 
-Defined in: [packages/admin/src/introspect.ts:110](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/introspect.ts#L110)
+Defined in: [packages/admin/src/introspect.ts:110](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/introspect.ts#L110)
 
 Introspect a Drizzle schema and produce AdminTableMeta for each visible table.
 

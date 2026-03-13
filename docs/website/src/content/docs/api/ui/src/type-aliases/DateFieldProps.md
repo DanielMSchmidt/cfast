@@ -7,7 +7,7 @@ title: "DateFieldProps"
 
 > **DateFieldProps** = [`BaseFieldProps`](/api/ui/src/type-aliases/basefieldprops/) & `object`
 
-Defined in: [packages/ui/src/types.ts:447](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L447)
+Defined in: [packages/ui/src/types.ts:447](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L447)
 
 Props for the DateField read-only display component.
 

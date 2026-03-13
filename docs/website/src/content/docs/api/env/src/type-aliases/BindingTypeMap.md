@@ -7,7 +7,7 @@ title: "BindingTypeMap"
 
 > **BindingTypeMap** = `object`
 
-Defined in: [packages/env/src/types.ts:7](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L7)
+Defined in: [packages/env/src/types.ts:7](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L7)
 
 Maps each Cloudflare binding type string to its corresponding TypeScript type.
 
@@ -20,7 +20,7 @@ Consumers must have `@cloudflare/workers-types` installed for full type safety.
 
 > **d1**: `D1Database`
 
-Defined in: [packages/env/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L8)
+Defined in: [packages/env/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L8)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [packages/env/src/types.ts:8](https://github.com/DanielMSchmidt/cfas
 
 > **durable-object**: `DurableObjectNamespace`
 
-Defined in: [packages/env/src/types.ts:12](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L12)
+Defined in: [packages/env/src/types.ts:12](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L12)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [packages/env/src/types.ts:12](https://github.com/DanielMSchmidt/cfa
 
 > **kv**: `KVNamespace`
 
-Defined in: [packages/env/src/types.ts:9](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L9)
+Defined in: [packages/env/src/types.ts:9](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L9)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: [packages/env/src/types.ts:9](https://github.com/DanielMSchmidt/cfas
 
 > **queue**: `Queue`
 
-Defined in: [packages/env/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L11)
+Defined in: [packages/env/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L11)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: [packages/env/src/types.ts:11](https://github.com/DanielMSchmidt/cfa
 
 > **r2**: `R2Bucket`
 
-Defined in: [packages/env/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L10)
+Defined in: [packages/env/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L10)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [packages/env/src/types.ts:10](https://github.com/DanielMSchmidt/cfa
 
 > **secret**: `string`
 
-Defined in: [packages/env/src/types.ts:14](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L14)
+Defined in: [packages/env/src/types.ts:14](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L14)
 
 ***
 
@@ -68,7 +68,7 @@ Defined in: [packages/env/src/types.ts:14](https://github.com/DanielMSchmidt/cfa
 
 > **service**: `Fetcher`
 
-Defined in: [packages/env/src/types.ts:13](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L13)
+Defined in: [packages/env/src/types.ts:13](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L13)
 
 ***
 
@@ -76,4 +76,4 @@ Defined in: [packages/env/src/types.ts:13](https://github.com/DanielMSchmidt/cfa
 
 > **var**: `string`
 
-Defined in: [packages/env/src/types.ts:15](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L15)
+Defined in: [packages/env/src/types.ts:15](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L15)

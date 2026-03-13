@@ -7,7 +7,7 @@ title: "createAdmin"
 
 > **createAdmin**(`config`): `object`
 
-Defined in: [packages/admin/src/create-admin.ts:21](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/create-admin.ts#L21)
+Defined in: [packages/admin/src/create-admin.ts:21](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/create-admin.ts#L21)
 
 Create a complete admin panel from your Drizzle schema.
 

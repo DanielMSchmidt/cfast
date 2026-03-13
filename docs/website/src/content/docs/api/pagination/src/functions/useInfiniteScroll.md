@@ -7,7 +7,7 @@ title: "useInfiniteScroll"
 
 > **useInfiniteScroll**\<`T`\>(`options?`): [`UseInfiniteScrollResult`](/api/pagination/src/type-aliases/useinfinitescrollresult/)\<`T`\>
 
-Defined in: [packages/pagination/src/use-infinite-scroll.ts:41](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/pagination/src/use-infinite-scroll.ts#L41)
+Defined in: [packages/pagination/src/use-infinite-scroll.ts:41](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-infinite-scroll.ts#L41)
 
 React hook for infinite scroll with automatic loading via IntersectionObserver.
 Wraps [usePagination](/api/pagination/src/functions/usepagination/) and triggers `loadMore` when a sentinel element enters the viewport.

@@ -7,7 +7,7 @@ title: "SignedUrlOptions"
 
 > **SignedUrlOptions** = `object`
 
-Defined in: [packages/storage/src/types.ts:111](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L111)
+Defined in: [packages/storage/src/types.ts:111](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L111)
 
 Options for generating a time-limited signed URL.
 
@@ -17,7 +17,7 @@ Options for generating a time-limited signed URL.
 
 > **env**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/storage/src/types.ts:113](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L113)
+Defined in: [packages/storage/src/types.ts:113](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L113)
 
 Workers environment bindings (must include `STORAGE_SECRET`).
 
@@ -27,6 +27,6 @@ Workers environment bindings (must include `STORAGE_SECRET`).
 
 > **expiresIn**: `string`
 
-Defined in: [packages/storage/src/types.ts:115](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L115)
+Defined in: [packages/storage/src/types.ts:115](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L115)
 
 How long the URL is valid (e.g. `"1h"`, `"30m"`, `"7d"`).

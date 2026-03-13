@@ -7,7 +7,7 @@ title: "createAutoForm"
 
 > **createAutoForm**(`plugin`): (`__namedParameters`) => `Element`
 
-Defined in: [packages/forms/src/auto-form.tsx:48](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/forms/src/auto-form.tsx#L48)
+Defined in: [packages/forms/src/auto-form.tsx:48](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/auto-form.tsx#L48)
 
 Create an auto-generated form component from a Drizzle table schema.
 

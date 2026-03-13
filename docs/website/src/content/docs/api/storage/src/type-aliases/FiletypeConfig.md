@@ -7,7 +7,7 @@ title: "FiletypeConfig"
 
 > **FiletypeConfig**\<`TInput`\> = `object`
 
-Defined in: [packages/storage/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L18)
+Defined in: [packages/storage/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L18)
 
 Configuration for a single file type within a storage schema.
 
@@ -23,7 +23,7 @@ Configuration for a single file type within a storage schema.
 
 > **accept**: readonly `string`[]
 
-Defined in: [packages/storage/src/types.ts:22](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L22)
+Defined in: [packages/storage/src/types.ts:22](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L22)
 
 MIME types accepted for this file type (e.g. `["image/jpeg", "image/png"]`).
 
@@ -33,7 +33,7 @@ MIME types accepted for this file type (e.g. `["image/jpeg", "image/png"]`).
 
 > **bucket**: `string`
 
-Defined in: [packages/storage/src/types.ts:20](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L20)
+Defined in: [packages/storage/src/types.ts:20](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L20)
 
 R2 binding name from the Workers environment (e.g. `"UPLOADS"`).
 
@@ -43,7 +43,7 @@ R2 binding name from the Workers environment (e.g. `"UPLOADS"`).
 
 > `optional` **hooks**: [`FiletypeHooks`](/api/storage/src/type-aliases/filetypehooks/)\<`TInput`\>
 
-Defined in: [packages/storage/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L38)
+Defined in: [packages/storage/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L38)
 
 Lifecycle hooks that run before and after upload.
 
@@ -53,7 +53,7 @@ Lifecycle hooks that run before and after upload.
 
 > **key**: (`file`, `ctx`) => `string`
 
-Defined in: [packages/storage/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L26)
+Defined in: [packages/storage/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L26)
 
 Function that generates the R2 object key for an uploaded file.
 
@@ -83,7 +83,7 @@ Function that generates the R2 object key for an uploaded file.
 
 > **maxSize**: `string`
 
-Defined in: [packages/storage/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L24)
+Defined in: [packages/storage/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L24)
 
 Maximum file size as a human-readable string (e.g. `"10mb"`, `"500kb"`).
 
@@ -93,7 +93,7 @@ Maximum file size as a human-readable string (e.g. `"10mb"`, `"500kb"`).
 
 > `optional` **multipartThreshold**: `string`
 
-Defined in: [packages/storage/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L32)
+Defined in: [packages/storage/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L32)
 
 File size above which multipart upload is used (default `"5mb"`).
 
@@ -103,7 +103,7 @@ File size above which multipart upload is used (default `"5mb"`).
 
 > `optional` **partSize**: `string`
 
-Defined in: [packages/storage/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L34)
+Defined in: [packages/storage/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L34)
 
 Size of each part in a multipart upload (default `"10mb"`).
 
@@ -113,7 +113,7 @@ Size of each part in a multipart upload (default `"10mb"`).
 
 > `optional` **publicUrl**: `string`
 
-Defined in: [packages/storage/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L36)
+Defined in: [packages/storage/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L36)
 
 Base URL for publicly accessible files (used by `getPublicUrl`).
 
@@ -123,7 +123,7 @@ Base URL for publicly accessible files (used by `getPublicUrl`).
 
 > `optional` **replace**: `boolean`
 
-Defined in: [packages/storage/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L28)
+Defined in: [packages/storage/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L28)
 
 When `true`, uploading replaces all existing files under the same key prefix.
 
@@ -133,6 +133,6 @@ When `true`, uploading replaces all existing files under the same key prefix.
 
 > `optional` **uploadable**: `boolean`
 
-Defined in: [packages/storage/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/storage/src/types.ts#L30)
+Defined in: [packages/storage/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L30)
 
 When `false`, the file type cannot be uploaded directly (e.g. system-generated exports).

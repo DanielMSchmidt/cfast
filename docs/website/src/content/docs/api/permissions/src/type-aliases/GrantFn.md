@@ -7,7 +7,7 @@ title: "GrantFn"
 
 > **GrantFn**\<`TUser`\> = (`action`, `subject`, `options?`) => [`Grant`](/api/permissions/src/type-aliases/grant/)
 
-Defined in: [packages/permissions/src/types.ts:65](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/permissions/src/types.ts#L65)
+Defined in: [packages/permissions/src/types.ts:65](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L65)
 
 Type-safe grant builder function, parameterized by the user type.
 

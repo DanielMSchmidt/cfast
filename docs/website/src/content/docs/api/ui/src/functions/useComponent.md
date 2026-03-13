@@ -7,7 +7,7 @@ title: "useComponent"
 
 > **useComponent**\<`K`\>(`slot`): [`UIPluginComponents`](/api/ui/src/type-aliases/uiplugincomponents/)\[`K`\]
 
-Defined in: [packages/ui/src/plugin.tsx:77](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/plugin.tsx#L77)
+Defined in: [packages/ui/src/plugin.tsx:77](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/plugin.tsx#L77)
 
 Resolves a component for a given plugin slot.
 Returns the plugin's implementation if available, otherwise the headless default.

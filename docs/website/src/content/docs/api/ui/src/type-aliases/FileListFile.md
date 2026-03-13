@@ -7,7 +7,7 @@ title: "FileListFile"
 
 > **FileListFile** = `object`
 
-Defined in: [packages/ui/src/types.ts:805](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L805)
+Defined in: [packages/ui/src/types.ts:805](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L805)
 
 Metadata for a single file in a FileList.
 
@@ -17,7 +17,7 @@ Metadata for a single file in a FileList.
 
 > **key**: `string`
 
-Defined in: [packages/ui/src/types.ts:807](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L807)
+Defined in: [packages/ui/src/types.ts:807](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L807)
 
 Unique file identifier.
 
@@ -27,7 +27,7 @@ Unique file identifier.
 
 > **name**: `string`
 
-Defined in: [packages/ui/src/types.ts:809](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L809)
+Defined in: [packages/ui/src/types.ts:809](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L809)
 
 Display name of the file.
 
@@ -37,7 +37,7 @@ Display name of the file.
 
 > `optional` **size**: `number`
 
-Defined in: [packages/ui/src/types.ts:811](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L811)
+Defined in: [packages/ui/src/types.ts:811](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L811)
 
 File size in bytes.
 
@@ -47,7 +47,7 @@ File size in bytes.
 
 > `optional` **type**: `string`
 
-Defined in: [packages/ui/src/types.ts:813](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L813)
+Defined in: [packages/ui/src/types.ts:813](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L813)
 
 MIME type of the file.
 
@@ -57,6 +57,6 @@ MIME type of the file.
 
 > `optional` **url**: `string`
 
-Defined in: [packages/ui/src/types.ts:815](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L815)
+Defined in: [packages/ui/src/types.ts:815](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L815)
 
 Direct download URL.

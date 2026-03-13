@@ -7,7 +7,7 @@ title: "RecentItem"
 
 > **RecentItem** = `object`
 
-Defined in: [packages/admin/src/types.ts:134](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L134)
+Defined in: [packages/admin/src/types.ts:134](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L134)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:134](https://github.com/DanielMSchmidt/
 
 > **columns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:138](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L138)
+Defined in: [packages/admin/src/types.ts:138](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L138)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [packages/admin/src/types.ts:138](https://github.com/DanielMSchmidt/
 
 > **items**: `Record`\<`string`, `unknown`\>[]
 
-Defined in: [packages/admin/src/types.ts:137](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L137)
+Defined in: [packages/admin/src/types.ts:137](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L137)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [packages/admin/src/types.ts:137](https://github.com/DanielMSchmidt/
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:136](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L136)
+Defined in: [packages/admin/src/types.ts:136](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L136)
 
 ***
 
@@ -39,4 +39,4 @@ Defined in: [packages/admin/src/types.ts:136](https://github.com/DanielMSchmidt/
 
 > **table**: `string`
 
-Defined in: [packages/admin/src/types.ts:135](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L135)
+Defined in: [packages/admin/src/types.ts:135](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L135)

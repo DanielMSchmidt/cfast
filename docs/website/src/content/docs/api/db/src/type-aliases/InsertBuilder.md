@@ -7,7 +7,7 @@ title: "InsertBuilder"
 
 > **InsertBuilder** = `object`
 
-Defined in: [packages/db/src/types.ts:207](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/db/src/types.ts#L207)
+Defined in: [packages/db/src/types.ts:207](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L207)
 
 Builder for insert operations.
 
@@ -17,7 +17,7 @@ Builder for insert operations.
 
 > **values**: (`values`) => [`InsertReturningBuilder`](/api/db/src/type-aliases/insertreturningbuilder/)
 
-Defined in: [packages/db/src/types.ts:209](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/db/src/types.ts#L209)
+Defined in: [packages/db/src/types.ts:209](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L209)
 
 Specifies the values to insert.
 

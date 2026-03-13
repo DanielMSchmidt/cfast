@@ -7,7 +7,7 @@ title: "createUIPlugin"
 
 > **createUIPlugin**(`config`): [`UIPlugin`](/api/ui/src/type-aliases/uiplugin/)
 
-Defined in: [packages/ui/src/plugin.tsx:25](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/plugin.tsx#L25)
+Defined in: [packages/ui/src/plugin.tsx:25](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/plugin.tsx#L25)
 
 Creates a UI plugin that maps component slots to styled implementations.
 Slots not provided fall back to unstyled HTML defaults.

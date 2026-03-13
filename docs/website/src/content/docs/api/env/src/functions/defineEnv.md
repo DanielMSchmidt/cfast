@@ -7,7 +7,7 @@ title: "defineEnv"
 
 > **defineEnv**\<`S`\>(`schema`): `Env`\<`S`\>
 
-Defined in: [packages/env/src/define-env.ts:58](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/define-env.ts#L58)
+Defined in: [packages/env/src/define-env.ts:58](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/define-env.ts#L58)
 
 Creates a type-safe, runtime-validated environment object for Cloudflare Worker bindings.
 

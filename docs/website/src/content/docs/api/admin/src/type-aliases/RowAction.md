@@ -7,7 +7,7 @@ title: "RowAction"
 
 > **RowAction** = `object`
 
-Defined in: [packages/admin/src/types.ts:45](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L45)
+Defined in: [packages/admin/src/types.ts:45](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L45)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:45](https://github.com/DanielMSchmidt/c
 
 > **action**: (`id`, `formData`) => `Promise`\<`unknown`\>
 
-Defined in: [packages/admin/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L47)
+Defined in: [packages/admin/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L47)
 
 #### Parameters
 
@@ -37,7 +37,7 @@ Defined in: [packages/admin/src/types.ts:47](https://github.com/DanielMSchmidt/c
 
 > `optional` **confirm**: `string`
 
-Defined in: [packages/admin/src/types.ts:48](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L48)
+Defined in: [packages/admin/src/types.ts:48](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L48)
 
 ***
 
@@ -45,7 +45,7 @@ Defined in: [packages/admin/src/types.ts:48](https://github.com/DanielMSchmidt/c
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L46)
+Defined in: [packages/admin/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L46)
 
 ***
 
@@ -53,4 +53,4 @@ Defined in: [packages/admin/src/types.ts:46](https://github.com/DanielMSchmidt/c
 
 > `optional` **variant**: `"danger"` \| `"default"`
 
-Defined in: [packages/admin/src/types.ts:49](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L49)
+Defined in: [packages/admin/src/types.ts:49](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L49)

@@ -7,7 +7,7 @@ title: "createEmailClient"
 
 > **createEmailClient**(`config`): [`EmailClient`](/api/email/src/type-aliases/emailclient/)
 
-Defined in: [packages/email/src/create-email-client.ts:4](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/create-email-client.ts#L4)
+Defined in: [packages/email/src/create-email-client.ts:4](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/create-email-client.ts#L4)
 
 ## Parameters
 

@@ -7,7 +7,7 @@ title: "TableAction"
 
 > **TableAction** = `object`
 
-Defined in: [packages/admin/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L52)
+Defined in: [packages/admin/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L52)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:52](https://github.com/DanielMSchmidt/c
 
 > **handler**: (`selectedIds`) => `Promise`\<`unknown`\>
 
-Defined in: [packages/admin/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L54)
+Defined in: [packages/admin/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L54)
 
 #### Parameters
 
@@ -33,4 +33,4 @@ Defined in: [packages/admin/src/types.ts:54](https://github.com/DanielMSchmidt/c
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:53](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/admin/src/types.ts#L53)
+Defined in: [packages/admin/src/types.ts:53](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L53)

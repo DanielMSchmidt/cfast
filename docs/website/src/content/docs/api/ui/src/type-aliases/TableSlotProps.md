@@ -7,7 +7,7 @@ title: "TableSlotProps"
 
 > **TableSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L112)
+Defined in: [packages/ui/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L112)
 
 Props for the table plugin slot.
 
@@ -17,7 +17,7 @@ Props for the table plugin slot.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L114)
+Defined in: [packages/ui/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L114)
 
 Table rows and sections.
 
@@ -27,6 +27,6 @@ Table rows and sections.
 
 > `optional` **hoverRow**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:116](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L116)
+Defined in: [packages/ui/src/types.ts:116](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L116)
 
 Whether to highlight rows on hover.

@@ -7,7 +7,7 @@ title: "UserMenuLink"
 
 > **UserMenuLink** = `object`
 
-Defined in: [packages/ui/src/types.ts:735](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L735)
+Defined in: [packages/ui/src/types.ts:735](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L735)
 
 A navigation link in the user menu dropdown.
 
@@ -17,7 +17,7 @@ A navigation link in the user menu dropdown.
 
 > `optional` **action**: [`ClientDescriptor`](/api/actions/src/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:741](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L741)
+Defined in: [packages/ui/src/types.ts:741](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L741)
 
 If provided, the link is hidden when the user lacks permission.
 
@@ -27,7 +27,7 @@ If provided, the link is hidden when the user lacks permission.
 
 > **label**: `string`
 
-Defined in: [packages/ui/src/types.ts:737](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L737)
+Defined in: [packages/ui/src/types.ts:737](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L737)
 
 Display label.
 
@@ -37,6 +37,6 @@ Display label.
 
 > **to**: `string`
 
-Defined in: [packages/ui/src/types.ts:739](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L739)
+Defined in: [packages/ui/src/types.ts:739](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L739)
 
 Route path.

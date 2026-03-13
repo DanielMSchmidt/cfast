@@ -5,7 +5,7 @@ prev: false
 title: "EnvError"
 ---
 
-Defined in: [packages/env/src/errors.ts:9](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/errors.ts#L9)
+Defined in: [packages/env/src/errors.ts:9](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/errors.ts#L9)
 
 Error thrown when one or more Cloudflare Worker bindings fail validation.
 
@@ -22,7 +22,7 @@ The `message` includes a formatted summary of every failing binding.
 
 > **new EnvError**(`errors`): `EnvError`
 
-Defined in: [packages/env/src/errors.ts:18](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/errors.ts#L18)
+Defined in: [packages/env/src/errors.ts:18](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/errors.ts#L18)
 
 Creates a new `EnvError` from one or more validation failures.
 
@@ -60,7 +60,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **errors**: [`EnvValidationError`](/api/env/src/type-aliases/envvalidationerror/)[]
 
-Defined in: [packages/env/src/errors.ts:11](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/errors.ts#L11)
+Defined in: [packages/env/src/errors.ts:11](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/errors.ts#L11)
 
 All binding validation failures that caused this error.
 

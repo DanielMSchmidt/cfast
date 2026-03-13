@@ -7,7 +7,7 @@ title: "BooleanFieldProps"
 
 > **BooleanFieldProps** = [`BaseFieldProps`](/api/ui/src/type-aliases/basefieldprops/) & `object`
 
-Defined in: [packages/ui/src/types.ts:457](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/types.ts#L457)
+Defined in: [packages/ui/src/types.ts:457](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L457)
 
 Props for the BooleanField read-only display component.
 

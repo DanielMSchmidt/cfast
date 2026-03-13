@@ -7,7 +7,7 @@ title: "SendOptions"
 
 > **SendOptions** = `object`
 
-Defined in: [packages/email/src/types.ts:21](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L21)
+Defined in: [packages/email/src/types.ts:21](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L21)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/email/src/types.ts:21](https://github.com/DanielMSchmidt/c
 
 > `optional` **from**: `string`
 
-Defined in: [packages/email/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L25)
+Defined in: [packages/email/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L25)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [packages/email/src/types.ts:25](https://github.com/DanielMSchmidt/c
 
 > **react**: `ReactElement`
 
-Defined in: [packages/email/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L24)
+Defined in: [packages/email/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L24)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [packages/email/src/types.ts:24](https://github.com/DanielMSchmidt/c
 
 > **subject**: `string`
 
-Defined in: [packages/email/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L23)
+Defined in: [packages/email/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L23)
 
 ***
 
@@ -39,4 +39,4 @@ Defined in: [packages/email/src/types.ts:23](https://github.com/DanielMSchmidt/c
 
 > **to**: `string`
 
-Defined in: [packages/email/src/types.ts:22](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L22)
+Defined in: [packages/email/src/types.ts:22](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L22)

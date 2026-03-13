@@ -7,7 +7,7 @@ title: "EmailMessage"
 
 > **EmailMessage** = `object`
 
-Defined in: [packages/email/src/types.ts:3](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L3)
+Defined in: [packages/email/src/types.ts:3](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L3)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/email/src/types.ts:3](https://github.com/DanielMSchmidt/cf
 
 > **from**: `string`
 
-Defined in: [packages/email/src/types.ts:5](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L5)
+Defined in: [packages/email/src/types.ts:5](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L5)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [packages/email/src/types.ts:5](https://github.com/DanielMSchmidt/cf
 
 > **html**: `string`
 
-Defined in: [packages/email/src/types.ts:7](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L7)
+Defined in: [packages/email/src/types.ts:7](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L7)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [packages/email/src/types.ts:7](https://github.com/DanielMSchmidt/cf
 
 > **subject**: `string`
 
-Defined in: [packages/email/src/types.ts:6](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L6)
+Defined in: [packages/email/src/types.ts:6](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L6)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [packages/email/src/types.ts:6](https://github.com/DanielMSchmidt/cf
 
 > **text**: `string`
 
-Defined in: [packages/email/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L8)
+Defined in: [packages/email/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L8)
 
 ***
 
@@ -47,4 +47,4 @@ Defined in: [packages/email/src/types.ts:8](https://github.com/DanielMSchmidt/cf
 
 > **to**: `string`
 
-Defined in: [packages/email/src/types.ts:4](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/email/src/types.ts#L4)
+Defined in: [packages/email/src/types.ts:4](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L4)

@@ -7,7 +7,7 @@ title: "AuthInstance"
 
 > **AuthInstance** = `object`
 
-Defined in: [packages/auth/src/types.ts:49](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L49)
+Defined in: [packages/auth/src/types.ts:49](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L49)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/auth/src/types.ts:49](https://github.com/DanielMSchmidt/cf
 
 > **api**: `unknown`
 
-Defined in: [packages/auth/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L74)
+Defined in: [packages/auth/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L74)
 
 The underlying Better Auth instance
 
@@ -25,7 +25,7 @@ The underlying Better Auth instance
 
 > **createContext**: (`request`) => `Promise`\<[`AuthContext`](/api/auth/src/type-aliases/authcontext/)\>
 
-Defined in: [packages/auth/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L50)
+Defined in: [packages/auth/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L50)
 
 #### Parameters
 
@@ -43,7 +43,7 @@ Defined in: [packages/auth/src/types.ts:50](https://github.com/DanielMSchmidt/cf
 
 > **getRoles**: (`userId`) => `Promise`\<`string`[]\>
 
-Defined in: [packages/auth/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L52)
+Defined in: [packages/auth/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L52)
 
 #### Parameters
 
@@ -61,7 +61,7 @@ Defined in: [packages/auth/src/types.ts:52](https://github.com/DanielMSchmidt/cf
 
 > **handler**: (`request`) => `Promise`\<`Response`\>
 
-Defined in: [packages/auth/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L72)
+Defined in: [packages/auth/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L72)
 
 Handle auth API requests (forwards to Better Auth)
 
@@ -81,7 +81,7 @@ Handle auth API requests (forwards to Better Auth)
 
 > **impersonate**: (`adminUserId`, `targetUserId`) => `Promise`\<`void`\>
 
-Defined in: [packages/auth/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L64)
+Defined in: [packages/auth/src/types.ts:64](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L64)
 
 #### Parameters
 
@@ -103,7 +103,7 @@ Defined in: [packages/auth/src/types.ts:64](https://github.com/DanielMSchmidt/cf
 
 > **removeRole**: (`userId`, `role`) => `Promise`\<`void`\>
 
-Defined in: [packages/auth/src/types.ts:63](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L63)
+Defined in: [packages/auth/src/types.ts:63](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L63)
 
 #### Parameters
 
@@ -125,7 +125,7 @@ Defined in: [packages/auth/src/types.ts:63](https://github.com/DanielMSchmidt/cf
 
 > **requireUser**: (`request`) => `Promise`\<[`AuthenticatedContext`](/api/auth/src/type-aliases/authenticatedcontext/)\>
 
-Defined in: [packages/auth/src/types.ts:51](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L51)
+Defined in: [packages/auth/src/types.ts:51](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L51)
 
 #### Parameters
 
@@ -143,7 +143,7 @@ Defined in: [packages/auth/src/types.ts:51](https://github.com/DanielMSchmidt/cf
 
 > **sendMagicLink**: (`params`) => `Promise`\<`void`\>
 
-Defined in: [packages/auth/src/types.ts:67](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L67)
+Defined in: [packages/auth/src/types.ts:67](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L67)
 
 Send a magic link email to the given address
 
@@ -169,7 +169,7 @@ Send a magic link email to the given address
 
 > **setRole**: (`userId`, `role`, `caller?`) => `Promise`\<`void`\>
 
-Defined in: [packages/auth/src/types.ts:53](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L53)
+Defined in: [packages/auth/src/types.ts:53](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L53)
 
 #### Parameters
 
@@ -197,7 +197,7 @@ Defined in: [packages/auth/src/types.ts:53](https://github.com/DanielMSchmidt/cf
 
 > **setRoles**: (`userId`, `roles`, `caller?`) => `Promise`\<`void`\>
 
-Defined in: [packages/auth/src/types.ts:58](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L58)
+Defined in: [packages/auth/src/types.ts:58](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L58)
 
 #### Parameters
 
@@ -225,7 +225,7 @@ Defined in: [packages/auth/src/types.ts:58](https://github.com/DanielMSchmidt/cf
 
 > **stopImpersonating**: (`adminUserId`) => `Promise`\<`void`\>
 
-Defined in: [packages/auth/src/types.ts:65](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/auth/src/types.ts#L65)
+Defined in: [packages/auth/src/types.ts:65](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L65)
 
 #### Parameters
 

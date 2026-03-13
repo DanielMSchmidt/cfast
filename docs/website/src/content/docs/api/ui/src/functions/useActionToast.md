@@ -7,7 +7,7 @@ title: "useActionToast"
 
 > **useActionToast**(`descriptor`, `config`): `void`
 
-Defined in: [packages/ui/src/hooks/use-action-toast.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/ui/src/hooks/use-action-toast.ts#L30)
+Defined in: [packages/ui/src/hooks/use-action-toast.ts:30](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/hooks/use-action-toast.ts#L30)
 
 Automatically shows toast notifications when action results arrive.
 

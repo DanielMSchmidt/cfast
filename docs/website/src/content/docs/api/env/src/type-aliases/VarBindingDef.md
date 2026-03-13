@@ -7,7 +7,7 @@ title: "VarBindingDef"
 
 > **VarBindingDef** = `object`
 
-Defined in: [packages/env/src/types.ts:37](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L37)
+Defined in: [packages/env/src/types.ts:37](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L37)
 
 Binding definition for a `var` (string environment variable).
 
@@ -20,7 +20,7 @@ an optional validation callback.
 
 > `optional` **default**: `string` \| [`EnvironmentDefaults`](/api/env/src/type-aliases/environmentdefaults/)
 
-Defined in: [packages/env/src/types.ts:39](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L39)
+Defined in: [packages/env/src/types.ts:39](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L39)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [packages/env/src/types.ts:39](https://github.com/DanielMSchmidt/cfa
 
 > **type**: `"var"`
 
-Defined in: [packages/env/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L38)
+Defined in: [packages/env/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L38)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [packages/env/src/types.ts:38](https://github.com/DanielMSchmidt/cfa
 
 > `optional` **validate**: (`value`) => `boolean`
 
-Defined in: [packages/env/src/types.ts:40](https://github.com/DanielMSchmidt/cfast/blob/6dc004d45e4fa573b48d45d682b12e9a15c348c8/packages/env/src/types.ts#L40)
+Defined in: [packages/env/src/types.ts:40](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/env/src/types.ts#L40)
 
 #### Parameters
 
