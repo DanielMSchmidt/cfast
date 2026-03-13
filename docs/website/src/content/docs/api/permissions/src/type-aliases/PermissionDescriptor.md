@@ -7,7 +7,7 @@ title: "PermissionDescriptor"
 
 > **PermissionDescriptor** = `object`
 
-Defined in: [packages/permissions/src/types.ts:77](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L77)
+Defined in: [packages/permissions/src/types.ts:77](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L77)
 
 Structural description of a permission requirement.
 
@@ -20,7 +20,7 @@ This is what makes client-side permission introspection possible.
 
 > **action**: [`PermissionAction`](/api/permissions/src/type-aliases/permissionaction/)
 
-Defined in: [packages/permissions/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L79)
+Defined in: [packages/permissions/src/types.ts:79](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L79)
 
 The operation being checked.
 
@@ -30,6 +30,6 @@ The operation being checked.
 
 > **table**: [`DrizzleTable`](/api/permissions/src/type-aliases/drizzletable/)
 
-Defined in: [packages/permissions/src/types.ts:81](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L81)
+Defined in: [packages/permissions/src/types.ts:81](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L81)
 
 The Drizzle table the operation targets.

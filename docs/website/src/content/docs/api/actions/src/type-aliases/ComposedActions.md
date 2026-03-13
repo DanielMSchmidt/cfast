@@ -7,7 +7,7 @@ title: "ComposedActions"
 
 > **ComposedActions**\<`TActions`\> = `object`
 
-Defined in: [packages/actions/src/types.ts:85](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L85)
+Defined in: [packages/actions/src/types.ts:85](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/actions/src/types.ts#L85)
 
 ## Type Parameters
 
@@ -21,7 +21,7 @@ Defined in: [packages/actions/src/types.ts:85](https://github.com/DanielMSchmidt
 
 > **action**: (`args`) => `Promise`\<`unknown`\>
 
-Defined in: [packages/actions/src/types.ts:86](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L86)
+Defined in: [packages/actions/src/types.ts:86](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/actions/src/types.ts#L86)
 
 #### Parameters
 
@@ -39,7 +39,7 @@ Defined in: [packages/actions/src/types.ts:86](https://github.com/DanielMSchmidt
 
 > **actions**: `TActions`
 
-Defined in: [packages/actions/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L91)
+Defined in: [packages/actions/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/actions/src/types.ts#L91)
 
 ***
 
@@ -47,7 +47,7 @@ Defined in: [packages/actions/src/types.ts:91](https://github.com/DanielMSchmidt
 
 > **client**: [`ClientDescriptor`](/api/actions/src/type-aliases/clientdescriptor/)
 
-Defined in: [packages/actions/src/types.ts:90](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L90)
+Defined in: [packages/actions/src/types.ts:90](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/actions/src/types.ts#L90)
 
 ***
 
@@ -55,7 +55,7 @@ Defined in: [packages/actions/src/types.ts:90](https://github.com/DanielMSchmidt
 
 > **loader**: \<`TLoaderData`\>(`loaderFn`) => (`args`) => `Promise`\<`TLoaderData` & `object`\>
 
-Defined in: [packages/actions/src/types.ts:87](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/actions/src/types.ts#L87)
+Defined in: [packages/actions/src/types.ts:87](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/actions/src/types.ts#L87)
 
 #### Type Parameters
 

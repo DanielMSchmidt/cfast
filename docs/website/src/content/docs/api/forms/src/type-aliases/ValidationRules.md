@@ -7,7 +7,7 @@ title: "ValidationRules"
 
 > **ValidationRules** = `object`
 
-Defined in: [packages/forms/src/types.ts:5](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L5)
+Defined in: [packages/forms/src/types.ts:5](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L5)
 
 Validation rules that can be attached to a Drizzle column via [v](/api/forms/src/functions/v/).
 
@@ -17,7 +17,7 @@ Validation rules that can be attached to a Drizzle column via [v](/api/forms/src
 
 > `optional` **max**: `number`
 
-Defined in: [packages/forms/src/types.ts:9](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L9)
+Defined in: [packages/forms/src/types.ts:9](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L9)
 
 ***
 
@@ -25,7 +25,7 @@ Defined in: [packages/forms/src/types.ts:9](https://github.com/DanielMSchmidt/cf
 
 > `optional` **maxLength**: `number`
 
-Defined in: [packages/forms/src/types.ts:7](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L7)
+Defined in: [packages/forms/src/types.ts:7](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L7)
 
 ***
 
@@ -33,7 +33,7 @@ Defined in: [packages/forms/src/types.ts:7](https://github.com/DanielMSchmidt/cf
 
 > `optional` **message**: `string`
 
-Defined in: [packages/forms/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L11)
+Defined in: [packages/forms/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L11)
 
 ***
 
@@ -41,7 +41,7 @@ Defined in: [packages/forms/src/types.ts:11](https://github.com/DanielMSchmidt/c
 
 > `optional` **min**: `number`
 
-Defined in: [packages/forms/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L8)
+Defined in: [packages/forms/src/types.ts:8](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L8)
 
 ***
 
@@ -49,7 +49,7 @@ Defined in: [packages/forms/src/types.ts:8](https://github.com/DanielMSchmidt/cf
 
 > `optional` **minLength**: `number`
 
-Defined in: [packages/forms/src/types.ts:6](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L6)
+Defined in: [packages/forms/src/types.ts:6](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L6)
 
 ***
 
@@ -57,4 +57,4 @@ Defined in: [packages/forms/src/types.ts:6](https://github.com/DanielMSchmidt/cf
 
 > `optional` **pattern**: `RegExp`
 
-Defined in: [packages/forms/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L10)
+Defined in: [packages/forms/src/types.ts:10](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L10)

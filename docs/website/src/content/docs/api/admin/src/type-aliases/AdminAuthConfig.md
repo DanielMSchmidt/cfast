@@ -7,7 +7,7 @@ title: "AdminAuthConfig"
 
 > **AdminAuthConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:19](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L19)
+Defined in: [packages/admin/src/types.ts:19](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L19)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:19](https://github.com/DanielMSchmidt/c
 
 > **getRoles**: (`userId`) => `Promise`\<`string`[]\>
 
-Defined in: [packages/admin/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L24)
+Defined in: [packages/admin/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L24)
 
 #### Parameters
 
@@ -33,7 +33,7 @@ Defined in: [packages/admin/src/types.ts:24](https://github.com/DanielMSchmidt/c
 
 > **hasRole**: (`user`, `role`) => `boolean`
 
-Defined in: [packages/admin/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L23)
+Defined in: [packages/admin/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L23)
 
 #### Parameters
 
@@ -55,7 +55,7 @@ Defined in: [packages/admin/src/types.ts:23](https://github.com/DanielMSchmidt/c
 
 > **impersonate**: (`adminId`, `targetId`, `request`) => `Promise`\<`Response`\>
 
-Defined in: [packages/admin/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L28)
+Defined in: [packages/admin/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L28)
 
 #### Parameters
 
@@ -81,7 +81,7 @@ Defined in: [packages/admin/src/types.ts:28](https://github.com/DanielMSchmidt/c
 
 > **removeRole**: (`userId`, `role`) => `Promise`\<`void`\>
 
-Defined in: [packages/admin/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L26)
+Defined in: [packages/admin/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L26)
 
 #### Parameters
 
@@ -103,7 +103,7 @@ Defined in: [packages/admin/src/types.ts:26](https://github.com/DanielMSchmidt/c
 
 > **requireUser**: (`request`) => `Promise`\<\{ `grants`: `unknown`[]; `user`: [`AdminUser`](/api/admin/src/type-aliases/adminuser/); \}\>
 
-Defined in: [packages/admin/src/types.ts:20](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L20)
+Defined in: [packages/admin/src/types.ts:20](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L20)
 
 #### Parameters
 
@@ -121,7 +121,7 @@ Defined in: [packages/admin/src/types.ts:20](https://github.com/DanielMSchmidt/c
 
 > **setRole**: (`userId`, `role`) => `Promise`\<`void`\>
 
-Defined in: [packages/admin/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L25)
+Defined in: [packages/admin/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L25)
 
 #### Parameters
 
@@ -143,7 +143,7 @@ Defined in: [packages/admin/src/types.ts:25](https://github.com/DanielMSchmidt/c
 
 > **setRoles**: (`userId`, `roles`) => `Promise`\<`void`\>
 
-Defined in: [packages/admin/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L27)
+Defined in: [packages/admin/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L27)
 
 #### Parameters
 
@@ -165,7 +165,7 @@ Defined in: [packages/admin/src/types.ts:27](https://github.com/DanielMSchmidt/c
 
 > **stopImpersonation**: (`request`) => `Promise`\<`Response`\>
 
-Defined in: [packages/admin/src/types.ts:33](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L33)
+Defined in: [packages/admin/src/types.ts:33](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L33)
 
 #### Parameters
 

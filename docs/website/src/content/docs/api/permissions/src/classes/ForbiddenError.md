@@ -5,7 +5,7 @@ prev: false
 title: "ForbiddenError"
 ---
 
-Defined in: [packages/permissions/src/errors.ts:23](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L23)
+Defined in: [packages/permissions/src/errors.ts:23](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L23)
 
 Error thrown when a permission check fails during an operation.
 
@@ -23,7 +23,7 @@ server/client boundary.
 
 > **new ForbiddenError**(`options`): `ForbiddenError`
 
-Defined in: [packages/permissions/src/errors.ts:38](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L38)
+Defined in: [packages/permissions/src/errors.ts:38](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L38)
 
 Creates a new `ForbiddenError`.
 
@@ -49,7 +49,7 @@ The action, table, and optional role/descriptors for the error.
 
 > `readonly` **action**: [`PermissionAction`](/api/permissions/src/type-aliases/permissionaction/)
 
-Defined in: [packages/permissions/src/errors.ts:25](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L25)
+Defined in: [packages/permissions/src/errors.ts:25](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L25)
 
 The action that was denied (e.g., `"delete"`).
 
@@ -71,7 +71,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **descriptors**: [`PermissionDescriptor`](/api/permissions/src/type-aliases/permissiondescriptor/)[]
 
-Defined in: [packages/permissions/src/errors.ts:31](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L31)
+Defined in: [packages/permissions/src/errors.ts:31](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L31)
 
 The full list of permission descriptors that were checked.
 
@@ -105,7 +105,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **role**: `string` \| `undefined`
 
-Defined in: [packages/permissions/src/errors.ts:29](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L29)
+Defined in: [packages/permissions/src/errors.ts:29](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L29)
 
 The role that lacked the permission, or `undefined` if not specified.
 
@@ -127,7 +127,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **table**: [`DrizzleTable`](/api/permissions/src/type-aliases/drizzletable/)
 
-Defined in: [packages/permissions/src/errors.ts:27](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L27)
+Defined in: [packages/permissions/src/errors.ts:27](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L27)
 
 The Drizzle table the action targeted.
 
@@ -159,7 +159,7 @@ not capture any frames.
 
 > **toJSON**(): `object`
 
-Defined in: [packages/permissions/src/errors.ts:56](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/errors.ts#L56)
+Defined in: [packages/permissions/src/errors.ts:56](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/errors.ts#L56)
 
 Serializes the error to a JSON-safe object for server-to-client transfer.
 

@@ -7,7 +7,7 @@ title: "StorageInstance"
 
 > **StorageInstance**\<`T`\> = `object`
 
-Defined in: [packages/storage/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L127)
+Defined in: [packages/storage/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L127)
 
 The storage instance returned by [defineStorage](/api/storage/src/functions/definestorage/), providing upload, serve, and URL methods.
 
@@ -23,7 +23,7 @@ The storage instance returned by [defineStorage](/api/storage/src/functions/defi
 
 > **clientConfig**: () => [`ClientStorageConfig`](/api/storage/src/type-aliases/clientstorageconfig/)
 
-Defined in: [packages/storage/src/types.ts:145](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L145)
+Defined in: [packages/storage/src/types.ts:145](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L145)
 
 Extract the client-safe subset of the schema for use with `StorageProvider`.
 
@@ -37,7 +37,7 @@ Extract the client-safe subset of the schema for use with `StorageProvider`.
 
 > **getPublicUrl**: (`name`, `key`) => `string`
 
-Defined in: [packages/storage/src/types.ts:139](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L139)
+Defined in: [packages/storage/src/types.ts:139](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L139)
 
 Build a public URL for a file in a public bucket.
 
@@ -61,7 +61,7 @@ keyof `T` & `string`
 
 > **getSignedUrl**: (`name`, `key`, `options`) => `Promise`\<`string`\>
 
-Defined in: [packages/storage/src/types.ts:141](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L141)
+Defined in: [packages/storage/src/types.ts:141](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L141)
 
 Generate a time-limited HMAC-signed URL for private file access.
 
@@ -89,7 +89,7 @@ keyof `T` & `string`
 
 > **handle**: \<`K`\>(`name`, `request`, `ctx`) => `Promise`\<[`UploadResult`](/api/storage/src/type-aliases/uploadresult/)\>
 
-Defined in: [packages/storage/src/types.ts:131](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L131)
+Defined in: [packages/storage/src/types.ts:131](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L131)
 
 Parse, validate, and upload a file from an incoming request to R2.
 
@@ -123,7 +123,7 @@ Parse, validate, and upload a file from an incoming request to R2.
 
 > **schema**: `T`
 
-Defined in: [packages/storage/src/types.ts:129](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L129)
+Defined in: [packages/storage/src/types.ts:129](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L129)
 
 The raw schema passed to `defineStorage`.
 
@@ -133,7 +133,7 @@ The raw schema passed to `defineStorage`.
 
 > **serve**: (`name`, `key`, `options`) => `Promise`\<`Response`\>
 
-Defined in: [packages/storage/src/types.ts:137](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L137)
+Defined in: [packages/storage/src/types.ts:137](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L137)
 
 Stream a file directly from R2, returning a `Response` with appropriate headers.
 
@@ -161,7 +161,7 @@ keyof `T` & `string`
 
 > **verifySignedUrl**: (`url`, `options`) => `Promise`\<`boolean`\>
 
-Defined in: [packages/storage/src/types.ts:143](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L143)
+Defined in: [packages/storage/src/types.ts:143](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L143)
 
 Verify that a signed URL has a valid signature and has not expired.
 

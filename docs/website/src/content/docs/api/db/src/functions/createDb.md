@@ -7,7 +7,7 @@ title: "createDb"
 
 > **createDb**(`config`): [`Db`](/api/db/src/type-aliases/db/)
 
-Defined in: [packages/db/src/create-db.ts:32](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/create-db.ts#L32)
+Defined in: [packages/db/src/create-db.ts:32](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/create-db.ts#L32)
 
 Creates a permission-aware database instance bound to the given user.
 

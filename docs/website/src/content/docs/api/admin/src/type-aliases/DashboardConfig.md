@@ -7,7 +7,7 @@ title: "DashboardConfig"
 
 > **DashboardConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L84)
+Defined in: [packages/admin/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L84)
 
 ## Properties
 
@@ -15,4 +15,4 @@ Defined in: [packages/admin/src/types.ts:84](https://github.com/DanielMSchmidt/c
 
 > `optional` **widgets**: [`DashboardWidget`](/api/admin/src/type-aliases/dashboardwidget/)[]
 
-Defined in: [packages/admin/src/types.ts:85](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L85)
+Defined in: [packages/admin/src/types.ts:85](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L85)

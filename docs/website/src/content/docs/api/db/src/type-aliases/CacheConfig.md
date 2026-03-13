@@ -7,7 +7,7 @@ title: "CacheConfig"
 
 > **CacheConfig** = `object`
 
-Defined in: [packages/db/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L28)
+Defined in: [packages/db/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L28)
 
 Configuration for the database cache layer.
 
@@ -17,7 +17,7 @@ Configuration for the database cache layer.
 
 > **backend**: [`CacheBackend`](/api/db/src/type-aliases/cachebackend/)
 
-Defined in: [packages/db/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L30)
+Defined in: [packages/db/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L30)
 
 Which cache backend to use: edge-local Cache API or global KV.
 
@@ -27,7 +27,7 @@ Which cache backend to use: edge-local Cache API or global KV.
 
 > `optional` **exclude**: `string`[]
 
-Defined in: [packages/db/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L38)
+Defined in: [packages/db/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L38)
 
 Table names that should never be cached.
 
@@ -37,7 +37,7 @@ Table names that should never be cached.
 
 > `optional` **kv**: `KVNamespace`
 
-Defined in: [packages/db/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L32)
+Defined in: [packages/db/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L32)
 
 KV namespace binding (required when `backend` is `"kv"`).
 
@@ -47,7 +47,7 @@ KV namespace binding (required when `backend` is `"kv"`).
 
 > `optional` **onHit**: (`key`, `table`) => `void`
 
-Defined in: [packages/db/src/types.ts:40](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L40)
+Defined in: [packages/db/src/types.ts:40](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L40)
 
 Observability hook called on cache hits.
 
@@ -71,7 +71,7 @@ Observability hook called on cache hits.
 
 > `optional` **onInvalidate**: (`tables`) => `void`
 
-Defined in: [packages/db/src/types.ts:44](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L44)
+Defined in: [packages/db/src/types.ts:44](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L44)
 
 Observability hook called when tables are invalidated.
 
@@ -91,7 +91,7 @@ Observability hook called when tables are invalidated.
 
 > `optional` **onMiss**: (`key`, `table`) => `void`
 
-Defined in: [packages/db/src/types.ts:42](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L42)
+Defined in: [packages/db/src/types.ts:42](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L42)
 
 Observability hook called on cache misses.
 
@@ -115,7 +115,7 @@ Observability hook called on cache misses.
 
 > `optional` **staleWhileRevalidate**: `string`
 
-Defined in: [packages/db/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L36)
+Defined in: [packages/db/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L36)
 
 Stale-while-revalidate window (e.g., `"5m"`).
 
@@ -125,6 +125,6 @@ Stale-while-revalidate window (e.g., `"5m"`).
 
 > `optional` **ttl**: `string`
 
-Defined in: [packages/db/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L34)
+Defined in: [packages/db/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L34)
 
 Default TTL for cached queries (e.g., `"30s"`, `"5m"`, `"1h"`). Defaults to `"60s"`.

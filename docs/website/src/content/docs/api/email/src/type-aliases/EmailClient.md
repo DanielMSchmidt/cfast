@@ -7,7 +7,7 @@ title: "EmailClient"
 
 > **EmailClient** = `object`
 
-Defined in: [packages/email/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L28)
+Defined in: [packages/email/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/types.ts#L28)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/email/src/types.ts:28](https://github.com/DanielMSchmidt/c
 
 > **send**: (`options`) => `Promise`\<\{ `id`: `string`; \}\>
 
-Defined in: [packages/email/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L29)
+Defined in: [packages/email/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/types.ts#L29)
 
 #### Parameters
 

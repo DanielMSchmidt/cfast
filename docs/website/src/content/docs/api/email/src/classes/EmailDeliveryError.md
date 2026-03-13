@@ -5,7 +5,7 @@ prev: false
 title: "EmailDeliveryError"
 ---
 
-Defined in: [packages/email/src/errors.ts:1](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/errors.ts#L1)
+Defined in: [packages/email/src/errors.ts:1](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/errors.ts#L1)
 
 ## Extends
 
@@ -17,7 +17,7 @@ Defined in: [packages/email/src/errors.ts:1](https://github.com/DanielMSchmidt/c
 
 > **new EmailDeliveryError**(`message`, `options`): `EmailDeliveryError`
 
-Defined in: [packages/email/src/errors.ts:6](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/errors.ts#L6)
+Defined in: [packages/email/src/errors.ts:6](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/errors.ts#L6)
 
 #### Parameters
 
@@ -89,7 +89,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **provider**: `string`
 
-Defined in: [packages/email/src/errors.ts:2](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/errors.ts#L2)
+Defined in: [packages/email/src/errors.ts:2](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/errors.ts#L2)
 
 ***
 
@@ -97,7 +97,7 @@ Defined in: [packages/email/src/errors.ts:2](https://github.com/DanielMSchmidt/c
 
 > `readonly` `optional` **response**: `string`
 
-Defined in: [packages/email/src/errors.ts:4](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/errors.ts#L4)
+Defined in: [packages/email/src/errors.ts:4](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/errors.ts#L4)
 
 ***
 
@@ -117,7 +117,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` `optional` **statusCode**: `number`
 
-Defined in: [packages/email/src/errors.ts:3](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/errors.ts#L3)
+Defined in: [packages/email/src/errors.ts:3](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/errors.ts#L3)
 
 ***
 

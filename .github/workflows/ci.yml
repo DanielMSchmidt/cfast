@@ -49,6 +49,9 @@ jobs:
       - name: Build Storybook
         run: pnpm --filter @cfast/ui build-storybook --quiet
 
+      - name: Build docs
+        run: pnpm --filter @cfast/docs build
+
   e2e:
     name: E2E (${{ matrix.example }})
     runs-on: ubuntu-latest
@@ -95,6 +98,10 @@ jobs:
       - name: Run E2E tests
         run: pnpm --filter ${{ matrix.example }} test:e2e
 
+      - name: Capture tutorial screenshots
+        if: matrix.example == 'team-blog-after'
+        run: pnpm --filter team-blog-after test:screenshots
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -102,3 +109,11 @@ jobs:
           name: playwright-report-${{ matrix.example }}
           path: examples/${{ matrix.example }}/playwright-report/
           retention-days: 14
+
+      - name: Upload tutorial screenshots
+        uses: actions/upload-artifact@v4
+        if: matrix.example == 'team-blog-after'
+        with:
+          name: tutorial-screenshots
+          path: docs/website/src/assets/tutorial/*.png
+          retention-days: 30

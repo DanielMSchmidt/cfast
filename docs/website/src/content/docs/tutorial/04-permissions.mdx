@@ -4,6 +4,9 @@ description: "Add role-based access control with row-level filtering using @cfas
 ---
 
 import { Steps, Aside, FileTree } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import authorView from "../../../assets/tutorial/step-04-author-home.png";
+import readerView from "../../../assets/tutorial/step-04-reader-home.png";
 
 In this step we add a permission model that controls who can read, create, edit, and delete posts. Permissions are defined once and enforced automatically at the database query level -- no scattered `if` checks in your loaders.
 
@@ -227,6 +230,14 @@ This is a **hierarchical** model: each role inherits everything from the role be
    The same `db.query(posts).findMany()` call produces different SQL depending on who is making the request. This is application-level Row-Level Security.
 
 </Steps>
+
+Here is how the same page looks for different roles. An author sees the "New Post" button:
+
+<Image src={authorView} alt="Home page as an author — New Post button is visible" />
+
+A reader sees only published posts and no action buttons:
+
+<Image src={readerView} alt="Home page as a reader — no New Post button, only published posts" />
 
 ## How permissions flow through the system
 

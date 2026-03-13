@@ -7,7 +7,7 @@ title: "AuthEnvConfig"
 
 > **AuthEnvConfig** = `object`
 
-Defined in: [packages/auth/src/types.ts:44](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L44)
+Defined in: [packages/auth/src/types.ts:44](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L44)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/auth/src/types.ts:44](https://github.com/DanielMSchmidt/cf
 
 > **appUrl**: `string`
 
-Defined in: [packages/auth/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L46)
+Defined in: [packages/auth/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L46)
 
 ***
 
@@ -23,4 +23,4 @@ Defined in: [packages/auth/src/types.ts:46](https://github.com/DanielMSchmidt/cf
 
 > **d1**: `D1Database`
 
-Defined in: [packages/auth/src/types.ts:45](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L45)
+Defined in: [packages/auth/src/types.ts:45](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L45)

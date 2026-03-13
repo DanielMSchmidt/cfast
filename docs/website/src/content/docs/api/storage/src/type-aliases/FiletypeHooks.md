@@ -7,7 +7,7 @@ title: "FiletypeHooks"
 
 > **FiletypeHooks**\<`TInput`\> = `object`
 
-Defined in: [packages/storage/src/types.ts:42](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L42)
+Defined in: [packages/storage/src/types.ts:42](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L42)
 
 Lifecycle hooks for a file type, invoked during the upload pipeline.
 
@@ -23,7 +23,7 @@ Lifecycle hooks for a file type, invoked during the upload pipeline.
 
 > `optional` **afterUpload**: (`result`, `ctx`) => `Promise`\<`void`\>
 
-Defined in: [packages/storage/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L46)
+Defined in: [packages/storage/src/types.ts:46](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L46)
 
 Called after a successful upload completes.
 
@@ -47,7 +47,7 @@ Called after a successful upload completes.
 
 > `optional` **beforeUpload**: (`file`, `ctx`) => `Promise`\<`void`\>
 
-Defined in: [packages/storage/src/types.ts:44](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L44)
+Defined in: [packages/storage/src/types.ts:44](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L44)
 
 Called after validation but before bytes are written to R2.
 

@@ -7,7 +7,7 @@ title: "PaginateOptions"
 
 > **PaginateOptions** = `object`
 
-Defined in: [packages/db/src/types.ts:149](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L149)
+Defined in: [packages/db/src/types.ts:149](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L149)
 
 Options for `db.query(table).paginate()`.
 
@@ -17,7 +17,7 @@ Options for `db.query(table).paginate()`.
 
 > `optional` **cache**: [`QueryCacheOptions`](/api/db/src/type-aliases/querycacheoptions/)
 
-Defined in: [packages/db/src/types.ts:163](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L163)
+Defined in: [packages/db/src/types.ts:163](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L163)
 
 Per-query cache control.
 
@@ -27,7 +27,7 @@ Per-query cache control.
 
 > `optional` **columns**: `Record`\<`string`, `boolean`\>
 
-Defined in: [packages/db/src/types.ts:151](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L151)
+Defined in: [packages/db/src/types.ts:151](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L151)
 
 Column selection.
 
@@ -37,7 +37,7 @@ Column selection.
 
 > `optional` **cursorColumns**: `unknown`[]
 
-Defined in: [packages/db/src/types.ts:157](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L157)
+Defined in: [packages/db/src/types.ts:157](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L157)
 
 Columns used for cursor-based ordering and comparison.
 
@@ -47,7 +47,7 @@ Columns used for cursor-based ordering and comparison.
 
 > `optional` **orderBy**: `unknown`
 
-Defined in: [packages/db/src/types.ts:155](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L155)
+Defined in: [packages/db/src/types.ts:155](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L155)
 
 Ordering expression.
 
@@ -57,7 +57,7 @@ Ordering expression.
 
 > `optional` **orderDirection**: `"asc"` \| `"desc"`
 
-Defined in: [packages/db/src/types.ts:159](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L159)
+Defined in: [packages/db/src/types.ts:159](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L159)
 
 Sort direction for cursor pagination. Defaults to `"desc"`.
 
@@ -67,7 +67,7 @@ Sort direction for cursor pagination. Defaults to `"desc"`.
 
 > `optional` **where**: `unknown`
 
-Defined in: [packages/db/src/types.ts:153](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L153)
+Defined in: [packages/db/src/types.ts:153](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L153)
 
 User-supplied filter condition (AND'd with permission filters).
 
@@ -77,6 +77,6 @@ User-supplied filter condition (AND'd with permission filters).
 
 > `optional` **with**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/db/src/types.ts:161](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L161)
+Defined in: [packages/db/src/types.ts:161](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L161)
 
 Drizzle relational query includes.

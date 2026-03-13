@@ -7,7 +7,7 @@ title: "EmailClientConfig"
 
 > **EmailClientConfig** = `object`
 
-Defined in: [packages/email/src/types.ts:16](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L16)
+Defined in: [packages/email/src/types.ts:16](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/types.ts#L16)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/email/src/types.ts:16](https://github.com/DanielMSchmidt/c
 
 > **from**: `string` \| () => `string`
 
-Defined in: [packages/email/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L18)
+Defined in: [packages/email/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/types.ts#L18)
 
 ***
 
@@ -23,4 +23,4 @@ Defined in: [packages/email/src/types.ts:18](https://github.com/DanielMSchmidt/c
 
 > **provider**: [`EmailProvider`](/api/email/src/type-aliases/emailprovider/) \| () => [`EmailProvider`](/api/email/src/type-aliases/emailprovider/)
 
-Defined in: [packages/email/src/types.ts:17](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/email/src/types.ts#L17)
+Defined in: [packages/email/src/types.ts:17](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/email/src/types.ts#L17)

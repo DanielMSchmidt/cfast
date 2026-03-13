@@ -7,7 +7,7 @@ title: "Db"
 
 > **Db** = `object`
 
-Defined in: [packages/db/src/types.ts:173](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L173)
+Defined in: [packages/db/src/types.ts:173](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L173)
 
 A permission-aware database instance bound to a specific user.
 
@@ -19,7 +19,7 @@ All query and mutation methods return lazy `Operation` objects that check permis
 
 > **batch**: (`operations`) => [`Operation`](/api/db/src/type-aliases/operation/)\<`unknown`[]\>
 
-Defined in: [packages/db/src/types.ts:185](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L185)
+Defined in: [packages/db/src/types.ts:185](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L185)
 
 Groups multiple operations into a single operation with merged, deduplicated permissions.
 
@@ -39,7 +39,7 @@ Groups multiple operations into a single operation with merged, deduplicated per
 
 > **cache**: `object`
 
-Defined in: [packages/db/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L187)
+Defined in: [packages/db/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L187)
 
 Cache control methods for manual invalidation.
 
@@ -71,7 +71,7 @@ Invalidate cached queries by tag names and/or table names.
 
 > **delete**: (`table`) => [`DeleteBuilder`](/api/db/src/type-aliases/deletebuilder/)
 
-Defined in: [packages/db/src/types.ts:181](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L181)
+Defined in: [packages/db/src/types.ts:181](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L181)
 
 Creates a delete builder for the given table.
 
@@ -91,7 +91,7 @@ Creates a delete builder for the given table.
 
 > **insert**: (`table`) => [`InsertBuilder`](/api/db/src/type-aliases/insertbuilder/)
 
-Defined in: [packages/db/src/types.ts:177](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L177)
+Defined in: [packages/db/src/types.ts:177](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L177)
 
 Creates an insert builder for the given table.
 
@@ -111,7 +111,7 @@ Creates an insert builder for the given table.
 
 > **query**: (`table`) => [`QueryBuilder`](/api/db/src/type-aliases/querybuilder/)
 
-Defined in: [packages/db/src/types.ts:175](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L175)
+Defined in: [packages/db/src/types.ts:175](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L175)
 
 Creates a query builder for reading rows from the given table.
 
@@ -131,7 +131,7 @@ Creates a query builder for reading rows from the given table.
 
 > **unsafe**: () => `Db`
 
-Defined in: [packages/db/src/types.ts:183](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L183)
+Defined in: [packages/db/src/types.ts:183](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L183)
 
 Returns a new `Db` instance that skips all permission checks.
 
@@ -145,7 +145,7 @@ Returns a new `Db` instance that skips all permission checks.
 
 > **update**: (`table`) => [`UpdateBuilder`](/api/db/src/type-aliases/updatebuilder/)
 
-Defined in: [packages/db/src/types.ts:179](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L179)
+Defined in: [packages/db/src/types.ts:179](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L179)
 
 Creates an update builder for the given table.
 

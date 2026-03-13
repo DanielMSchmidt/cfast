@@ -7,7 +7,7 @@ title: "UploadResult"
 
 > **UploadResult** = `object`
 
-Defined in: [packages/storage/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L80)
+Defined in: [packages/storage/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L80)
 
 Result returned after a successful file upload to R2.
 
@@ -17,7 +17,7 @@ Result returned after a successful file upload to R2.
 
 > **key**: `string`
 
-Defined in: [packages/storage/src/types.ts:82](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L82)
+Defined in: [packages/storage/src/types.ts:82](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L82)
 
 The R2 object key where the file was stored.
 
@@ -27,7 +27,7 @@ The R2 object key where the file was stored.
 
 > **size**: `number`
 
-Defined in: [packages/storage/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L84)
+Defined in: [packages/storage/src/types.ts:84](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L84)
 
 Actual file size in bytes (verified via streaming byte count).
 
@@ -37,6 +37,6 @@ Actual file size in bytes (verified via streaming byte count).
 
 > **type**: `string`
 
-Defined in: [packages/storage/src/types.ts:86](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L86)
+Defined in: [packages/storage/src/types.ts:86](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L86)
 
 MIME type of the uploaded file.

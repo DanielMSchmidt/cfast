@@ -7,7 +7,7 @@ title: "UseOffsetPaginationResult"
 
 > **UseOffsetPaginationResult**\<`T`\> = `object`
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:12](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-offset-pagination.ts#L12)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:12](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/pagination/src/use-offset-pagination.ts#L12)
 
 Return value of the [useOffsetPagination](/api/pagination/src/functions/useoffsetpagination/) hook.
 
@@ -23,7 +23,7 @@ Return value of the [useOffsetPagination](/api/pagination/src/functions/useoffse
 
 > **currentPage**: `number`
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:16](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-offset-pagination.ts#L16)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:16](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/pagination/src/use-offset-pagination.ts#L16)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [packages/pagination/src/use-offset-pagination.ts:16](https://github
 
 > **goToPage**: (`page`) => `void`
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:17](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-offset-pagination.ts#L17)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:17](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/pagination/src/use-offset-pagination.ts#L17)
 
 #### Parameters
 
@@ -49,7 +49,7 @@ Defined in: [packages/pagination/src/use-offset-pagination.ts:17](https://github
 
 > **items**: `T`[]
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:13](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-offset-pagination.ts#L13)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:13](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/pagination/src/use-offset-pagination.ts#L13)
 
 ***
 
@@ -57,7 +57,7 @@ Defined in: [packages/pagination/src/use-offset-pagination.ts:13](https://github
 
 > **total**: `number`
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:14](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-offset-pagination.ts#L14)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:14](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/pagination/src/use-offset-pagination.ts#L14)
 
 ***
 
@@ -65,4 +65,4 @@ Defined in: [packages/pagination/src/use-offset-pagination.ts:14](https://github
 
 > **totalPages**: `number`
 
-Defined in: [packages/pagination/src/use-offset-pagination.ts:15](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/pagination/src/use-offset-pagination.ts#L15)
+Defined in: [packages/pagination/src/use-offset-pagination.ts:15](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/pagination/src/use-offset-pagination.ts#L15)

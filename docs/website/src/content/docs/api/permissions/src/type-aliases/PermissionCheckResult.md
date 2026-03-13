@@ -7,7 +7,7 @@ title: "PermissionCheckResult"
 
 > **PermissionCheckResult** = `object`
 
-Defined in: [packages/permissions/src/types.ts:87](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L87)
+Defined in: [packages/permissions/src/types.ts:87](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L87)
 
 Result of a permission check via [checkPermissions](/api/permissions/src/functions/checkpermissions/).
 
@@ -17,7 +17,7 @@ Result of a permission check via [checkPermissions](/api/permissions/src/functio
 
 > **denied**: [`PermissionDescriptor`](/api/permissions/src/type-aliases/permissiondescriptor/)[]
 
-Defined in: [packages/permissions/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L91)
+Defined in: [packages/permissions/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L91)
 
 The descriptors that were not satisfied.
 
@@ -27,7 +27,7 @@ The descriptors that were not satisfied.
 
 > **permitted**: `boolean`
 
-Defined in: [packages/permissions/src/types.ts:89](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L89)
+Defined in: [packages/permissions/src/types.ts:89](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L89)
 
 `true` only if every descriptor in the check was satisfied.
 
@@ -37,6 +37,6 @@ Defined in: [packages/permissions/src/types.ts:89](https://github.com/DanielMSch
 
 > **reasons**: `string`[]
 
-Defined in: [packages/permissions/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/types.ts#L93)
+Defined in: [packages/permissions/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/types.ts#L93)
 
 Human-readable reasons for each denial.

@@ -91,4 +91,5 @@ pnpm typecheck      # Type-check all packages
 pnpm lint           # Lint all packages
 pnpm docs:dev       # Serve documentation site locally
 pnpm docs:build     # Build documentation site for deployment
+pnpm docs:screenshots # Capture tutorial screenshots from example app
 ```

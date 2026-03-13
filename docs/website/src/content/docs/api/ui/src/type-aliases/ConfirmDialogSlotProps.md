@@ -7,7 +7,7 @@ title: "ConfirmDialogSlotProps"
 
 > **ConfirmDialogSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:92](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L92)
+Defined in: [packages/ui/src/types.ts:92](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L92)
 
 Props for the confirm dialog plugin slot.
 
@@ -17,7 +17,7 @@ Props for the confirm dialog plugin slot.
 
 > `optional` **cancelLabel**: `string`
 
-Defined in: [packages/ui/src/types.ts:106](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L106)
+Defined in: [packages/ui/src/types.ts:106](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L106)
 
 Label for the cancel button.
 
@@ -27,7 +27,7 @@ Label for the cancel button.
 
 > `optional` **confirmLabel**: `string`
 
-Defined in: [packages/ui/src/types.ts:104](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L104)
+Defined in: [packages/ui/src/types.ts:104](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L104)
 
 Label for the confirm button.
 
@@ -37,7 +37,7 @@ Label for the confirm button.
 
 > `optional` **description**: `string`
 
-Defined in: [packages/ui/src/types.ts:102](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L102)
+Defined in: [packages/ui/src/types.ts:102](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L102)
 
 Optional description body.
 
@@ -47,7 +47,7 @@ Optional description body.
 
 > **onClose**: () => `void`
 
-Defined in: [packages/ui/src/types.ts:96](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L96)
+Defined in: [packages/ui/src/types.ts:96](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L96)
 
 Called when the user cancels or closes the dialog.
 
@@ -61,7 +61,7 @@ Called when the user cancels or closes the dialog.
 
 > **onConfirm**: () => `void`
 
-Defined in: [packages/ui/src/types.ts:98](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L98)
+Defined in: [packages/ui/src/types.ts:98](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L98)
 
 Called when the user confirms the action.
 
@@ -75,7 +75,7 @@ Called when the user confirms the action.
 
 > **open**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:94](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L94)
+Defined in: [packages/ui/src/types.ts:94](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L94)
 
 Whether the dialog is currently visible.
 
@@ -85,7 +85,7 @@ Whether the dialog is currently visible.
 
 > **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:100](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L100)
+Defined in: [packages/ui/src/types.ts:100](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L100)
 
 Dialog title text.
 
@@ -95,6 +95,6 @@ Dialog title text.
 
 > `optional` **variant**: `"default"` \| `"danger"`
 
-Defined in: [packages/ui/src/types.ts:108](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L108)
+Defined in: [packages/ui/src/types.ts:108](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L108)
 
 Visual variant; "danger" uses warning colors.

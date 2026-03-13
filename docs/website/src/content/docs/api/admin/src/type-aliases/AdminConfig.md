@@ -7,7 +7,7 @@ title: "AdminConfig"
 
 > **AdminConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:90](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L90)
+Defined in: [packages/admin/src/types.ts:90](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L90)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/admin/src/types.ts:90](https://github.com/DanielMSchmidt/c
 
 > **auth**: [`AdminAuthConfig`](/api/admin/src/type-aliases/adminauthconfig/)
 
-Defined in: [packages/admin/src/types.ts:92](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L92)
+Defined in: [packages/admin/src/types.ts:92](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L92)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [packages/admin/src/types.ts:92](https://github.com/DanielMSchmidt/c
 
 > `optional` **dashboard**: [`DashboardConfig`](/api/admin/src/type-aliases/dashboardconfig/)
 
-Defined in: [packages/admin/src/types.ts:96](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L96)
+Defined in: [packages/admin/src/types.ts:96](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L96)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [packages/admin/src/types.ts:96](https://github.com/DanielMSchmidt/c
 
 > **db**: [`CreateDbFn`](/api/admin/src/type-aliases/createdbfn/)
 
-Defined in: [packages/admin/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L91)
+Defined in: [packages/admin/src/types.ts:91](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L91)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [packages/admin/src/types.ts:91](https://github.com/DanielMSchmidt/c
 
 > `optional` **requiredRole**: `string`
 
-Defined in: [packages/admin/src/types.ts:97](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L97)
+Defined in: [packages/admin/src/types.ts:97](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L97)
 
 ***
 
@@ -47,7 +47,7 @@ Defined in: [packages/admin/src/types.ts:97](https://github.com/DanielMSchmidt/c
 
 > **schema**: `Record`\<`string`, `SQLiteTable`\>
 
-Defined in: [packages/admin/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L93)
+Defined in: [packages/admin/src/types.ts:93](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L93)
 
 ***
 
@@ -55,7 +55,7 @@ Defined in: [packages/admin/src/types.ts:93](https://github.com/DanielMSchmidt/c
 
 > `optional` **tables**: `Record`\<`string`, [`TableOverrides`](/api/admin/src/type-aliases/tableoverrides/)\>
 
-Defined in: [packages/admin/src/types.ts:94](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L94)
+Defined in: [packages/admin/src/types.ts:94](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L94)
 
 ***
 
@@ -63,4 +63,4 @@ Defined in: [packages/admin/src/types.ts:94](https://github.com/DanielMSchmidt/c
 
 > `optional` **users**: [`UserManagementConfig`](/api/admin/src/type-aliases/usermanagementconfig/)
 
-Defined in: [packages/admin/src/types.ts:95](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/admin/src/types.ts#L95)
+Defined in: [packages/admin/src/types.ts:95](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/admin/src/types.ts#L95)

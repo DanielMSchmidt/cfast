@@ -7,7 +7,7 @@ title: "resolveGrants"
 
 > **resolveGrants**(`permissions`, `roles`): [`Grant`](/api/permissions/src/type-aliases/grant/)[]
 
-Defined in: [packages/permissions/src/resolve-grants.ts:19](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/permissions/src/resolve-grants.ts#L19)
+Defined in: [packages/permissions/src/resolve-grants.ts:19](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/permissions/src/resolve-grants.ts#L19)
 
 Resolves and merges grants for multiple roles into a single flat array.
 

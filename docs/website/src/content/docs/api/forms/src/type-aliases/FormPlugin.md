@@ -7,7 +7,7 @@ title: "FormPlugin"
 
 > **FormPlugin** = `object`
 
-Defined in: [packages/forms/src/types.ts:73](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L73)
+Defined in: [packages/forms/src/types.ts:73](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L73)
 
 A form plugin created by [createFormPlugin](/api/forms/src/functions/createformplugin/).
 
@@ -17,4 +17,4 @@ A form plugin created by [createFormPlugin](/api/forms/src/functions/createformp
 
 > **components**: [`FormPluginComponents`](/api/forms/src/type-aliases/formplugincomponents/)
 
-Defined in: [packages/forms/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L74)
+Defined in: [packages/forms/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L74)

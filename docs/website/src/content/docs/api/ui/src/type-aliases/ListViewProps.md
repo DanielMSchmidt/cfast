@@ -7,7 +7,7 @@ title: "ListViewProps"
 
 > **ListViewProps**\<`T`\> = `object`
 
-Defined in: [packages/ui/src/types.ts:369](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L369)
+Defined in: [packages/ui/src/types.ts:369](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L369)
 
 Props for the ListView composite component.
 Composes PageContainer, FilterBar, DataTable, EmptyState, BulkActionBar, and pagination.
@@ -24,7 +24,7 @@ Composes PageContainer, FilterBar, DataTable, EmptyState, BulkActionBar, and pag
 
 > `optional` **actions**: [`ClientDescriptor`](/api/actions/src/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:396](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L396)
+Defined in: [packages/ui/src/types.ts:396](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L396)
 
 Action descriptor for row-level actions.
 
@@ -34,7 +34,7 @@ Action descriptor for row-level actions.
 
 > `optional` **breadcrumb**: [`BreadcrumbItem`](/api/ui/src/type-aliases/breadcrumbitem/)[]
 
-Defined in: [packages/ui/src/types.ts:410](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L410)
+Defined in: [packages/ui/src/types.ts:410](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L410)
 
 Breadcrumb trail items.
 
@@ -44,7 +44,7 @@ Breadcrumb trail items.
 
 > `optional` **bulkActions**: [`BulkAction`](/api/ui/src/type-aliases/bulkaction/)[]
 
-Defined in: [packages/ui/src/types.ts:408](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L408)
+Defined in: [packages/ui/src/types.ts:408](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L408)
 
 Bulk actions shown when rows are selected.
 
@@ -54,7 +54,7 @@ Bulk actions shown when rows are selected.
 
 > `optional` **columns**: [`ColumnShorthand`](/api/ui/src/type-aliases/columnshorthand/)\<`T`\>[]
 
-Defined in: [packages/ui/src/types.ts:394](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L394)
+Defined in: [packages/ui/src/types.ts:394](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L394)
 
 Column definitions or key strings for the data table.
 
@@ -64,7 +64,7 @@ Column definitions or key strings for the data table.
 
 > `optional` **createAction**: [`ClientDescriptor`](/api/actions/src/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:402](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L402)
+Defined in: [packages/ui/src/types.ts:402](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L402)
 
 Action descriptor for the create button.
 
@@ -74,7 +74,7 @@ Action descriptor for the create button.
 
 > `optional` **createLabel**: `string`
 
-Defined in: [packages/ui/src/types.ts:404](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L404)
+Defined in: [packages/ui/src/types.ts:404](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L404)
 
 Label for the create button. Defaults to "Create".
 
@@ -84,7 +84,7 @@ Label for the create button. Defaults to "Create".
 
 > **data**: `object`
 
-Defined in: [packages/ui/src/types.ts:373](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L373)
+Defined in: [packages/ui/src/types.ts:373](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L373)
 
 Paginated data with optional pagination controls.
 
@@ -156,7 +156,7 @@ Total number of pages (offset pagination).
 
 > `optional` **filters**: [`FilterDef`](/api/ui/src/type-aliases/filterdef/)[]
 
-Defined in: [packages/ui/src/types.ts:398](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L398)
+Defined in: [packages/ui/src/types.ts:398](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L398)
 
 Filter definitions for the FilterBar.
 
@@ -166,7 +166,7 @@ Filter definitions for the FilterBar.
 
 > `optional` **searchable**: `string`[]
 
-Defined in: [packages/ui/src/types.ts:400](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L400)
+Defined in: [packages/ui/src/types.ts:400](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L400)
 
 Column names that support full-text search.
 
@@ -176,7 +176,7 @@ Column names that support full-text search.
 
 > `optional` **selectable**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:406](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L406)
+Defined in: [packages/ui/src/types.ts:406](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L406)
 
 Whether to enable row selection.
 
@@ -186,7 +186,7 @@ Whether to enable row selection.
 
 > `optional` **table**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:392](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L392)
+Defined in: [packages/ui/src/types.ts:392](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L392)
 
 Drizzle table for column and filter type inference.
 
@@ -196,6 +196,6 @@ Drizzle table for column and filter type inference.
 
 > **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:371](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L371)
+Defined in: [packages/ui/src/types.ts:371](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L371)
 
 Page title displayed in the header.

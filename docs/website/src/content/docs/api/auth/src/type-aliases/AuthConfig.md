@@ -7,7 +7,7 @@ title: "AuthConfig"
 
 > **AuthConfig** = `object`
 
-Defined in: [packages/auth/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L23)
+Defined in: [packages/auth/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L23)
 
 ## Properties
 
@@ -15,7 +15,7 @@ Defined in: [packages/auth/src/types.ts:23](https://github.com/DanielMSchmidt/cf
 
 > `optional` **anonymousRoles**: `string`[]
 
-Defined in: [packages/auth/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L32)
+Defined in: [packages/auth/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L32)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [packages/auth/src/types.ts:32](https://github.com/DanielMSchmidt/cf
 
 > `optional` **defaultRoles**: `string`[]
 
-Defined in: [packages/auth/src/types.ts:33](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L33)
+Defined in: [packages/auth/src/types.ts:33](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L33)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [packages/auth/src/types.ts:33](https://github.com/DanielMSchmidt/cf
 
 > `optional` **impersonation**: `object`
 
-Defined in: [packages/auth/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L36)
+Defined in: [packages/auth/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L36)
 
 #### allowedRoles?
 
@@ -43,7 +43,7 @@ Defined in: [packages/auth/src/types.ts:36](https://github.com/DanielMSchmidt/cf
 
 > `optional` **magicLink**: `object`
 
-Defined in: [packages/auth/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L27)
+Defined in: [packages/auth/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L27)
 
 #### sendMagicLink()
 
@@ -71,7 +71,7 @@ Defined in: [packages/auth/src/types.ts:27](https://github.com/DanielMSchmidt/cf
 
 > `optional` **passkeys**: `object`
 
-Defined in: [packages/auth/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L26)
+Defined in: [packages/auth/src/types.ts:26](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L26)
 
 #### rpId
 
@@ -87,7 +87,7 @@ Defined in: [packages/auth/src/types.ts:26](https://github.com/DanielMSchmidt/cf
 
 > **permissions**: [`Permissions`](/api/permissions/src/type-aliases/permissions/)
 
-Defined in: [packages/auth/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L24)
+Defined in: [packages/auth/src/types.ts:24](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L24)
 
 ***
 
@@ -95,7 +95,7 @@ Defined in: [packages/auth/src/types.ts:24](https://github.com/DanielMSchmidt/cf
 
 > `optional` **redirects**: `object`
 
-Defined in: [packages/auth/src/types.ts:31](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L31)
+Defined in: [packages/auth/src/types.ts:31](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L31)
 
 #### afterLogin?
 
@@ -111,7 +111,7 @@ Defined in: [packages/auth/src/types.ts:31](https://github.com/DanielMSchmidt/cf
 
 > `optional` **roleGrants**: `Record`\<`string`, `string`[]\>
 
-Defined in: [packages/auth/src/types.ts:35](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L35)
+Defined in: [packages/auth/src/types.ts:35](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L35)
 
 ***
 
@@ -119,7 +119,7 @@ Defined in: [packages/auth/src/types.ts:35](https://github.com/DanielMSchmidt/cf
 
 > `optional` **roleTableName**: `string`
 
-Defined in: [packages/auth/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L34)
+Defined in: [packages/auth/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L34)
 
 ***
 
@@ -127,7 +127,7 @@ Defined in: [packages/auth/src/types.ts:34](https://github.com/DanielMSchmidt/cf
 
 > `optional` **schema**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/auth/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L25)
+Defined in: [packages/auth/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L25)
 
 ***
 
@@ -135,7 +135,7 @@ Defined in: [packages/auth/src/types.ts:25](https://github.com/DanielMSchmidt/cf
 
 > `optional` **session**: `object`
 
-Defined in: [packages/auth/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L30)
+Defined in: [packages/auth/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L30)
 
 #### expiresIn?
 
@@ -147,7 +147,7 @@ Defined in: [packages/auth/src/types.ts:30](https://github.com/DanielMSchmidt/cf
 
 > `optional` **templates**: `object`
 
-Defined in: [packages/auth/src/types.ts:39](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/auth/src/types.ts#L39)
+Defined in: [packages/auth/src/types.ts:39](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/auth/src/types.ts#L39)
 
 #### magicLink()?
 

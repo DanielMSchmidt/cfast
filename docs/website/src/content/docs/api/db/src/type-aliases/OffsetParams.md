@@ -7,7 +7,7 @@ title: "OffsetParams"
 
 > **OffsetParams** = `object`
 
-Defined in: [packages/db/src/types.ts:108](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L108)
+Defined in: [packages/db/src/types.ts:108](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L108)
 
 Parsed offset-based pagination parameters from a request URL.
 
@@ -17,7 +17,7 @@ Parsed offset-based pagination parameters from a request URL.
 
 > **limit**: `number`
 
-Defined in: [packages/db/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L114)
+Defined in: [packages/db/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L114)
 
 Maximum items per page.
 
@@ -27,7 +27,7 @@ Maximum items per page.
 
 > **page**: `number`
 
-Defined in: [packages/db/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L112)
+Defined in: [packages/db/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L112)
 
 The 1-based page number.
 
@@ -37,6 +37,6 @@ The 1-based page number.
 
 > **type**: `"offset"`
 
-Defined in: [packages/db/src/types.ts:110](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L110)
+Defined in: [packages/db/src/types.ts:110](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L110)
 
 Discriminant for offset pagination.

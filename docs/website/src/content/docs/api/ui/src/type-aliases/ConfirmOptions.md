@@ -7,7 +7,7 @@ title: "ConfirmOptions"
 
 > **ConfirmOptions** = `object`
 
-Defined in: [packages/ui/src/types.ts:584](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L584)
+Defined in: [packages/ui/src/types.ts:584](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L584)
 
 Options for the imperative confirmation dialog.
 
@@ -17,7 +17,7 @@ Options for the imperative confirmation dialog.
 
 > `optional` **cancelLabel**: `string`
 
-Defined in: [packages/ui/src/types.ts:592](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L592)
+Defined in: [packages/ui/src/types.ts:592](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L592)
 
 Label for the cancel button. Defaults to "Cancel".
 
@@ -27,7 +27,7 @@ Label for the cancel button. Defaults to "Cancel".
 
 > `optional` **confirmLabel**: `string`
 
-Defined in: [packages/ui/src/types.ts:590](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L590)
+Defined in: [packages/ui/src/types.ts:590](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L590)
 
 Label for the confirm button. Defaults to "Confirm".
 
@@ -37,7 +37,7 @@ Label for the confirm button. Defaults to "Confirm".
 
 > `optional` **description**: `string`
 
-Defined in: [packages/ui/src/types.ts:588](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L588)
+Defined in: [packages/ui/src/types.ts:588](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L588)
 
 Optional description body.
 
@@ -47,7 +47,7 @@ Optional description body.
 
 > **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:586](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L586)
+Defined in: [packages/ui/src/types.ts:586](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L586)
 
 Dialog title text.
 
@@ -57,6 +57,6 @@ Dialog title text.
 
 > `optional` **variant**: `"default"` \| `"danger"`
 
-Defined in: [packages/ui/src/types.ts:594](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L594)
+Defined in: [packages/ui/src/types.ts:594](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L594)
 
 Visual variant; "danger" uses warning colors for destructive actions.

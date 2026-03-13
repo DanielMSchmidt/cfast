@@ -7,7 +7,7 @@ title: "SidebarSlotProps"
 
 > **SidebarSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:172](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L172)
+Defined in: [packages/ui/src/types.ts:172](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L172)
 
 Props for the sidebar plugin slot.
 
@@ -17,7 +17,7 @@ Props for the sidebar plugin slot.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:174](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L174)
+Defined in: [packages/ui/src/types.ts:174](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L174)
 
 Sidebar content.
 
@@ -27,6 +27,6 @@ Sidebar content.
 
 > **items**: [`NavigationItem`](/api/ui/src/type-aliases/navigationitem/)[]
 
-Defined in: [packages/ui/src/types.ts:176](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L176)
+Defined in: [packages/ui/src/types.ts:176](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L176)
 
 Navigation items to render in the sidebar.

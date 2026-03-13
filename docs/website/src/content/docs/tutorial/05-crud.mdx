@@ -4,6 +4,9 @@ description: "Add type-safe, permission-aware CRUD operations using @cfast/actio
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Image } from "astro:assets";
+import postDetail from "../../../assets/tutorial/step-05-post-detail.png";
+import newPostForm from "../../../assets/tutorial/step-05-new-post.png";
 
 In the previous steps you set up a Cloudflare Workers app with a database, authentication, and role-based permissions. The permissions so far exist at the database level --- when you call `cfDb.insert(posts)`, the operation checks whether the current user's grants allow it.
 
@@ -241,6 +244,14 @@ export function Layout({ children }) {
   );
 }
 ```
+
+The post detail page with action buttons visible to an editor:
+
+<Image src={postDetail} alt="Post detail page with Publish and Delete action buttons" />
+
+The auto-generated new post form:
+
+<Image src={newPostForm} alt="New post form auto-generated from the Drizzle schema" />
 
 ## How it all connects
 

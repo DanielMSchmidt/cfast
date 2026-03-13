@@ -4,6 +4,8 @@ description: "Create a minimal React Router v7 app running on Cloudflare Workers
 ---
 
 import { Steps, Aside, FileTree } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import stepHome from "../../../assets/tutorial/step-01-home.png";
 
 In this tutorial you will build a team blog from scratch using CFast. Each step adds one layer -- project scaffolding, database, authentication, and permissions -- so you can see how the pieces compose.
 
@@ -182,6 +184,8 @@ pnpm dev
 ```
 
 Open `http://localhost:5173` and you should see "Team Blog" rendered by your Worker.
+
+<Image src={stepHome} alt="The Team Blog home page showing the heading and latest posts" />
 
 <Aside type="tip">
   `react-router dev` starts Wrangler under the hood, so your app runs in the actual Workers runtime -- not a Node.js process. This means any Workers-incompatible code will fail here, not just in production.

@@ -7,7 +7,7 @@ title: "FileInfo"
 
 > **FileInfo** = `object`
 
-Defined in: [packages/storage/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L68)
+Defined in: [packages/storage/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L68)
 
 Metadata about a file extracted from the incoming request.
 
@@ -17,7 +17,7 @@ Metadata about a file extracted from the incoming request.
 
 > **extension**: `string`
 
-Defined in: [packages/storage/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L72)
+Defined in: [packages/storage/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L72)
 
 File extension without the leading dot (e.g. `"jpg"`).
 
@@ -27,7 +27,7 @@ File extension without the leading dot (e.g. `"jpg"`).
 
 > **name**: `string`
 
-Defined in: [packages/storage/src/types.ts:70](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L70)
+Defined in: [packages/storage/src/types.ts:70](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L70)
 
 Original file name (e.g. `"photo.jpg"`).
 
@@ -37,7 +37,7 @@ Original file name (e.g. `"photo.jpg"`).
 
 > **size**: `number`
 
-Defined in: [packages/storage/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L76)
+Defined in: [packages/storage/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L76)
 
 File size in bytes.
 
@@ -47,6 +47,6 @@ File size in bytes.
 
 > **type**: `string`
 
-Defined in: [packages/storage/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/storage/src/types.ts#L74)
+Defined in: [packages/storage/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/storage/src/types.ts#L74)
 
 MIME type from the file metadata (e.g. `"image/jpeg"`).

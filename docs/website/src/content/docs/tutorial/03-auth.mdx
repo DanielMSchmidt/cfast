@@ -4,6 +4,8 @@ description: "Add passwordless authentication with magic email links using @cfas
 ---
 
 import { Steps, Aside, FileTree } from "@astrojs/starlight/components";
+import { Image } from "astro:assets";
+import stepLogin from "../../../assets/tutorial/step-03-login.png";
 
 In this step we add authentication so users can sign in with magic email links. `@cfast/auth` wraps [Better Auth](https://better-auth.com) with sensible defaults for Cloudflare Workers and D1.
 
@@ -300,6 +302,8 @@ By the end of this step, the blog will have a login page and the home page will 
    ```
 
 </Steps>
+
+<Image src={stepLogin} alt="The login page with a magic link email input" />
 
 ## The authentication flow
 

@@ -3,6 +3,9 @@ title: "6. Admin Panel"
 description: "Generate a complete admin panel from your Drizzle schema with @cfast/admin --- one route, full CRUD, user management."
 ---
 
+import { Image } from "astro:assets";
+import adminPanel from "../../../assets/tutorial/step-06-admin.png";
+
 In the previous step you added CRUD actions with `@cfast/actions` and permission-aware UI with `@cfast/ui`. Each route was hand-coded: a loader that queries the database, a component that renders the data, and actions wired to buttons.
 
 That works well for public-facing pages where the UI is custom. But every app also needs an admin panel, and the admin panel is always the same structure: a table list, a detail view, a create form, an edit form, user management. The only thing that changes is the schema.
@@ -204,6 +207,8 @@ With that one route, you get:
 | **Create/edit forms** | Auto-generated from Drizzle schema via `@cfast/forms` |
 | **User management** | Role assignment panel, user search |
 | **Permission-aware** | All CRUD operations go through `@cfast/db` --- the admin does not bypass your permission system |
+
+<Image src={adminPanel} alt="The auto-generated admin panel showing dashboard with record counts" />
 
 ## Customizing table display
 

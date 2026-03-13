@@ -7,7 +7,7 @@ title: "SubmitButtonProps"
 
 > **SubmitButtonProps** = `object`
 
-Defined in: [packages/forms/src/types.ts:67](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L67)
+Defined in: [packages/forms/src/types.ts:67](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L67)
 
 Props for the submit button component.
 
@@ -17,7 +17,7 @@ Props for the submit button component.
 
 > **children**: `React.ReactNode`
 
-Defined in: [packages/forms/src/types.ts:69](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L69)
+Defined in: [packages/forms/src/types.ts:69](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L69)
 
 ***
 
@@ -25,4 +25,4 @@ Defined in: [packages/forms/src/types.ts:69](https://github.com/DanielMSchmidt/c
 
 > **isSubmitting**: `boolean`
 
-Defined in: [packages/forms/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/forms/src/types.ts#L68)
+Defined in: [packages/forms/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/forms/src/types.ts#L68)

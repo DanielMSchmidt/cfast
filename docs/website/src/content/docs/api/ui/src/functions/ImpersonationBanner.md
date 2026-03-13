@@ -7,7 +7,7 @@ title: "ImpersonationBanner"
 
 > **ImpersonationBanner**(`__namedParameters`): `Element` \| `null`
 
-Defined in: [packages/ui/src/components/impersonation-banner.tsx:9](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/components/impersonation-banner.tsx#L9)
+Defined in: [packages/ui/src/components/impersonation-banner.tsx:9](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/components/impersonation-banner.tsx#L9)
 
 Persistent banner shown when an admin is impersonating another user.
 Hidden when not impersonating.

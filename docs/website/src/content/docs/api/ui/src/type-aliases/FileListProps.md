@@ -7,7 +7,7 @@ title: "FileListProps"
 
 > **FileListProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:819](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L819)
+Defined in: [packages/ui/src/types.ts:819](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L819)
 
 Props for the FileList component.
 
@@ -17,7 +17,7 @@ Props for the FileList component.
 
 > `optional` **deleteAction**: [`ClientDescriptor`](/api/actions/src/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:825](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L825)
+Defined in: [packages/ui/src/types.ts:825](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L825)
 
 Action descriptor for the delete button on each file.
 
@@ -27,7 +27,7 @@ Action descriptor for the delete button on each file.
 
 > **files**: [`FileListFile`](/api/ui/src/type-aliases/filelistfile/)[]
 
-Defined in: [packages/ui/src/types.ts:821](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L821)
+Defined in: [packages/ui/src/types.ts:821](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L821)
 
 Array of file metadata to display.
 
@@ -37,7 +37,7 @@ Array of file metadata to display.
 
 > `optional` **onDownload**: (`file`) => `void`
 
-Defined in: [packages/ui/src/types.ts:827](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L827)
+Defined in: [packages/ui/src/types.ts:827](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L827)
 
 Custom download handler.
 
@@ -57,6 +57,6 @@ Custom download handler.
 
 > `optional` **storage**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:823](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L823)
+Defined in: [packages/ui/src/types.ts:823](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L823)
 
 Storage configuration for download URL resolution.

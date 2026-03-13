@@ -7,7 +7,7 @@ title: "CursorPage"
 
 > **CursorPage**\<`T`\> = `object`
 
-Defined in: [packages/db/src/types.ts:125](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L125)
+Defined in: [packages/db/src/types.ts:125](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L125)
 
 A page of results from cursor-based pagination.
 
@@ -25,7 +25,7 @@ The row type.
 
 > **items**: `T`[]
 
-Defined in: [packages/db/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L127)
+Defined in: [packages/db/src/types.ts:127](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L127)
 
 The items on this page.
 
@@ -35,6 +35,6 @@ The items on this page.
 
 > **nextCursor**: `string` \| `null`
 
-Defined in: [packages/db/src/types.ts:129](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/db/src/types.ts#L129)
+Defined in: [packages/db/src/types.ts:129](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/db/src/types.ts#L129)
 
 Opaque cursor for the next page, or `null` if this is the last page.

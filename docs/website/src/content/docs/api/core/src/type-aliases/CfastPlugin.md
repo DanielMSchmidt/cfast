@@ -7,7 +7,7 @@ title: "CfastPlugin"
 
 > **CfastPlugin**\<`TName`, `TProvides`, `TRequires`, `TClient`\> = `object`
 
-Defined in: [packages/core/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/core/src/types.ts#L47)
+Defined in: [packages/core/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/core/src/types.ts#L47)
 
 A cfast plugin definition created by [definePlugin](/api/core/src/functions/defineplugin/).
 
@@ -46,7 +46,7 @@ Client-side values exposed via `useApp()`.
 
 > `optional` **client**: `TClient`
 
-Defined in: [packages/core/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/core/src/types.ts#L62)
+Defined in: [packages/core/src/types.ts:62](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/core/src/types.ts#L62)
 
 Optional client-side values exposed via `useApp()`.
 
@@ -56,7 +56,7 @@ Optional client-side values exposed via `useApp()`.
 
 > **name**: `TName`
 
-Defined in: [packages/core/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/core/src/types.ts#L54)
+Defined in: [packages/core/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/core/src/types.ts#L54)
 
 Unique identifier used as the namespace key in the app context.
 
@@ -66,7 +66,7 @@ Unique identifier used as the namespace key in the app context.
 
 > `optional` **Provider**: `ComponentType`\<\{ `children`: `ReactNode`; \}\>
 
-Defined in: [packages/core/src/types.ts:60](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/core/src/types.ts#L60)
+Defined in: [packages/core/src/types.ts:60](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/core/src/types.ts#L60)
 
 Optional client-side React provider, composed into `app.Provider`.
 
@@ -76,7 +76,7 @@ Optional client-side React provider, composed into `app.Provider`.
 
 > **setup**: (`ctx`) => `TProvides` \| `Promise`\<`TProvides`\>
 
-Defined in: [packages/core/src/types.ts:56](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/core/src/types.ts#L56)
+Defined in: [packages/core/src/types.ts:56](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/core/src/types.ts#L56)
 
 Called per-request to produce the values this plugin provides.
 

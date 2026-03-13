@@ -11,8 +11,9 @@
     "typecheck": "pnpm run cf-typegen && react-router typegen && tsc -b",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply DB --local",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e": "playwright test --project=read-only --project=mutations",
+    "test:e2e:ui": "playwright test --ui --project=read-only --project=mutations",
+    "test:screenshots": "playwright test --project=screenshots"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.5.3",

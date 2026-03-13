@@ -7,7 +7,7 @@ title: "ChipSlotProps"
 
 > **ChipSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:150](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L150)
+Defined in: [packages/ui/src/types.ts:150](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L150)
 
 Props for the chip/badge plugin slot.
 
@@ -17,7 +17,7 @@ Props for the chip/badge plugin slot.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:152](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L152)
+Defined in: [packages/ui/src/types.ts:152](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L152)
 
 Chip label content.
 
@@ -27,7 +27,7 @@ Chip label content.
 
 > `optional` **color**: `"primary"` \| `"neutral"` \| `"danger"` \| `"success"` \| `"warning"`
 
-Defined in: [packages/ui/src/types.ts:154](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L154)
+Defined in: [packages/ui/src/types.ts:154](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L154)
 
 Color theme.
 
@@ -37,7 +37,7 @@ Color theme.
 
 > `optional` **size**: `"sm"` \| `"md"` \| `"lg"`
 
-Defined in: [packages/ui/src/types.ts:158](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L158)
+Defined in: [packages/ui/src/types.ts:158](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L158)
 
 Size of the chip.
 
@@ -47,6 +47,6 @@ Size of the chip.
 
 > `optional` **variant**: `"solid"` \| `"soft"` \| `"outlined"`
 
-Defined in: [packages/ui/src/types.ts:156](https://github.com/DanielMSchmidt/cfast/blob/60210f6cd0c5f887dfbc9d3f753414b329cae974/packages/ui/src/types.ts#L156)
+Defined in: [packages/ui/src/types.ts:156](https://github.com/DanielMSchmidt/cfast/blob/9cc20c03745c81d3c35a3df2245735fc00e8f884/packages/ui/src/types.ts#L156)
 
 Visual style variant.
