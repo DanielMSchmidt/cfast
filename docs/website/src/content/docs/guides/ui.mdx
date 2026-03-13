@@ -1,0 +1,186 @@
+---
+title: "@cfast/ui"
+description: "Permission-aware component library with headless core and Joy UI plugin"
+---
+
+## Overview
+
+`@cfast/ui` sits between your primitive component library (MUI Joy UI) and your application code. It provides the "smart" components that integrate with `@cfast/actions`, `@cfast/permissions`, `@cfast/pagination`, `@cfast/auth`, `@cfast/db`, and `@cfast/storage`. The headless core supplies hooks and logic. UI library plugins provide the styled implementations.
+
+Primitive component libraries give you buttons, inputs, and cards. But every data-driven app builds the same things on top: sortable tables with pagination, filter bars that sync with the URL, page shells with breadcrumbs, file upload drop zones. These patterns are framework-level, and in CFast they integrate with the permission system, pagination hooks, and action pipeline automatically.
+
+## Installation
+
+```bash
+pnpm add @cfast/ui
+```
+
+Peer dependencies: `@cfast/actions`, `@cfast/permissions`, `@cfast/pagination`, `@cfast/db`, `@cfast/auth`, `@mui/joy`, `react-router`
+
+## Quick Setup
+
+Import styled components from the Joy UI plugin:
+
+```typescript
+import { ActionButton, PermissionGate, DataTable, ListView } from "@cfast/ui/joy";
+```
+
+Or use the headless core for custom integrations:
+
+```typescript
+import { useActionStatus, useToast, createUIPlugin } from "@cfast/ui";
+```
+
+## Core Concepts
+
+### Headless Core + Plugin Architecture
+
+The headless core (`@cfast/ui`) provides hooks, logic, and unstyled components. The Joy UI plugin (`@cfast/ui/joy`) provides styled implementations. Third-party plugins can add shadcn, Mantine, or any other library.
+
+A plugin maps component slots to implementations. You only need to implement the slots you care about -- missing slots fall back to unstyled HTML elements:
+
+```typescript
+import { createUIPlugin } from "@cfast/ui";
+
+const myPlugin = createUIPlugin({
+  components: {
+    button: MyButton,
+    tooltip: MyTooltip,
+    confirmDialog: MyConfirmDialog,
+    table: MyTable,
+    tableHead: MyTableHead,
+    tableBody: MyTableBody,
+    tableRow: MyTableRow,
+    tableCell: MyTableCell,
+    chip: MyChip,
+    appShell: MyAppShell,
+    sidebar: MySidebar,
+    pageContainer: MyPageContainer,
+    breadcrumb: MyBreadcrumb,
+    toast: MyToast,
+    alert: MyAlert,
+    dropZone: MyDropZone,
+  },
+});
+```
+
+### Permission-Aware Rendering
+
+Permission status from `@cfast/actions` drives component behavior throughout the library. Components automatically adapt: hiding UI elements the user cannot access, disabling actions they lack permission for, and showing explanatory tooltips.
+
+### Schema-Driven Inference
+
+Many components accept a Drizzle `table` prop and derive behavior from it. `DataTable` infers columns and types. `FilterBar` infers filter input types. `DetailView` maps columns to the correct typed field component. This means less configuration and fewer mismatches between your schema and your UI.
+
+## Common Patterns
+
+### Data Tables with Pagination and Actions
+
+`DataTable` integrates with `@cfast/pagination` hooks and `@cfast/actions` for row-level action menus:
+
+```typescript
+import { DataTable } from "@cfast/ui/joy";
+import { usePagination } from "@cfast/pagination/client";
+import { posts } from "~/db/schema";
+
+function PostsTable() {
+  const pagination = usePagination<Post>();
+
+  return (
+    <DataTable
+      data={pagination}
+      table={posts}
+      columns={[
+        "title",
+        { key: "author", label: "Written by" },
+        { key: "published", render: (v) => v ? "Live" : "Draft" },
+        "createdAt",
+      ]}
+      actions={composed.client}
+      selectable
+    />
+  );
+}
+```
+
+Column headers sort on click (synced to URL params), row actions are hidden or disabled based on permissions, and column types determine the renderer (dates use `DateField`, booleans use `BooleanField`, etc.).
+
+### Full Page List Views
+
+`ListView` composes a filter bar, data table, pagination controls, empty state, and bulk action bar into a single page layout:
+
+```typescript
+import { ListView } from "@cfast/ui/joy";
+
+function PostsPage() {
+  const pagination = useOffsetPagination<Post>();
+
+  return (
+    <ListView
+      title="Blog Posts"
+      data={pagination}
+      table={posts}
+      columns={["title", "author", "published", "createdAt"]}
+      actions={composed.client}
+      filters={[
+        { column: "published", type: "select", options: publishedOptions },
+      ]}
+      searchable={["title", "content"]}
+      createAction={createPost.client}
+      selectable
+    />
+  );
+}
+```
+
+### Permission Gates and Action Buttons
+
+`PermissionGate` conditionally renders children based on action permissions. `ActionButton` wraps a `@cfast/actions` action into a button with automatic permission checks:
+
+```typescript
+import { ActionButton, PermissionGate } from "@cfast/ui/joy";
+
+// Only shows the edit toolbar if the user can edit
+<PermissionGate action={editPost} input={{ postId }} fallback={<ReadOnlyBanner />}>
+  <EditToolbar />
+</PermissionGate>
+
+// Button with built-in permission check and confirmation dialog
+<ActionButton
+  action={publishPost}
+  input={{ postId }}
+  whenForbidden="disable"
+  confirmation="Publish this post?"
+>
+  Publish
+</ActionButton>
+```
+
+### Application Shell with Permission-Filtered Navigation
+
+`AppShell` provides sidebar navigation where items can be filtered based on action permissions:
+
+```typescript
+import { AppShell, UserMenu } from "@cfast/ui/joy";
+
+const navigationItems = [
+  { label: "Posts", to: "/posts", icon: DocumentIcon },
+  { label: "Users", to: "/users", icon: UsersIcon, action: manageUsers.client },
+  // "Users" only appears if the user has permission for manageUsers
+];
+
+function Layout({ children }) {
+  return (
+    <AppShell
+      sidebar={<AppShell.Sidebar items={navigationItems} />}
+      header={<AppShell.Header userMenu={<UserMenu />} />}
+    >
+      {children}
+    </AppShell>
+  );
+}
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

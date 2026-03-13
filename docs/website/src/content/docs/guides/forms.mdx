@@ -1,0 +1,149 @@
+---
+title: "@cfast/forms"
+description: "Auto-generated forms from Drizzle schema with progressive customization"
+---
+
+## Overview
+
+Your Drizzle table definition already knows the field names, types, nullability, defaults, and enums. `@cfast/forms` reads that metadata and generates a complete, working form with correct input types, validation, labels, and selects. You get a form in one line. Override individual fields as your design matures. Never write a form from scratch again.
+
+The core is headless -- schema introspection, field mapping, and validation are decoupled from rendering. A plugin system delegates UI to your component library. CFast ships with a MUI Joy UI plugin out of the box.
+
+## Installation
+
+```bash
+pnpm add @cfast/forms
+```
+
+Peer dependencies: `drizzle-orm`, `react-hook-form`, `@mui/joy` (if using the Joy UI plugin)
+
+## Quick Setup
+
+Import `AutoForm` from the Joy UI plugin and pass your Drizzle table:
+
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+import { posts } from "./schema";
+
+function CreatePost() {
+  return <AutoForm table={posts} mode="create" onSubmit={handleSubmit} />;
+}
+
+function EditPost({ post }) {
+  return <AutoForm table={posts} mode="edit" data={post} onSubmit={handleSubmit} />;
+}
+```
+
+That is the entire API for a basic form. Column types map to input types, `NOT NULL` maps to required fields, and text enums map to select dropdowns.
+
+## Core Concepts
+
+### Schema-Driven Field Mapping
+
+`@cfast/forms` introspects your Drizzle table and infers the correct input type for each column:
+
+| Drizzle Column | Input Type |
+|---|---|
+| `text` / `varchar` | Text input |
+| `integer` | Number input |
+| `integer({ mode: "boolean" })` | Checkbox |
+| `text({ enum: [...] })` | Select dropdown |
+
+Nullability determines whether a field is required. Default values are pre-filled in create mode. This means your schema is the single source of truth for both database structure and form behavior.
+
+### Schema-Level Validation
+
+Attach validation rules directly to your Drizzle columns using the `v()` helper. These rules are stored as metadata on the column and read back by the form introspection layer:
+
+```typescript
+import { v } from "@cfast/forms";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const posts = sqliteTable("posts", {
+  title: v(text("title").notNull(), { minLength: 3, maxLength: 200 }),
+  views: v(integer("views"), { min: 0 }),
+  slug: v(text("slug").notNull(), { pattern: /^[a-z0-9-]+$/ }),
+  content: text("content").notNull(),
+});
+```
+
+Supported rules: `minLength`, `maxLength`, `min`, `max`, `pattern`, and `message` (custom error text).
+
+### Progressive Customization
+
+Start with zero configuration and customize incrementally. Override a label, swap in a custom component, hide a field -- each change is independent:
+
+```typescript
+<AutoForm
+  table={posts}
+  mode="create"
+  fields={{
+    title: { label: "Post Title", placeholder: "Enter a title..." },
+    content: { component: RichTextEditor },
+    authorId: { hidden: true, default: currentUser.id },
+  }}
+  exclude={["createdAt", "updatedAt"]}
+  onSubmit={handleSubmit}
+/>
+```
+
+You never need to rewrite the whole form to change one field.
+
+## Common Patterns
+
+### Per-Field Custom Validation
+
+Add custom validation functions alongside the schema-derived validation:
+
+```typescript
+<AutoForm
+  table={posts}
+  mode="create"
+  fields={{
+    title: {
+      validate: (value) => {
+        if (value.length < 3) return "Title must be at least 3 characters";
+      },
+    },
+  }}
+  onSubmit={handleSubmit}
+/>
+```
+
+### External Form Control
+
+`AutoForm` creates its own `react-hook-form` instance by default. For advanced use cases like multi-step wizards or external reset buttons, pass your own form instance:
+
+```typescript
+import { useForm } from "react-hook-form";
+
+function MyForm() {
+  const form = useForm();
+  return <AutoForm table={posts} mode="create" form={form} onSubmit={handleSubmit} />;
+}
+```
+
+### Building a Custom Plugin
+
+The rendering layer is pluggable. To use a different component library, create a plugin with `createFormPlugin` and wrap it with `createAutoForm`:
+
+```typescript
+import { createFormPlugin, createAutoForm } from "@cfast/forms";
+
+const myPlugin = createFormPlugin({
+  components: {
+    textInput: MyTextInput,
+    numberInput: MyNumberInput,
+    select: MySelect,
+    checkbox: MyCheckbox,
+    form: MyFormWrapper,
+    submitButton: MySubmitButton,
+  },
+});
+
+export const AutoForm = createAutoForm(myPlugin);
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

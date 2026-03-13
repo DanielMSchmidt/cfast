@@ -1,0 +1,233 @@
+---
+title: "@cfast/storage"
+description: "Schema-driven file uploads to Cloudflare R2"
+---
+
+## Overview
+
+`@cfast/storage` provides a Drizzle-like schema API for file storage on Cloudflare R2. You declare file types -- allowed MIME types, max size, destination bucket, key pattern -- and the library handles multipart form parsing, validation, and routing to the right bucket. On the client, a drop-in upload hook provides progress tracking and pre-upload validation.
+
+## Installation
+
+```bash
+pnpm add @cfast/storage
+```
+
+Peer dependencies: `@cfast/env` (for R2 bucket bindings), `react` (for client hook).
+
+## Quick Setup
+
+Define a storage schema describing your file types:
+
+```typescript
+import { defineStorage, filetype } from "@cfast/storage";
+
+export const storage = defineStorage({
+  avatars: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png", "image/webp"],
+    maxSize: "2mb",
+    key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+    replace: true,
+  }),
+
+  postImages: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    maxSize: "10mb",
+    key: (file, ctx) => `posts/${ctx.input.postId}/${crypto.randomUUID()}-${file.name}`,
+  }),
+
+  documents: filetype({
+    bucket: "DOCUMENTS",
+    accept: ["application/pdf"],
+    maxSize: "50mb",
+    multipartThreshold: "10mb",
+  }),
+});
+```
+
+Handle an upload in a React Router action:
+
+```typescript
+export async function action({ request, context }) {
+  const user = await auth.requireUser(request);
+
+  const result = await storage.handle("postImages", request, {
+    env: context.env,
+    user,
+    input: { postId: "123" },
+  });
+
+  // result: { key, size, type, url }
+  return { success: true, url: result.url };
+}
+```
+
+## Core Concepts
+
+### Schema-Driven Validation
+
+Each `filetype()` declaration specifies what is allowed. Validation happens in layers, failing fast:
+
+1. `Content-Type` header checked before reading the body (415 Unsupported Media Type)
+2. `Content-Length` header checked before reading the body (413 Payload Too Large)
+3. MIME type verified by reading file magic bytes (prevents spoofed Content-Type)
+4. Actual byte count verified during streaming upload (prevents spoofed Content-Length)
+
+The same schema definitions power both server-side validation and client-side pre-upload checks, with no duplication.
+
+### Automatic Multipart Uploads
+
+Large files use R2's multipart upload API automatically. Files below the threshold use a direct PUT. The caller does not need to think about the boundary:
+
+```typescript
+documents: filetype({
+  bucket: "DOCUMENTS",
+  maxSize: "200mb",
+  multipartThreshold: "10mb",  // files > 10MB use multipart (default: 5mb)
+  partSize: "10mb",            // size of each part (default: 10mb)
+}),
+```
+
+The library splits the incoming stream into parts, uploads them in parallel, retries failed parts, and completes or aborts the multipart upload.
+
+### Key Functions
+
+The `key` function receives the file info and a context object, returning the R2 object key. This gives you full control over file organization:
+
+```typescript
+avatars: filetype({
+  key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+  replace: true,  // uploading replaces the previous file at this key
+}),
+
+postImages: filetype({
+  key: (file, ctx) => `posts/${ctx.input.postId}/${crypto.randomUUID()}-${file.name}`,
+  // unique key per upload, no replacement
+}),
+```
+
+## Common Patterns
+
+### Client-Side Upload with Progress
+
+The `useUpload` hook validates files against the schema before sending and tracks progress:
+
+```typescript
+import { useUpload } from "@cfast/storage/client";
+
+function AvatarUploader() {
+  const upload = useUpload("avatars");
+
+  return (
+    <div>
+      <input
+        type="file"
+        accept={upload.accept}  // "image/jpeg,image/png,image/webp" from schema
+        onChange={(e) => upload.start(e.target.files[0])}
+      />
+
+      {upload.validationError && <p>{upload.validationError}</p>}
+
+      {upload.isUploading && <progress value={upload.progress} max={100} />}
+
+      {upload.result && <img src={upload.result.url} alt="Avatar" />}
+    </div>
+  );
+}
+```
+
+### Serving Files
+
+Generate signed URLs for private files or serve directly with custom headers:
+
+```typescript
+// Signed URL (time-limited)
+const url = await storage.getSignedUrl("documents", key, { expiresIn: "1h" });
+
+// Public URL
+const url = storage.getPublicUrl("postImages", key);
+
+// Stream from R2 with custom response headers
+const response = await storage.serve("postImages", key, {
+  headers: { "Cache-Control": "public, max-age=31536000" },
+});
+```
+
+### Permission-Gated Uploads
+
+The storage layer handles bytes, not permissions. Gate uploads through [`@cfast/db`](/guides/db/) operations so that permission checks happen before any file is uploaded:
+
+```typescript
+import { compose } from "@cfast/db";
+
+const uploadPostImage = createAction({
+  input: { postId: "" as string },
+  operations: (db, input, ctx) => {
+    const checkAccess = db.query(posts).findFirst({
+      where: eq(posts.id, sql.placeholder("postId")),
+    });
+    const saveRef = db.insert(postImages).values({
+      postId: sql.placeholder("postId"),
+      storageKey: sql.placeholder("storageKey"),
+      size: sql.placeholder("size"),
+    });
+
+    return compose([checkAccess, saveRef], async (doCheck, doSave) => {
+      await doCheck({ postId: input.postId });
+      const result = await storage.handle("postImages", ctx.request, {
+        env: ctx.env, user: ctx.user, input: { postId: input.postId },
+      });
+      await doSave({
+        postId: input.postId,
+        storageKey: result.key,
+        size: result.size,
+      });
+      return { url: result.url };
+    });
+  },
+});
+```
+
+The action's `.permissions` includes both `read` on `posts` and `create` on `postImages`, so the client can check `permitted` before showing the upload UI.
+
+### Lifecycle Hooks
+
+Run code before and after uploads for tasks like quota checks, image resizing, or database updates:
+
+```typescript
+postImages: filetype({
+  // ...
+  hooks: {
+    beforeUpload: async (file, ctx) => {
+      // e.g., check quota, validate dimensions
+    },
+    afterUpload: async (result, ctx) => {
+      // e.g., trigger image processing queue
+    },
+  },
+}),
+```
+
+### Error Handling
+
+Validation errors are structured with a code, detail message, and HTTP status:
+
+```typescript
+import { StorageError } from "@cfast/storage";
+
+try {
+  await storage.handle("avatars", request, { env, user });
+} catch (e) {
+  if (e instanceof StorageError) {
+    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED"
+    e.detail;  // "File is 5.2MB but avatars allows max 2MB"
+    e.status;  // 413
+  }
+}
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

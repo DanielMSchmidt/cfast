@@ -1,0 +1,184 @@
+---
+title: "@cfast/pagination"
+description: "Cursor-based, offset-based pagination and infinite scroll for React Router"
+---
+
+## Overview
+
+`@cfast/pagination` provides client-side React hooks that consume paginated data from React Router loaders. The server-side helpers (param parsing, query building) live in `@cfast/db`. This split means you pick the pagination strategy in the loader, then swap client hooks freely -- the same loader data works with a "load more" button, infinite scroll, or traditional page numbers.
+
+The package supports three patterns: cursor-based pagination (for feeds and timelines), offset-based pagination (for admin tables), and infinite scroll (for social-style feeds). Each has a loader/hook pair that handles the mechanics so you focus on rendering.
+
+## Installation
+
+```bash
+pnpm add @cfast/pagination
+```
+
+Peer dependencies: `react-router`
+
+Server-side pagination helpers come from `@cfast/db` (installed separately).
+
+## Quick Setup
+
+A typical cursor-based pagination flow has a loader that parses params and paginates a query, paired with a client hook that accumulates pages:
+
+```typescript
+// Loader (server)
+import { parseCursorParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseCursorParams(request, {
+    defaultLimit: 20,
+    maxLimit: 100,
+  });
+
+  const result = await db.query(posts)
+    .paginate(page, {
+      orderBy: desc(posts.createdAt),
+      cursorColumns: [posts.createdAt, posts.id],
+    })
+    .run({});
+
+  return result; // { items, nextCursor }
+}
+```
+
+```typescript
+// Component (client)
+import { usePagination } from "@cfast/pagination";
+
+function PostList() {
+  const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
+
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      {hasMore && (
+        <button onClick={loadMore} disabled={isLoading}>
+          {isLoading ? "Loading..." : "Load More"}
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+## Core Concepts
+
+### Cursor-Based Pagination
+
+Cursor-based pagination uses an opaque token (the cursor) to fetch the next page. This is ideal for feeds and timelines where rows may be inserted between page loads, since cursors are stable across data changes. Cursors are base64-encoded JSON containing the values of the `cursorColumns` for the last item -- clients cannot tamper with or depend on the format.
+
+On the server, `parseCursorParams` reads `?cursor=X&limit=Y` from the request URL. The `paginate` method on the query builder applies the cursor condition and limit. The result includes `items` and `nextCursor` (null when there are no more pages).
+
+### Offset-Based Pagination
+
+Offset-based pagination uses traditional page numbers. This is better for admin interfaces where users need to jump to a specific page or see the total count:
+
+```typescript
+// Loader
+import { parseOffsetParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseOffsetParams(request, { defaultLimit: 20 });
+  const result = await db.query(posts)
+    .paginate(page, { orderBy: desc(posts.createdAt) })
+    .run({});
+  return result; // { items, total, page, totalPages }
+}
+```
+
+```typescript
+// Component
+import { useOffsetPagination } from "@cfast/pagination";
+
+function PostList() {
+  const { items, totalPages, currentPage, goToPage } = useOffsetPagination<Post>();
+
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      <nav>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i + 1}
+            onClick={() => goToPage(i + 1)}
+            disabled={currentPage === i + 1}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
+```
+
+### Infinite Scroll
+
+Infinite scroll uses the same cursor-based loader as `usePagination`, but triggers loading automatically when a sentinel element becomes visible via IntersectionObserver:
+
+```typescript
+import { useInfiniteScroll } from "@cfast/pagination";
+
+function PostFeed() {
+  const { items, sentinelRef, isLoading, hasMore } = useInfiniteScroll<Post>();
+
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      <div ref={sentinelRef} />
+      {isLoading && <Spinner />}
+    </div>
+  );
+}
+```
+
+The hook accepts a `rootMargin` option (default: `"200px"`) to control how early loading triggers, and deduplicates items to handle data changes during scrolling.
+
+## Common Patterns
+
+### Switching Between Load-More and Infinite Scroll
+
+Because both `usePagination` and `useInfiniteScroll` consume the same cursor-based loader data, you can swap between them without changing the server code:
+
+```typescript
+// Same loader for both
+export async function loader({ request }) {
+  const page = parseCursorParams(request, { defaultLimit: 20 });
+  return db.query(posts).paginate(page, { ... }).run({});
+}
+
+// Pick the UX you want on the client
+const manualLoad = usePagination<Post>();
+// or
+const autoLoad = useInfiniteScroll<Post>();
+```
+
+### Custom Deduplication Keys
+
+By default, hooks use `item.id` to deduplicate items across pages. If your items use a different key, pass a `getKey` function:
+
+```typescript
+const { items, loadMore, hasMore } = usePagination<Comment>({
+  getKey: (comment) => comment.commentId,
+});
+```
+
+### Integration with @cfast/ui
+
+`@cfast/ui`'s `DataTable` and `ListView` accept pagination hook results directly, wiring up loading states, page controls, and infinite scroll automatically:
+
+```typescript
+import { DataTable } from "@cfast/ui/joy";
+
+function PostsTable() {
+  const pagination = usePagination<Post>();
+  return <DataTable data={pagination} table={posts} columns={["title", "createdAt"]} />;
+}
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.

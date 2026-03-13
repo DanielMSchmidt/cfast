@@ -1,0 +1,188 @@
+---
+title: "@cfast/core"
+description: "Plugin system that wires @cfast packages together"
+---
+
+## Overview
+
+`@cfast/core` is the optional composition layer for the cfast framework. It provides `createApp()` -- a single definition that connects [`@cfast/env`](/guides/env/), [`@cfast/permissions`](/guides/permissions/), [`@cfast/auth`](/guides/auth/), [`@cfast/db`](/guides/db/), [`@cfast/storage`](/guides/storage/), and any other plugins into a typed per-request context on the server and a unified provider tree on the client.
+
+Without core, every route loader repeats the same initialization: parse env, get the auth context, create a db client. Core eliminates this by running a plugin chain once per request and composing client providers automatically. Individual packages remain fully usable on their own.
+
+## Installation
+
+```bash
+pnpm add @cfast/core
+```
+
+Peer dependencies: `@cfast/env`, `@cfast/permissions`, and `react` (for client-side providers).
+
+## Quick Setup
+
+Define your app in a single file:
+
+```typescript
+// app/cfast.ts
+import { createApp } from "@cfast/core";
+import { authPlugin } from "@cfast/auth";
+import { dbPlugin } from "@cfast/db";
+import { storagePlugin } from "@cfast/storage";
+import { envSchema } from "./env";
+import { permissions } from "./permissions";
+
+export const app = createApp({ env: envSchema, permissions })
+  .use(authPlugin({
+    magicLink: { sendMagicLink: async ({ email, url }) => { /* ... */ } },
+    session: { expiresIn: "30d" },
+    defaultRoles: ["reader"],
+  }))
+  .use(dbPlugin({ schema }))
+  .use(storagePlugin(storageSchema));
+```
+
+`createApp` takes the two leaf packages (env and permissions) as direct config because every cfast app needs them. Everything else is a plugin registered via `.use()`.
+
+Initialize in the Workers entry point:
+
+```typescript
+// workers/app.ts
+import { app } from "~/cfast";
+import { requestHandler } from "react-router";
+
+export default {
+  async fetch(request: Request, rawEnv: Record<string, unknown>, ctx: ExecutionContext) {
+    app.init(rawEnv);
+    return requestHandler(request, {
+      cloudflare: { env: app.env(), ctx },
+    });
+  },
+};
+```
+
+## Core Concepts
+
+### Plugin Architecture
+
+Plugins run in registration order, not dependency-sorted. You read the `.use()` chain top to bottom and know exactly what runs when. Each plugin's `setup()` receives everything prior plugins have provided, plus `request` and `env`:
+
+1. `authPlugin.setup({ request, env })` returns `{ user, grants, instance }`
+2. `dbPlugin.setup({ request, env, auth: { ... } })` returns `{ client }`
+3. `storagePlugin.setup({ request, env, auth: { ... }, db: { ... } })` returns `{ handle, ... }`
+
+Each plugin's return value is nested under its `name` key in the context (e.g., `ctx.auth.user`, not `ctx.user`). This prevents plugins from silently overriding each other's values. Core throws at startup if two plugins share a name.
+
+### Per-Request Context
+
+`app.context(request, context)` builds the full context by running each plugin's `setup()` in order. The return type is the intersection of all plugin namespaces:
+
+```typescript
+// With authPlugin + dbPlugin + storagePlugin:
+type AppContext = {
+  env: ParsedEnv<typeof envSchema>;
+  auth: { user: AuthUser | null; grants: Grant[]; instance: AuthInstance };
+  db: { client: Db };
+  storage: { handle: HandleFn; getSignedUrl: SignedUrlFn };
+};
+```
+
+### Type-Safe Plugin Dependencies
+
+Plugin dependencies are declared via a TypeScript generic on `definePlugin<TRequires>()`. A curried form lets you specify requirements while the compiler infers the rest:
+
+```typescript
+import { definePlugin } from "@cfast/core";
+import type { AuthPluginProvides } from "@cfast/auth";
+
+export const dbPlugin = (config: DbPluginConfig) =>
+  definePlugin<AuthPluginProvides>()({
+    name: "db",
+    setup(ctx) {
+      // ctx.auth.user and ctx.auth.grants are typed
+      return { client: createDb({ d1: ctx.env.DB, ... }) };
+    },
+  });
+```
+
+If a required plugin renames a field, dependent plugins break at the type level. Multiple dependencies use intersection types: `definePlugin<AuthPluginProvides & DbPluginProvides>()({ ... })`.
+
+## Common Patterns
+
+### Simplified Route Loaders
+
+Use `app.context()` directly or the convenience wrappers `app.loader()` and `app.action()`:
+
+```typescript
+// Direct usage
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const ctx = await app.context(request, context);
+  return ctx.db.client.query(posts).findMany().run({});
+}
+
+// Convenience wrapper -- context is the first argument
+export const loader = app.loader(async (ctx, { params }) => {
+  return ctx.db.client.query(posts).findMany().run({});
+});
+```
+
+### Client-Side Provider Composition
+
+`<app.Provider>` composes all plugin providers into a single tree. Plugins without a `Provider` are skipped:
+
+```typescript
+// app/root.tsx
+import { app } from "~/cfast";
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>
+        <app.Provider>
+          {children}
+        </app.Provider>
+      </body>
+    </html>
+  );
+}
+```
+
+Access all plugins' client-side exports with `useApp()`:
+
+```typescript
+import { useApp } from "@cfast/core/client";
+
+function MyComponent() {
+  const { auth, storage } = useApp();
+  const user = auth.useCurrentUser();
+  const upload = storage.useUpload("avatar");
+}
+```
+
+Individual package hooks (like `useCurrentUser()`) continue to work directly -- `useApp()` is additive.
+
+### Writing a Custom Plugin
+
+Leaf plugins (no dependencies) use the direct form:
+
+```typescript
+import { definePlugin } from "@cfast/core";
+
+export const analyticsPlugin = (config: AnalyticsConfig) =>
+  definePlugin({
+    name: "analytics",
+    setup(ctx) {
+      // ctx has { request, env } only
+      return { track: (event: string) => { /* ... */ } };
+    },
+  });
+```
+
+Export a type token so other plugins can depend on yours:
+
+```typescript
+import type { PluginProvides } from "@cfast/core";
+export type AnalyticsPluginProvides = PluginProvides<ReturnType<typeof analyticsPlugin>>;
+```
+
+## API Reference
+
+See the [full API reference](/api/) for detailed type signatures.
