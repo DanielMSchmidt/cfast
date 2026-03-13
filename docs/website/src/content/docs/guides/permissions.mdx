@@ -7,7 +7,7 @@ description: "Isomorphic permission system with row-level access control"
 
 `@cfast/permissions` is an isomorphic, Drizzle-native permission system that brings application-level row-level security to Cloudflare D1. Permissions are not just boolean checks -- they compile down to Drizzle `where` clauses that filter data at the query level.
 
-You define permissions once. [`@cfast/db`](/guides/db/) enforces them as lazy operations. The same definitions that guard your database queries also tell your UI which buttons to show, with zero duplication.
+You define permissions once. [`@cfast/db`](../db/) enforces them as lazy operations. The same definitions that guard your database queries also tell your UI which buttons to show, with zero duplication.
 
 ## Installation
 
@@ -58,7 +58,7 @@ export const permissions = definePermissions({
 });
 ```
 
-This `permissions` object is passed to [`createDb()`](/guides/db/) on the server and can be imported on the client for UI introspection.
+This `permissions` object is passed to [`createDb()`](../db/) on the server and can be imported on the client for UI introspection.
 
 ## Core Concepts
 
@@ -96,7 +96,7 @@ The system has two layers that work together:
 
 1. **Structural layer** -- "does this role have *any* grant for `update` on `posts`?" This can be checked without concrete values and powers client-side UI adaptation (showing or hiding buttons).
 
-2. **Row-level layer** -- "does this role's grant include *this specific row*?" This is enforced at execution time by [`@cfast/db`](/guides/db/) when `.run()` is called with concrete parameter values.
+2. **Row-level layer** -- "does this role's grant include *this specific row*?" This is enforced at execution time by [`@cfast/db`](../db/) when `.run()` is called with concrete parameter values.
 
 ### Role Hierarchy
 
@@ -183,6 +183,3 @@ import { ForbiddenError } from "@cfast/permissions/client";
 import type { PermissionDescriptor } from "@cfast/permissions/client";
 ```
 
-## API Reference
-
-See the [full API reference](/api/) for detailed type signatures.

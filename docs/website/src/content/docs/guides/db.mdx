@@ -7,7 +7,7 @@ description: "Permission-aware Drizzle queries for Cloudflare D1"
 
 `@cfast/db` wraps Drizzle ORM and returns lazy `Operation` objects instead of promises. An Operation knows which permissions it requires (`.permissions`) and can be inspected before execution. When you call `.run()`, permissions are checked first -- if denied, a `ForbiddenError` is thrown before any SQL touches the database.
 
-This is application-level Row-Level Security for D1, which has no native RLS. The permission check is structural: you cannot get a query result without going through `.run()`, and `.run()` always checks [`@cfast/permissions`](/guides/permissions/) grants.
+This is application-level Row-Level Security for D1, which has no native RLS. The permission check is structural: you cannot get a query result without going through `.run()`, and `.run()` always checks [`@cfast/permissions`](../permissions/) grants.
 
 ## Installation
 
@@ -180,6 +180,3 @@ await op.run({}); // executes without any permission check
 
 `unsafe()` returns a scoped `Db` instance -- it does not affect the original. Use `git grep '.unsafe()'` to audit every permission bypass in your codebase.
 
-## API Reference
-
-See the [full API reference](/api/) for detailed type signatures.
