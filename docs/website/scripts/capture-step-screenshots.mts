@@ -142,8 +142,8 @@ async function waitForServer(url: string, server: ChildProcess, timeoutMs = 60_0
 
 function killPort(port: number) {
   try {
-    // Linux (CI) — kill all processes on the port
-    execSync(`lsof -ti tcp:${port} | xargs kill -9 2>/dev/null || true`, {
+    // Kill only processes LISTENING on the port (not clients connected to it)
+    execSync(`lsof -ti tcp:${port} -sTCP:LISTEN | xargs kill -9 2>/dev/null || true`, {
       stdio: "pipe",
     });
   } catch {
