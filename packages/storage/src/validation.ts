@@ -1,6 +1,13 @@
 import { StorageError } from "./errors.js";
 import { detectMimeType, MAX_HEADER_SIZE } from "./magic-bytes.js";
 
+/**
+ * Validate that a Content-Type header value is in the accepted MIME type list.
+ *
+ * @param contentType - The `Content-Type` header value (may include parameters like `charset`).
+ * @param accept - Accepted MIME type strings.
+ * @throws {StorageError} With code `"INVALID_MIME_TYPE"` and status 415 if validation fails.
+ */
 export function validateContentType(
   contentType: string | null,
   accept: readonly string[],
@@ -25,6 +32,15 @@ export function validateContentType(
   }
 }
 
+/**
+ * Validate that a Content-Length value does not exceed the maximum allowed size.
+ *
+ * Does nothing if `contentLength` is `null` (unknown length).
+ *
+ * @param contentLength - The declared content length in bytes, or `null` if unknown.
+ * @param maxSizeBytes - Maximum allowed size in bytes.
+ * @throws {StorageError} With code `"FILE_TOO_LARGE"` and status 413 if the length exceeds the max.
+ */
 export function validateContentLength(
   contentLength: number | null,
   maxSizeBytes: number,
@@ -42,6 +58,18 @@ export function validateContentLength(
   }
 }
 
+/**
+ * Read the first bytes of a stream to verify the file's actual MIME type via magic bytes.
+ *
+ * Returns a new stream with the header bytes prepended so the caller can continue
+ * reading from the beginning. The `validated` flag indicates whether a known
+ * signature was matched.
+ *
+ * @param stream - The incoming file body stream.
+ * @param accept - Accepted MIME type strings.
+ * @returns An object with the reconstituted `stream` and a `validated` flag.
+ * @throws {StorageError} With code `"INVALID_MIME_TYPE"` if magic bytes identify a disallowed type.
+ */
 export async function validateMagicBytes(
   stream: ReadableStream<Uint8Array>,
   accept: readonly string[],
@@ -101,6 +129,14 @@ export async function validateMagicBytes(
   return { stream: newStream, validated: detected !== null };
 }
 
+/**
+ * Wrap a `ReadableStream` to count bytes as they pass through, erroring if the
+ * maximum size is exceeded.
+ *
+ * @param source - The source stream to wrap.
+ * @param maxSizeBytes - Maximum number of bytes allowed before the stream errors.
+ * @returns An object with the wrapped `stream` and a `getByteCount` function that returns bytes read so far.
+ */
 export function createByteCountingStream(
   source: ReadableStream<Uint8Array>,
   maxSizeBytes: number,

@@ -3,6 +3,7 @@ import type { Grant } from "@cfast/permissions";
 
 // --- Serializable ---
 
+/** A JSON-serializable value that can safely cross the server/client boundary. */
 export type Serializable =
   | string
   | number
@@ -13,17 +14,25 @@ export type Serializable =
 
 // --- Context ---
 
+/** Context provided to every action's operations function. */
 export type ActionContext<TUser> = {
+  /** The Drizzle database instance. */
   db: Db;
+  /** The authenticated user. */
   user: TUser;
+  /** The user's permission grants, used for permission checking. */
   grants: Grant[];
 };
 
 // --- Request args (subset of React Router loader/action args) ---
 
+/** Subset of React Router loader/action arguments used by `@cfast/actions`. */
 export type RequestArgs = {
+  /** The incoming HTTP request. */
   request: Request;
+  /** URL parameters from the route pattern. */
   params: Record<string, string | undefined>;
+  /** Optional context (e.g. Cloudflare Workers env). */
   context?: unknown;
 };
 

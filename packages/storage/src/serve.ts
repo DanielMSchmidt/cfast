@@ -1,3 +1,14 @@
+/**
+ * Stream a file from an R2 bucket as an HTTP `Response`.
+ *
+ * Sets `content-length` and any HTTP metadata stored on the object. Returns
+ * a 404 response if the key does not exist.
+ *
+ * @param bucket - The R2 bucket binding.
+ * @param key - The object key to retrieve.
+ * @param headers - Optional additional response headers (e.g. `Cache-Control`).
+ * @returns A `Response` streaming the object body, or a 404 response.
+ */
 export async function serveFile(
   bucket: R2Bucket,
   key: string,
@@ -22,6 +33,13 @@ export async function serveFile(
   return new Response(object.body, { headers: responseHeaders });
 }
 
+/**
+ * Build a public URL by joining a base URL with an object key.
+ *
+ * @param baseUrl - The public base URL for the bucket (trailing slash is trimmed).
+ * @param key - The R2 object key.
+ * @returns The full public URL.
+ */
 export function getPublicUrl(baseUrl: string, key: string): string {
   const base = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
   return `${base}/${key}`;
@@ -68,6 +86,15 @@ async function hmacVerify(data: string, signature: string, secret: string): Prom
   return result === 0;
 }
 
+/**
+ * Generate an HMAC-signed URL for time-limited access to a private file.
+ *
+ * @param name - The file type name from the storage schema.
+ * @param key - The R2 object key.
+ * @param secret - HMAC secret (from the `STORAGE_SECRET` binding).
+ * @param expiresIn - Duration string (e.g. `"1h"`, `"30m"`, `"7d"`).
+ * @returns A signed URL path with `expires` and `sig` query parameters.
+ */
 export async function createSignedUrl(
   name: string,
   key: string,
@@ -83,6 +110,13 @@ export async function createSignedUrl(
   return `/storage/${name}/${key}?expires=${expires}&sig=${sig}`;
 }
 
+/**
+ * Verify that a signed URL has a valid HMAC signature and has not expired.
+ *
+ * @param url - The signed URL (absolute or relative path with query parameters).
+ * @param secret - The HMAC secret used when the URL was created.
+ * @returns `true` if the signature is valid and the URL has not expired, `false` otherwise.
+ */
 export async function verifySignedUrl(url: string, secret: string): Promise<boolean> {
   let pathname: string;
   let searchParams: URLSearchParams;
