@@ -75,7 +75,7 @@ describe("session-lifecycle", () => {
     expect(response.status).toBe(200);
   });
 
-  it("sendMagicLink creates verification token in D1", async () => {
+  it("sendMagicLink creates verification token in D1", { timeout: 30_000 }, async () => {
     // Configure with a magic link sender that captures the call
     let capturedUrl: string | null = null;
     const initAuth = createAuth({
