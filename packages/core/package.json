@@ -1,6 +1,6 @@
 {
   "name": "@cfast/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "App composition layer with plugin system for @cfast/* packages",
   "type": "module",
   "main": "dist/index.js",

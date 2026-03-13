@@ -1,6 +1,6 @@
 {
   "name": "@cfast/storage",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Type-safe file uploads to Cloudflare R2 with multipart support and a schema-driven routing API",
   "type": "module",
   "main": "dist/index.js",
