@@ -70,6 +70,6 @@
     "storybook": "^8.6.14",
     "tsup": "^8",
     "typescript": "^5.7",
-    "vitest": "^3.2.1"
+    "vitest": "^4.1.0"
   }
 }
