@@ -157,7 +157,7 @@ const response = await storage.serve("postImages", key, {
 
 ### Permission-Gated Uploads
 
-The storage layer handles bytes, not permissions. Gate uploads through [`@cfast/db`](/guides/db/) operations so that permission checks happen before any file is uploaded:
+The storage layer handles bytes, not permissions. Gate uploads through [`@cfast/db`](../db/) operations so that permission checks happen before any file is uploaded:
 
 ```typescript
 import { compose } from "@cfast/db";
@@ -228,6 +228,3 @@ try {
 }
 ```
 
-## API Reference
-
-See the [full API reference](/api/) for detailed type signatures.

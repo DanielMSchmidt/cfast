@@ -5,9 +5,9 @@ description: "Authentication with magic email, passkeys, roles, and impersonatio
 
 ## Overview
 
-`@cfast/auth` is a pre-configured [Better Auth](https://better-auth.com) setup purpose-built for Cloudflare Workers with D1. It handles magic email links and passkeys for passwordless login, session management on D1, and a complete role system that plugs directly into [`@cfast/permissions`](/guides/permissions/).
+`@cfast/auth` is a pre-configured [Better Auth](https://better-auth.com) setup purpose-built for Cloudflare Workers with D1. It handles magic email links and passkeys for passwordless login, session management on D1, and a complete role system that plugs directly into [`@cfast/permissions`](../permissions/).
 
-You declare your roles in permissions, configure auth once, and the two packages stay in sync. Changing a user's role immediately changes what database operations they can run via [`@cfast/db`](/guides/db/).
+You declare your roles in permissions, configure auth once, and the two packages stay in sync. Changing a user's role immediately changes what database operations they can run via [`@cfast/db`](../db/).
 
 ## Installation
 
@@ -104,7 +104,7 @@ When an unauthenticated user visits a protected route, the intended path is stor
 
 ### Roles Bridge Auth and Permissions
 
-Roles assigned via `@cfast/auth` directly determine what [`@cfast/permissions`](/guides/permissions/) grants apply. When you call `createDb({ user })`, the user's roles determine which Operations succeed and which rows are visible:
+Roles assigned via `@cfast/auth` directly determine what [`@cfast/permissions`](../permissions/) grants apply. When you call `createDb({ user })`, the user's roles determine which Operations succeed and which rows are visible:
 
 ```typescript
 export async function loader({ request, context }) {
@@ -212,6 +212,3 @@ const { stopImpersonating } = useAuth();
 await stopImpersonating();
 ```
 
-## API Reference
-
-See the [full API reference](/api/) for detailed type signatures.

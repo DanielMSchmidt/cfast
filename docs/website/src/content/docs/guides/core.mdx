@@ -5,7 +5,7 @@ description: "Plugin system that wires @cfast packages together"
 
 ## Overview
 
-`@cfast/core` is the optional composition layer for the cfast framework. It provides `createApp()` -- a single definition that connects [`@cfast/env`](/guides/env/), [`@cfast/permissions`](/guides/permissions/), [`@cfast/auth`](/guides/auth/), [`@cfast/db`](/guides/db/), [`@cfast/storage`](/guides/storage/), and any other plugins into a typed per-request context on the server and a unified provider tree on the client.
+`@cfast/core` is the optional composition layer for the cfast framework. It provides `createApp()` -- a single definition that connects [`@cfast/env`](../env/), [`@cfast/permissions`](../permissions/), [`@cfast/auth`](../auth/), [`@cfast/db`](../db/), [`@cfast/storage`](../storage/), and any other plugins into a typed per-request context on the server and a unified provider tree on the client.
 
 Without core, every route loader repeats the same initialization: parse env, get the auth context, create a db client. Core eliminates this by running a plugin chain once per request and composing client providers automatically. Individual packages remain fully usable on their own.
 
@@ -183,6 +183,3 @@ import type { PluginProvides } from "@cfast/core";
 export type AnalyticsPluginProvides = PluginProvides<ReturnType<typeof analyticsPlugin>>;
 ```
 
-## API Reference
-
-See the [full API reference](/api/) for detailed type signatures.
