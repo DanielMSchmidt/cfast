@@ -52,12 +52,13 @@ jobs:
       - name: Build docs
         run: pnpm turbo build --filter=@cfast/docs
 
-      - name: Verify docs base path
+      - name: Check docs for broken links
         run: |
-          grep -q '="/cfast/' docs/website/dist/index.html || {
-            echo "::error::Docs site is missing the /cfast/ base path. Set base: \"/cfast\" in docs/website/astro.config.mjs"
-            exit 1
-          }
+          # Start preview server (serves with the configured base path)
+          pnpm --filter @cfast/docs preview -- --port 4321 &
+          timeout 30 bash -c 'until curl -sf http://localhost:4321/cfast/ >/dev/null 2>&1; do sleep 1; done'
+          # Crawl the site and report any broken internal links
+          npx linkinator http://localhost:4321/cfast/ --recurse --skip "^(?!http://localhost:4321)"
 
   integration:
     name: Integration Tests
