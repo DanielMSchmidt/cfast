@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useComponent } from "../plugin.js";
 import type { DataTableProps, ColumnDef, ColumnShorthand } from "../types.js";
+import { getField, getRecordId } from "../record-access.js";
 
 function normalizeColumns<T>(columns: ColumnShorthand<T>[] | undefined): ColumnDef<T>[] {
   if (!columns) return [];
@@ -135,7 +136,7 @@ export function DataTable<T = unknown>({
                 </TableCell>
               ) : null}
               {columns.map((col) => {
-                const value = (row as Record<string, unknown>)[col.key];
+                const value = getField(row, col.key);
                 return (
                   <TableCell key={col.key}>
                     {col.render ? col.render(value, row) : String(value ?? "")}
@@ -151,5 +152,5 @@ export function DataTable<T = unknown>({
 }
 
 function defaultGetId<T>(row: T): string | number {
-  return (row as Record<string, unknown>).id as string | number;
+  return getRecordId(row);
 }

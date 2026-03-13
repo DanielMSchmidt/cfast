@@ -665,6 +665,18 @@ export type BaseFieldProps = {
 };
 
 /**
+ * A field component that can be rendered with an unknown value.
+ *
+ * Used as the return type of {@link fieldForColumn} and {@link fieldsForTable}
+ * where the concrete value type is not known at lookup time. Internally each
+ * field implementation narrows the value to its expected type and handles
+ * invalid input gracefully.
+ *
+ * @see {@link BaseFieldProps} for the inherited label and className props.
+ */
+export type FieldComponent = ComponentType<BaseFieldProps & { value: unknown }>;
+
+/**
  * Props for the DateField read-only display component.
  *
  * Formats dates using `Intl.DateTimeFormat` with support for relative time display.
@@ -673,8 +685,8 @@ export type BaseFieldProps = {
  * @see {@link BaseFieldProps} for inherited label and className props.
  */
 export type DateFieldProps = BaseFieldProps & {
-  /** Date value to display. Accepts Date objects, ISO strings, or timestamps. */
-  value: Date | string | number | null | undefined;
+  /** Date value to display. Accepts Date objects, ISO strings, timestamps, or unknown values. */
+  value: unknown;
   /** Display format. Defaults to "short". */
   format?: "short" | "long" | "relative" | "datetime";
   /** Locale for date formatting. Defaults to "en". */
@@ -691,8 +703,8 @@ export type DateFieldProps = BaseFieldProps & {
  * @see {@link ChipSlotProps} for the underlying chip slot.
  */
 export type BooleanFieldProps = BaseFieldProps & {
-  /** Boolean value to display. */
-  value: boolean | null | undefined;
+  /** Boolean value to display. Accepts booleans or unknown values. */
+  value: unknown;
   /** Label shown when value is true. Defaults to "Yes". */
   trueLabel?: string;
   /** Label shown when value is false. Defaults to "No". */
@@ -712,8 +724,8 @@ export type BooleanFieldProps = BaseFieldProps & {
  * @see {@link BaseFieldProps} for inherited label and className props.
  */
 export type NumberFieldProps = BaseFieldProps & {
-  /** Numeric value to display. */
-  value: number | null | undefined;
+  /** Numeric value to display. Accepts numbers or unknown values. */
+  value: unknown;
   /** Locale for number formatting. Defaults to "en". */
   locale?: string;
   /** ISO 4217 currency code for monetary formatting (e.g. "USD"). */
@@ -732,8 +744,8 @@ export type NumberFieldProps = BaseFieldProps & {
  * @see {@link BaseFieldProps} for inherited label and className props.
  */
 export type TextFieldProps = BaseFieldProps & {
-  /** Text value to display. */
-  value: string | null | undefined;
+  /** Text value to display. Accepts strings or unknown values. */
+  value: unknown;
   /** Maximum display length; longer values are truncated with a tooltip. */
   maxLength?: number;
   /** Whether to show a copy-to-clipboard button. */
@@ -748,8 +760,8 @@ export type TextFieldProps = BaseFieldProps & {
  * @see {@link BaseFieldProps} for inherited label and className props.
  */
 export type EmailFieldProps = BaseFieldProps & {
-  /** Email address to display as a mailto link. */
-  value: string | null | undefined;
+  /** Email address to display as a mailto link. Accepts strings or unknown values. */
+  value: unknown;
 };
 
 /**

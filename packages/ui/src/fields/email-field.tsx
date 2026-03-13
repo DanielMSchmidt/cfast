@@ -19,5 +19,6 @@ export function EmailField({ value }: EmailFieldProps) {
     return <span>—</span>;
   }
 
-  return <a href={`mailto:${value}`}>{value}</a>;
+  const email = String(value);
+  return <a href={`mailto:${email}`}>{email}</a>;
 }

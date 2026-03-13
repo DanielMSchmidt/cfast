@@ -22,9 +22,10 @@ export function ImagePreview({
       <div>{fallback}</div>
     ) : (
       <JoyAspectRatio
-        ratio={`${width}/${height}` as unknown as number}
+        ratio={width / height}
         sx={{ width, borderRadius: "sm", bgcolor: "neutral.softBg" }}
       >
+        {/* MUI polymorphic component workaround — literal types required */}
         <JoyTypography level={"body-sm" as const} color={"neutral" as const}>
           No image
         </JoyTypography>
@@ -34,7 +35,7 @@ export function ImagePreview({
 
   return (
     <JoyAspectRatio
-      ratio={`${width}/${height}` as unknown as number}
+      ratio={width / height}
       sx={{ width, borderRadius: "sm", overflow: "hidden" }}
     >
       <img

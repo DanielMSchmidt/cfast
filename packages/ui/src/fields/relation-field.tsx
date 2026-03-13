@@ -1,4 +1,5 @@
 import type { RelationFieldProps } from "../types.js";
+import { getField } from "../record-access.js";
 
 /**
  * Read-only display component for related record references.
@@ -27,9 +28,13 @@ export function RelationField({
     return <span>—</span>;
   }
 
-  const record = value as Record<string, unknown>;
-  const displayValue = String(record[display] ?? record.id ?? value);
-  const id = record.id as string | undefined;
+  if (typeof value !== "object" || value === null) {
+    return <span>{String(value)}</span>;
+  }
+
+  const displayValue = String(getField(value, display) ?? getField(value, "id") ?? value);
+  const rawId = getField(value, "id");
+  const id = typeof rawId === "string" ? rawId : undefined;
 
   if (linkTo && id) {
     const href = linkTo.replace(":id", id);

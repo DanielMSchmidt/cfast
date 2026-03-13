@@ -120,11 +120,10 @@ export function useComponent<K extends keyof UIPluginComponents>(
   slot: K,
 ): UIPluginComponents[K] {
   const plugin = useUIPlugin();
-  const component = plugin?.components[slot];
-  if (component) {
-    return component as UIPluginComponents[K];
-  }
-  return headlessDefaults[slot] as UIPluginComponents[K];
+  // Spread the full defaults with any plugin overrides so the indexed access
+  // resolves to the concrete UIPluginComponents[K] without a cast.
+  const merged: UIPluginComponents = { ...headlessDefaults, ...plugin?.components };
+  return merged[slot];
 }
 
 // Re-export for convenience

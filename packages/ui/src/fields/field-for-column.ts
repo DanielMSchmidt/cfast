@@ -1,5 +1,4 @@
-import type { ComponentType } from "react";
-import type { BaseFieldProps } from "../types.js";
+import type { FieldComponent } from "../types.js";
 import { DateField } from "./date-field.js";
 import { BooleanField } from "./boolean-field.js";
 import { NumberField } from "./number-field.js";
@@ -36,8 +35,7 @@ type ColumnMeta = {
  * // Field === DateField
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function fieldForColumn(column: ColumnMeta): ComponentType<any> {
+export function fieldForColumn(column: ColumnMeta): FieldComponent {
   const { dataType, name } = column;
   const dt = dataType.toLowerCase();
 
@@ -98,16 +96,27 @@ export function fieldForColumn(column: ColumnMeta): ComponentType<any> {
  */
 export function fieldsForTable(
   table: { [Symbol.iterator]?: never } & Record<string, unknown>,
-): Record<string, ComponentType<BaseFieldProps & { value: unknown }>> {
+): Record<string, FieldComponent> {
   // Use drizzle-orm's getTableColumns if available
   // For now, we do a duck-type check for the column structure
-  const result: Record<string, ComponentType<BaseFieldProps & { value: unknown }>> = {};
+  const result: Record<string, FieldComponent> = {};
 
   for (const [key, col] of Object.entries(table)) {
-    if (col && typeof col === "object" && "dataType" in col && "name" in col) {
-      result[key] = fieldForColumn(col as ColumnMeta);
+    if (isColumnMeta(col)) {
+      result[key] = fieldForColumn(col);
     }
   }
 
   return result;
+}
+
+function isColumnMeta(value: unknown): value is ColumnMeta {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "dataType" in value &&
+    typeof value.dataType === "string" &&
+    "name" in value &&
+    typeof value.name === "string"
+  );
 }

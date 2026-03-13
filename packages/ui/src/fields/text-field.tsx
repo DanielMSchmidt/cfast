@@ -24,12 +24,13 @@ export function TextField({
     return <span>—</span>;
   }
 
-  const display = maxLength && value.length > maxLength
-    ? `${value.slice(0, maxLength)}…`
-    : value;
+  const text = String(value);
+  const display = maxLength && text.length > maxLength
+    ? `${text.slice(0, maxLength)}…`
+    : text;
 
-  if (maxLength && value.length > maxLength) {
-    return <span title={value}>{display}</span>;
+  if (maxLength && text.length > maxLength) {
+    return <span title={text}>{display}</span>;
   }
 
   return <span>{display}</span>;
