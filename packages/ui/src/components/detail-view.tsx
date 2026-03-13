@@ -1,6 +1,7 @@
 import { PageContainer } from "./page-container.js";
 import { fieldForColumn } from "../fields/field-for-column.js";
 import type { DetailViewProps, ColumnDef, ColumnShorthand } from "../types.js";
+import { getField } from "../record-access.js";
 
 function normalizeFields<T>(
   fields: ColumnShorthand<T>[] | undefined,
@@ -74,7 +75,7 @@ export function DetailView<T = unknown>({
         }}
       >
         {displayFields.map((field) => {
-          const value = (record as Record<string, unknown>)[field.key];
+          const value = getField(record, field.key);
           const FieldComponent = field.render
             ? null
             : resolveFieldComponent(field.key, table);
@@ -112,7 +113,7 @@ function inferFieldsFromRecord<T>(
 ): ColumnDef<T>[] {
   if (!record || typeof record !== "object") return [];
 
-  return Object.keys(record as Record<string, unknown>)
+  return Object.keys(record)
     .filter((key) => !exclude || !exclude.includes(key))
     .map((key) => ({
       key,
@@ -129,11 +130,17 @@ function resolveFieldComponent(
 ): ReturnType<typeof fieldForColumn> | null {
   if (!table || typeof table !== "object") return null;
 
-  const col = (table as Record<string, unknown>)[_key];
-  if (!col || typeof col !== "object" || !("dataType" in col) || !("name" in col)) {
+  const col = getField(table, _key);
+  if (
+    !col ||
+    typeof col !== "object" ||
+    !("dataType" in col) ||
+    typeof col.dataType !== "string" ||
+    !("name" in col) ||
+    typeof col.name !== "string"
+  ) {
     return null;
   }
 
-  const meta = col as { dataType: string; name: string };
-  return fieldForColumn(meta);
+  return fieldForColumn({ dataType: col.dataType, name: col.name });
 }

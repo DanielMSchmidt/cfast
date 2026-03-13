@@ -70,7 +70,11 @@ export function DateField({
     return <span>—</span>;
   }
 
-  const date = value instanceof Date ? value : new Date(value);
+  const date = value instanceof Date
+    ? value
+    : typeof value === "string" || typeof value === "number"
+      ? new Date(value)
+      : new Date(String(value));
 
   if (Number.isNaN(date.getTime())) {
     return <span>Invalid date</span>;

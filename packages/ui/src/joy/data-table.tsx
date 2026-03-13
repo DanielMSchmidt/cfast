@@ -4,6 +4,7 @@ import JoySheet from "@mui/joy/Sheet";
 import JoyCheckbox from "@mui/joy/Checkbox";
 
 import type { DataTableProps, ColumnDef, ColumnShorthand } from "../types.js";
+import { getField, getRecordId } from "../record-access.js";
 
 function normalizeColumns<T>(columns: ColumnShorthand<T>[] | undefined): ColumnDef<T>[] {
   if (!columns) return [];
@@ -120,6 +121,7 @@ export function DataTable<T = unknown>({
               >
                 {selectable ? (
                   <td>
+                    {/* MUI polymorphic component workaround — literal types required */}
                     <JoyCheckbox
                       checked={isSelected}
                       onChange={() => toggleRow(id)}
@@ -128,7 +130,7 @@ export function DataTable<T = unknown>({
                   </td>
                 ) : null}
                 {columns.map((col) => {
-                  const value = (row as Record<string, unknown>)[col.key];
+                  const value = getField(row, col.key);
                   return (
                     <td key={col.key}>
                       {col.render ? col.render(value, row) : String(value ?? "")}
@@ -145,5 +147,5 @@ export function DataTable<T = unknown>({
 }
 
 function defaultGetId<T>(row: T): string | number {
-  return (row as Record<string, unknown>).id as string | number;
+  return getRecordId(row);
 }

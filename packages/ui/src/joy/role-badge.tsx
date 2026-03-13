@@ -3,6 +3,8 @@ import Chip from "@mui/joy/Chip";
 import type { ColorPaletteProp } from "@mui/joy/styles";
 import type { RoleBadgeProps } from "../types.js";
 
+const VALID_COLORS = new Set<string>(["primary", "neutral", "danger", "success", "warning"]);
+
 const defaultColors: Record<string, ColorPaletteProp> = {
   admin: "danger",
   editor: "primary",
@@ -10,16 +12,16 @@ const defaultColors: Record<string, ColorPaletteProp> = {
   reader: "neutral",
 };
 
+function isColorPaletteProp(value: string): value is ColorPaletteProp {
+  return VALID_COLORS.has(value);
+}
+
 /**
  * Joy UI RoleBadge — MUI Joy Chip with configurable color per role.
  */
 export function RoleBadge({ role, colors }: RoleBadgeProps): ReactElement {
-  const colorMap = colors
-    ? { ...defaultColors, ...Object.fromEntries(
-        Object.entries(colors).map(([k, v]) => [k, v as ColorPaletteProp]),
-      )}
-    : defaultColors;
-  const chipColor = colorMap[role] ?? ("neutral" satisfies ColorPaletteProp);
+  const rawColor = colors?.[role] ?? defaultColors[role] ?? "neutral";
+  const chipColor: ColorPaletteProp = isColorPaletteProp(rawColor) ? rawColor : "neutral";
 
   return (
     <Chip size="sm" variant="soft" color={chipColor}>

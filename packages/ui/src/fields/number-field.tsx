@@ -28,6 +28,11 @@ export function NumberField({
     return <span>—</span>;
   }
 
+  const num = typeof value === "number" ? value : Number(value);
+  if (Number.isNaN(num)) {
+    return <span>—</span>;
+  }
+
   const options: Intl.NumberFormatOptions = {};
   if (currency) {
     options.style = "currency";
@@ -38,6 +43,6 @@ export function NumberField({
     options.maximumFractionDigits = decimals;
   }
 
-  const formatted = new Intl.NumberFormat(locale, options).format(value);
+  const formatted = new Intl.NumberFormat(locale, options).format(num);
   return <span>{formatted}</span>;
 }

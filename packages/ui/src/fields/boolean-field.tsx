@@ -30,13 +30,25 @@ export function BooleanField({
     return <span>—</span>;
   }
 
+  const boolValue = Boolean(value);
+  const color = boolValue ? trueColor : falseColor;
+  const chipColor = isChipColor(color) ? color : "neutral";
+
   return (
     <Chip
-      color={(value ? trueColor : falseColor) as "success" | "neutral" | "danger" | "primary" | "warning"}
+      color={chipColor}
       variant="soft"
       size="sm"
     >
-      {value ? trueLabel : falseLabel}
+      {boolValue ? trueLabel : falseLabel}
     </Chip>
   );
+}
+
+const CHIP_COLORS = new Set<string>(["success", "neutral", "danger", "primary", "warning"]);
+
+function isChipColor(
+  value: string,
+): value is "success" | "neutral" | "danger" | "primary" | "warning" {
+  return CHIP_COLORS.has(value);
 }
