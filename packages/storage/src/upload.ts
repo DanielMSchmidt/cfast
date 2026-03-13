@@ -6,22 +6,37 @@ export type UploadedObject = {
   key: string;
 };
 
-/**
- * Upload a file to R2 using a single PUT request.
- *
- * @param bucket - The R2 bucket binding.
- * @param key - The destination object key.
- * @param stream - The file body stream.
- * @param contentType - MIME type to set on the stored object.
- * @returns The uploaded object's key.
- */
+async function collectStream(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalLength = 0;
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    totalLength += value.length;
+  }
+
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+
 export async function directPut(
   bucket: R2Bucket,
   key: string,
   stream: ReadableStream<Uint8Array>,
   contentType: string,
 ): Promise<UploadedObject> {
-  await bucket.put(key, stream, {
+  // R2 requires known-length bodies — buffer the stream before uploading
+  const body = await collectStream(stream);
+  await bucket.put(key, body, {
     httpMetadata: { contentType },
   });
 
