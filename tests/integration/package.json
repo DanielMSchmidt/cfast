@@ -21,6 +21,7 @@
     "@cfast/storage": "workspace:*",
     "@cfast/email": "workspace:*",
     "react": "^19.0.0",
+    "@types/react": "^19.0.0",
     "@react-email/render": "^2.0.0"
   }
 }
