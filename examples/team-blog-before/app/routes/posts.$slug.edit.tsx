@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form, redirect } from "react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
@@ -9,6 +9,7 @@ import Input from "@mui/joy/Input";
 import Textarea from "@mui/joy/Textarea";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
+import FormHelperText from "@mui/joy/FormHelperText";
 import Alert from "@mui/joy/Alert";
 import AspectRatio from "@mui/joy/AspectRatio";
 import Box from "@mui/joy/Box";
@@ -19,6 +20,7 @@ import { posts, auditLogs } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
+import { useToast } from "~/components/ToastProvider";
 
 function generateSlug(title: string): string {
   return title
@@ -167,12 +169,70 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   throw new Response("Bad Request", { status: 400 });
 }
 
+type FieldErrors = {
+  title?: string;
+  excerpt?: string;
+};
+
 export default function EditPost() {
   const { post, user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { addToast } = useToast();
   const [title, setTitle] = useState(post.title);
   const [excerpt, setExcerpt] = useState(post.excerpt ?? "");
   const [content, setContent] = useState(post.content);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  function validate(field: string, value: string): string | undefined {
+    if (field === "title") {
+      if (!value.trim()) return "Title is required.";
+      if (value.trim().length < 3) return "Title must be at least 3 characters.";
+      if (value.trim().length > 200) return "Title must be under 200 characters.";
+    }
+    if (field === "excerpt") {
+      if (value.length > 300) return "Excerpt must be under 300 characters.";
+    }
+    return undefined;
+  }
+
+  function handleBlur(field: string, value: string) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setErrors((prev) => ({ ...prev, [field]: validate(field, value) }));
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const titleError = validate("title", title);
+    const excerptError = validate("excerpt", excerpt);
+    const newErrors: FieldErrors = {};
+    if (titleError) newErrors.title = titleError;
+    if (excerptError) newErrors.excerpt = excerptError;
+
+    if (Object.keys(newErrors).length > 0) {
+      e.preventDefault();
+      setErrors(newErrors);
+      setTouched({ title: true, excerpt: true });
+    }
+  }
+
+  useEffect(() => {
+    if (!actionData) return;
+    if ("success" in actionData) {
+      switch (actionData.action) {
+        case "update":
+          addToast("Post updated successfully!");
+          break;
+        case "uploadCover":
+          addToast("Cover image uploaded!");
+          break;
+        case "removeCover":
+          addToast("Cover image removed.", "warning");
+          break;
+      }
+    } else if ("error" in actionData) {
+      addToast(actionData.error, "error");
+    }
+  }, [actionData, addToast]);
 
   return (
     <>
@@ -194,27 +254,51 @@ export default function EditPost() {
           </Alert>
         )}
 
-        <Form method="post">
+        <Form method="post" onSubmit={handleSubmit}>
           <input type="hidden" name="_action" value="update" />
           <Stack spacing={3} sx={{ mb: 4 }}>
-            <FormControl required>
+            <FormControl required error={touched.title && !!errors.title}>
               <FormLabel>Title</FormLabel>
               <Input
                 name="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (touched.title) {
+                    setErrors((prev) => ({ ...prev, title: validate("title", e.target.value) }));
+                  }
+                }}
+                onBlur={() => handleBlur("title", title)}
                 size="lg"
               />
+              {touched.title && errors.title && (
+                <FormHelperText sx={{ color: "danger.plainColor" }}>{errors.title}</FormHelperText>
+              )}
             </FormControl>
 
-            <FormControl>
+            {title.trim() && (
+              <Typography level="body-xs" sx={{ color: "neutral.500", mt: -2 }}>
+                Slug preview: {generateSlug(title)}
+              </Typography>
+            )}
+
+            <FormControl error={touched.excerpt && !!errors.excerpt}>
               <FormLabel>Excerpt</FormLabel>
               <Textarea
                 name="excerpt"
                 value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
+                onChange={(e) => {
+                  setExcerpt(e.target.value);
+                  if (touched.excerpt) {
+                    setErrors((prev) => ({ ...prev, excerpt: validate("excerpt", e.target.value) }));
+                  }
+                }}
+                onBlur={() => handleBlur("excerpt", excerpt)}
                 minRows={2}
               />
+              {touched.excerpt && errors.excerpt && (
+                <FormHelperText sx={{ color: "danger.plainColor" }}>{errors.excerpt}</FormHelperText>
+              )}
             </FormControl>
 
             <FormControl>

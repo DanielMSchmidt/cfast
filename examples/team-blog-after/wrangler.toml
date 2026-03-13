@@ -5,6 +5,7 @@ main = "./workers/app.ts"
 
 [vars]
 APP_URL = "http://localhost:5173"
+MAILGUN_DOMAIN = "sandbox.mailgun.org"
 
 [[d1_databases]]
 binding = "DB"

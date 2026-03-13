@@ -9,6 +9,7 @@ import Input from "@mui/joy/Input";
 import Textarea from "@mui/joy/Textarea";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
+import FormHelperText from "@mui/joy/FormHelperText";
 import Alert from "@mui/joy/Alert";
 import type { Env } from "~/env";
 import { requireUser, hasAnyRole } from "~/auth.helpers.server";
@@ -82,12 +83,50 @@ export async function action({ request, context }: ActionFunctionArgs) {
   return redirect(`/posts/${slug}/edit`);
 }
 
+type FieldErrors = {
+  title?: string;
+  excerpt?: string;
+};
+
 export default function NewPost() {
   const { user } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  function validate(field: string, value: string): string | undefined {
+    if (field === "title") {
+      if (!value.trim()) return "Title is required.";
+      if (value.trim().length < 3) return "Title must be at least 3 characters.";
+      if (value.trim().length > 200) return "Title must be under 200 characters.";
+    }
+    if (field === "excerpt") {
+      if (value.length > 300) return "Excerpt must be under 300 characters.";
+    }
+    return undefined;
+  }
+
+  function handleBlur(field: string, value: string) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setErrors((prev) => ({ ...prev, [field]: validate(field, value) }));
+  }
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const titleError = validate("title", title);
+    const excerptError = validate("excerpt", excerpt);
+    const newErrors: FieldErrors = {};
+    if (titleError) newErrors.title = titleError;
+    if (excerptError) newErrors.excerpt = excerptError;
+
+    if (Object.keys(newErrors).length > 0) {
+      e.preventDefault();
+      setErrors(newErrors);
+      setTouched({ title: true, excerpt: true });
+    }
+  }
 
   return (
     <>
@@ -103,28 +142,52 @@ export default function NewPost() {
           </Alert>
         )}
 
-        <Form method="post">
+        <Form method="post" onSubmit={handleSubmit}>
           <Stack spacing={3}>
-            <FormControl required>
+            <FormControl required error={touched.title && !!errors.title}>
               <FormLabel>Title</FormLabel>
               <Input
                 name="title"
                 placeholder="Enter post title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (touched.title) {
+                    setErrors((prev) => ({ ...prev, title: validate("title", e.target.value) }));
+                  }
+                }}
+                onBlur={() => handleBlur("title", title)}
                 size="lg"
               />
+              {touched.title && errors.title && (
+                <FormHelperText sx={{ color: "danger.plainColor" }}>{errors.title}</FormHelperText>
+              )}
             </FormControl>
 
-            <FormControl>
+            {title.trim() && (
+              <Typography level="body-xs" sx={{ color: "neutral.500", mt: -2 }}>
+                Slug preview: {generateSlug(title)}
+              </Typography>
+            )}
+
+            <FormControl error={touched.excerpt && !!errors.excerpt}>
               <FormLabel>Excerpt</FormLabel>
               <Textarea
                 name="excerpt"
                 placeholder="A brief summary of your post..."
                 value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
+                onChange={(e) => {
+                  setExcerpt(e.target.value);
+                  if (touched.excerpt) {
+                    setErrors((prev) => ({ ...prev, excerpt: validate("excerpt", e.target.value) }));
+                  }
+                }}
+                onBlur={() => handleBlur("excerpt", excerpt)}
                 minRows={2}
               />
+              {touched.excerpt && errors.excerpt && (
+                <FormHelperText sx={{ color: "danger.plainColor" }}>{errors.excerpt}</FormHelperText>
+              )}
             </FormControl>
 
             <FormControl>

@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, Form, Link, useFetcher, redirect } from "react-router";
+import { useLoaderData, useActionData, useSubmit, Form, Link, useFetcher, redirect } from "react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
@@ -15,13 +15,14 @@ import Chip from "@mui/joy/Chip";
 import type { Env } from "~/env";
 import { getUser, requireUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
-import type { AuthUser } from "~/permissions";
 import { createDbClient } from "~/db/client";
 import { posts, users, comments, auditLogs } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
+import { ConfirmDialog } from "~/components/ConfirmDialog";
+import { useToast } from "~/components/ToastProvider";
 import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
@@ -332,7 +333,34 @@ export default function PostDetail() {
     post.slug
   );
 
+  const { addToast } = useToast();
+  const submit = useSubmit();
   const [commentContent, setCommentContent] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
+
+  useEffect(() => {
+    if (!actionData) return;
+    if ("success" in actionData) {
+      switch (actionData.action) {
+        case "publish":
+          addToast("Post published successfully!");
+          break;
+        case "unpublish":
+          addToast("Post unpublished.", "warning");
+          break;
+        case "comment":
+          addToast("Comment posted!");
+          break;
+        case "deleteComment":
+          addToast("Comment deleted.", "warning");
+          break;
+      }
+    } else if ("error" in actionData) {
+      addToast(actionData.error, "error");
+    }
+  }, [actionData, addToast]);
 
   const isAuthor = user?.id === post.authorId;
   const isEditorOrAdmin = user ? hasAnyRole(user, ["editor", "admin"]) : false;
@@ -392,34 +420,54 @@ export default function PostDetail() {
             </Button>
           )}
           {canPublish && !post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="publish" />
-              <Button type="submit" color="success" variant="soft" size="sm">
-                Publish
-              </Button>
-            </Form>
+            <Button color="success" variant="soft" size="sm" onClick={() => setShowPublishConfirm(true)}>
+              Publish
+            </Button>
           )}
           {canPublish && post.published && (
-            <Form method="post">
-              <input type="hidden" name="_action" value="unpublish" />
-              <Button type="submit" color="warning" variant="soft" size="sm">
-                Unpublish
-              </Button>
-            </Form>
+            <Button color="warning" variant="soft" size="sm" onClick={() => setShowUnpublishConfirm(true)}>
+              Unpublish
+            </Button>
           )}
           {canDelete && (
-            <Form method="post" onSubmit={(e) => {
-              if (!confirm("Are you sure you want to delete this post?")) {
-                e.preventDefault();
-              }
-            }}>
-              <input type="hidden" name="_action" value="delete" />
-              <Button type="submit" color="danger" variant="soft" size="sm">
-                Delete
-              </Button>
-            </Form>
+            <Button color="danger" variant="soft" size="sm" onClick={() => setShowDeleteConfirm(true)}>
+              Delete
+            </Button>
           )}
         </Stack>
+
+        <ConfirmDialog
+          open={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={() => {
+            setShowDeleteConfirm(false);
+            submit({ _action: "delete" }, { method: "post" });
+          }}
+          title="Delete Post"
+          message={`Are you sure you want to delete "${post.title}"? This action cannot be undone.`}
+        />
+
+        <ConfirmDialog
+          open={showPublishConfirm}
+          onClose={() => setShowPublishConfirm(false)}
+          onConfirm={() => {
+            setShowPublishConfirm(false);
+            submit({ _action: "publish" }, { method: "post" });
+          }}
+          title="Publish Post"
+          message={`Are you sure you want to publish "${post.title}"? It will become visible to all readers.`}
+        />
+
+        <ConfirmDialog
+          open={showUnpublishConfirm}
+          onClose={() => setShowUnpublishConfirm(false)}
+          onConfirm={() => {
+            setShowUnpublishConfirm(false);
+            submit({ _action: "unpublish" }, { method: "post" });
+          }}
+          title="Unpublish Post"
+          message={`Are you sure you want to unpublish "${post.title}"? It will no longer be visible to readers.`}
+        />
 
         <Divider sx={{ my: 4 }} />
 
