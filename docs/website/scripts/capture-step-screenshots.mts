@@ -126,7 +126,8 @@ async function waitForServer(url: string, timeoutMs = 60_000): Promise<void> {
   while (Date.now() - start < timeoutMs) {
     try {
       const res = await fetch(url);
-      if (res.status > 0) return;
+      // Wait for a successful response (not 502/503) to ensure Workers runtime is ready
+      if (res.ok || res.status === 302 || res.status === 404) return;
     } catch {
       // server not ready
     }
@@ -185,6 +186,38 @@ function setupDatabase(stepDir: string, step: string, needsAuth: boolean) {
 
 // --- Auth + seeding ---
 
+async function signUpWithRetry(
+  baseUrl: string,
+  email: string,
+  name: string,
+  maxRetries = 5,
+): Promise<Response> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const res = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: baseUrl },
+      body: JSON.stringify({ email, name, password: TEST_PASSWORD }),
+    });
+    if (res.ok) return res;
+    // 500 may mean Workers runtime not ready yet — retry
+    if (res.status >= 500 && attempt < maxRetries) {
+      console.warn(`  Attempt ${attempt} failed (${res.status}), retrying...`);
+      await new Promise((r) => setTimeout(r, 2000));
+      continue;
+    }
+    return res;
+  }
+  throw new Error("Unreachable");
+}
+
+function extractSessionCookie(res: Response): string | undefined {
+  for (const c of res.headers.getSetCookie()) {
+    const match = c.match(/better-auth\.session_token=([^;]+)/);
+    if (match) return match[1];
+  }
+  return undefined;
+}
+
 async function createTestUsers(
   baseUrl: string,
 ): Promise<Record<Role, string>> {
@@ -198,39 +231,33 @@ async function createTestUsers(
   const cookies: Record<string, string> = {};
 
   for (const user of users) {
-    const res = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
+    const res = await signUpWithRetry(baseUrl, user.email, user.name);
+    const cookie = extractSessionCookie(res);
+
+    if (cookie) {
+      cookies[user.key] = cookie;
+      continue;
+    }
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`  Warning: sign-up for ${user.key} failed (${res.status}): ${body}`);
+    }
+
+    // Try sign-in if user already exists
+    const signInRes = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Origin: baseUrl },
-      body: JSON.stringify({
-        email: user.email,
-        name: user.name,
-        password: TEST_PASSWORD,
-      }),
+      body: JSON.stringify({ email: user.email, password: TEST_PASSWORD }),
     });
-
-    const allCookies = res.headers.getSetCookie();
-    for (const c of allCookies) {
-      const match = c.match(/better-auth\.session_token=([^;]+)/);
-      if (match) { cookies[user.key] = match[1]; break; }
+    const signInCookie = extractSessionCookie(signInRes);
+    if (signInCookie) {
+      cookies[user.key] = signInCookie;
+      continue;
     }
 
-    if (!cookies[user.key]) {
-      // Try sign-in if user already exists
-      const signInRes = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Origin: baseUrl },
-        body: JSON.stringify({ email: user.email, password: TEST_PASSWORD }),
-      });
-      const signInCookies = signInRes.headers.getSetCookie();
-      for (const c of signInCookies) {
-        const match = c.match(/better-auth\.session_token=([^;]+)/);
-        if (match) { cookies[user.key] = match[1]; break; }
-      }
-    }
-
-    if (!cookies[user.key]) {
-      console.warn(`  Warning: failed to get session cookie for ${user.key}`);
-    }
+    const signInBody = await signInRes.text().catch(() => "");
+    console.warn(`  Warning: failed to get session cookie for ${user.key} (sign-in ${signInRes.status}): ${signInBody}`);
   }
 
   return cookies as Record<Role, string>;
@@ -261,11 +288,28 @@ function getUserIds(stepDir: string): Record<Role, string> {
 
 function seedRoles(stepDir: string, userIds: Record<Role, string>) {
   const now = Math.floor(Date.now() / 1000);
-  const statements = [
-    `INSERT OR IGNORE INTO roles (id, user_id, role, created_at) VALUES ('role-admin', '${userIds.admin}', 'admin', ${now});`,
-    `INSERT OR IGNORE INTO roles (id, user_id, role, created_at) VALUES ('role-editor', '${userIds.editor}', 'editor', ${now});`,
-    `INSERT OR IGNORE INTO roles (id, user_id, role, created_at) VALUES ('role-author', '${userIds.author}', 'author', ${now});`,
+  const roleAssignments: { id: string; userId: string | undefined; role: string }[] = [
+    { id: "role-admin", userId: userIds.admin, role: "admin" },
+    { id: "role-editor", userId: userIds.editor, role: "editor" },
+    { id: "role-author", userId: userIds.author, role: "author" },
   ];
+
+  const statements: string[] = [];
+  for (const r of roleAssignments) {
+    if (!r.userId) {
+      console.warn(`  Warning: skipping role ${r.role} — no user ID`);
+      continue;
+    }
+    statements.push(
+      `INSERT OR IGNORE INTO roles (id, user_id, role, created_at) VALUES ('${r.id}', '${r.userId}', '${r.role}', ${now});`,
+    );
+  }
+
+  if (statements.length === 0) {
+    console.warn("  Warning: no roles to seed (no user IDs available)");
+    return;
+  }
+
   const sql = statements.join("\n");
   const tmpFile = path.join(stepDir, ".tmp-seed.sql");
   fs.writeFileSync(tmpFile, sql);
@@ -277,6 +321,10 @@ function seedRoles(stepDir: string, userIds: Record<Role, string>) {
 }
 
 function seedPosts(stepDir: string, userIds: Record<Role, string>, schema: PostsSchema) {
+  if (!userIds.author || !userIds.editor) {
+    console.warn("  Warning: skipping posts seed — missing author or editor user ID");
+    return;
+  }
   const now = Math.floor(Date.now() / 1000);
   const dayAgo = now - 86400;
   const weekAgo = now - 604800;
@@ -386,6 +434,8 @@ async function main() {
 
     try {
       await waitForServer(BASE_URL);
+      // Extra delay for Workers runtime to fully initialize
+      await new Promise((r) => setTimeout(r, 2000));
       log(stepName, "Dev server ready");
 
       // Create test users if needed
