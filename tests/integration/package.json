@@ -1,0 +1,24 @@
+{
+  "name": "integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.13.0",
+    "@cloudflare/workers-types": "^4.20260305.1",
+    "vitest": "^4.1.0",
+    "wrangler": "^4",
+    "drizzle-orm": "^0.45.1",
+    "better-auth": "^1.2.0",
+    "@cfast/core": "workspace:*",
+    "@cfast/db": "workspace:*",
+    "@cfast/env": "workspace:*",
+    "@cfast/permissions": "workspace:*",
+    "@cfast/auth": "workspace:*",
+    "@cfast/actions": "workspace:*",
+    "@cfast/storage": "workspace:*",
+    "@cfast/email": "workspace:*"
+  }
+}
