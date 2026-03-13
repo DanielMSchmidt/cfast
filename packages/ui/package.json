@@ -1,6 +1,6 @@
 {
   "name": "@cfast/ui",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Permission-aware React components with UI library plugins",
   "type": "module",
   "main": "dist/index.js",
