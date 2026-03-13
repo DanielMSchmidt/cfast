@@ -7,7 +7,7 @@ title: "DataTableProps"
 
 > **DataTableProps**\<`T`\> = `object`
 
-Defined in: [packages/ui/src/types.ts:506](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L506)
+Defined in: [packages/ui/src/types.ts:506](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L506)
 
 Props for the DataTable component.
 
@@ -35,7 +35,7 @@ The row object type for type-safe column rendering and selection callbacks.
 
 > `optional` **actions**: [`ClientDescriptor`](/api/actions/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:519](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L519)
+Defined in: [packages/ui/src/types.ts:519](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L519)
 
 Action descriptor for row-level actions.
 
@@ -45,7 +45,7 @@ Action descriptor for row-level actions.
 
 > `optional` **columns**: [`ColumnShorthand`](/api/ui/type-aliases/columnshorthand/)\<`T`\>[]
 
-Defined in: [packages/ui/src/types.ts:517](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L517)
+Defined in: [packages/ui/src/types.ts:517](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L517)
 
 Column definitions or key strings.
 
@@ -55,7 +55,7 @@ Column definitions or key strings.
 
 > **data**: `object`
 
-Defined in: [packages/ui/src/types.ts:508](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L508)
+Defined in: [packages/ui/src/types.ts:508](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L508)
 
 Paginated data including items and loading state.
 
@@ -77,7 +77,7 @@ Array of row objects to display.
 
 > `optional` **emptyMessage**: `string`
 
-Defined in: [packages/ui/src/types.ts:531](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L531)
+Defined in: [packages/ui/src/types.ts:531](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L531)
 
 Message shown when there are no items.
 
@@ -87,7 +87,7 @@ Message shown when there are no items.
 
 > `optional` **getRowId**: (`row`) => `string` \| `number`
 
-Defined in: [packages/ui/src/types.ts:529](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L529)
+Defined in: [packages/ui/src/types.ts:529](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L529)
 
 Function to extract a unique ID from a row. Defaults to `row.id`.
 
@@ -107,7 +107,7 @@ Function to extract a unique ID from a row. Defaults to `row.id`.
 
 > `optional` **onRowClick**: (`row`) => `void`
 
-Defined in: [packages/ui/src/types.ts:527](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L527)
+Defined in: [packages/ui/src/types.ts:527](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L527)
 
 Callback when a row is clicked.
 
@@ -127,7 +127,7 @@ Callback when a row is clicked.
 
 > `optional` **onSelectionChange**: (`rows`) => `void`
 
-Defined in: [packages/ui/src/types.ts:525](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L525)
+Defined in: [packages/ui/src/types.ts:525](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L525)
 
 Callback when row selection changes.
 
@@ -147,7 +147,7 @@ Callback when row selection changes.
 
 > `optional` **selectable**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:521](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L521)
+Defined in: [packages/ui/src/types.ts:521](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L521)
 
 Whether to show row selection checkboxes.
 
@@ -157,7 +157,7 @@ Whether to show row selection checkboxes.
 
 > `optional` **selectedRows**: `T`[]
 
-Defined in: [packages/ui/src/types.ts:523](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L523)
+Defined in: [packages/ui/src/types.ts:523](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L523)
 
 Externally controlled selected rows.
 
@@ -167,6 +167,6 @@ Externally controlled selected rows.
 
 > `optional` **table**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:515](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L515)
+Defined in: [packages/ui/src/types.ts:515](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L515)
 
 Drizzle table for column type inference.

@@ -7,7 +7,7 @@ title: "ChipSlotProps"
 
 > **ChipSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:218](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L218)
+Defined in: [packages/ui/src/types.ts:218](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L218)
 
 Props for the chip/badge plugin slot.
 
@@ -24,7 +24,7 @@ boolean field display ([BooleanFieldProps](/api/ui/type-aliases/booleanfieldprop
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:220](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L220)
+Defined in: [packages/ui/src/types.ts:220](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L220)
 
 Chip label content.
 
@@ -34,7 +34,7 @@ Chip label content.
 
 > `optional` **color**: `"primary"` \| `"neutral"` \| `"danger"` \| `"success"` \| `"warning"`
 
-Defined in: [packages/ui/src/types.ts:222](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L222)
+Defined in: [packages/ui/src/types.ts:222](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L222)
 
 Color theme.
 
@@ -44,7 +44,7 @@ Color theme.
 
 > `optional` **size**: `"sm"` \| `"md"` \| `"lg"`
 
-Defined in: [packages/ui/src/types.ts:226](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L226)
+Defined in: [packages/ui/src/types.ts:226](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L226)
 
 Size of the chip.
 
@@ -54,6 +54,6 @@ Size of the chip.
 
 > `optional` **variant**: `"solid"` \| `"soft"` \| `"outlined"`
 
-Defined in: [packages/ui/src/types.ts:224](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L224)
+Defined in: [packages/ui/src/types.ts:224](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L224)
 
 Visual style variant.

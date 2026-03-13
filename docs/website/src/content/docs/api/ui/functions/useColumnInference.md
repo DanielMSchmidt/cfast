@@ -7,7 +7,7 @@ title: "useColumnInference"
 
 > **useColumnInference**(`table`, `columns?`): `InferredColumn`[]
 
-Defined in: [packages/ui/src/hooks/use-column-inference.ts:47](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/hooks/use-column-inference.ts#L47)
+Defined in: [packages/ui/src/hooks/use-column-inference.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/hooks/use-column-inference.ts#L47)
 
 Inspects a Drizzle table's columns and returns inferred [ColumnDef](/api/ui/type-aliases/columndef/) entries
 with appropriate TypedField components attached.

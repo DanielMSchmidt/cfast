@@ -7,7 +7,7 @@ title: "NavigationProgressProps"
 
 > **NavigationProgressProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1348](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1348)
+Defined in: [packages/ui/src/types.ts:1348](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1348)
 
 Props for the NavigationProgress component.
 
@@ -21,6 +21,6 @@ Typically placed in the root layout; no configuration is required beyond optiona
 
 > `optional` **color**: `string`
 
-Defined in: [packages/ui/src/types.ts:1350](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1350)
+Defined in: [packages/ui/src/types.ts:1350](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1350)
 
 Progress bar color. Defaults to "#1976d2".

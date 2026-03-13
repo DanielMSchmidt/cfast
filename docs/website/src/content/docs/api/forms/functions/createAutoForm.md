@@ -7,7 +7,7 @@ title: "createAutoForm"
 
 > **createAutoForm**(`plugin`): (`__namedParameters`) => `Element`
 
-Defined in: [packages/forms/src/auto-form.tsx:74](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/auto-form.tsx#L74)
+Defined in: [packages/forms/src/auto-form.tsx:74](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/auto-form.tsx#L74)
 
 Create an AutoForm React component bound to a specific UI [FormPlugin](/api/forms/type-aliases/formplugin/).
 

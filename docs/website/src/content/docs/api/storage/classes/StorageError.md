@@ -5,7 +5,7 @@ prev: false
 title: "StorageError"
 ---
 
-Defined in: [packages/storage/src/errors.ts:25](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/errors.ts#L25)
+Defined in: [packages/storage/src/errors.ts:25](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/errors.ts#L25)
 
 Typed error thrown by the storage validation and upload pipeline.
 
@@ -39,7 +39,7 @@ try {
 
 > **new StorageError**(`options`): `StorageError`
 
-Defined in: [packages/storage/src/errors.ts:37](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/errors.ts#L37)
+Defined in: [packages/storage/src/errors.ts:37](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/errors.ts#L37)
 
 #### Parameters
 
@@ -75,7 +75,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **code**: [`StorageErrorCode`](/api/storage/type-aliases/storageerrorcode/)
 
-Defined in: [packages/storage/src/errors.ts:28](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/errors.ts#L28)
+Defined in: [packages/storage/src/errors.ts:28](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/errors.ts#L28)
 
 Machine-readable error code (e.g. `"FILE_TOO_LARGE"`).
 
@@ -85,7 +85,7 @@ Machine-readable error code (e.g. `"FILE_TOO_LARGE"`).
 
 > `readonly` **detail**: `string`
 
-Defined in: [packages/storage/src/errors.ts:30](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/errors.ts#L30)
+Defined in: [packages/storage/src/errors.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/errors.ts#L30)
 
 Human-readable description of the problem.
 
@@ -107,7 +107,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **name**: `"StorageError"` = `"StorageError"`
 
-Defined in: [packages/storage/src/errors.ts:26](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/errors.ts#L26)
+Defined in: [packages/storage/src/errors.ts:26](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/errors.ts#L26)
 
 #### Overrides
 
@@ -131,6 +131,6 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **status**: `number`
 
-Defined in: [packages/storage/src/errors.ts:32](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/errors.ts#L32)
+Defined in: [packages/storage/src/errors.ts:32](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/errors.ts#L32)
 
 HTTP status code (e.g. 413, 415, 500).

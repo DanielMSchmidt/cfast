@@ -7,7 +7,7 @@ title: "DetailView"
 
 > **DetailView**\<`T`\>(`props`): `Element`
 
-Defined in: [packages/ui/src/components/detail-view.tsx:51](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/components/detail-view.tsx#L51)
+Defined in: [packages/ui/src/components/detail-view.tsx:51](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/detail-view.tsx#L51)
 
 Read-only detail page for a single record, rendered in a two-column grid.
 

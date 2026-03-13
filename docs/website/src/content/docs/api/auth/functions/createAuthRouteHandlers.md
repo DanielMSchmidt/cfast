@@ -7,7 +7,7 @@ title: "createAuthRouteHandlers"
 
 > **createAuthRouteHandlers**(`getAuth`): `object`
 
-Defined in: [packages/auth/src/route-handlers.ts:30](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/auth/src/route-handlers.ts#L30)
+Defined in: [packages/auth/src/route-handlers.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/route-handlers.ts#L30)
 
 Creates `loader` and `action` handlers for a React Router auth catch-all route.
 

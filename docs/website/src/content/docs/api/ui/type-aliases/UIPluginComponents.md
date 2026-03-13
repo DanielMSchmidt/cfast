@@ -7,7 +7,7 @@ title: "UIPluginComponents"
 
 > **UIPluginComponents** = `object`
 
-Defined in: [packages/ui/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L18)
+Defined in: [packages/ui/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L18)
 
 Map of component slot names to their styled implementations.
 
@@ -28,7 +28,7 @@ to unstyled HTML elements.
 
 > **alert**: `ComponentType`\<[`AlertSlotProps`](/api/ui/type-aliases/alertslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L52)
+Defined in: [packages/ui/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L52)
 
 Alert message component for success/error/warning feedback.
 
@@ -38,7 +38,7 @@ Alert message component for success/error/warning feedback.
 
 > **appShell**: `ComponentType`\<[`AppShellSlotProps`](/api/ui/type-aliases/appshellslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:41](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L41)
+Defined in: [packages/ui/src/types.ts:41](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L41)
 
 Application shell with sidebar and header layout.
 
@@ -48,7 +48,7 @@ Application shell with sidebar and header layout.
 
 > **breadcrumb**: `ComponentType`\<[`BreadcrumbSlotProps`](/api/ui/type-aliases/breadcrumbslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L47)
+Defined in: [packages/ui/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L47)
 
 Breadcrumb navigation trail.
 
@@ -58,7 +58,7 @@ Breadcrumb navigation trail.
 
 > **button**: `ComponentType`\<[`ButtonSlotProps`](/api/ui/type-aliases/buttonslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:21](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L21)
+Defined in: [packages/ui/src/types.ts:21](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L21)
 
 Button component used by ActionButton and other interactive elements.
 
@@ -68,7 +68,7 @@ Button component used by ActionButton and other interactive elements.
 
 > **chip**: `ComponentType`\<[`ChipSlotProps`](/api/ui/type-aliases/chipslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L38)
+Defined in: [packages/ui/src/types.ts:38](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L38)
 
 Chip/badge component for status indicators.
 
@@ -78,7 +78,7 @@ Chip/badge component for status indicators.
 
 > **confirmDialog**: `ComponentType`\<[`ConfirmDialogSlotProps`](/api/ui/type-aliases/confirmdialogslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L25)
+Defined in: [packages/ui/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L25)
 
 Confirmation dialog shown before destructive actions.
 
@@ -88,7 +88,7 @@ Confirmation dialog shown before destructive actions.
 
 > **dropZone**: `ComponentType`\<[`DropZoneSlotProps`](/api/ui/type-aliases/dropzoneslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:55](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L55)
+Defined in: [packages/ui/src/types.ts:55](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L55)
 
 Drag-and-drop file upload area.
 
@@ -98,7 +98,7 @@ Drag-and-drop file upload area.
 
 > **pageContainer**: `ComponentType`\<[`PageContainerSlotProps`](/api/ui/type-aliases/pagecontainerslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:45](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L45)
+Defined in: [packages/ui/src/types.ts:45](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L45)
 
 Page wrapper with title, breadcrumb, and actions.
 
@@ -108,7 +108,7 @@ Page wrapper with title, breadcrumb, and actions.
 
 > **sidebar**: `ComponentType`\<[`SidebarSlotProps`](/api/ui/type-aliases/sidebarslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:43](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L43)
+Defined in: [packages/ui/src/types.ts:43](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L43)
 
 Sidebar navigation panel.
 
@@ -118,7 +118,7 @@ Sidebar navigation panel.
 
 > **table**: `ComponentType`\<[`TableSlotProps`](/api/ui/type-aliases/tableslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L28)
+Defined in: [packages/ui/src/types.ts:28](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L28)
 
 Root table element.
 
@@ -128,7 +128,7 @@ Root table element.
 
 > **tableBody**: `ComponentType`\<[`TableSectionSlotProps`](/api/ui/type-aliases/tablesectionslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L32)
+Defined in: [packages/ui/src/types.ts:32](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L32)
 
 Table body section.
 
@@ -138,7 +138,7 @@ Table body section.
 
 > **tableCell**: `ComponentType`\<[`TableCellSlotProps`](/api/ui/type-aliases/tablecellslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L36)
+Defined in: [packages/ui/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L36)
 
 Table cell element (th or td).
 
@@ -148,7 +148,7 @@ Table cell element (th or td).
 
 > **tableHead**: `ComponentType`\<[`TableSectionSlotProps`](/api/ui/type-aliases/tablesectionslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L30)
+Defined in: [packages/ui/src/types.ts:30](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L30)
 
 Table head section.
 
@@ -158,7 +158,7 @@ Table head section.
 
 > **tableRow**: `ComponentType`\<[`TableRowSlotProps`](/api/ui/type-aliases/tablerowslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L34)
+Defined in: [packages/ui/src/types.ts:34](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L34)
 
 Table row element.
 
@@ -168,7 +168,7 @@ Table row element.
 
 > **toast**: `ComponentType`\<[`ToastSlotProps`](/api/ui/type-aliases/toastslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L50)
+Defined in: [packages/ui/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L50)
 
 Toast notification container.
 
@@ -178,6 +178,6 @@ Toast notification container.
 
 > **tooltip**: `ComponentType`\<[`TooltipSlotProps`](/api/ui/type-aliases/tooltipslotprops/)\>
 
-Defined in: [packages/ui/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L23)
+Defined in: [packages/ui/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L23)
 
 Tooltip wrapper for hover hints.

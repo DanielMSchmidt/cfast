@@ -7,7 +7,7 @@ title: "AdminActionResult"
 
 > **AdminActionResult** = \{ `success`: `string`; \} \| \{ `error`: `string`; \} \| \{ `fieldErrors`: `Record`\<`string`, `string`\>; \}
 
-Defined in: [packages/admin/src/types.ts:554](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L554)
+Defined in: [packages/admin/src/types.ts:554](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L554)
 
 Discriminated union returned by the admin action handler.
 

@@ -7,7 +7,7 @@ title: "TableRowSlotProps"
 
 > **TableRowSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:182](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L182)
+Defined in: [packages/ui/src/types.ts:182](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L182)
 
 Props for the table row plugin slot.
 
@@ -24,7 +24,7 @@ selection highlighting and click handling for row navigation.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:184](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L184)
+Defined in: [packages/ui/src/types.ts:184](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L184)
 
 Table cells within this row.
 
@@ -34,7 +34,7 @@ Table cells within this row.
 
 > `optional` **onClick**: () => `void`
 
-Defined in: [packages/ui/src/types.ts:188](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L188)
+Defined in: [packages/ui/src/types.ts:188](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L188)
 
 Click handler for the row.
 
@@ -48,6 +48,6 @@ Click handler for the row.
 
 > `optional` **selected**: `boolean`
 
-Defined in: [packages/ui/src/types.ts:186](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L186)
+Defined in: [packages/ui/src/types.ts:186](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L186)
 
 Whether this row is currently selected.

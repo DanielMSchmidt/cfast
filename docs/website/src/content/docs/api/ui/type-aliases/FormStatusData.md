@@ -7,7 +7,7 @@ title: "FormStatusData"
 
 > **FormStatusData** = `object`
 
-Defined in: [packages/ui/src/types.ts:1069](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1069)
+Defined in: [packages/ui/src/types.ts:1069](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1069)
 
 Data structure for action result feedback (success, error, field errors).
 
@@ -24,7 +24,7 @@ Supports both top-level messages and per-field validation errors from `@cfast/fo
 
 > `optional` **error**: `string`
 
-Defined in: [packages/ui/src/types.ts:1073](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1073)
+Defined in: [packages/ui/src/types.ts:1073](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1073)
 
 Error message to display.
 
@@ -34,7 +34,7 @@ Error message to display.
 
 > `optional` **fieldErrors**: `Record`\<`string`, `string`[]\>
 
-Defined in: [packages/ui/src/types.ts:1075](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1075)
+Defined in: [packages/ui/src/types.ts:1075](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1075)
 
 Per-field validation error messages.
 
@@ -44,6 +44,6 @@ Per-field validation error messages.
 
 > `optional` **success**: `string`
 
-Defined in: [packages/ui/src/types.ts:1071](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1071)
+Defined in: [packages/ui/src/types.ts:1071](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1071)
 
 Success message to display.

@@ -7,7 +7,7 @@ title: "TableOverrides"
 
 > **TableOverrides** = `object`
 
-Defined in: [packages/admin/src/types.ts:183](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L183)
+Defined in: [packages/admin/src/types.ts:183](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L183)
 
 Per-table customization for how a table appears and behaves in the admin panel.
 
@@ -35,7 +35,7 @@ const postsOverrides: TableOverrides = {
 
 > `optional` **actions**: `object`
 
-Defined in: [packages/admin/src/types.ts:195](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L195)
+Defined in: [packages/admin/src/types.ts:195](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L195)
 
 Custom row-level and table-level actions. See [RowAction](/api/admin/type-aliases/rowaction/) and [TableAction](/api/admin/type-aliases/tableaction/).
 
@@ -53,7 +53,7 @@ Custom row-level and table-level actions. See [RowAction](/api/admin/type-aliase
 
 > `optional` **defaultSort**: `object`
 
-Defined in: [packages/admin/src/types.ts:191](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L191)
+Defined in: [packages/admin/src/types.ts:191](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L191)
 
 Default sort order for the list view. Defaults to primary key descending.
 
@@ -71,7 +71,7 @@ Default sort order for the list view. Defaults to primary key descending.
 
 > `optional` **exclude**: `boolean`
 
-Defined in: [packages/admin/src/types.ts:197](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L197)
+Defined in: [packages/admin/src/types.ts:197](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L197)
 
 Set to `true` to hide this table from the admin panel entirely.
 
@@ -81,7 +81,7 @@ Set to `true` to hide this table from the admin panel entirely.
 
 > `optional` **fields**: `Record`\<`string`, [`FieldConfig`](/api/forms/type-aliases/fieldconfig/)\>
 
-Defined in: [packages/admin/src/types.ts:193](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L193)
+Defined in: [packages/admin/src/types.ts:193](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L193)
 
 Custom field configurations for create/edit forms, keyed by column name. Passed to `@cfast/forms`.
 
@@ -91,7 +91,7 @@ Custom field configurations for create/edit forms, keyed by column name. Passed 
 
 > `optional` **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:185](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L185)
+Defined in: [packages/admin/src/types.ts:185](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L185)
 
 Custom display label for the table in the sidebar and views. Defaults to a pluralized title-case version of the table name.
 
@@ -101,7 +101,7 @@ Custom display label for the table in the sidebar and views. Defaults to a plura
 
 > `optional` **listColumns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L187)
+Defined in: [packages/admin/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L187)
 
 Column names to show in the list view. Defaults to all non-primary-key columns.
 
@@ -111,6 +111,6 @@ Column names to show in the list view. Defaults to all non-primary-key columns.
 
 > `optional` **searchable**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:189](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L189)
+Defined in: [packages/admin/src/types.ts:189](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L189)
 
 Column names that support text search in the list view. Defaults to the first text column.

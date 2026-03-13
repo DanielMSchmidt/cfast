@@ -7,7 +7,7 @@ title: "PluginSetupContext"
 
 > **PluginSetupContext**\<`TRequires`\> = `object` & `TRequires`
 
-Defined in: [packages/core/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/types.ts#L29)
+Defined in: [packages/core/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L29)
 
 The context object passed to a plugin's `setup()` function.
 

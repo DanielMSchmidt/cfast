@@ -7,7 +7,7 @@ title: "checkPermissionStatus"
 
 > **checkPermissionStatus**(`grants`, `descriptors`): [`ActionPermissionStatus`](/api/actions/type-aliases/actionpermissionstatus/)
 
-Defined in: [packages/actions/src/create-actions.ts:42](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/create-actions.ts#L42)
+Defined in: [packages/actions/src/create-actions.ts:42](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/create-actions.ts#L42)
 
 Checks a user's [grants](/api/permissions/type-aliases/grant/) against a set of permission descriptors
 and returns an [ActionPermissionStatus](/api/actions/type-aliases/actionpermissionstatus/).

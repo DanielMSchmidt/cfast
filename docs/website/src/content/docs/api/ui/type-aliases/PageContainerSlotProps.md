@@ -7,7 +7,7 @@ title: "PageContainerSlotProps"
 
 > **PageContainerSlotProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:273](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L273)
+Defined in: [packages/ui/src/types.ts:273](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L273)
 
 Props for the page container plugin slot.
 
@@ -26,7 +26,7 @@ optional tab navigation. Used internally by [ListViewProps](/api/ui/type-aliases
 
 > `optional` **actions**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:281](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L281)
+Defined in: [packages/ui/src/types.ts:281](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L281)
 
 Action buttons rendered in the page header.
 
@@ -36,7 +36,7 @@ Action buttons rendered in the page header.
 
 > `optional` **breadcrumb**: [`BreadcrumbItem`](/api/ui/type-aliases/breadcrumbitem/)[]
 
-Defined in: [packages/ui/src/types.ts:279](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L279)
+Defined in: [packages/ui/src/types.ts:279](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L279)
 
 Breadcrumb trail items.
 
@@ -46,7 +46,7 @@ Breadcrumb trail items.
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:275](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L275)
+Defined in: [packages/ui/src/types.ts:275](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L275)
 
 Page body content.
 
@@ -56,7 +56,7 @@ Page body content.
 
 > `optional` **tabs**: [`TabItem`](/api/ui/type-aliases/tabitem/)[]
 
-Defined in: [packages/ui/src/types.ts:283](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L283)
+Defined in: [packages/ui/src/types.ts:283](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L283)
 
 Tab items for sub-navigation within the page.
 
@@ -66,6 +66,6 @@ Tab items for sub-navigation within the page.
 
 > `optional` **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:277](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L277)
+Defined in: [packages/ui/src/types.ts:277](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L277)
 
 Page title displayed in the header area.

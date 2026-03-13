@@ -7,7 +7,7 @@ title: "createActions"
 
 > **createActions**\<`TUser`\>(`config`): `object`
 
-Defined in: [packages/actions/src/create-actions.ts:106](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/create-actions.ts#L106)
+Defined in: [packages/actions/src/create-actions.ts:106](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/create-actions.ts#L106)
 
 Creates a scoped action factory bound to a shared context provider.
 

@@ -7,7 +7,7 @@ title: "ActionContext"
 
 > **ActionContext**\<`TUser`\> = `object`
 
-Defined in: [packages/actions/src/types.ts:35](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L35)
+Defined in: [packages/actions/src/types.ts:35](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L35)
 
 Context provided to every action's [OperationsFn](/api/actions/type-aliases/operationsfn/).
 
@@ -38,7 +38,7 @@ The shape of the authenticated user object.
 
 > **db**: [`Db`](/api/db/type-aliases/db/)
 
-Defined in: [packages/actions/src/types.ts:37](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L37)
+Defined in: [packages/actions/src/types.ts:37](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L37)
 
 The Drizzle database instance from `@cfast/db`.
 
@@ -48,7 +48,7 @@ The Drizzle database instance from `@cfast/db`.
 
 > **grants**: [`Grant`](/api/permissions/type-aliases/grant/)[]
 
-Defined in: [packages/actions/src/types.ts:41](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L41)
+Defined in: [packages/actions/src/types.ts:41](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L41)
 
 The user's permission [grants](/api/permissions/type-aliases/grant/), used for permission checking.
 
@@ -58,6 +58,6 @@ The user's permission [grants](/api/permissions/type-aliases/grant/), used for p
 
 > **user**: `TUser`
 
-Defined in: [packages/actions/src/types.ts:39](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L39)
+Defined in: [packages/actions/src/types.ts:39](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L39)
 
 The authenticated user for the current request.

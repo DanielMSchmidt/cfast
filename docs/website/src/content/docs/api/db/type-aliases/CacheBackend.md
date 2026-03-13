@@ -7,7 +7,7 @@ title: "CacheBackend"
 
 > **CacheBackend** = `"cache-api"` \| `"kv"`
 
-Defined in: [packages/db/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L47)
+Defined in: [packages/db/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L47)
 
 Supported cache backend types for [CacheConfig](/api/db/type-aliases/cacheconfig/).
 

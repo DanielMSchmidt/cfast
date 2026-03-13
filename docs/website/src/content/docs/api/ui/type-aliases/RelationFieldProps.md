@@ -7,7 +7,7 @@ title: "RelationFieldProps"
 
 > **RelationFieldProps** = [`BaseFieldProps`](/api/ui/type-aliases/basefieldprops/) & `object`
 
-Defined in: [packages/ui/src/types.ts:822](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L822)
+Defined in: [packages/ui/src/types.ts:822](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L822)
 
 Props for the RelationField read-only display component.
 

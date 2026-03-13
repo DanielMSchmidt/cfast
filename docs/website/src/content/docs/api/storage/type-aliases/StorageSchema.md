@@ -7,7 +7,7 @@ title: "StorageSchema"
 
 > **StorageSchema** = `Record`\<`string`, [`FiletypeConfig`](/api/storage/type-aliases/filetypeconfig/)\<`any`\>\>
 
-Defined in: [packages/storage/src/types.ts:158](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/types.ts#L158)
+Defined in: [packages/storage/src/types.ts:158](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L158)
 
 A record mapping file type names to their [FiletypeConfig](/api/storage/type-aliases/filetypeconfig/) definitions.
 

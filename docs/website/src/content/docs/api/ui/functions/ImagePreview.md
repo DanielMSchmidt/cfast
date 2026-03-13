@@ -7,7 +7,7 @@ title: "ImagePreview"
 
 > **ImagePreview**(`props`): `Element`
 
-Defined in: [packages/ui/src/components/image-preview.tsx:23](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/components/image-preview.tsx#L23)
+Defined in: [packages/ui/src/components/image-preview.tsx:23](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/image-preview.tsx#L23)
 
 Displays an image from `@cfast/storage` or a direct URL.
 

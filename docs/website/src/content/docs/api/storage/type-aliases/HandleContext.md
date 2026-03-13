@@ -7,7 +7,7 @@ title: "HandleContext"
 
 > **HandleContext**\<`TInput`\> = `object`
 
-Defined in: [packages/storage/src/types.ts:108](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/types.ts#L108)
+Defined in: [packages/storage/src/types.ts:108](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L108)
 
 Context required by the upload handler and lifecycle hooks.
 
@@ -28,7 +28,7 @@ The shape of caller-provided input data.
 
 > **env**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/storage/src/types.ts:110](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/types.ts#L110)
+Defined in: [packages/storage/src/types.ts:110](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L110)
 
 Workers environment bindings (must include the target R2 bucket).
 
@@ -38,7 +38,7 @@ Workers environment bindings (must include the target R2 bucket).
 
 > `optional` **input**: `TInput`
 
-Defined in: [packages/storage/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/types.ts#L114)
+Defined in: [packages/storage/src/types.ts:114](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L114)
 
 Optional caller-provided input available in the `key` function and hooks.
 
@@ -48,7 +48,7 @@ Optional caller-provided input available in the `key` function and hooks.
 
 > **user**: `object`
 
-Defined in: [packages/storage/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/types.ts#L112)
+Defined in: [packages/storage/src/types.ts:112](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/types.ts#L112)
 
 The authenticated user performing the upload.
 

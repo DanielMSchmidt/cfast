@@ -7,7 +7,7 @@ title: "RequestArgs"
 
 > **RequestArgs** = `object`
 
-Defined in: [packages/actions/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L50)
+Defined in: [packages/actions/src/types.ts:50](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L50)
 
 Subset of React Router loader/action arguments consumed by `@cfast/actions`.
 
@@ -20,7 +20,7 @@ trimmed to only the fields the actions system needs.
 
 > `optional` **context**: `unknown`
 
-Defined in: [packages/actions/src/types.ts:56](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L56)
+Defined in: [packages/actions/src/types.ts:56](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L56)
 
 Optional context object (e.g., Cloudflare Workers env via `context.cloudflare.env`).
 
@@ -30,7 +30,7 @@ Optional context object (e.g., Cloudflare Workers env via `context.cloudflare.en
 
 > **params**: `Record`\<`string`, `string` \| `undefined`\>
 
-Defined in: [packages/actions/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L54)
+Defined in: [packages/actions/src/types.ts:54](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L54)
 
 URL parameters from the route pattern (e.g., `{ postId: "abc" }`).
 
@@ -40,6 +40,6 @@ URL parameters from the route pattern (e.g., `{ postId: "abc" }`).
 
 > **request**: `Request`
 
-Defined in: [packages/actions/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L52)
+Defined in: [packages/actions/src/types.ts:52](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L52)
 
 The incoming HTTP request.

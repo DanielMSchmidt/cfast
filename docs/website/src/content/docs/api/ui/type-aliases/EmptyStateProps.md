@@ -7,7 +7,7 @@ title: "EmptyStateProps"
 
 > **EmptyStateProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1106](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1106)
+Defined in: [packages/ui/src/types.ts:1106](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1106)
 
 Props for the EmptyState component.
 
@@ -28,7 +28,7 @@ based on `createAction` permission status:
 
 > `optional` **createAction**: [`ClientDescriptor`](/api/actions/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:1112](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1112)
+Defined in: [packages/ui/src/types.ts:1112](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1112)
 
 Action descriptor for the create button; controls CTA visibility.
 
@@ -38,7 +38,7 @@ Action descriptor for the create button; controls CTA visibility.
 
 > `optional` **createLabel**: `string`
 
-Defined in: [packages/ui/src/types.ts:1114](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1114)
+Defined in: [packages/ui/src/types.ts:1114](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1114)
 
 Label for the create button. Defaults to "Create".
 
@@ -48,7 +48,7 @@ Label for the create button. Defaults to "Create".
 
 > `optional` **description**: `string`
 
-Defined in: [packages/ui/src/types.ts:1110](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1110)
+Defined in: [packages/ui/src/types.ts:1110](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1110)
 
 Description text with guidance.
 
@@ -58,7 +58,7 @@ Description text with guidance.
 
 > `optional` **icon**: `ComponentType`\<\{ `className?`: `string`; \}\>
 
-Defined in: [packages/ui/src/types.ts:1116](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1116)
+Defined in: [packages/ui/src/types.ts:1116](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1116)
 
 Optional icon component displayed above the title.
 
@@ -68,6 +68,6 @@ Optional icon component displayed above the title.
 
 > **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:1108](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1108)
+Defined in: [packages/ui/src/types.ts:1108](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1108)
 
 Title text (e.g. "No posts yet").

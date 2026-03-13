@@ -7,7 +7,7 @@ title: "createApp"
 
 > **createApp**\<`TSchema`, `TPermissions`\>(`config`): [`App`](/api/core/type-aliases/app/)\<`TSchema`, `TPermissions`, `unknown`, `unknown`\>
 
-Defined in: [packages/core/src/create-app.ts:34](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/create-app.ts#L34)
+Defined in: [packages/core/src/create-app.ts:34](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/create-app.ts#L34)
 
 Creates a cfast application instance that wires env, permissions, and plugins into a typed per-request context.
 

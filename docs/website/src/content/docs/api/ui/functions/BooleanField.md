@@ -7,7 +7,7 @@ title: "BooleanField"
 
 > **BooleanField**(`props`): `Element`
 
-Defined in: [packages/ui/src/fields/boolean-field.tsx:20](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/fields/boolean-field.tsx#L20)
+Defined in: [packages/ui/src/fields/boolean-field.tsx:20](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/fields/boolean-field.tsx#L20)
 
 Read-only display component that renders a boolean value as a colored chip.
 

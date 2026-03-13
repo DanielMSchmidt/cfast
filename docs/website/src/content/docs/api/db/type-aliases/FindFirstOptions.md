@@ -7,7 +7,7 @@ title: "FindFirstOptions"
 
 > **FindFirstOptions** = `Omit`\<[`FindManyOptions`](/api/db/type-aliases/findmanyoptions/), `"limit"` \| `"offset"`\>
 
-Defined in: [packages/db/src/types.ts:210](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L210)
+Defined in: [packages/db/src/types.ts:210](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L210)
 
 Options for `db.query(table).findFirst()`.
 

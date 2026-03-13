@@ -7,7 +7,7 @@ title: "FormPlugin"
 
 > **FormPlugin** = `object`
 
-Defined in: [packages/forms/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L187)
+Defined in: [packages/forms/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L187)
 
 A form plugin created by [createFormPlugin](/api/forms/functions/createformplugin/).
 
@@ -20,6 +20,6 @@ Pass this to [createAutoForm](/api/forms/functions/createautoform/) to produce a
 
 > **components**: [`FormPluginComponents`](/api/forms/type-aliases/formplugincomponents/)
 
-Defined in: [packages/forms/src/types.ts:189](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L189)
+Defined in: [packages/forms/src/types.ts:189](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L189)
 
 The UI components used to render each field type and the form structure.

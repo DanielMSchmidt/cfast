@@ -7,7 +7,7 @@ title: "AdminAuthConfig"
 
 > **AdminAuthConfig** = `object`
 
-Defined in: [packages/admin/src/types.ts:66](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L66)
+Defined in: [packages/admin/src/types.ts:66](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L66)
 
 Auth adapter interface that bridges your app's authentication to the admin panel.
 
@@ -41,7 +41,7 @@ const auth: AdminAuthConfig = {
 
 > **getRoles**: (`userId`) => `Promise`\<`string`[]\>
 
-Defined in: [packages/admin/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L74)
+Defined in: [packages/admin/src/types.ts:74](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L74)
 
 Fetches all roles assigned to a user by ID. Used in user management views.
 
@@ -61,7 +61,7 @@ Fetches all roles assigned to a user by ID. Used in user management views.
 
 > **hasRole**: (`user`, `role`) => `boolean`
 
-Defined in: [packages/admin/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L72)
+Defined in: [packages/admin/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L72)
 
 Checks whether the given user has a specific role. Used for the admin access guard.
 
@@ -85,7 +85,7 @@ Checks whether the given user has a specific role. Used for the admin access gua
 
 > **impersonate**: (`adminId`, `targetId`, `request`) => `Promise`\<`Response`\>
 
-Defined in: [packages/admin/src/types.ts:82](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L82)
+Defined in: [packages/admin/src/types.ts:82](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L82)
 
 Starts an impersonation session. Should return a redirect `Response` that sets the impersonation cookie/session.
 
@@ -113,7 +113,7 @@ Starts an impersonation session. Should return a redirect `Response` that sets t
 
 > **removeRole**: (`userId`, `role`) => `Promise`\<`void`\>
 
-Defined in: [packages/admin/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L78)
+Defined in: [packages/admin/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L78)
 
 Removes a single role from a user. Called from the user detail role management UI.
 
@@ -137,7 +137,7 @@ Removes a single role from a user. Called from the user detail role management U
 
 > **requireUser**: (`request`) => `Promise`\<\{ `grants`: `unknown`[]; `user`: [`AdminUser`](/api/admin/type-aliases/adminuser/); \}\>
 
-Defined in: [packages/admin/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L68)
+Defined in: [packages/admin/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L68)
 
 Extracts the authenticated user and their permission grants from the request. Throws or redirects if unauthenticated.
 
@@ -157,7 +157,7 @@ Extracts the authenticated user and their permission grants from the request. Th
 
 > **setRole**: (`userId`, `role`) => `Promise`\<`void`\>
 
-Defined in: [packages/admin/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L76)
+Defined in: [packages/admin/src/types.ts:76](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L76)
 
 Assigns a single role to a user. Called from the user detail role management UI.
 
@@ -181,7 +181,7 @@ Assigns a single role to a user. Called from the user detail role management UI.
 
 > **setRoles**: (`userId`, `roles`) => `Promise`\<`void`\>
 
-Defined in: [packages/admin/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L80)
+Defined in: [packages/admin/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L80)
 
 Replaces all roles for a user with the given set. Used for bulk role assignment.
 
@@ -205,7 +205,7 @@ Replaces all roles for a user with the given set. Used for bulk role assignment.
 
 > **stopImpersonation**: (`request`) => `Promise`\<`Response`\>
 
-Defined in: [packages/admin/src/types.ts:88](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L88)
+Defined in: [packages/admin/src/types.ts:88](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L88)
 
 Ends the current impersonation session. Should return a redirect `Response` that restores the admin session.
 

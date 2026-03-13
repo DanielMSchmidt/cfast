@@ -7,7 +7,7 @@ title: "checkPermissions"
 
 > **checkPermissions**(`role`, `permissions`, `descriptors`): [`PermissionCheckResult`](/api/permissions/type-aliases/permissioncheckresult/)
 
-Defined in: [packages/permissions/src/check.ts:71](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/permissions/src/check.ts#L71)
+Defined in: [packages/permissions/src/check.ts:71](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/check.ts#L71)
 
 Checks whether a role satisfies a set of permission descriptors.
 

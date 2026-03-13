@@ -7,7 +7,7 @@ title: "createAuth"
 
 > **createAuth**(`config`): (`env`) => [`AuthInstance`](/api/auth/type-aliases/authinstance/)
 
-Defined in: [packages/auth/src/create-auth.ts:74](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/auth/src/create-auth.ts#L74)
+Defined in: [packages/auth/src/create-auth.ts:74](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/auth/src/create-auth.ts#L74)
 
 Creates a pre-configured auth factory for Cloudflare Workers.
 

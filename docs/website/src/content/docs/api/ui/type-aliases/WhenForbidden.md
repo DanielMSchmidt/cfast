@@ -7,7 +7,7 @@ title: "WhenForbidden"
 
 > **WhenForbidden** = `"hide"` \| `"disable"` \| `"show"`
 
-Defined in: [packages/ui/src/types.ts:370](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L370)
+Defined in: [packages/ui/src/types.ts:370](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L370)
 
 Behavior when a `@cfast/actions` action is not permitted for the current user.
 

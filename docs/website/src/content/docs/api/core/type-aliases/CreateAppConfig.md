@@ -7,7 +7,7 @@ title: "CreateAppConfig"
 
 > **CreateAppConfig**\<`TSchema`, `TPermissions`\> = `object`
 
-Defined in: [packages/core/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/types.ts#L11)
+Defined in: [packages/core/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L11)
 
 Configuration object for [createApp](/api/core/functions/createapp/).
 
@@ -31,7 +31,7 @@ The permissions definition from `@cfast/permissions`.
 
 > **env**: `TSchema`
 
-Defined in: [packages/core/src/types.ts:16](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/types.ts#L16)
+Defined in: [packages/core/src/types.ts:16](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L16)
 
 The environment variable schema. Validated at `app.init()` time via `@cfast/env`.
 
@@ -41,6 +41,6 @@ The environment variable schema. Validated at `app.init()` time via `@cfast/env`
 
 > **permissions**: `TPermissions`
 
-Defined in: [packages/core/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/types.ts#L18)
+Defined in: [packages/core/src/types.ts:18](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L18)
 
 The permissions config from `definePermissions()`. Made available to all plugins.

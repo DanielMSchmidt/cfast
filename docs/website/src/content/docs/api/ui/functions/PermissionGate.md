@@ -7,7 +7,7 @@ title: "PermissionGate"
 
 > **PermissionGate**(`props`): `Element` \| `null`
 
-Defined in: [packages/ui/src/components/permission-gate.tsx:22](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/components/permission-gate.tsx#L22)
+Defined in: [packages/ui/src/components/permission-gate.tsx:22](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/permission-gate.tsx#L22)
 
 Conditionally renders children based on action permission status.
 

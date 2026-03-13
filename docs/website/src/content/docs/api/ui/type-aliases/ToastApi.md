@@ -7,7 +7,7 @@ title: "ToastApi"
 
 > **ToastApi** = `object`
 
-Defined in: [packages/ui/src/types.ts:889](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L889)
+Defined in: [packages/ui/src/types.ts:889](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L889)
 
 Imperative API returned by `useToast()` for showing notifications.
 
@@ -26,7 +26,7 @@ notifications when `@cfast/actions` operations complete.
 
 > **error**: (`message`, `description?`) => `void`
 
-Defined in: [packages/ui/src/types.ts:895](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L895)
+Defined in: [packages/ui/src/types.ts:895](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L895)
 
 Show an error toast.
 
@@ -50,7 +50,7 @@ Show an error toast.
 
 > **info**: (`message`, `description?`) => `void`
 
-Defined in: [packages/ui/src/types.ts:897](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L897)
+Defined in: [packages/ui/src/types.ts:897](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L897)
 
 Show an informational toast.
 
@@ -74,7 +74,7 @@ Show an informational toast.
 
 > **show**: (`options`) => `void`
 
-Defined in: [packages/ui/src/types.ts:891](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L891)
+Defined in: [packages/ui/src/types.ts:891](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L891)
 
 Show a toast with full options control.
 
@@ -94,7 +94,7 @@ Show a toast with full options control.
 
 > **success**: (`message`, `description?`) => `void`
 
-Defined in: [packages/ui/src/types.ts:893](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L893)
+Defined in: [packages/ui/src/types.ts:893](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L893)
 
 Show a success toast.
 
@@ -118,7 +118,7 @@ Show a success toast.
 
 > **warning**: (`message`, `description?`) => `void`
 
-Defined in: [packages/ui/src/types.ts:899](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L899)
+Defined in: [packages/ui/src/types.ts:899](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L899)
 
 Show a warning toast.
 

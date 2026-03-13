@@ -7,7 +7,7 @@ title: "FilterBar"
 
 > **FilterBar**(`props`): `Element`
 
-Defined in: [packages/ui/src/components/filter-bar.tsx:32](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/components/filter-bar.tsx#L32)
+Defined in: [packages/ui/src/components/filter-bar.tsx:32](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/filter-bar.tsx#L32)
 
 URL-synced filter controls for data tables and list views.
 

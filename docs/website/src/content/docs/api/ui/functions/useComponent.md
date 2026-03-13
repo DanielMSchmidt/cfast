@@ -7,7 +7,7 @@ title: "useComponent"
 
 > **useComponent**\<`K`\>(`slot`): [`UIPluginComponents`](/api/ui/type-aliases/uiplugincomponents/)\[`K`\]
 
-Defined in: [packages/ui/src/plugin.tsx:119](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/plugin.tsx#L119)
+Defined in: [packages/ui/src/plugin.tsx:119](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/plugin.tsx#L119)
 
 Resolves a component for a given [UIPluginComponents](/api/ui/type-aliases/uiplugincomponents/) slot.
 

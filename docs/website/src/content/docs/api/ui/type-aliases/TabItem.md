@@ -7,7 +7,7 @@ title: "TabItem"
 
 > **TabItem** = `object`
 
-Defined in: [packages/ui/src/types.ts:974](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L974)
+Defined in: [packages/ui/src/types.ts:974](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L974)
 
 A tab item for sub-navigation within a page.
 
@@ -21,7 +21,7 @@ provided.
 
 > **label**: `string`
 
-Defined in: [packages/ui/src/types.ts:976](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L976)
+Defined in: [packages/ui/src/types.ts:976](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L976)
 
 Display label for the tab.
 
@@ -31,7 +31,7 @@ Display label for the tab.
 
 > `optional` **to**: `string`
 
-Defined in: [packages/ui/src/types.ts:978](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L978)
+Defined in: [packages/ui/src/types.ts:978](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L978)
 
 Route path for the tab.
 
@@ -41,6 +41,6 @@ Route path for the tab.
 
 > `optional` **value**: `string`
 
-Defined in: [packages/ui/src/types.ts:980](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L980)
+Defined in: [packages/ui/src/types.ts:980](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L980)
 
 Programmatic value identifier for the tab.

@@ -7,7 +7,7 @@ title: "ImpersonationBanner"
 
 > **ImpersonationBanner**(`props`): `Element` \| `null`
 
-Defined in: [packages/ui/src/components/impersonation-banner.tsx:24](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/components/impersonation-banner.tsx#L24)
+Defined in: [packages/ui/src/components/impersonation-banner.tsx:24](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/impersonation-banner.tsx#L24)
 
 Persistent banner shown when an admin is impersonating another user.
 

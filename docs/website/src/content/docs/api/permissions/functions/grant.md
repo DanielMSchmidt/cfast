@@ -7,7 +7,7 @@ title: "grant"
 
 > **grant**(`action`, `subject`, `options?`): [`Grant`](/api/permissions/type-aliases/grant/)
 
-Defined in: [packages/permissions/src/grant.ts:34](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/permissions/src/grant.ts#L34)
+Defined in: [packages/permissions/src/grant.ts:34](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/grant.ts#L34)
 
 Declares that a role can perform an action on a subject, optionally restricted
 by a row-level `where` clause.

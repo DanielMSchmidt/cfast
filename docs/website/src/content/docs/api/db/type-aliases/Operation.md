@@ -7,7 +7,7 @@ title: "Operation"
 
 > **Operation**\<`TResult`\> = `object`
 
-Defined in: [packages/db/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L27)
+Defined in: [packages/db/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L27)
 
 A lazy, permission-aware database operation.
 
@@ -43,7 +43,7 @@ The type of the result returned by `.run()`.
 
 > **permissions**: [`PermissionDescriptor`](/api/permissions/type-aliases/permissiondescriptor/)[]
 
-Defined in: [packages/db/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L29)
+Defined in: [packages/db/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L29)
 
 Structural permission requirements. Available immediately without execution.
 
@@ -53,7 +53,7 @@ Structural permission requirements. Available immediately without execution.
 
 > **run**: (`params`) => `Promise`\<`TResult`\>
 
-Defined in: [packages/db/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L36)
+Defined in: [packages/db/src/types.ts:36](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L36)
 
 Checks permissions, applies permission WHERE clauses, executes the query via Drizzle,
 and returns the result. Throws `ForbiddenError` if the user's role lacks a required grant.

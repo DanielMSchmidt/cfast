@@ -7,7 +7,7 @@ title: "PermissionsConfig"
 
 > **PermissionsConfig**\<`TRoles`, `TUser`\> = `object`
 
-Defined in: [packages/permissions/src/types.ts:142](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/permissions/src/types.ts#L142)
+Defined in: [packages/permissions/src/types.ts:142](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L142)
 
 Configuration object for [definePermissions](/api/permissions/functions/definepermissions/).
 
@@ -31,7 +31,7 @@ The user type for typed `where` clauses (defaults to `unknown`).
 
 > **grants**: `Record`\<`TRoles`\[`number`\], [`Grant`](/api/permissions/type-aliases/grant/)[]\> \| (`grant`) => `Record`\<`TRoles`\[`number`\], [`Grant`](/api/permissions/type-aliases/grant/)[]\>
 
-Defined in: [packages/permissions/src/types.ts:149](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/permissions/src/types.ts#L149)
+Defined in: [packages/permissions/src/types.ts:149](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L149)
 
 A map from role to grant arrays, or a callback that receives a typed `grant` function.
 
@@ -41,7 +41,7 @@ A map from role to grant arrays, or a callback that receives a typed `grant` fun
 
 > `optional` **hierarchy**: `Partial`\<`Record`\<`TRoles`\[`number`\], `TRoles`\[`number`\][]\>\>
 
-Defined in: [packages/permissions/src/types.ts:153](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/permissions/src/types.ts#L153)
+Defined in: [packages/permissions/src/types.ts:153](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L153)
 
 Optional role hierarchy declaring which roles inherit from which.
 
@@ -51,6 +51,6 @@ Optional role hierarchy declaring which roles inherit from which.
 
 > **roles**: `TRoles`
 
-Defined in: [packages/permissions/src/types.ts:147](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/permissions/src/types.ts#L147)
+Defined in: [packages/permissions/src/types.ts:147](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/permissions/src/types.ts#L147)
 
 All roles in the application, declared with `as const` for type inference.

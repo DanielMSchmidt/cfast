@@ -9,7 +9,7 @@ title: "definePlugin"
 
 > **definePlugin**\<`TName`, `TProvides`, `TClient`\>(`config`): [`CfastPlugin`](/api/core/type-aliases/cfastplugin/)\<`TName`, `Awaited`\<`TProvides`\>, `unknown`, `TClient`\>
 
-Defined in: [packages/core/src/define-plugin.ts:39](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/define-plugin.ts#L39)
+Defined in: [packages/core/src/define-plugin.ts:39](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/define-plugin.ts#L39)
 
 Defines a cfast plugin for use with `createApp().use()`.
 
@@ -86,7 +86,7 @@ const dbPlugin = definePlugin<AuthPluginProvides>()({
 
 > **definePlugin**\<`TRequires`\>(): \<`TName`, `TProvides`, `TClient`\>(`config`) => [`CfastPlugin`](/api/core/type-aliases/cfastplugin/)\<`TName`, `Awaited`\<`TProvides`\>, `TRequires`, `TClient`\>
 
-Defined in: [packages/core/src/define-plugin.ts:51](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/define-plugin.ts#L51)
+Defined in: [packages/core/src/define-plugin.ts:51](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/define-plugin.ts#L51)
 
 Defines a cfast plugin for use with `createApp().use()`.
 

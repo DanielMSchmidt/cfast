@@ -7,7 +7,7 @@ title: "EmailMessage"
 
 > **EmailMessage** = `object`
 
-Defined in: [packages/email/src/types.ts:9](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/email/src/types.ts#L9)
+Defined in: [packages/email/src/types.ts:9](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L9)
 
 A fully rendered email message ready for delivery by an [EmailProvider](/api/email/type-aliases/emailprovider/).
 
@@ -20,7 +20,7 @@ along with addressing and subject metadata.
 
 > **from**: `string`
 
-Defined in: [packages/email/src/types.ts:13](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/email/src/types.ts#L13)
+Defined in: [packages/email/src/types.ts:13](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L13)
 
 Sender address (e.g. `"MyApp <noreply@example.com>"`).
 
@@ -30,7 +30,7 @@ Sender address (e.g. `"MyApp <noreply@example.com>"`).
 
 > **html**: `string`
 
-Defined in: [packages/email/src/types.ts:17](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/email/src/types.ts#L17)
+Defined in: [packages/email/src/types.ts:17](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L17)
 
 HTML body rendered from the react-email component.
 
@@ -40,7 +40,7 @@ HTML body rendered from the react-email component.
 
 > **subject**: `string`
 
-Defined in: [packages/email/src/types.ts:15](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/email/src/types.ts#L15)
+Defined in: [packages/email/src/types.ts:15](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L15)
 
 Email subject line.
 
@@ -50,7 +50,7 @@ Email subject line.
 
 > **text**: `string`
 
-Defined in: [packages/email/src/types.ts:19](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/email/src/types.ts#L19)
+Defined in: [packages/email/src/types.ts:19](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L19)
 
 Plain-text body rendered from the react-email component.
 
@@ -60,6 +60,6 @@ Plain-text body rendered from the react-email component.
 
 > **to**: `string`
 
-Defined in: [packages/email/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/email/src/types.ts#L11)
+Defined in: [packages/email/src/types.ts:11](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/email/src/types.ts#L11)
 
 Recipient email address.

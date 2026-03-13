@@ -7,7 +7,7 @@ title: "UIPluginProvider"
 
 > **UIPluginProvider**(`props`): `Element`
 
-Defined in: [packages/ui/src/plugin.tsx:66](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/plugin.tsx#L66)
+Defined in: [packages/ui/src/plugin.tsx:66](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/plugin.tsx#L66)
 
 React context provider that makes a [UIPlugin](/api/ui/type-aliases/uiplugin/) available to all `@cfast/ui` components.
 

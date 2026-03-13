@@ -7,7 +7,7 @@ title: "ActionsConfig"
 
 > **ActionsConfig**\<`TUser`\> = `object`
 
-Defined in: [packages/actions/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L78)
+Defined in: [packages/actions/src/types.ts:78](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L78)
 
 Configuration for the [createActions](/api/actions/functions/createactions/) factory.
 
@@ -40,7 +40,7 @@ The shape of the authenticated user object.
 
 > **getContext**: (`args`) => `Promise`\<[`ActionContext`](/api/actions/type-aliases/actioncontext/)\<`TUser`\>\>
 
-Defined in: [packages/actions/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/actions/src/types.ts#L80)
+Defined in: [packages/actions/src/types.ts:80](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/actions/src/types.ts#L80)
 
 Resolves the per-request action context from the route handler arguments.
 

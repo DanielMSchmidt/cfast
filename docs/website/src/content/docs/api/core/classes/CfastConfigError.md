@@ -5,7 +5,7 @@ prev: false
 title: "CfastConfigError"
 ---
 
-Defined in: [packages/core/src/errors.ts:29](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/errors.ts#L29)
+Defined in: [packages/core/src/errors.ts:29](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/errors.ts#L29)
 
 Error thrown for configuration issues detected at startup (e.g., duplicate plugin names).
 
@@ -19,7 +19,7 @@ Error thrown for configuration issues detected at startup (e.g., duplicate plugi
 
 > **new CfastConfigError**(`message`): `CfastConfigError`
 
-Defined in: [packages/core/src/errors.ts:33](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/errors.ts#L33)
+Defined in: [packages/core/src/errors.ts:33](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/errors.ts#L33)
 
 #### Parameters
 

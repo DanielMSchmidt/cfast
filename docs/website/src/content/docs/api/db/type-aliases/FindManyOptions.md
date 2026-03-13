@@ -7,7 +7,7 @@ title: "FindManyOptions"
 
 > **FindManyOptions** = `object`
 
-Defined in: [packages/db/src/types.ts:177](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L177)
+Defined in: [packages/db/src/types.ts:177](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L177)
 
 Options for `db.query(table).findMany()`.
 
@@ -36,7 +36,7 @@ db.query(posts).findMany({
 
 > `optional` **cache**: [`QueryCacheOptions`](/api/db/type-aliases/querycacheoptions/)
 
-Defined in: [packages/db/src/types.ts:195](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L195)
+Defined in: [packages/db/src/types.ts:195](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L195)
 
 Per-query cache control. Pass `false` to skip caching, or an object to customize.
 
@@ -46,7 +46,7 @@ Per-query cache control. Pass `false` to skip caching, or an object to customize
 
 > `optional` **columns**: `Record`\<`string`, `boolean`\>
 
-Defined in: [packages/db/src/types.ts:179](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L179)
+Defined in: [packages/db/src/types.ts:179](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L179)
 
 Column selection (e.g., `{ id: true, title: true }`). Omit to select all columns.
 
@@ -56,7 +56,7 @@ Column selection (e.g., `{ id: true, title: true }`). Omit to select all columns
 
 > `optional` **limit**: `number`
 
-Defined in: [packages/db/src/types.ts:185](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L185)
+Defined in: [packages/db/src/types.ts:185](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L185)
 
 Maximum number of rows to return.
 
@@ -66,7 +66,7 @@ Maximum number of rows to return.
 
 > `optional` **offset**: `number`
 
-Defined in: [packages/db/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L187)
+Defined in: [packages/db/src/types.ts:187](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L187)
 
 Number of rows to skip (for offset-based pagination).
 
@@ -76,7 +76,7 @@ Number of rows to skip (for offset-based pagination).
 
 > `optional` **orderBy**: `unknown`
 
-Defined in: [packages/db/src/types.ts:183](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L183)
+Defined in: [packages/db/src/types.ts:183](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L183)
 
 Ordering expression (e.g., `desc(posts.createdAt)`).
 
@@ -86,7 +86,7 @@ Ordering expression (e.g., `desc(posts.createdAt)`).
 
 > `optional` **where**: `unknown`
 
-Defined in: [packages/db/src/types.ts:181](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L181)
+Defined in: [packages/db/src/types.ts:181](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L181)
 
 User-supplied filter condition (AND'd with permission filters at `.run()` time).
 
@@ -96,7 +96,7 @@ User-supplied filter condition (AND'd with permission filters at `.run()` time).
 
 > `optional` **with**: `Record`\<`string`, `unknown`\>
 
-Defined in: [packages/db/src/types.ts:193](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L193)
+Defined in: [packages/db/src/types.ts:193](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L193)
 
 Drizzle relational query includes (e.g., `{ comments: true }`).
 

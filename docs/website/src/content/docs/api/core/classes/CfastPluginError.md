@@ -5,7 +5,7 @@ prev: false
 title: "CfastPluginError"
 ---
 
-Defined in: [packages/core/src/errors.ts:6](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/errors.ts#L6)
+Defined in: [packages/core/src/errors.ts:6](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/errors.ts#L6)
 
 Error thrown when a plugin's `setup()` function fails during `app.context()`.
 
@@ -21,7 +21,7 @@ Wraps the original error with the plugin name for diagnostics.
 
 > **new CfastPluginError**(`pluginName`, `cause`): `CfastPluginError`
 
-Defined in: [packages/core/src/errors.ts:16](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/errors.ts#L16)
+Defined in: [packages/core/src/errors.ts:16](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/errors.ts#L16)
 
 #### Parameters
 
@@ -51,7 +51,7 @@ The original error thrown by the plugin's `setup()`.
 
 > `readonly` **cause**: `unknown`
 
-Defined in: [packages/core/src/errors.ts:10](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/errors.ts#L10)
+Defined in: [packages/core/src/errors.ts:10](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/errors.ts#L10)
 
 The original error thrown by the plugin.
 
@@ -89,7 +89,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.3/node\_modules/typescript/lib/li
 
 > `readonly` **pluginName**: `string`
 
-Defined in: [packages/core/src/errors.ts:8](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/errors.ts#L8)
+Defined in: [packages/core/src/errors.ts:8](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/errors.ts#L8)
 
 The name of the plugin whose `setup()` threw.
 

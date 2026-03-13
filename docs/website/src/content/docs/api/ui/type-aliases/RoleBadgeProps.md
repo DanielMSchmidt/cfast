@@ -7,7 +7,7 @@ title: "RoleBadgeProps"
 
 > **RoleBadgeProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1317](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1317)
+Defined in: [packages/ui/src/types.ts:1317](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1317)
 
 Props for the RoleBadge component.
 
@@ -26,7 +26,7 @@ Colors are configurable per role name; defaults provide sensible mappings
 
 > `optional` **colors**: `Record`\<`string`, `string`\>
 
-Defined in: [packages/ui/src/types.ts:1321](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1321)
+Defined in: [packages/ui/src/types.ts:1321](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1321)
 
 Custom color map from role name to chip color.
 
@@ -36,6 +36,6 @@ Custom color map from role name to chip color.
 
 > **role**: `string`
 
-Defined in: [packages/ui/src/types.ts:1319](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1319)
+Defined in: [packages/ui/src/types.ts:1319](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1319)
 
 Role name to display.

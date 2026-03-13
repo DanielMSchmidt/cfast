@@ -7,7 +7,7 @@ title: "UpdateBuilder"
 
 > **UpdateBuilder** = `object`
 
-Defined in: [packages/db/src/types.ts:493](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L493)
+Defined in: [packages/db/src/types.ts:493](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L493)
 
 Builder for update operations on a single table.
 
@@ -29,7 +29,7 @@ await db.update(posts)
 
 > **set**: (`values`) => [`UpdateWhereBuilder`](/api/db/type-aliases/updatewherebuilder/)
 
-Defined in: [packages/db/src/types.ts:495](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L495)
+Defined in: [packages/db/src/types.ts:495](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L495)
 
 Specifies the column values to update, returning an [UpdateWhereBuilder](/api/db/type-aliases/updatewherebuilder/).
 

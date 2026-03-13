@@ -7,7 +7,7 @@ title: "EnvValidationError"
 
 > **EnvValidationError** = `object`
 
-Defined in: [packages/env/src/types.ts:160](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/env/src/types.ts#L160)
+Defined in: [packages/env/src/types.ts:160](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L160)
 
 Describes a single validation failure for a binding.
 
@@ -20,7 +20,7 @@ Multiple failures are collected during `init()` and bundled into a single
 
 > **key**: `string`
 
-Defined in: [packages/env/src/types.ts:162](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/env/src/types.ts#L162)
+Defined in: [packages/env/src/types.ts:162](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L162)
 
 The binding name that failed validation (e.g., `"DB"`).
 
@@ -30,6 +30,6 @@ The binding name that failed validation (e.g., `"DB"`).
 
 > **message**: `string`
 
-Defined in: [packages/env/src/types.ts:164](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/env/src/types.ts#L164)
+Defined in: [packages/env/src/types.ts:164](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L164)
 
 Human-readable description of the validation failure.

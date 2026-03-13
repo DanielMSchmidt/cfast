@@ -7,7 +7,7 @@ title: "ToastOptions"
 
 > **ToastOptions** = `object`
 
-Defined in: [packages/ui/src/types.ts:868](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L868)
+Defined in: [packages/ui/src/types.ts:868](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L868)
 
 Options for displaying a toast notification.
 
@@ -26,7 +26,7 @@ automatically.
 
 > `optional` **description**: `string`
 
-Defined in: [packages/ui/src/types.ts:876](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L876)
+Defined in: [packages/ui/src/types.ts:876](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L876)
 
 Optional secondary description text.
 
@@ -36,7 +36,7 @@ Optional secondary description text.
 
 > `optional` **duration**: `number`
 
-Defined in: [packages/ui/src/types.ts:874](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L874)
+Defined in: [packages/ui/src/types.ts:874](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L874)
 
 Auto-dismiss duration in milliseconds.
 
@@ -46,7 +46,7 @@ Auto-dismiss duration in milliseconds.
 
 > **message**: `string`
 
-Defined in: [packages/ui/src/types.ts:870](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L870)
+Defined in: [packages/ui/src/types.ts:870](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L870)
 
 Primary message text.
 
@@ -56,6 +56,6 @@ Primary message text.
 
 > `optional` **type**: [`ToastType`](/api/ui/type-aliases/toasttype/)
 
-Defined in: [packages/ui/src/types.ts:872](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L872)
+Defined in: [packages/ui/src/types.ts:872](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L872)
 
 Notification type determining the visual style.

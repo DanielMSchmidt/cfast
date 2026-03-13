@@ -7,7 +7,7 @@ title: "BulkAction"
 
 > **BulkAction** = `object`
 
-Defined in: [packages/ui/src/types.ts:994](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L994)
+Defined in: [packages/ui/src/types.ts:994](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L994)
 
 Configuration for a bulk action available when rows are selected in a [DataTableProps](/api/ui/type-aliases/datatableprops/).
 
@@ -25,7 +25,7 @@ placeholder for the number of selected rows.
 
 > `optional` **action**: [`ClientDescriptor`](/api/actions/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:998](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L998)
+Defined in: [packages/ui/src/types.ts:998](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L998)
 
 Action descriptor for permission checking.
 
@@ -35,7 +35,7 @@ Action descriptor for permission checking.
 
 > `optional` **confirmation**: `string`
 
-Defined in: [packages/ui/src/types.ts:1002](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1002)
+Defined in: [packages/ui/src/types.ts:1002](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1002)
 
 Confirmation message; supports `{count}` placeholder.
 
@@ -45,7 +45,7 @@ Confirmation message; supports `{count}` placeholder.
 
 > `optional` **handler**: (`rows`) => `void`
 
-Defined in: [packages/ui/src/types.ts:1000](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1000)
+Defined in: [packages/ui/src/types.ts:1000](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1000)
 
 Custom handler called with the selected rows.
 
@@ -65,7 +65,7 @@ Custom handler called with the selected rows.
 
 > `optional` **icon**: `ComponentType`\<\{ `className?`: `string`; \}\>
 
-Defined in: [packages/ui/src/types.ts:1004](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1004)
+Defined in: [packages/ui/src/types.ts:1004](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1004)
 
 Optional icon component for the action button.
 
@@ -75,6 +75,6 @@ Optional icon component for the action button.
 
 > **label**: `string`
 
-Defined in: [packages/ui/src/types.ts:996](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L996)
+Defined in: [packages/ui/src/types.ts:996](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L996)
 
 Display label for the action button.

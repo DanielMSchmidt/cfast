@@ -7,7 +7,7 @@ title: "BulkActionBar"
 
 > **BulkActionBar**(`props`): `Element` \| `null`
 
-Defined in: [packages/ui/src/components/bulk-action-bar.tsx:33](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/components/bulk-action-bar.tsx#L33)
+Defined in: [packages/ui/src/components/bulk-action-bar.tsx:33](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/components/bulk-action-bar.tsx#L33)
 
 Toolbar that appears when rows are selected in a [DataTable](/api/ui/functions/datatable/).
 

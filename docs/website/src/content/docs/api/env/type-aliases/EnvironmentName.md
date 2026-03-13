@@ -7,7 +7,7 @@ title: "EnvironmentName"
 
 > **EnvironmentName** = `"development"` \| `"staging"` \| `"production"`
 
-Defined in: [packages/env/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/env/src/types.ts#L47)
+Defined in: [packages/env/src/types.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L47)
 
 Valid Cloudflare Worker environment names.
 

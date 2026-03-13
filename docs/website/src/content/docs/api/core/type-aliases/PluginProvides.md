@@ -7,7 +7,7 @@ title: "PluginProvides"
 
 > **PluginProvides**\<`T`\> = `T` *extends* [`CfastPlugin`](/api/core/type-aliases/cfastplugin/)\<infer N, infer P, `unknown`, `unknown`\> ? `{ [K in N]: P }` : `never`
 
-Defined in: [packages/core/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/types.ts#L72)
+Defined in: [packages/core/src/types.ts:72](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L72)
 
 Utility type that extracts `{ [name]: ReturnType<setup> }` from a plugin definition.
 

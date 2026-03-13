@@ -7,7 +7,7 @@ title: "ValidationRules"
 
 > **ValidationRules** = `object`
 
-Defined in: [packages/forms/src/types.ts:19](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L19)
+Defined in: [packages/forms/src/types.ts:19](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L19)
 
 Validation rules that can be attached to a Drizzle column via the [v](/api/forms/functions/v/) helper.
 
@@ -30,7 +30,7 @@ const views = v(integer("views"), { min: 0, message: "Views cannot be negative" 
 
 > `optional` **max**: `number`
 
-Defined in: [packages/forms/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L27)
+Defined in: [packages/forms/src/types.ts:27](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L27)
 
 Maximum numeric value. Applied to number inputs.
 
@@ -40,7 +40,7 @@ Maximum numeric value. Applied to number inputs.
 
 > `optional` **maxLength**: `number`
 
-Defined in: [packages/forms/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L23)
+Defined in: [packages/forms/src/types.ts:23](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L23)
 
 Maximum string length. Applied to text/varchar inputs.
 
@@ -50,7 +50,7 @@ Maximum string length. Applied to text/varchar inputs.
 
 > `optional` **message**: `string`
 
-Defined in: [packages/forms/src/types.ts:31](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L31)
+Defined in: [packages/forms/src/types.ts:31](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L31)
 
 Custom error message displayed when any rule fails. Overrides the auto-generated message.
 
@@ -60,7 +60,7 @@ Custom error message displayed when any rule fails. Overrides the auto-generated
 
 > `optional` **min**: `number`
 
-Defined in: [packages/forms/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L25)
+Defined in: [packages/forms/src/types.ts:25](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L25)
 
 Minimum numeric value. Applied to number inputs.
 
@@ -70,7 +70,7 @@ Minimum numeric value. Applied to number inputs.
 
 > `optional` **minLength**: `number`
 
-Defined in: [packages/forms/src/types.ts:21](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L21)
+Defined in: [packages/forms/src/types.ts:21](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L21)
 
 Minimum string length. Applied to text/varchar inputs.
 
@@ -80,6 +80,6 @@ Minimum string length. Applied to text/varchar inputs.
 
 > `optional` **pattern**: `RegExp`
 
-Defined in: [packages/forms/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/types.ts#L29)
+Defined in: [packages/forms/src/types.ts:29](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/types.ts#L29)
 
 Regex pattern the string value must match.

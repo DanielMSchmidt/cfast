@@ -7,7 +7,7 @@ title: "BindingDef"
 
 > **BindingDef** = [`VarBindingDef`](/api/env/type-aliases/varbindingdef/) \| [`ObjectBindingDef`](/api/env/type-aliases/objectbindingdef/) \| [`SecretBindingDef`](/api/env/type-aliases/secretbindingdef/)
 
-Defined in: [packages/env/src/types.ts:136](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/env/src/types.ts#L136)
+Defined in: [packages/env/src/types.ts:136](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L136)
 
 Discriminated union of all binding definition types.
 

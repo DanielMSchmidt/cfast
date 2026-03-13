@@ -7,7 +7,7 @@ title: "RecentItem"
 
 > **RecentItem** = `object`
 
-Defined in: [packages/admin/src/types.ts:388](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L388)
+Defined in: [packages/admin/src/types.ts:388](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L388)
 
 A recent-items section displayed on the admin dashboard.
 
@@ -19,7 +19,7 @@ Produced by the admin loader when processing `"recent"` type [dashboard widgets]
 
 > **columns**: `string`[]
 
-Defined in: [packages/admin/src/types.ts:396](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L396)
+Defined in: [packages/admin/src/types.ts:396](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L396)
 
 Column names to display for each item in the list.
 
@@ -29,7 +29,7 @@ Column names to display for each item in the list.
 
 > **items**: `Record`\<`string`, `unknown`\>[]
 
-Defined in: [packages/admin/src/types.ts:394](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L394)
+Defined in: [packages/admin/src/types.ts:394](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L394)
 
 The fetched records, as plain key-value objects.
 
@@ -39,7 +39,7 @@ The fetched records, as plain key-value objects.
 
 > **label**: `string`
 
-Defined in: [packages/admin/src/types.ts:392](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L392)
+Defined in: [packages/admin/src/types.ts:392](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L392)
 
 Display label for the section heading (e.g., `"Recent Posts"`).
 
@@ -49,6 +49,6 @@ Display label for the section heading (e.g., `"Recent Posts"`).
 
 > **table**: `string`
 
-Defined in: [packages/admin/src/types.ts:390](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/admin/src/types.ts#L390)
+Defined in: [packages/admin/src/types.ts:390](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/admin/src/types.ts#L390)
 
 The table name these items belong to. Used for linking to detail views.

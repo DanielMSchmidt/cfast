@@ -7,7 +7,7 @@ title: "createFormPlugin"
 
 > **createFormPlugin**(`config`): [`FormPlugin`](/api/forms/type-aliases/formplugin/)
 
-Defined in: [packages/forms/src/plugin.ts:32](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/forms/src/plugin.ts#L32)
+Defined in: [packages/forms/src/plugin.ts:32](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/forms/src/plugin.ts#L32)
 
 Create a form plugin that provides UI components for rendering auto-generated forms.
 

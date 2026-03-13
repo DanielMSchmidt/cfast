@@ -7,7 +7,7 @@ title: "DateField"
 
 > **DateField**(`props`): `Element`
 
-Defined in: [packages/ui/src/fields/date-field.tsx:64](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/fields/date-field.tsx#L64)
+Defined in: [packages/ui/src/fields/date-field.tsx:64](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/fields/date-field.tsx#L64)
 
 Read-only display component that formats date values.
 

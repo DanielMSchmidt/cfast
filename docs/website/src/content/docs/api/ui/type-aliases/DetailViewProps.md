@@ -7,7 +7,7 @@ title: "DetailViewProps"
 
 > **DetailViewProps**\<`T`\> = `object`
 
-Defined in: [packages/ui/src/types.ts:633](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L633)
+Defined in: [packages/ui/src/types.ts:633](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L633)
 
 Props for the DetailView composite component.
 
@@ -35,7 +35,7 @@ The record object type for type-safe field rendering.
 
 > `optional` **actions**: [`ClientDescriptor`](/api/actions/type-aliases/clientdescriptor/)
 
-Defined in: [packages/ui/src/types.ts:645](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L645)
+Defined in: [packages/ui/src/types.ts:645](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L645)
 
 Action descriptor for the action toolbar.
 
@@ -45,7 +45,7 @@ Action descriptor for the action toolbar.
 
 > `optional` **breadcrumb**: [`BreadcrumbItem`](/api/ui/type-aliases/breadcrumbitem/)[]
 
-Defined in: [packages/ui/src/types.ts:647](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L647)
+Defined in: [packages/ui/src/types.ts:647](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L647)
 
 Breadcrumb trail items.
 
@@ -55,7 +55,7 @@ Breadcrumb trail items.
 
 > `optional` **exclude**: `string`[]
 
-Defined in: [packages/ui/src/types.ts:643](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L643)
+Defined in: [packages/ui/src/types.ts:643](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L643)
 
 Field keys to exclude from display.
 
@@ -65,7 +65,7 @@ Field keys to exclude from display.
 
 > `optional` **fields**: [`ColumnShorthand`](/api/ui/type-aliases/columnshorthand/)\<`T`\>[]
 
-Defined in: [packages/ui/src/types.ts:641](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L641)
+Defined in: [packages/ui/src/types.ts:641](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L641)
 
 Field definitions or key strings. If omitted, fields are inferred from the record.
 
@@ -75,7 +75,7 @@ Field definitions or key strings. If omitted, fields are inferred from the recor
 
 > **record**: `T`
 
-Defined in: [packages/ui/src/types.ts:639](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L639)
+Defined in: [packages/ui/src/types.ts:639](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L639)
 
 The record object to display.
 
@@ -85,7 +85,7 @@ The record object to display.
 
 > `optional` **table**: `unknown`
 
-Defined in: [packages/ui/src/types.ts:637](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L637)
+Defined in: [packages/ui/src/types.ts:637](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L637)
 
 Drizzle table for field type inference.
 
@@ -95,6 +95,6 @@ Drizzle table for field type inference.
 
 > **title**: `string`
 
-Defined in: [packages/ui/src/types.ts:635](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L635)
+Defined in: [packages/ui/src/types.ts:635](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L635)
 
 Page title, typically the record's display name.

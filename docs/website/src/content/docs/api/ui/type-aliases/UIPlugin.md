@@ -7,7 +7,7 @@ title: "UIPlugin"
 
 > **UIPlugin** = `object`
 
-Defined in: [packages/ui/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L68)
+Defined in: [packages/ui/src/types.ts:68](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L68)
 
 A UI plugin providing styled component implementations for plugin slots.
 
@@ -26,6 +26,6 @@ any other component library.
 
 > **components**: `Partial`\<[`UIPluginComponents`](/api/ui/type-aliases/uiplugincomponents/)\>
 
-Defined in: [packages/ui/src/types.ts:70](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L70)
+Defined in: [packages/ui/src/types.ts:70](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L70)
 
 Partial map of slot names to component implementations.

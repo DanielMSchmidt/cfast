@@ -7,7 +7,7 @@ title: "parseSize"
 
 > **parseSize**(`size`): `number`
 
-Defined in: [packages/storage/src/schema.ts:31](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/storage/src/schema.ts#L31)
+Defined in: [packages/storage/src/schema.ts:31](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/storage/src/schema.ts#L31)
 
 Parse a human-readable size string into bytes.
 

@@ -7,7 +7,7 @@ title: "AvatarWithInitialsProps"
 
 > **AvatarWithInitialsProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1296](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1296)
+Defined in: [packages/ui/src/types.ts:1296](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1296)
 
 Props for the AvatarWithInitials component.
 
@@ -21,7 +21,7 @@ Used by [UserMenuProps](/api/ui/type-aliases/usermenuprops/) for the user avatar
 
 > **name**: `string`
 
-Defined in: [packages/ui/src/types.ts:1300](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1300)
+Defined in: [packages/ui/src/types.ts:1300](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1300)
 
 Full name used to derive initials.
 
@@ -31,7 +31,7 @@ Full name used to derive initials.
 
 > `optional` **size**: `"sm"` \| `"md"` \| `"lg"`
 
-Defined in: [packages/ui/src/types.ts:1302](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1302)
+Defined in: [packages/ui/src/types.ts:1302](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1302)
 
 Avatar size. Defaults to "md".
 
@@ -41,6 +41,6 @@ Avatar size. Defaults to "md".
 
 > `optional` **src**: `string` \| `null`
 
-Defined in: [packages/ui/src/types.ts:1298](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1298)
+Defined in: [packages/ui/src/types.ts:1298](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1298)
 
 Avatar image URL. Falls back to initials when null.

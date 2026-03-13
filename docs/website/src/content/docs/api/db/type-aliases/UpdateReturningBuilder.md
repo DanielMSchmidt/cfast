@@ -7,7 +7,7 @@ title: "UpdateReturningBuilder"
 
 > **UpdateReturningBuilder** = [`Operation`](/api/db/type-aliases/operation/)\<`void`\> & `object`
 
-Defined in: [packages/db/src/types.ts:514](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/db/src/types.ts#L514)
+Defined in: [packages/db/src/types.ts:514](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/db/src/types.ts#L514)
 
 An update [Operation](/api/db/type-aliases/operation/) that optionally returns the updated row via `.returning()`.
 

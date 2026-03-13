@@ -7,7 +7,7 @@ title: "Schema"
 
 > **Schema** = `Record`\<`string`, [`BindingDef`](/api/env/type-aliases/bindingdef/)\>
 
-Defined in: [packages/env/src/types.ts:152](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/env/src/types.ts#L152)
+Defined in: [packages/env/src/types.ts:152](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/env/src/types.ts#L152)
 
 A record mapping binding names to their [BindingDef](/api/env/type-aliases/bindingdef/) definitions.
 

@@ -7,7 +7,7 @@ title: "AppContext"
 
 > **AppContext**\<`TSchema`, `TPluginContext`\> = `object` & `TPluginContext`
 
-Defined in: [packages/core/src/types.ts:89](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/core/src/types.ts#L89)
+Defined in: [packages/core/src/types.ts:89](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/core/src/types.ts#L89)
 
 The accumulated per-request context after all plugins have run.
 

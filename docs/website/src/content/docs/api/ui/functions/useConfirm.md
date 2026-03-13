@@ -7,7 +7,7 @@ title: "useConfirm"
 
 > **useConfirm**(): `ConfirmFn`
 
-Defined in: [packages/ui/src/hooks/use-confirm.ts:47](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/hooks/use-confirm.ts#L47)
+Defined in: [packages/ui/src/hooks/use-confirm.ts:47](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/hooks/use-confirm.ts#L47)
 
 Returns an imperative ConfirmFn that opens a confirmation dialog
 and resolves to `true` (confirmed) or `false` (cancelled/dismissed).

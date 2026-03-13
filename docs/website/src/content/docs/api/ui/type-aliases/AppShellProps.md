@@ -7,7 +7,7 @@ title: "AppShellProps"
 
 > **AppShellProps** = `object`
 
-Defined in: [packages/ui/src/types.ts:1131](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1131)
+Defined in: [packages/ui/src/types.ts:1131](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1131)
 
 Props for the AppShell layout component.
 
@@ -26,7 +26,7 @@ used in the root layout route to wrap all pages. Delegates to the
 
 > **children**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:1133](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1133)
+Defined in: [packages/ui/src/types.ts:1133](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1133)
 
 Main content area.
 
@@ -36,7 +36,7 @@ Main content area.
 
 > `optional` **header**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:1137](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1137)
+Defined in: [packages/ui/src/types.ts:1137](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1137)
 
 Header element.
 
@@ -46,6 +46,6 @@ Header element.
 
 > `optional` **sidebar**: `ReactNode`
 
-Defined in: [packages/ui/src/types.ts:1135](https://github.com/DanielMSchmidt/cfast/blob/782808738c565da003cedd8bc6a734755e681fc7/packages/ui/src/types.ts#L1135)
+Defined in: [packages/ui/src/types.ts:1135](https://github.com/DanielMSchmidt/cfast/blob/6bcebbe4adbcfa0ffe6c8ae5f4c6584a3a0c2eee/packages/ui/src/types.ts#L1135)
 
 Sidebar navigation element.
