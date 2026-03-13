@@ -1,0 +1,328 @@
+---
+title: "3. Authentication"
+description: "Add passwordless authentication with magic email links using @cfast/auth and Better Auth."
+---
+
+import { Steps, Aside, FileTree } from "@astrojs/starlight/components";
+
+In this step we add authentication so users can sign in with magic email links. `@cfast/auth` wraps [Better Auth](https://better-auth.com) with sensible defaults for Cloudflare Workers and D1.
+
+By the end of this step, the blog will have a login page and the home page will show who is signed in.
+
+## New dependencies
+
+| Package | Why |
+|---|---|
+| `@cfast/auth` | Pre-configured Better Auth for Workers + D1 |
+| `better-auth` | The underlying auth library |
+
+## New and changed files
+
+<FileTree>
+- step-03-auth/
+  - app/
+    - **auth.server.ts** — server-side auth setup (new)
+    - **auth.client.ts** — client-side auth instance (new)
+    - **schema.ts** — updated with auth tables
+    - **env.server.ts** — updated with APP_URL
+    - db.server.ts
+    - **root.tsx** — updated with AuthClientProvider
+    - **routes.ts** — updated with auth and login routes
+    - routes/
+      - **auth.$.tsx** — auth route handler (new)
+      - **login.tsx** — login page (new)
+      - **home.tsx** — updated with user display
+  - package.json — updated
+  - react-router.config.ts
+  - tsconfig.json
+  - wrangler.jsonc
+</FileTree>
+
+## Walkthrough
+
+<Steps>
+
+1. **Add auth tables to the schema**
+
+   Better Auth needs tables for users, sessions, accounts, and verifications. These follow Better Auth's conventions.
+
+   ```ts title="app/schema.ts" {3-6}
+   import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+   // --- Auth tables (required by @cfast/auth / Better Auth) ---
+
+   export const users = sqliteTable("users", {
+     id: text("id").primaryKey(),
+     email: text("email").notNull().unique(),
+     name: text("name").notNull(),
+     emailVerified: integer("email_verified", { mode: "boolean" })
+       .notNull().default(false),
+     createdAt: integer("created_at", { mode: "timestamp" })
+       .notNull().$defaultFn(() => new Date()),
+     updatedAt: integer("updated_at", { mode: "timestamp" })
+       .notNull().$defaultFn(() => new Date()),
+   });
+
+   export const sessions = sqliteTable("sessions", {
+     id: text("id").primaryKey(),
+     userId: text("user_id").notNull()
+       .references(() => users.id, { onDelete: "cascade" }),
+     expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+     token: text("token").notNull().unique(),
+     ipAddress: text("ip_address"),
+     userAgent: text("user_agent"),
+     createdAt: integer("created_at", { mode: "timestamp" })
+       .notNull().$defaultFn(() => new Date()),
+     updatedAt: integer("updated_at", { mode: "timestamp" })
+       .notNull().$defaultFn(() => new Date()),
+   });
+
+   // accounts and verifications tables follow the same pattern...
+
+   // --- Application tables ---
+
+   export const posts = sqliteTable("posts", {
+     id: integer("id").primaryKey({ autoIncrement: true }),
+     title: text("title").notNull(),
+     content: text("content").notNull(),
+     authorId: text("author_id").notNull()
+       .references(() => users.id),
+     createdAt: integer("created_at", { mode: "timestamp" })
+       .notNull().$defaultFn(() => new Date()),
+   });
+   ```
+
+   Notice that `posts.authorId` now has a foreign key reference to `users.id`. This links blog posts to authenticated users.
+
+2. **Add APP_URL to the environment**
+
+   Auth needs to know the application URL for magic link callbacks.
+
+   ```ts title="app/env.server.ts" {4}
+   import { defineEnv } from "@cfast/env";
+
+   export const env = defineEnv({
+     DB: { type: "d1" },
+     APP_URL: { type: "var", default: "http://localhost:5173" },
+   });
+   ```
+
+   The `default` means it works out of the box in local development. In production, set `APP_URL` in your Wrangler config or via `wrangler secret put`.
+
+3. **Set up server-side auth**
+
+   `createAuth()` returns an `initAuth` function. You call `initAuth()` with the D1 binding to get an auth instance per request.
+
+   ```ts title="app/auth.server.ts"
+   import { createAuth } from "@cfast/auth";
+   import { definePermissions } from "@cfast/permissions";
+   import { env } from "./env.server";
+
+   // Minimal permissions for now -- we expand these in Step 4
+   const permissions = definePermissions({
+     roles: ["reader"] as const,
+     grants: {
+       reader: [],
+     },
+   });
+
+   export const initAuth = createAuth({
+     permissions,
+     magicLink: {
+       sendMagicLink: async ({ email, url }) => {
+         // In development, log the magic link to the console
+         console.log(`[Magic Link] Send to ${email}: ${url}`);
+       },
+     },
+     session: { expiresIn: "30d" },
+     defaultRoles: ["reader"],
+   });
+
+   export function getAuth() {
+     const e = env.get();
+     return initAuth({ d1: e.DB, appUrl: e.APP_URL });
+   }
+
+   export async function getUser(request: Request) {
+     const auth = getAuth();
+     const ctx = await auth.createContext(request);
+     return ctx.user;
+   }
+   ```
+
+   **Why `definePermissions` here?** `createAuth` requires a permissions object so it knows which roles exist. We start with a single `reader` role and no grants. Step 4 replaces this with a full permission model.
+
+   <Aside type="tip">
+     In development, magic links are logged to the console. Copy the URL from your terminal to "click" the link. In production, replace the `sendMagicLink` callback with your email provider (Mailgun, Resend, etc.).
+   </Aside>
+
+4. **Create the client-side auth instance**
+
+   The client needs its own auth instance for triggering login flows.
+
+   ```ts title="app/auth.client.ts"
+   import { createAuthClient, magicLinkClient } from "@cfast/auth/client";
+
+   export const authClient = createAuthClient({
+     plugins: [magicLinkClient()],
+   });
+   ```
+
+   This file has no `.server` suffix, so it is included in client bundles. It only contains the client-side auth SDK -- no secrets, no D1 access.
+
+5. **Wrap the app with AuthClientProvider**
+
+   Update `root.tsx` to provide the auth client to all routes.
+
+   ```tsx title="app/root.tsx" {3-4,15-17}
+   import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+   import { AuthClientProvider } from "@cfast/auth/client";
+   import { authClient } from "./auth.client";
+
+   // Layout stays the same...
+
+   export default function App() {
+     return (
+       <AuthClientProvider authClient={authClient}>
+         <Outlet />
+       </AuthClientProvider>
+     );
+   }
+   ```
+
+6. **Add the auth route handler**
+
+   Better Auth needs an API endpoint to handle magic link callbacks, session management, and other auth operations. This catch-all route forwards everything to Better Auth.
+
+   ```ts title="app/routes/auth.$.tsx"
+   import { createAuthRouteHandlers } from "@cfast/auth";
+   import { getAuth } from "../auth.server";
+
+   const { loader, action } = createAuthRouteHandlers(() => getAuth());
+
+   export { loader, action };
+   ```
+
+   The `*` in the route path (`api/auth/*`) means this handler receives all requests under `/api/auth/` -- sign-in, callback, sign-out, etc.
+
+7. **Create the login page**
+
+   `@cfast/auth/client` exports a `LoginPage` component with a built-in email input and magic link button.
+
+   ```tsx title="app/routes/login.tsx"
+   import type { LoaderFunctionArgs } from "react-router";
+   import { redirect, useLoaderData } from "react-router";
+   import { LoginPage } from "@cfast/auth/client";
+   import { authClient } from "../auth.client";
+   import { getUser } from "../auth.server";
+   import { env } from "../env.server";
+
+   export async function loader({ request, context }: LoaderFunctionArgs) {
+     env.init(context.cloudflare);
+     const user = await getUser(request);
+     if (user) throw redirect("/");
+     return {};
+   }
+
+   export default function Login() {
+     useLoaderData<typeof loader>();
+
+     return (
+       <LoginPage
+         authClient={authClient}
+         title="Sign In"
+         subtitle="Sign in to Team Blog"
+       />
+     );
+   }
+   ```
+
+   The loader redirects already-authenticated users back to the home page.
+
+8. **Update routes to include auth and login**
+
+   ```ts title="app/routes.ts"
+   import { type RouteConfig, index, route } from "@react-router/dev/routes";
+
+   export default [
+     index("routes/home.tsx"),
+     route("login", "routes/login.tsx"),
+     route("api/auth/*", "routes/auth.$.tsx"),
+   ] satisfies RouteConfig;
+   ```
+
+9. **Show the current user on the home page**
+
+   Update the home page loader to check authentication and pass the user to the component.
+
+   ```tsx title="app/routes/home.tsx" {7,14,19-20,28-32}
+   import type { LoaderFunctionArgs } from "react-router";
+   import { useLoaderData, Link } from "react-router";
+   import { desc } from "drizzle-orm";
+   import { env } from "../env.server";
+   import { getDb } from "../db.server";
+   import { getUser } from "../auth.server";
+   import { posts } from "../schema";
+
+   export async function loader({ request, context }: LoaderFunctionArgs) {
+     env.init(context.cloudflare);
+     const db = getDb();
+     const user = await getUser(request);
+
+     const allPosts = await db
+       .select()
+       .from(posts)
+       .orderBy(desc(posts.createdAt));
+
+     return {
+       posts: allPosts,
+       user: user ? { id: user.id, email: user.email } : null,
+     };
+   }
+
+   export default function Home() {
+     const { posts: postList, user } = useLoaderData<typeof loader>();
+
+     return (
+       <main>
+         <header>
+           <h1>Team Blog</h1>
+           {user ? (
+             <span>Signed in as {user.email}</span>
+           ) : (
+             <Link to="/login">Sign In</Link>
+           )}
+         </header>
+         {/* post list rendering... */}
+       </main>
+     );
+   }
+   ```
+
+</Steps>
+
+## The authentication flow
+
+1. User visits `/login` and enters their email address
+2. Client calls the magic link endpoint via the auth client
+3. Server generates a token, stores it in D1, and calls `sendMagicLink` with the link URL
+4. In development, the link appears in your terminal. User copies it into the browser
+5. The link hits `/api/auth/callback`, which verifies the token and creates a session
+6. User is redirected to the home page, now authenticated
+
+<Aside type="note">
+  Better Auth stores sessions in D1 via the `sessions` table. The session token is sent as an HTTP-only cookie, so it is automatically included in every request. No client-side token management needed.
+</Aside>
+
+## Regenerate migrations
+
+After adding the auth tables to your schema, regenerate migrations:
+
+```bash
+npx drizzle-kit generate
+npx wrangler d1 migrations apply DB --local
+```
+
+## Next step
+
+In [Step 4: Permissions](/tutorial/04-permissions), we add role-based access control so different users see different content.

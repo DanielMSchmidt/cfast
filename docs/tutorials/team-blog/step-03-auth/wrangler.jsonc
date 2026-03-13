@@ -1,0 +1,12 @@
+{
+  "name": "team-blog",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "team-blog-db",
+      "database_id": "local"
+    }
+  ]
+}
