@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { grant } from "../grant";
+import type { DrizzleTable, WhereClause } from "../types";
 
-const posts = { _: { name: "posts" } } as any;
-const _comments = { _: { name: "comments" } } as any;
+const posts: DrizzleTable = { _: { name: "posts" } };
+const _comments: DrizzleTable = { _: { name: "comments" } };
 
 describe("grant", () => {
   it("creates a grant with action and subject", () => {
@@ -13,7 +14,7 @@ describe("grant", () => {
   });
 
   it("creates a grant with a where clause", () => {
-    const whereFn = (row: any) => row.published;
+    const whereFn: WhereClause = (_columns, _user) => ({ getSQL: () => ({ }) });
     const g = grant("read", posts, { where: whereFn });
     expect(g.action).toBe("read");
     expect(g.subject).toBe(posts);

@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { ForbiddenError } from "../errors";
+import type { DrizzleTable } from "../types";
 
-const posts = { [Symbol.for("drizzle:Name")]: "posts" } as any;
+const posts: DrizzleTable = { [Symbol.for("drizzle:Name")]: "posts" };
 
 describe("ForbiddenError", () => {
   it("is an instance of Error", () => {

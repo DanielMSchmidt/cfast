@@ -6,9 +6,10 @@ function buildPermissions<TRoles extends readonly string[]>(
 ): Permissions<TRoles> {
   const { roles, hierarchy } = config;
 
+  const grantFn: GrantFn<unknown> = grant;
   const grants =
     typeof config.grants === "function"
-      ? config.grants(grant as GrantFn<unknown>)
+      ? config.grants(grantFn)
       : config.grants;
 
   const resolvedGrants = resolveHierarchy(roles, grants, hierarchy);
@@ -61,11 +62,17 @@ export function definePermissions<TUser>(): <
 >(
   config: PermissionsConfig<TRoles, TUser>,
 ) => Permissions<TRoles>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function definePermissions(config?: any): any {
+export function definePermissions<TRoles extends readonly string[]>(
+  config?: PermissionsConfig<TRoles>,
+):
+  | Permissions<TRoles>
+  | (<TRoles2 extends readonly string[]>(
+      config: PermissionsConfig<TRoles2>,
+    ) => Permissions<TRoles2>) {
   if (config === undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (c: any) => buildPermissions(c);
+    return <TRoles2 extends readonly string[]>(
+      c: PermissionsConfig<TRoles2>,
+    ) => buildPermissions(c);
   }
   return buildPermissions(config);
 }
@@ -105,7 +112,7 @@ function resolveHierarchy<TRoles extends readonly string[]>(
   }
 
   for (const role of roles) {
-    resolve(role as string);
+    resolve(role);
   }
 
   return resolved;

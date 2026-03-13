@@ -1,5 +1,23 @@
 import { or, type SQLWrapper } from "drizzle-orm";
-import type { Grant, Permissions } from "./types";
+import type { DrizzleSQL, Grant, Permissions } from "./types";
+
+/**
+ * Wraps a `DrizzleSQL` value for use with Drizzle's `or()`.
+ *
+ * At runtime, `DrizzleSQL` values from `where` callbacks are real Drizzle SQL
+ * objects that satisfy `SQLWrapper`. Our `DrizzleSQL` type uses
+ * `{ getSQL(): unknown }` intentionally to keep the permissions package loosely
+ * coupled from Drizzle internals. This adapter bridges the two at the
+ * drizzle-orm boundary.
+ *
+ * @param value - A `DrizzleSQL` value or `undefined`.
+ * @returns The same value typed as `SQLWrapper`, or `undefined`.
+ */
+function toSQLWrapper(value: DrizzleSQL | undefined): SQLWrapper | undefined {
+  // DrizzleSQL values are always real Drizzle SQL objects at runtime (SQLWrapper).
+  // This is the drizzle-orm type boundary — analogous to the Workers env boundary.
+  return value as SQLWrapper | undefined;
+}
 
 /**
  * Resolves and merges grants for multiple roles into a single flat array.
@@ -82,7 +100,7 @@ export function resolveGrants(
         // OR-merge all where clauses
         const merged: Grant["where"] = (columns, user) =>
           or(
-            ...(whereFns.map((fn) => fn(columns, user)) as (SQLWrapper | undefined)[]),
+            ...whereFns.map((fn) => toSQLWrapper(fn(columns, user))),
           );
 
         result.push({

@@ -2,10 +2,11 @@
  * Minimal structural type for a Drizzle ORM table reference.
  *
  * Drizzle stores table metadata via Symbols (e.g., `Symbol('drizzle:Name')`).
- * This loose type avoids importing `drizzle-orm` directly into the permissions package.
+ * Uses `object` so real Drizzle table classes (which lack an explicit index
+ * signature) are assignable without an `as` cast, while still excluding
+ * primitives.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DrizzleTable = Record<string | symbol, any>;
+export type DrizzleTable = object;
 
 /**
  * Minimal structural type for a Drizzle SQL expression.
@@ -24,7 +25,12 @@ const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
  * @returns The table name, or `"unknown"` if the symbol is not present.
  */
 export function getTableName(table: DrizzleTable): string {
-  return (table[DRIZZLE_NAME_SYMBOL] as string) ?? "unknown";
+  // Use DRIZZLE_NAME_SYMBOL as a property key on the table object.
+  // DrizzleTable is typed as `object` to accept Drizzle class instances;
+  // Reflect.get safely reads the symbol-keyed property without requiring
+  // an index signature.
+  const name: unknown = Reflect.get(table, DRIZZLE_NAME_SYMBOL);
+  return typeof name === "string" ? name : "unknown";
 }
 
 /**
@@ -69,8 +75,7 @@ export const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", 
  */
 export type WhereClause = (
   columns: Record<string, unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  user: any,
+  user: unknown,
 ) => DrizzleSQL | undefined;
 
 /**
