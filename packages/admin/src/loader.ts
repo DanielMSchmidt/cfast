@@ -1,4 +1,5 @@
 import { getTableColumns, getTableName, eq, like, or, asc, desc } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
 import { parseAdminParams } from "./utils.js";
@@ -12,6 +13,54 @@ import type {
 } from "./types.js";
 
 const PAGE_SIZE = 20;
+
+/**
+ * Validates that a value is an array of plain objects (records).
+ *
+ * Used to safely narrow `unknown[]` query results from the DB layer into
+ * `Record<string, unknown>[]` without `as` casts.
+ *
+ * @param value - The unknown value to validate.
+ * @returns The value typed as `Record<string, unknown>[]`.
+ * @throws {TypeError} If the value is not an array of plain objects.
+ */
+function asRecords(value: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(value)) {
+    throw new TypeError(
+      `Expected an array of records, got ${typeof value}`,
+    );
+  }
+  for (let i = 0; i < value.length; i++) {
+    if (typeof value[i] !== "object" || value[i] === null || Array.isArray(value[i])) {
+      throw new TypeError(
+        `Expected record at index ${i}, got ${Array.isArray(value[i]) ? "array" : typeof value[i]}`,
+      );
+    }
+  }
+  return value as Record<string, unknown>[];
+}
+
+/**
+ * Validates that a value is a single plain object (record) or `undefined`.
+ *
+ * Used to safely narrow `unknown | undefined` query results from the DB layer
+ * into `Record<string, unknown> | undefined` without `as` casts.
+ *
+ * @param value - The unknown value to validate.
+ * @returns The value typed as `Record<string, unknown> | undefined`.
+ * @throws {TypeError} If the value is defined but not a plain object.
+ */
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError(
+      `Expected a record, got ${Array.isArray(value) ? "array" : typeof value}`,
+    );
+  }
+  return value as Record<string, unknown>;
+}
 
 /**
  * Shared table list for the sidebar, derived from tableMetas.
@@ -62,7 +111,7 @@ function buildSearchWhere(
   drizzleTable: SQLiteTable,
   searchableColumns: string[],
   search: string,
-): unknown {
+): SQL | undefined {
   if (!search || searchableColumns.length === 0) {
     return undefined;
   }
@@ -88,7 +137,7 @@ function buildOrderBy(
   drizzleTable: SQLiteTable,
   sortColumn: string,
   direction: "asc" | "desc",
-): unknown {
+): SQL | undefined {
   const col = getColumn(drizzleTable, sortColumn);
   if (!col) return undefined;
   return direction === "asc" ? asc(col) : desc(col);
@@ -121,7 +170,7 @@ async function loadDashboard(
         stats.push({ label: widget.label, value: rows.length });
       } else if (widget.type === "recent") {
         const limit = widget.limit ?? 5;
-        const items = (await db
+        const items = asRecords(await db
           .query(meta.drizzleTable)
           .findMany({
             limit,
@@ -131,7 +180,7 @@ async function loadDashboard(
               "desc",
             ),
           })
-          .run({})) as Record<string, unknown>[];
+          .run({}));
         recentItems.push({
           table: meta.name,
           label: widget.label,
@@ -152,7 +201,7 @@ async function loadDashboard(
 
     const firstMeta = tableMetas[0];
     if (firstMeta) {
-      const items = (await db
+      const items = asRecords(await db
         .query(firstMeta.drizzleTable)
         .findMany({
           limit: 5,
@@ -162,7 +211,7 @@ async function loadDashboard(
             "desc",
           ),
         })
-        .run({})) as Record<string, unknown>[];
+        .run({}));
       recentItems.push({
         table: firstMeta.name,
         label: firstMeta.label,
@@ -225,7 +274,7 @@ async function loadList(
 
   // Fetch page of items
   const offset = (page - 1) * PAGE_SIZE;
-  const items = (await db
+  const items = asRecords(await db
     .query(meta.drizzleTable)
     .findMany({
       where,
@@ -233,7 +282,7 @@ async function loadList(
       limit: PAGE_SIZE,
       offset,
     })
-    .run({})) as Record<string, unknown>[];
+    .run({}));
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -286,10 +335,10 @@ async function loadDetail(
     };
   }
 
-  const item = (await db
+  const item = asRecord(await db
     .query(meta.drizzleTable)
     .findFirst({ where: eq(pkCol, id) })
-    .run({})) as Record<string, unknown> | undefined;
+    .run({}));
 
   if (!item) {
     return {
@@ -373,10 +422,10 @@ async function loadEdit(
     };
   }
 
-  const item = (await db
+  const item = asRecord(await db
     .query(meta.drizzleTable)
     .findFirst({ where: eq(pkCol, id) })
-    .run({})) as Record<string, unknown> | undefined;
+    .run({}));
 
   if (!item) {
     return {
@@ -437,14 +486,14 @@ async function loadUserList(
 
   // Fetch page of users
   const offset = (page - 1) * PAGE_SIZE;
-  const rawUsers = (await unsafeDb
+  const rawUsers = asRecords(await unsafeDb
     .query(usersTable)
     .findMany({
       where,
       limit: PAGE_SIZE,
       offset,
     })
-    .run({})) as Record<string, unknown>[];
+    .run({}));
 
   // Enrich with roles
   const items: Array<AdminUser & { createdAt?: string }> = [];
@@ -510,10 +559,10 @@ async function loadUserDetail(
     };
   }
 
-  const raw = (await unsafeDb
+  const raw = asRecord(await unsafeDb
     .query(usersTable)
     .findFirst({ where: eq(pkCol, targetId) })
-    .run({})) as Record<string, unknown> | undefined;
+    .run({}));
 
   if (!raw) {
     return {

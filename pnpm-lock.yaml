@@ -845,6 +845,9 @@ importers:
       '@cfast/forms':
         specifier: workspace:*
         version: link:../forms
+      '@cfast/permissions':
+        specifier: workspace:*
+        version: link:../permissions
       '@cfast/ui':
         specifier: workspace:*
         version: link:../ui
