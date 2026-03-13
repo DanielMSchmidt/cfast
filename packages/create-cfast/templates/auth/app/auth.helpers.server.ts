@@ -3,6 +3,9 @@ import { env } from "./env";
 import type { Grant } from "@cfast/permissions";
 import type { AuthUser } from "./permissions";
 
+export { hasRole, hasAnyRole } from "./permissions";
+export type { UserRole } from "./permissions";
+
 export type AuthContext = { user: AuthUser | null; grants: Grant[] };
 export type AuthenticatedContext = { user: AuthUser; grants: Grant[] };
 

@@ -21,3 +21,12 @@ export const permissions = definePermissions<AuthUser>()({
     admin: [grant("manage", "all")],
   }),
 });
+
+export function hasRole(user: AuthUser, role: UserRole): boolean {
+  if (user.roles.includes("admin")) return true;
+  return user.roles.includes(role);
+}
+
+export function hasAnyRole(user: AuthUser, checkRoles: UserRole[]): boolean {
+  return checkRoles.some((role) => hasRole(user, role));
+}
