@@ -53,7 +53,10 @@ export async function handleUpload<TInput>(
   }
 
   // 8. Get the bucket from env
-  const bucket = (ctx.env as Record<string, R2Bucket>)[config.bucket];
+  // Workers env boundary: R2 bucket bindings are injected by the Workers runtime
+  // and typed as `unknown` via HandleContext.env. We validate presence and cast
+  // to R2Bucket since there is no runtime type tag to check beyond existence.
+  const bucket = ctx.env[config.bucket] as R2Bucket | undefined;
   if (!bucket) {
     throw new Error(`R2 bucket binding "${config.bucket}" not found in env`);
   }

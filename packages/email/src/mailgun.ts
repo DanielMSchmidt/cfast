@@ -66,8 +66,24 @@ export function mailgun(getConfig: () => MailgunConfig): EmailProvider {
         );
       }
 
-      const data = (await response.json()) as { id: string };
-      return { id: data.id };
+      // JSON parsing boundary: validate response shape before use
+      const data: unknown = await response.json();
+      if (
+        typeof data === "object" &&
+        data !== null &&
+        "id" in data &&
+        typeof data.id === "string"
+      ) {
+        return { id: data.id };
+      }
+      throw new EmailDeliveryError(
+        "Mailgun API returned an unexpected response shape",
+        {
+          provider: "mailgun",
+          statusCode: response.status,
+          response: JSON.stringify(data),
+        },
+      );
     },
   };
 }

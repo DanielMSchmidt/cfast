@@ -2,6 +2,48 @@ import { useState, useCallback } from "react";
 import { useStorageConfig } from "./storage-provider.js";
 import type { UploadResult } from "../types.js";
 
+/** Type guard: check that `value` is a non-null object with the given `keys`. */
+function hasKeys<K extends string>(
+  value: unknown,
+  keys: readonly K[],
+): value is Record<K, unknown> {
+  if (typeof value !== "object" || value === null) return false;
+  for (const k of keys) {
+    if (!(k in value)) return false;
+  }
+  return true;
+}
+
+/**
+ * Validate that a parsed JSON value matches the {@link UploadResult} shape.
+ *
+ * @returns The validated result, or `null` if the shape doesn't match.
+ */
+function parseUploadResult(value: unknown): UploadResult | null {
+  if (
+    hasKeys(value, ["key", "size", "type"]) &&
+    typeof value.key === "string" &&
+    typeof value.size === "number" &&
+    typeof value.type === "string"
+  ) {
+    return { key: value.key, size: value.size, type: value.type };
+  }
+  return null;
+}
+
+/**
+ * Extract a human-readable error string from a parsed JSON error body.
+ *
+ * Looks for `detail` or `message` string fields, returning `undefined` if
+ * neither is found.
+ */
+function parseErrorDetail(value: unknown): string | undefined {
+  if (typeof value !== "object" || value === null) return undefined;
+  if ("detail" in value && typeof value.detail === "string") return value.detail;
+  if ("message" in value && typeof value.message === "string") return value.message;
+  return undefined;
+}
+
 /** Return value of the {@link useUpload} hook. */
 export type UploadHookResult = {
   /** Comma-separated MIME types suitable for an `<input accept>` attribute. */
@@ -115,16 +157,21 @@ export function useUpload(name: string): UploadHookResult {
         setIsUploading(false);
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            const data = JSON.parse(xhr.responseText) as UploadResult;
-            setResult(data);
-            setProgress(100);
+            const parsed: unknown = JSON.parse(xhr.responseText);
+            const data = parseUploadResult(parsed);
+            if (data) {
+              setResult(data);
+              setProgress(100);
+            } else {
+              setError("Invalid response from server");
+            }
           } catch {
             setError("Invalid response from server");
           }
         } else {
           try {
-            const data = JSON.parse(xhr.responseText) as { detail?: string; message?: string };
-            setError(data.detail ?? data.message ?? `Upload failed (${xhr.status})`);
+            const parsed: unknown = JSON.parse(xhr.responseText);
+            setError(parseErrorDetail(parsed) ?? `Upload failed (${xhr.status})`);
           } catch {
             setError(`Upload failed (${xhr.status})`);
           }
