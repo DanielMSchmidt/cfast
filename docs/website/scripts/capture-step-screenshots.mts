@@ -136,11 +136,24 @@ async function waitForServer(url: string, timeoutMs = 60_000): Promise<void> {
   throw new Error(`Server at ${url} did not become ready within ${timeoutMs}ms`);
 }
 
+function killPort(port: number) {
+  try {
+    // Linux (CI) — kill all processes on the port
+    execSync(`lsof -ti tcp:${port} | xargs kill -9 2>/dev/null || true`, {
+      stdio: "pipe",
+    });
+  } catch {
+    // no process on port, or lsof not available
+  }
+}
+
 function startDevServer(cwd: string): ChildProcess {
+  // Ensure port is free before starting
+  killPort(PORT);
+
   const child = spawn("pnpm", ["dev", "--port", String(PORT)], {
     cwd,
     stdio: "pipe",
-    detached: true, // create process group so we can kill the entire tree
     env: { ...process.env, PORT: String(PORT) },
   });
   child.stderr?.on("data", () => {}); // drain stderr
@@ -149,35 +162,27 @@ function startDevServer(cwd: string): ChildProcess {
 }
 
 async function stopServer(child: ChildProcess): Promise<void> {
-  // Kill the entire process group (pnpm + vite + wrangler)
-  try {
-    process.kill(-child.pid!, "SIGTERM");
-  } catch {
-    // process may already be dead
-  }
+  child.kill("SIGTERM");
 
-  // Wait up to 5s for the process to exit, then force kill
-  await new Promise<void>((resolve) => {
-    const timeout = setTimeout(() => {
-      try {
-        process.kill(-child.pid!, "SIGKILL");
-      } catch {
-        // already dead
-      }
-      resolve();
-    }, 5000);
-
+  // Wait up to 5s for the process to exit
+  const exited = await new Promise<boolean>((resolve) => {
+    const timeout = setTimeout(() => resolve(false), 5000);
     child.on("exit", () => {
       clearTimeout(timeout);
-      resolve();
+      resolve(true);
     });
-
-    // If already exited
     if (child.exitCode !== null) {
       clearTimeout(timeout);
-      resolve();
+      resolve(true);
     }
   });
+
+  if (!exited) {
+    child.kill("SIGKILL");
+  }
+
+  // Force-kill anything still holding the port (vite/wrangler children)
+  killPort(PORT);
 }
 
 function cleanupLocalDb(cwd: string) {
