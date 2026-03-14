@@ -1,6 +1,6 @@
 {
   "name": "@cfast/email",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Plugin-based email for Cloudflare Workers with react-email rendering",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,9 @@
       "types": "./dist/console.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
