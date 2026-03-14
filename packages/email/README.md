@@ -174,10 +174,3 @@ The client does not catch — callers decide whether to fire-and-forget or handl
 @cfast/email/mailgun → mailgun
 @cfast/email/console → console
 ```
-
-## Future (not in v1)
-
-- `sendBatch(messages[])` — batch API for bulk sending
-- `withFallback(primary, secondary)` — multi-provider failover
-- `@cfast/auth` integration — override auth email templates with react-email components
-- Additional providers: Resend, AWS SES, Postmark

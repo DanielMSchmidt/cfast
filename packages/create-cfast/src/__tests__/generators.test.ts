@@ -6,6 +6,7 @@ import { generateCfastServer } from "../generators/cfast-server";
 import { generateViteConfig } from "../generators/vite-config";
 import { generateRootTsx } from "../generators/root-tsx";
 import { generateRoutesTs } from "../generators/routes-ts";
+import { generateAuthSetup } from "../generators/auth-setup";
 import type { Config } from "../types";
 
 describe("mergePackageJsons", () => {
@@ -241,5 +242,40 @@ describe("generateRoutesTs", () => {
     };
     const result = generateRoutesTs(config);
     expect(result).toContain("admin");
+  });
+});
+
+describe("generateAuthSetup", () => {
+  it("uses console.log when email is not enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, auth: true, db: true },
+    };
+    const result = generateAuthSetup(config);
+    expect(result).toContain("createAuth");
+    expect(result).toContain("console.log");
+    expect(result).not.toContain("emailClient");
+  });
+
+  it("uses @cfast/email when email is enabled", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, auth: true, db: true, email: true },
+    };
+    const result = generateAuthSetup(config);
+    expect(result).toContain("createAuth");
+    expect(result).toContain("emailClient");
+    expect(result).toContain("MagicLinkEmail");
+    expect(result).not.toContain("console.log");
+  });
+
+  it("includes project name in email subject when email enabled", () => {
+    const config = {
+      ...baseConfig,
+      projectName: "my-app",
+      features: { ...baseConfig.features, auth: true, db: true, email: true },
+    };
+    const result = generateAuthSetup(config);
+    expect(result).toContain("Sign in to my-app");
   });
 });
