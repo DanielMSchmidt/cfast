@@ -8,6 +8,10 @@
     "url": "https://github.com/DanielMSchmidt/cfast.git",
     "directory": "packages/create-cfast"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "type": "module",
   "bin": {
     "create-cfast": "./dist/index.js"
