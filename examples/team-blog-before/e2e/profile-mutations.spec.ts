@@ -11,7 +11,7 @@ test.describe.serial("Profile Updates", () => {
 
   test("user can update their display name", async ({ page, context }) => {
     await loginAs(context, "reader");
-    await page.goto("/profile");
+    await page.goto("/profile", { waitUntil: "networkidle" });
 
     await page.fill('input[name="name"]', updatedName);
     await page.click('button:has-text("Update Profile")');
@@ -25,7 +25,7 @@ test.describe.serial("Profile Updates", () => {
 
   test("name field cannot be empty", async ({ page, context }) => {
     await loginAs(context, "reader");
-    await page.goto("/profile");
+    await page.goto("/profile", { waitUntil: "networkidle" });
 
     // Clear the name field
     const nameInput = page.locator('input[name="name"]');
@@ -41,7 +41,7 @@ test.describe.serial("Profile Updates", () => {
 
   test("updated name appears in header", async ({ page, context }) => {
     await loginAs(context, "reader");
-    await page.goto("/profile");
+    await page.goto("/profile", { waitUntil: "networkidle" });
 
     // Verify the name input has the updated value
     const nameInput = page.locator('input[name="name"]');
