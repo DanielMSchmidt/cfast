@@ -1,6 +1,6 @@
 {
   "name": "create-cfast",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Scaffold a fully wired Cloudflare Workers + React Router project with cfast",
   "license": "MIT",
   "repository": {
@@ -12,7 +12,10 @@
   "bin": {
     "create-cfast": "./dist/index.js"
   },
-  "files": ["dist", "templates"],
+  "files": [
+    "dist",
+    "templates"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm",
     "dev": "tsup src/index.ts --format esm --watch",
