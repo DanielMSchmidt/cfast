@@ -26,24 +26,17 @@ This guide walks you through creating a CFast project and building a task manage
 
    When prompted, select all features (auth, permissions, db, ui, admin, email). The scaffolder generates a complete app with authentication, an admin panel, and an example `items` table.
 
-2. **Create the D1 database**
+2. **Run migrations and start the dev server**
 
    ```bash
    cd my-app
-   wrangler d1 create my-app-db
-   ```
-
-   Copy the `database_id` from the output into your `wrangler.jsonc`.
-
-3. **Run migrations and start the dev server**
-
-   ```bash
+   pnpm install
    pnpm db:generate
    pnpm db:migrate:local
    pnpm dev
    ```
 
-   Open [http://localhost:8787](http://localhost:8787). You have a running app with authentication, an admin panel at `/admin`, and an example `items` table.
+   Wrangler automatically creates a local D1 database from the binding in `wrangler.toml`. Open [http://localhost:8787](http://localhost:8787) — you have a running app with authentication, an admin panel at `/admin`, and an example `items` table.
 
 </Steps>
 
