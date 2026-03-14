@@ -3,7 +3,7 @@ title: Getting Started
 description: Create a CFast project and build your first feature — a task manager with permissions, auto forms, and actions.
 ---
 
-import { Steps, Aside } from "@astrojs/starlight/components";
+import { Steps } from "@astrojs/starlight/components";
 
 This guide walks you through creating a CFast project and building a task manager that uses the core features: **permission-aware database queries**, **multi-action routes**, **auto-generated forms**, and the **admin panel**.
 
@@ -195,7 +195,7 @@ Each `createAction` returns a lazy **Operation** — it describes what permissio
 
 - The `db.insert(tasks)` call checks the user's `create` grant on `tasks` before executing.
 - The `db.delete(tasks)` call checks the user's `delete` grant — including the row-level `where` filter. If the user isn't the assignee, the operation is rejected with a 403.
-- `compose()` groups multiple operations so they share a permission check and execute together.
+- `compose()` groups multiple operations into a single operation with merged permissions. Each sub-operation still checks permissions independently when the executor calls it.
 
 The `createAction` and `composeActions` functions come from the scaffolded `app/actions.server.ts`, which already binds the authenticated user, their grants, and the database to every action.
 
@@ -260,11 +260,9 @@ export default function Tasks({ loaderData }: Route.ComponentProps) {
               <span>
                 <strong>{task.title}</strong> — {task.status}
               </span>
-              {remove.permitted && (
-                <ActionButton action={remove} color="danger" variant="soft" size="sm">
-                  Delete
-                </ActionButton>
-              )}
+              <ActionButton action={remove} whenForbidden="hide" color="danger" variant="soft" size="sm">
+                Delete
+              </ActionButton>
             </li>
           );
         })}
@@ -280,30 +278,28 @@ Here's what each piece does:
 - **`composed.loader`** wraps your loader to inject `_actionPermissions` into the response. This is what enables `useActions` on the client.
 - **`ctx.db.client.query(tasks).findMany()`** is a permission-aware query — no `unsafe()` needed. The database automatically applies the user's `read` grant. If the user had a row-level `where` on `read`, only matching rows would be returned.
 - **`AutoForm`** generates the form from the `tasks` schema. The `status` column (with `enum`) renders as a `<select>` dropdown. The `title` column picks up the `minLength`/`maxLength` validation from the `v()` wrapper. The `exclude` prop hides `id`, `assigneeId`, and `createdAt` since those are set server-side.
-- **`useActions`** reads the permission metadata from the loader and returns action handles. `remove.permitted` is `false` when the current user isn't the task's assignee — the delete button is hidden automatically.
-- **`ActionButton`** is a permission-aware button from `@cfast/ui`. It handles submission, loading state, and confirmation dialogs.
+- **`useActions`** reads the permission metadata from the loader and returns action handles.
+- **`ActionButton`** is a permission-aware button from `@cfast/ui`. It handles submission, loading state, and confirmation dialogs. The `whenForbidden="hide"` prop tells it to hide entirely when the user lacks permission — when the current user isn't the task's assignee, the delete button disappears automatically.
 
 ### 5. Add to the Admin Panel
 
-Open `app/admin.server.ts` and register the tasks table in the schema and dashboard:
+Open `app/admin.server.ts` and add `tasks` to the existing `adminConfig` object. Add it to the `schema` property so the admin panel can discover it, and optionally add dashboard widgets:
 
 ```ts
-import * as schema from "~/db/schema";
+// In the existing adminConfig object, add tasks to the schema:
+schema: {
+  items: schema.items,
+  tasks: schema.tasks,  // ← add this line
+},
 
-const adminConfig = {
-  // ... existing config
-  schema: {
-    items: schema.items,
-    tasks: schema.tasks,
-  },
-  dashboard: {
-    widgets: [
-      // ... existing widgets
-      { type: "count" as const, table: "tasks", label: "Total Tasks" },
-      { type: "recent" as const, table: "tasks", label: "Recent Tasks", limit: 5 },
-    ],
-  },
-};
+// Optionally add dashboard widgets:
+dashboard: {
+  widgets: [
+    // ... existing widgets
+    { type: "count" as const, table: "tasks", label: "Total Tasks" },
+    { type: "recent" as const, table: "tasks", label: "Recent Tasks", limit: 5 },
+  ],
+},
 ```
 
 Navigate to `/admin` — your tasks table now appears with full CRUD, filtering, and role management.
