@@ -53,8 +53,18 @@ jobs:
         env:
           PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
+          failed=""
           for pkg_path in $(echo "$PATHS_RELEASED" | jq -r '.[]'); do
             echo "Publishing $pkg_path..."
-            pnpm --filter "./$pkg_path" publish --access public --no-git-checks --provenance
+            if pnpm --filter "./$pkg_path" publish --access public --no-git-checks --provenance; then
+              echo "✓ Published $pkg_path"
+            else
+              echo "✗ Failed to publish $pkg_path"
+              failed="$failed $pkg_path"
+            fi
           done
+          if [ -n "$failed" ]; then
+            echo "::error::Failed to publish:$failed"
+            exit 1
+          fi
