@@ -12,6 +12,7 @@ import {
   generateRootTsx,
   generateRoutesTs,
   generateDevVars,
+  generateAuthSetup,
 } from "./generators/index";
 
 export function scaffold(config: Config): void {
@@ -55,6 +56,10 @@ export function scaffold(config: Config): void {
   writeFile(path.join(targetDir, "vite.config.ts"), generateViteConfig(config));
   writeFile(path.join(targetDir, "app", "root.tsx"), generateRootTsx(config));
   writeFile(path.join(targetDir, "app", "routes.ts"), generateRoutesTs(config));
+
+  if (config.features.auth) {
+    writeFile(path.join(targetDir, "app", "auth.setup.server.ts"), generateAuthSetup(config));
+  }
 
   const devVars = generateDevVars(config);
   if (devVars) {
