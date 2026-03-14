@@ -1,6 +1,6 @@
 {
   "name": "create-cfast",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Scaffold a fully wired Cloudflare Workers + React Router project with cfast",
   "license": "MIT",
   "repository": {
