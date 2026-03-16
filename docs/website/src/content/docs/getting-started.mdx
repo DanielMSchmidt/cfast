@@ -1,11 +1,11 @@
 ---
 title: Getting Started
-description: Set up your first CFast project on Cloudflare Workers in minutes.
+description: Create a CFast project and build your first feature — a task manager with permissions, auto forms, and actions.
 ---
 
-import { Steps, Aside, FileTree } from "@astrojs/starlight/components";
+import { Steps } from "@astrojs/starlight/components";
 
-This guide walks you through creating a Cloudflare Workers app with CFast — from an empty directory to a running dev server that queries a D1 database.
+This guide walks you through creating a CFast project and building a task manager that uses the core features: **permission-aware database queries**, **multi-action routes**, **auto-generated forms**, and the **admin panel**.
 
 ## Prerequisites
 
@@ -14,441 +14,305 @@ This guide walks you through creating a Cloudflare Workers app with CFast — fr
 - **A Cloudflare account** — the [free tier](https://dash.cloudflare.com/sign-up) works
 - **Wrangler CLI** — `npm install -g wrangler`
 
-## Project structure
-
-By the end of this guide your project will look like this:
-
-<FileTree>
-- my-app/
-  - app/
-    - entry.server.tsx — SSR stream handler
-    - env.server.ts — validated Cloudflare bindings
-    - root.tsx — HTML shell and error boundary
-    - routes.ts — route configuration
-    - schema.ts — Drizzle table definitions
-    - routes/
-      - home.tsx — home page with a D1 query
-  - workers/
-    - app.ts — Cloudflare Worker entry point
-  - package.json
-  - react-router.config.ts
-  - tsconfig.json
-  - tsconfig.cloudflare.json
-  - tsconfig.node.json
-  - vite.config.ts
-  - wrangler.jsonc
-</FileTree>
-
-## Project Setup
+## Create Your Project
 
 <Steps>
 
-1. **Create the project and install dependencies**
+1. **Scaffold the project**
 
    ```bash
-   mkdir my-app && cd my-app
-   pnpm init
-   pnpm add react react-dom react-router
-   pnpm add -D @react-router/dev @cloudflare/vite-plugin vite wrangler typescript @cloudflare/workers-types @types/react @types/react-dom
+   npm create cfast@latest my-app
    ```
 
-   Add `"type": "module"` and scripts to `package.json`:
+   When prompted, select all features (auth, permissions, db, ui, admin, email). The scaffolder generates a complete app with authentication, an admin panel, and an example `items` table.
 
-   ```json
-   {
-     "type": "module",
-     "scripts": {
-       "build": "react-router build",
-       "dev": "react-router dev",
-       "typecheck": "react-router typegen && tsc -b"
-     }
-   }
-   ```
-
-2. **Configure Wrangler**
-
-   Create `wrangler.jsonc` at the project root:
-
-   ```jsonc
-   // wrangler.jsonc
-   {
-     "name": "my-app",
-     "compatibility_date": "2025-04-01",
-     "compatibility_flags": ["nodejs_compat"],
-     "main": "./workers/app.ts",
-     "d1_databases": [
-       {
-         "binding": "DB",
-         "database_name": "my-app-db",
-         "database_id": "local"
-       }
-     ]
-   }
-   ```
-
-   We use `"local"` as a placeholder for `database_id`. If you plan to deploy, replace it with a real ID from `wrangler d1 create my-app-db`.
-
-3. **Configure Vite**
-
-   Create `vite.config.ts`:
-
-   ```ts
-   // vite.config.ts
-   import { reactRouter } from "@react-router/dev/vite";
-   import { cloudflare } from "@cloudflare/vite-plugin";
-   import { defineConfig } from "vite";
-
-   export default defineConfig({
-     plugins: [
-       cloudflare({ viteEnvironment: { name: "ssr" } }),
-       reactRouter(),
-     ],
-   });
-   ```
-
-4. **Configure React Router**
-
-   Create `react-router.config.ts`:
-
-   ```ts
-   // react-router.config.ts
-   import type { Config } from "@react-router/dev/config";
-
-   export default {
-     ssr: true,
-     future: {
-       v8_viteEnvironmentApi: true,
-     },
-   } satisfies Config;
-   ```
-
-5. **Configure TypeScript**
-
-   Create three config files:
-
-   ```json
-   // tsconfig.json
-   {
-     "files": [],
-     "references": [
-       { "path": "./tsconfig.node.json" },
-       { "path": "./tsconfig.cloudflare.json" }
-     ],
-     "compilerOptions": {
-       "skipLibCheck": true,
-       "strict": true,
-       "noEmit": true
-     }
-   }
-   ```
-
-   ```json
-   // tsconfig.cloudflare.json
-   {
-     "extends": "./tsconfig.json",
-     "include": [
-       ".react-router/types/**/*",
-       "app/**/*",
-       "app/**/.server/**/*",
-       "app/**/.client/**/*",
-       "workers/**/*",
-       "worker-configuration.d.ts"
-     ],
-     "compilerOptions": {
-       "composite": true,
-       "strict": true,
-       "lib": ["DOM", "DOM.Iterable", "ES2022"],
-       "types": ["vite/client"],
-       "target": "ES2022",
-       "module": "ES2022",
-       "moduleResolution": "bundler",
-       "jsx": "react-jsx",
-       "baseUrl": ".",
-       "rootDirs": [".", "./.react-router/types"],
-       "esModuleInterop": true,
-       "resolveJsonModule": true
-     }
-   }
-   ```
-
-   ```json
-   // tsconfig.node.json
-   {
-     "extends": "./tsconfig.json",
-     "include": ["vite.config.ts"],
-     "compilerOptions": {
-       "composite": true,
-       "strict": true,
-       "lib": ["ES2022", "DOM"],
-       "target": "ES2022",
-       "module": "ES2022",
-       "moduleResolution": "bundler"
-     }
-   }
-   ```
-
-6. **Create the app shell**
-
-   Create the Worker entry point in `workers/app.ts`:
-
-   ```ts
-   // workers/app.ts
-   import { createRequestHandler } from "react-router";
-
-   const requestHandler = createRequestHandler(
-     () => import("virtual:react-router/server-build"),
-     import.meta.env.MODE
-   );
-
-   export default {
-     async fetch(request: Request, env: Record<string, unknown>, ctx: ExecutionContext) {
-       return requestHandler(request, {
-         cloudflare: { env, ctx },
-       });
-     },
-   };
-   ```
-
-   Create the server-side rendering entry in `app/entry.server.tsx`:
-
-   ```tsx
-   // app/entry.server.tsx
-   import type { AppLoadContext, EntryContext } from "react-router";
-   import { ServerRouter } from "react-router";
-   import { renderToReadableStream } from "react-dom/server";
-
-   export default async function handleRequest(
-     request: Request,
-     responseStatusCode: number,
-     responseHeaders: Headers,
-     routerContext: EntryContext,
-     _loadContext: AppLoadContext
-   ) {
-     const body = await renderToReadableStream(
-       <ServerRouter context={routerContext} url={request.url} />
-     );
-
-     responseHeaders.set("Content-Type", "text/html");
-     return new Response(body, {
-       headers: responseHeaders,
-       status: responseStatusCode,
-     });
-   }
-   ```
-
-   Create the root layout in `app/root.tsx`:
-
-   ```tsx
-   // app/root.tsx
-   import {
-     isRouteErrorResponse,
-     Links,
-     Meta,
-     Outlet,
-     Scripts,
-     ScrollRestoration,
-   } from "react-router";
-
-   export function Layout({ children }: { children: React.ReactNode }) {
-     return (
-       <html lang="en">
-         <head>
-           <meta charSet="utf-8" />
-           <meta name="viewport" content="width=device-width, initial-scale=1" />
-           <Meta />
-           <Links />
-         </head>
-         <body>
-           {children}
-           <ScrollRestoration />
-           <Scripts />
-         </body>
-       </html>
-     );
-   }
-
-   export default function App() {
-     return <Outlet />;
-   }
-
-   export function ErrorBoundary({ error }: { error: unknown }) {
-     let message = "Oops!";
-     let details = "An unexpected error occurred.";
-
-     if (isRouteErrorResponse(error)) {
-       message = error.status === 404 ? "404" : "Error";
-       details =
-         error.status === 404
-           ? "The requested page could not be found."
-           : error.statusText || details;
-     } else if (import.meta.env.DEV && error instanceof Error) {
-       details = error.message;
-     }
-
-     return (
-       <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
-         <h1>{message}</h1>
-         <p>{details}</p>
-       </main>
-     );
-   }
-   ```
-
-   Define your routes in `app/routes.ts`:
-
-   ```ts
-   // app/routes.ts
-   import { type RouteConfig, index } from "@react-router/dev/routes";
-
-   export default [
-     index("routes/home.tsx"),
-   ] satisfies RouteConfig;
-   ```
-
-7. **Set up your environment with `@cfast/env`**
+2. **Run migrations and start the dev server**
 
    ```bash
-   pnpm add @cfast/env
+   cd my-app
+   pnpm install
+   pnpm db:generate
+   pnpm db:migrate:local
+   pnpm dev
    ```
 
-   Create `app/env.server.ts`:
-
-   ```ts
-   // app/env.server.ts
-   import { defineEnv } from "@cfast/env";
-
-   export const env = defineEnv({
-     DB: { type: "d1" },
-   });
-
-   export type Env = ReturnType<typeof env.get>;
-   ```
-
-   `defineEnv` gives you a validated, fully typed environment object. If the `DB` binding is missing, you get a clear error at startup instead of an obscure crash at query time.
-
-   The `.server.ts` suffix tells the React Router bundler to keep this file out of client bundles. Bindings are server-only — they do not exist in the browser.
-
-8. **Define your schema**
-
-   ```bash
-   pnpm add @cfast/db drizzle-orm
-   ```
-
-   Create `app/schema.ts`:
-
-   ```ts
-   // app/schema.ts
-   import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-
-   export const posts = sqliteTable("posts", {
-     id: integer("id").primaryKey({ autoIncrement: true }),
-     title: text("title").notNull(),
-     content: text("content").notNull(),
-     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-   });
-   ```
-
-9. **Create your first route**
-
-   Create `app/routes/home.tsx`:
-
-   ```tsx
-   // app/routes/home.tsx
-   import { createDb } from "@cfast/db";
-   import { desc } from "drizzle-orm";
-   import * as schema from "../schema";
-   import { posts } from "../schema";
-   import { env } from "../env.server";
-   import type { Route } from "./+types/home";
-
-   export async function loader({ context }: Route.LoaderArgs) {
-     env.init(context.cloudflare.env);
-     const { DB } = env.get();
-
-     const db = createDb({
-       d1: DB,
-       schema,
-       grants: [],
-       user: null,
-       cache: false,
-     });
-
-     const allPosts = await db
-       .unsafe() // Skip permissions for now
-       .query(posts)
-       .findMany({
-         orderBy: desc(posts.createdAt),
-         limit: 20,
-       })
-       .run({});
-
-     return { posts: allPosts };
-   }
-
-   export default function Home({ loaderData }: Route.ComponentProps) {
-     const { posts } = loaderData;
-
-     return (
-       <div>
-         <h1>My App</h1>
-         {posts.length === 0 ? (
-           <p>No posts yet.</p>
-         ) : (
-           <ul>
-             {posts.map((post) => (
-               <li key={post.id}>
-                 <h2>{post.title}</h2>
-                 <p>{post.content}</p>
-               </li>
-             ))}
-           </ul>
-         )}
-       </div>
-     );
-   }
-   ```
-
-   This uses `db.unsafe()` to skip permission checks while getting started. Once you add `@cfast/permissions`, you can replace this with proper role-based access control.
-
-10. **Create the D1 database and run locally**
-
-    Apply your schema using raw SQL against the local D1 instance:
-
-    ```bash
-    wrangler d1 execute my-app-db --local --command \
-      "CREATE TABLE IF NOT EXISTS posts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      );"
-    ```
-
-    Start the dev server:
-
-    ```bash
-    pnpm dev
-    ```
-
-    Open [http://localhost:5173](http://localhost:5173) and you should see your app running against a local D1 database.
-
-    <Aside type="tip">
-      `react-router dev` starts Wrangler under the hood, so your app runs in the actual Workers runtime — not a Node.js process. This means any Workers-incompatible code will fail here, not just in production.
-    </Aside>
+   Wrangler automatically creates a local D1 database from the binding in `wrangler.toml`. Open [http://localhost:8787](http://localhost:8787) — you have a running app with authentication, an admin panel at `/admin`, and an example `items` table.
 
 </Steps>
 
+## Build Your First Feature
+
+Now let's add a task manager. Each step introduces one CFast concept: schema with validation, permissions, actions, and auto forms.
+
+### 1. Define the Schema
+
+Open `app/db/schema.ts` and add a `tasks` table below the existing tables:
+
+```ts
+import { v } from "@cfast/forms";
+
+// ... existing tables (users, sessions, items, etc.)
+
+export const tasks = sqliteTable("tasks", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: v(text("title").notNull(), { minLength: 3, maxLength: 200 }),
+  status: text("status", { enum: ["todo", "in_progress", "done"] })
+    .notNull()
+    .default("todo"),
+  assigneeId: text("assignee_id")
+    .notNull()
+    .references(() => users.id),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const tasksRelations = relations(tasks, ({ one }) => ({
+  assignee: one(users, { fields: [tasks.assigneeId], references: [users.id] }),
+}));
+```
+
+Two things to notice:
+
+- **`v()` wrapper** — adds validation metadata (`minLength`, `maxLength`) that auto forms pick up automatically. The schema is the single source of truth for both database constraints and UI validation.
+- **`text({ enum: [...] })`** — auto forms render this as a `<select>` dropdown instead of a text input. No manual field configuration needed.
+
+Regenerate and apply the migration:
+
+```bash
+pnpm db:generate
+pnpm db:migrate:local
+```
+
+### 2. Add Permissions
+
+Open `app/permissions.ts`. The scaffolded file already defines `admin` and `member` roles, with admins granted `manage all`. Add grants for the `member` role:
+
+```ts
+import { definePermissions } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+import { tasks } from "~/db/schema";
+
+export type UserRole = "admin" | "member";
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  roles: UserRole[];
+};
+
+const appRoles = ["member", "admin"] as const;
+
+export const permissions = definePermissions<AuthUser>()({
+  roles: appRoles,
+  hierarchy: {
+    admin: ["member"],
+  },
+  grants: (grant) => ({
+    member: [
+      grant("read", tasks),
+      grant("create", tasks),
+      grant("update", tasks, {
+        where: (_cols, user) => eq(tasks.assigneeId, user.id),
+      }),
+      grant("delete", tasks, {
+        where: (_cols, user) => eq(tasks.assigneeId, user.id),
+      }),
+    ],
+    admin: [grant("manage", "all")],
+  }),
+});
+
+export function hasRole(user: AuthUser, role: UserRole): boolean {
+  if (user.roles.includes("admin")) return true;
+  return user.roles.includes(role);
+}
+
+export function hasAnyRole(user: AuthUser, checkRoles: UserRole[]): boolean {
+  return checkRoles.some((role) => hasRole(user, role));
+}
+```
+
+This is the core of CFast's permission model:
+
+- **Structural grants** — `grant("read", tasks)` lets members read all tasks.
+- **Row-level filtering** — the `where` callback on `update` and `delete` restricts members to their own tasks. CFast injects this as a SQL `WHERE` clause automatically — no manual filtering in your queries.
+- **Admins inherit everything** — `grant("manage", "all")` covers all CRUD on all tables. The `hierarchy` setting means admins also inherit member grants.
+
+These same permissions enforce on the server (database queries reject unauthorized operations) and reflect in the UI (action buttons hide when the user lacks permission).
+
+### 3. Create Actions
+
+Create `app/actions/tasks.ts`:
+
+```ts
+import { redirect } from "react-router";
+import { compose } from "@cfast/db";
+import { eq } from "drizzle-orm";
+import { createAction } from "~/actions.server";
+import { tasks } from "~/db/schema";
+
+export const createTask = createAction<
+  { title: string; status: string },
+  Response
+>((db, input, ctx) =>
+  compose(
+    [
+      db.insert(tasks).values({
+        title: input.title,
+        status: input.status as "todo" | "in_progress" | "done",
+        assigneeId: ctx.user.id,
+      }),
+    ],
+    async (runInsert) => {
+      await runInsert({});
+      return redirect("/tasks");
+    },
+  ),
+);
+
+export const deleteTask = createAction<{ taskId: number }, Response>(
+  (db, input) =>
+    compose(
+      [db.delete(tasks).where(eq(tasks.id, input.taskId))],
+      async (runDelete) => {
+        await runDelete({});
+        return redirect("/tasks");
+      },
+    ),
+);
+```
+
+Each `createAction` returns a lazy **Operation** — it describes what permissions are needed and what SQL will run, but doesn't execute until the framework calls `.run()`. This means:
+
+- The `db.insert(tasks)` call checks the user's `create` grant on `tasks` before executing.
+- The `db.delete(tasks)` call checks the user's `delete` grant — including the row-level `where` filter. If the user isn't the assignee, the operation is rejected with a 403.
+- `compose()` groups multiple operations into a single operation with merged permissions. Each sub-operation still checks permissions independently when the executor calls it.
+
+The `createAction` and `composeActions` functions come from the scaffolded `app/actions.server.ts`, which already binds the authenticated user, their grants, and the database to every action.
+
+### 4. Build the Route
+
+Create `app/routes/tasks.tsx`:
+
+```tsx
+import { desc } from "drizzle-orm";
+import { useActions } from "@cfast/actions/client";
+import { AutoForm } from "@cfast/forms/joy";
+import { ActionButton } from "@cfast/ui/joy";
+import { composeActions } from "~/actions.server";
+import { app } from "~/cfast.server";
+import { tasks } from "~/db/schema";
+import { createTask, deleteTask } from "~/actions/tasks";
+import type { Route } from "./+types/tasks";
+
+const composed = composeActions({ createTask, deleteTask });
+
+export const action = composed.action;
+
+export const loader = composed.loader(async ({ request, context }) => {
+  const ctx = await app.context(request, context);
+  const allTasks = await ctx.db.client
+    .query(tasks)
+    .findMany({ orderBy: desc(tasks.createdAt) })
+    .run({});
+  return { tasks: allTasks };
+});
+
+export default function Tasks({ loaderData }: Route.ComponentProps) {
+  const actions = useActions(composed.client);
+
+  return (
+    <div style={{ maxWidth: 600, margin: "0 auto", padding: "2rem" }}>
+      <h1>Tasks</h1>
+
+      <AutoForm
+        table={tasks}
+        mode="create"
+        exclude={["id", "assigneeId", "createdAt"]}
+        onSubmit={(values) => {
+          actions.createTask(values).submit();
+        }}
+      />
+
+      <ul style={{ listStyle: "none", padding: 0, marginTop: "2rem" }}>
+        {loaderData.tasks.map((task) => {
+          const remove = actions.deleteTask({ taskId: task.id });
+          return (
+            <li
+              key={task.id}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "0.5rem 0",
+                borderBottom: "1px solid #eee",
+              }}
+            >
+              <span>
+                <strong>{task.title}</strong> — {task.status}
+              </span>
+              <ActionButton action={remove} whenForbidden="hide" color="danger" variant="soft" size="sm">
+                Delete
+              </ActionButton>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+```
+
+Here's what each piece does:
+
+- **`composeActions`** merges `createTask` and `deleteTask` into a single route handler. The `_action` field in the form submission routes to the correct handler.
+- **`composed.loader`** wraps your loader to inject `_actionPermissions` into the response. This is what enables `useActions` on the client.
+- **`ctx.db.client.query(tasks).findMany()`** is a permission-aware query — no `unsafe()` needed. The database automatically applies the user's `read` grant. If the user had a row-level `where` on `read`, only matching rows would be returned.
+- **`AutoForm`** generates the form from the `tasks` schema. The `status` column (with `enum`) renders as a `<select>` dropdown. The `title` column picks up the `minLength`/`maxLength` validation from the `v()` wrapper. The `exclude` prop hides `id`, `assigneeId`, and `createdAt` since those are set server-side.
+- **`useActions`** reads the permission metadata from the loader and returns action handles.
+- **`ActionButton`** is a permission-aware button from `@cfast/ui`. It handles submission, loading state, and confirmation dialogs. The `whenForbidden="hide"` prop tells it to hide entirely when the user lacks permission — when the current user isn't the task's assignee, the delete button disappears automatically.
+
+### 5. Add to the Admin Panel
+
+Open `app/admin.server.ts` and add `tasks` to the existing `adminConfig` object. Add it to the `schema` property so the admin panel can discover it, and optionally add dashboard widgets:
+
+```ts
+// In the existing adminConfig object, add tasks to the schema:
+schema: {
+  items: schema.items,
+  tasks: schema.tasks,  // ← add this line
+},
+
+// Optionally add dashboard widgets:
+dashboard: {
+  widgets: [
+    // ... existing widgets
+    { type: "count" as const, table: "tasks", label: "Total Tasks" },
+    { type: "recent" as const, table: "tasks", label: "Recent Tasks", limit: 5 },
+  ],
+},
+```
+
+Navigate to `/admin` — your tasks table now appears with full CRUD, filtering, and role management.
+
+## What You Just Built
+
+In about 80 lines of code across four files, you added a complete task manager with:
+
+- **Schema-driven validation** — the `v()` wrapper defines validation once, enforced in both the database and the auto-generated form.
+- **Row-level permissions** — members can only update and delete their own tasks. Admins can manage everything. Defined once, enforced automatically in every query and action.
+- **Permission-aware UI** — delete buttons hide when the user lacks permission. No manual `if` checks against the user's role — the permission system tells the UI what to show.
+- **Auto-generated forms** — the `AutoForm` component reads your Drizzle schema and renders the right input types (text, select, number) with validation. No manual form fields.
+- **Auto-generated admin** — the admin panel discovers your table and provides full CRUD out of the box.
+
 ## Next Steps
 
-You now have a working Cloudflare Workers app with type-safe bindings and a D1 database. From here:
-
-- **[Tutorial: Build a Team Blog](../tutorial/01-setup/)** — Walk through building a complete app with authentication, permissions, and an admin panel.
-- **[Environment Guide](../guides/env/)** — Learn about environment-aware defaults, secrets, and validation.
-
-As you build out your app, the typical progression is:
-
-1. **`@cfast/permissions`** — Define roles and grants so queries are permission-aware.
-2. **`@cfast/auth`** — Add magic-link email and passkey authentication.
-3. **`@cfast/actions`** — Structure your mutations with multi-action routes.
-4. **`@cfast/ui`** — Use permission-aware components that automatically hide actions users cannot perform.
-5. **`@cfast/admin`** — Generate an admin panel from your Drizzle schema.
+- **[Tutorial: Build a Team Blog](/tutorial/01-setup/)** — Walk through building a complete app across 8 chapters covering auth, storage, and email.
+- **Package guides** — Deep dives on each package:
+  - [Permissions](/guides/permissions/) — Role hierarchy, row-level filtering, structural checks
+  - [Actions](/guides/actions/) — Multi-action routes, composed workflows, client hooks
+  - [Forms](/guides/forms/) — Field customization, external form control, custom plugins
+  - [Database](/guides/db/) — Caching, pagination, transactions, composed operations
+  - [Admin](/guides/admin/) — Custom views, dashboard widgets, impersonation
