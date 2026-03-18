@@ -7,7 +7,7 @@ import type { Operation } from "./types";
  * Each `RunFn` corresponds to one of the operations passed to `compose()`,
  * preserving the same positional order.
  */
-type RunFn = (params: Record<string, unknown>) => Promise<unknown>;
+type RunFn = (params?: Record<string, unknown>) => Promise<unknown>;
 
 /**
  * Merges multiple {@link Operation | Operations} into a single operation with combined,
@@ -54,9 +54,48 @@ export function compose<TResult>(
 
   return {
     permissions: allPermissions,
-    async run(_params: Record<string, unknown>): Promise<TResult> {
+    async run(_params?: Record<string, unknown>): Promise<TResult> {
       const runs = operations.map((op) => op.run);
       return executor(...runs);
+    },
+  };
+}
+
+/**
+ * Runs multiple {@link Operation | Operations} sequentially and returns their results as an array.
+ *
+ * This is a shorthand for the common `compose` pattern where operations are
+ * simply awaited in order with no data dependencies between them:
+ *
+ * ```ts
+ * // Before: verbose
+ * compose([op1, op2], async (run1, run2) => {
+ *   await run1({});
+ *   await run2({});
+ * });
+ *
+ * // After: concise
+ * composeSequential([op1, op2]);
+ * ```
+ *
+ * @param operations - The operations to run in order.
+ * @returns A single {@link Operation} that runs all operations sequentially and returns their results.
+ */
+export function composeSequential(
+  operations: Operation<unknown>[],
+): Operation<unknown[]> {
+  const allPermissions = deduplicateDescriptors(
+    operations.flatMap((op) => op.permissions),
+  );
+
+  return {
+    permissions: allPermissions,
+    async run(): Promise<unknown[]> {
+      const results: unknown[] = [];
+      for (const op of operations) {
+        results.push(await op.run({}));
+      }
+      return results;
     },
   };
 }

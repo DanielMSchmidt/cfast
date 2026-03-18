@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { compose } from "../compose";
+import { compose, composeSequential } from "../compose";
 import type { Operation } from "../types";
 
 const posts = { _: { name: "posts" } } as any;
@@ -93,5 +93,65 @@ describe("compose", () => {
   it("handles empty operations array", () => {
     const composed = compose([], () => "done");
     expect(composed.permissions).toEqual([]);
+  });
+});
+
+describe("composeSequential", () => {
+  it("merges permissions from all operations", () => {
+    const op1 = mockOp([{ action: "update", table: posts }], "updated");
+    const op2 = mockOp([{ action: "create", table: auditLogs }], "logged");
+    const composed = composeSequential([op1, op2]);
+    expect(composed.permissions).toEqual([
+      { action: "update", table: posts },
+      { action: "create", table: auditLogs },
+    ]);
+  });
+
+  it("runs all operations sequentially and returns array of results", async () => {
+    const order: string[] = [];
+    const op1: Operation<string> = {
+      permissions: [],
+      run: async () => { order.push("a"); return "first"; },
+    };
+    const op2: Operation<string> = {
+      permissions: [],
+      run: async () => { order.push("b"); return "second"; },
+    };
+    const composed = composeSequential([op1, op2]);
+    const result = await composed.run({});
+    expect(result).toEqual(["first", "second"]);
+    expect(order).toEqual(["a", "b"]);
+  });
+
+  it("handles single operation", async () => {
+    const op = mockOp([{ action: "create", table: posts }], "only");
+    const composed = composeSequential([op]);
+    const result = await composed.run({});
+    expect(result).toEqual(["only"]);
+  });
+
+  it("handles empty operations array", async () => {
+    const composed = composeSequential([]);
+    expect(composed.permissions).toEqual([]);
+    const result = await composed.run({});
+    expect(result).toEqual([]);
+  });
+});
+
+describe("compose — optional run params", () => {
+  it("run() works without arguments", async () => {
+    const op1 = mockOp([], 42);
+    const composed = compose([op1], async (run1) => {
+      return await run1();
+    });
+    const result = await composed.run();
+    expect(result).toBe(42);
+  });
+
+  it("composeSequential run() works without arguments", async () => {
+    const op = mockOp([], "ok");
+    const composed = composeSequential([op]);
+    const result = await composed.run();
+    expect(result).toEqual(["ok"]);
   });
 });
