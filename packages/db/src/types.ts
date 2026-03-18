@@ -33,7 +33,7 @@ export type Operation<TResult> = {
    *
    * @param params - Placeholder values for `sql.placeholder()` calls. Pass `{}` when no placeholders are used.
    */
-  run: (params: Record<string, unknown>) => Promise<TResult>;
+  run: (params?: Record<string, unknown>) => Promise<TResult>;
 };
 
 // --- Cache ---

@@ -31,7 +31,7 @@ function buildMutationWithReturning(
 ): Operation<void> & { returning: () => Operation<unknown> } {
   return {
     permissions,
-    async run(_params: Record<string, unknown>): Promise<void> {
+    async run(_params?: Record<string, unknown>): Promise<void> {
       checkIfNeeded(config, config.grants, permissions);
       await execute(false);
       config.onMutate?.(tableName);
@@ -39,7 +39,7 @@ function buildMutationWithReturning(
     returning() {
       return {
         permissions,
-        async run(_params: Record<string, unknown>): Promise<unknown> {
+        async run(_params?: Record<string, unknown>): Promise<unknown> {
           checkIfNeeded(config, config.grants, permissions);
           const result = await execute(true);
           config.onMutate?.(tableName);
