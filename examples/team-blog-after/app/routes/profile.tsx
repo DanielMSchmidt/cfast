@@ -45,12 +45,12 @@ export const loader = app.loader(async (ctx) => {
   return { user: { ...user, ...freshUser }, passkeys: userPasskeys };
 });
 
-export const action = app.action(async (ctx) => {
+export const action = app.action(async (ctx, { request }) => {
   const user = ctx.auth.user;
   if (!user) throw new Response("Unauthorized", { status: 401 });
 
   const cfDb = ctx.db.client;
-  const formData = await ctx.request.formData();
+  const formData = await request.formData();
   const _action = formData.get("_action") as string;
 
   if (_action === "updateProfile") {

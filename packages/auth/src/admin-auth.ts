@@ -1,11 +1,12 @@
-import type { AuthInstance } from "./types";
+import type { AuthInstance, AuthUser } from "./types";
+import type { Grant } from "@cfast/permissions";
 
 /**
  * Adapter type matching @cfast/admin's AdminAuthConfig interface.
  * Duplicated here to avoid a circular dependency on @cfast/admin.
  */
 type AdminAuthBridge = {
-  requireUser(request: Request): Promise<{ user: { id: string; email: string; name: string; avatarUrl: string | null; roles: string[]; isImpersonating?: boolean; realUser?: { id: string; name: string } }; grants: unknown[] }>;
+  requireUser(request: Request): Promise<{ user: AuthUser; grants: Grant[] }>;
   hasRole(user: { roles: string[] }, role: string): boolean;
   getRoles(userId: string): Promise<string[]>;
   setRole(userId: string, role: string): Promise<void>;

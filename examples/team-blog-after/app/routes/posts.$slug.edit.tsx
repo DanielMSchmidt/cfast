@@ -41,7 +41,7 @@ export const loader = app.loader(async (ctx, { params }) => {
   return { post, user };
 });
 
-export const action = app.action(async (ctx, { params }) => {
+export const action = app.action(async (ctx, { params, request }) => {
   const user = ctx.auth.user;
   if (!user) throw new Response("Unauthorized", { status: 401 });
 
@@ -54,7 +54,7 @@ export const action = app.action(async (ctx, { params }) => {
   const post = await db.select().from(posts).where(eq(posts.slug, slug)).get();
   if (!post) throw new Response("Not Found", { status: 404 });
 
-  const formData = await ctx.request.formData();
+  const formData = await request.formData();
   const _action = formData.get("_action") as string;
 
   if (_action === "update") {

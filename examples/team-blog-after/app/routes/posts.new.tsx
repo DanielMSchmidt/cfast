@@ -25,13 +25,13 @@ export const loader = app.loader(async (ctx) => {
   return { user: ctx.auth.user };
 });
 
-export const action = app.action(async (ctx) => {
+export const action = app.action(async (ctx, { request }) => {
   const user = ctx.auth.user;
   if (!user || !can(ctx.auth.grants, "create", posts)) {
     throw redirect("/");
   }
 
-  const formData = await ctx.request.formData();
+  const formData = await request.formData();
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim() ?? "";
   const excerpt = (formData.get("excerpt") as string)?.trim() || null;

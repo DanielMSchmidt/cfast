@@ -41,7 +41,7 @@ const composed = composeActions({
 
 export const action = composed.action;
 
-export const loader = app.loader(async (ctx, { params }) => {
+export const loader = app.loader(async (ctx, { params, request }) => {
   const db = ctx.db.raw;
   const user = ctx.auth.user;
   const grants = ctx.auth.grants;
@@ -65,7 +65,7 @@ export const loader = app.loader(async (ctx, { params }) => {
   const author = await db.select().from(users).where(eq(users.id, post.authorId)).get();
 
   // Cursor-based comments
-  const url = new URL(ctx.request.url);
+  const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
 
   const commentQuery = db
