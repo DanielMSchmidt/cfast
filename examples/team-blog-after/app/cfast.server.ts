@@ -1,5 +1,6 @@
 import { createApp, definePlugin } from "@cfast/core";
 import { createDb } from "@cfast/db";
+import { drizzle } from "drizzle-orm/d1";
 import type { Grant } from "@cfast/permissions";
 import { envSchema } from "./env";
 import { initAuth } from "./auth.setup.server";
@@ -23,7 +24,7 @@ const authPlugin = definePlugin({
   },
 });
 
-// Inline db plugin
+// Inline db plugin — exposes both permission-aware client and raw Drizzle
 type AuthProvides = { auth: { user: AuthUser | null; grants: Grant[] } };
 const dbPlugin = definePlugin<AuthProvides>()({
   name: "db",
@@ -36,7 +37,8 @@ const dbPlugin = definePlugin<AuthProvides>()({
       user: ctx.auth.user ? { id: ctx.auth.user.id } : null,
       cache: false,
     });
-    return { client };
+    const raw = drizzle(ctx.env.DB as D1Database, { schema });
+    return { client, raw };
   },
 });
 

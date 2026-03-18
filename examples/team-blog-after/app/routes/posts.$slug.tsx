@@ -1,5 +1,4 @@
-import type { LoaderFunctionArgs } from "react-router";
-import { useLoaderData, useActionData, Form, Link, useFetcher } from "react-router";
+import { useLoaderData, useActionData, useFetcher } from "react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
@@ -12,11 +11,11 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import { useActions, clientDescriptor } from "@cfast/actions/client";
+import { useActions } from "@cfast/actions/client";
+import { ActionForm } from "@cfast/actions/client";
 import { ActionButton } from "@cfast/ui/joy";
-import { getUser } from "~/auth.helpers.server";
-import { hasRole, hasAnyRole } from "~/permissions";
-import { createDbClient } from "~/db/client";
+import { can } from "@cfast/permissions";
+import { app } from "~/cfast.server";
 import { posts, users, comments } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
 import { Header } from "~/components/Header";
@@ -29,11 +28,23 @@ import {
   addComment,
   deleteComment,
 } from "~/actions/posts";
+import { getInitials, formatDate } from "~/utils";
+import { Link } from "react-router";
 
-export async function loader({ request, params, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const user = await getUser(request);
-  const db = createDbClient(env.DB);
+const composed = composeActions({
+  deletePost,
+  publishPost,
+  unpublishPost,
+  addComment,
+  deleteComment,
+});
+
+export const action = composed.action;
+
+export const loader = app.loader(async (ctx, { params }) => {
+  const db = ctx.db.raw;
+  const user = ctx.auth.user;
+  const grants = ctx.auth.grants;
 
   const slug = params.slug;
   if (!slug) throw new Response("Not Found", { status: 404 });
@@ -45,8 +56,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   if (!post.published) {
     if (!user) throw new Response("Not Found", { status: 404 });
     const isAuthor = user.id === post.authorId;
-    const isEditorOrAdmin = hasAnyRole(user, ["editor", "admin"]);
-    if (!isAuthor && !isEditorOrAdmin) {
+    if (!isAuthor && !can(grants, "update", posts)) {
       throw new Response("Not Found", { status: 404 });
     }
   }
@@ -54,11 +64,11 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   // Get author info
   const author = await db.select().from(users).where(eq(users.id, post.authorId)).get();
 
-  // Cursor-based comments: get URL cursor param
-  const url = new URL(request.url);
+  // Cursor-based comments
+  const url = new URL(ctx.request.url);
   const cursor = url.searchParams.get("cursor");
 
-  let commentQuery = db
+  const commentQuery = db
     .select({
       id: comments.id,
       content: comments.content,
@@ -102,43 +112,9 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     comments: formattedComments,
     nextCursor,
     user,
+    grants,
   };
-}
-
-const composed = composeActions({
-  deletePost,
-  publishPost,
-  unpublishPost,
-  addComment,
-  deleteComment,
 });
-
-export const action = composed.action;
-
-const postActions = clientDescriptor([
-  "deletePost",
-  "publishPost",
-  "unpublishPost",
-  "addComment",
-  "deleteComment",
-]);
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatDate(date: Date | string): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 function useInfiniteComments(
   initialComments: Array<{
@@ -156,13 +132,11 @@ function useInfiniteComments(
   const fetcher = useFetcher();
   const loadingRef = useRef(false);
 
-  // Reset when initial data changes (e.g. after action)
   useEffect(() => {
     setAllComments(initialComments);
     setCursor(initialCursor);
   }, [initialComments, initialCursor]);
 
-  // Process fetcher data when it arrives
   useEffect(() => {
     if (fetcher.data && loadingRef.current) {
       const data = fetcher.data as {
@@ -185,7 +159,6 @@ function useInfiniteComments(
 
   const hasMore = cursor !== null;
 
-  // Intersection observer for infinite scroll
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -209,7 +182,7 @@ function useInfiniteComments(
 }
 
 export default function PostDetail() {
-  const { post, author, comments: initialComments, nextCursor, user } =
+  const { post, author, comments: initialComments, nextCursor, user, grants } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as
     | { success: boolean; action: string }
@@ -223,14 +196,12 @@ export default function PostDetail() {
   );
 
   const [commentContent, setCommentContent] = useState("");
-  const actions = useActions(postActions);
+  const actions = useActions(composed.client);
 
   const isAuthor = user?.id === post.authorId;
-  const isEditorOrAdmin = user ? hasAnyRole(user, ["editor", "admin"]) : false;
-  const isAdmin = user ? hasRole(user, "admin") : false;
-  const canEdit = isAuthor || isEditorOrAdmin;
-  const canDelete = isAuthor || isAdmin;
-  const canPublish = isEditorOrAdmin;
+  const canEdit = isAuthor || can(grants ?? [], "update", posts);
+  const canDelete = isAuthor || can(grants ?? [], "delete", posts);
+  const canPublish = can(grants ?? [], "update", posts);
 
   return (
     <>
@@ -336,13 +307,18 @@ export default function PostDetail() {
                 {actionData.error}
               </Alert>
             )}
-            <Form method="post" onSubmit={() => setCommentContent("")}>
-              <input type="hidden" name="_action" value="addComment" />
-              <input type="hidden" name="postId" value={post.id} />
-              <input type="hidden" name="postTitle" value={post.title} />
-              <input type="hidden" name="postSlug" value={post.slug} />
-              <input type="hidden" name="postAuthorId" value={post.authorId} />
-              <input type="hidden" name="postPublished" value={String(post.published)} />
+            <ActionForm
+              action={{
+                _action: "addComment",
+                postId: post.id,
+                postTitle: post.title,
+                postSlug: post.slug,
+                postAuthorId: post.authorId,
+                postPublished: String(post.published),
+              }}
+              method="post"
+              onSubmit={() => setCommentContent("")}
+            >
               <Stack spacing={2}>
                 <Textarea
                   name="content"
@@ -356,7 +332,7 @@ export default function PostDetail() {
                   Post Comment
                 </Button>
               </Stack>
-            </Form>
+            </ActionForm>
           </Box>
         )}
 

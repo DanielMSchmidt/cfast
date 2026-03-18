@@ -3,9 +3,10 @@ import { compose } from "@cfast/db";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { createAction } from "~/actions.server";
-import { posts, comments, auditLogs } from "~/db/schema";
+import { posts, comments } from "~/db/schema";
 import { sendPostPublishedEmail, sendNewCommentEmail } from "~/email/send";
 import { env } from "~/env";
+import { auditLog } from "~/utils.server";
 
 export const deletePost = createAction<
   { postId: string; title: string; slug: string },
@@ -14,18 +15,11 @@ export const deletePost = createAction<
   compose(
     [
       db.delete(posts).where(eq(posts.id, input.postId)),
-      db.unsafe().insert(auditLogs).values({
-        id: nanoid(),
-        userId: ctx.user.id,
-        action: "post.deleted",
-        targetType: "post",
-        targetId: input.postId,
-        metadata: JSON.stringify({ title: input.title, slug: input.slug }),
-      }),
+      auditLog(db, ctx.user.id, "post.deleted", { type: "post", id: input.postId }, { title: input.title, slug: input.slug }),
     ],
     async (runDelete, runAudit) => {
-      await runDelete({});
-      await runAudit({});
+      await runDelete();
+      await runAudit();
       return redirect("/");
     },
   ),
@@ -41,18 +35,11 @@ export const publishPost = createAction<
         .update(posts)
         .set({ published: true, publishedAt: new Date(), updatedAt: new Date() })
         .where(eq(posts.id, input.postId)),
-      db.unsafe().insert(auditLogs).values({
-        id: nanoid(),
-        userId: ctx.user.id,
-        action: "post.published",
-        targetType: "post",
-        targetId: input.postId,
-        metadata: JSON.stringify({ title: input.title }),
-      }),
+      auditLog(db, ctx.user.id, "post.published", { type: "post", id: input.postId }, { title: input.title }),
     ],
     async (runUpdate, runAudit) => {
-      await runUpdate({});
-      await runAudit({});
+      await runUpdate();
+      await runAudit();
       const e = env.get();
       await sendPostPublishedEmail(e, {
         title: input.title,
@@ -74,18 +61,11 @@ export const unpublishPost = createAction<
         .update(posts)
         .set({ published: false, updatedAt: new Date() })
         .where(eq(posts.id, input.postId)),
-      db.unsafe().insert(auditLogs).values({
-        id: nanoid(),
-        userId: ctx.user.id,
-        action: "post.unpublished",
-        targetType: "post",
-        targetId: input.postId,
-        metadata: JSON.stringify({ title: input.title }),
-      }),
+      auditLog(db, ctx.user.id, "post.unpublished", { type: "post", id: input.postId }, { title: input.title }),
     ],
     async (runUpdate, runAudit) => {
-      await runUpdate({});
-      await runAudit({});
+      await runUpdate();
+      await runAudit();
       return { success: true, action: "unpublish" as const };
     },
   ),
@@ -135,7 +115,7 @@ export const addComment = createAction<
       }),
     ],
     async (runInsert) => {
-      await runInsert({});
+      await runInsert();
       const e = env.get();
       await sendNewCommentEmail(
         e,
@@ -160,7 +140,7 @@ export const deleteComment = createAction<
   compose(
     [db.delete(comments).where(eq(comments.id, input.commentId))],
     async (runDelete) => {
-      await runDelete({});
+      await runDelete();
       return { success: true, action: "deleteComment" as const };
     },
   ),

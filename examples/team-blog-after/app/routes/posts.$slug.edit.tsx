@@ -1,4 +1,3 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form, redirect } from "react-router";
 import { useState } from "react";
 import Container from "@mui/joy/Container";
@@ -12,29 +11,21 @@ import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
 import AspectRatio from "@mui/joy/AspectRatio";
 import Box from "@mui/joy/Box";
-import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
-import { createDbClient } from "~/db/client";
-import { createCfDb } from "~/db/cfast.server";
-import { compose } from "@cfast/db";
-import { posts, auditLogs } from "~/db/schema";
+import { can } from "@cfast/permissions";
+import { composeSequential } from "@cfast/db";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { app } from "~/cfast.server";
+import { posts } from "~/db/schema";
 import { Header } from "~/components/Header";
+import { generateSlug } from "~/utils";
+import { auditLog } from "~/utils.server";
 
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+export const loader = app.loader(async (ctx, { params }) => {
+  const db = ctx.db.raw;
+  const user = ctx.auth.user;
 
-export async function loader({ request, params, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const ctx = await requireAuthContext(request);
-  const db = createDbClient(env.DB);
+  if (!user) throw new Response("Unauthorized", { status: 401 });
 
   const slug = params.slug;
   if (!slug) throw new Response("Not Found", { status: 404 });
@@ -42,20 +33,20 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   const post = await db.select().from(posts).where(eq(posts.slug, slug)).get();
   if (!post) throw new Response("Not Found", { status: 404 });
 
-  // Permission: author of post or editor/admin
-  const isAuthor = ctx.user.id === post.authorId;
-  const isEditorOrAdmin = hasAnyRole(ctx.user, ["editor", "admin"]);
-  if (!isAuthor && !isEditorOrAdmin) {
+  const isAuthor = user.id === post.authorId;
+  if (!isAuthor && !can(ctx.auth.grants, "update", posts)) {
     throw new Response("Forbidden", { status: 403 });
   }
 
-  return { post, user: ctx.user };
-}
+  return { post, user };
+});
 
-export async function action({ request, params, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env;
-  const ctx = await requireAuthContext(request);
-  const db = createDbClient(env.DB);
+export const action = app.action(async (ctx, { params }) => {
+  const user = ctx.auth.user;
+  if (!user) throw new Response("Unauthorized", { status: 401 });
+
+  const db = ctx.db.raw;
+  const cfDb = ctx.db.client;
 
   const slug = params.slug;
   if (!slug) throw new Response("Not Found", { status: 404 });
@@ -63,7 +54,7 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
   const post = await db.select().from(posts).where(eq(posts.slug, slug)).get();
   if (!post) throw new Response("Not Found", { status: 404 });
 
-  const formData = await request.formData();
+  const formData = await ctx.request.formData();
   const _action = formData.get("_action") as string;
 
   if (_action === "update") {
@@ -80,35 +71,17 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       return { error: "Title must contain at least one valid character.", action: "update" };
     }
 
-    const cfDb = createCfDb(env.DB, ctx);
+    await composeSequential([
+      cfDb.update(posts).set({
+        title,
+        slug: newSlug,
+        content,
+        excerpt,
+        updatedAt: new Date(),
+      }).where(eq(posts.id, post.id)),
+      auditLog(cfDb, user.id, "post.updated", { type: "post", id: post.id }, { title, oldSlug: post.slug, newSlug }),
+    ]).run();
 
-    const op = compose(
-      [
-        cfDb.update(posts).set({
-          title,
-          slug: newSlug,
-          content,
-          excerpt,
-          updatedAt: new Date(),
-        }).where(eq(posts.id, post.id)),
-        cfDb.unsafe().insert(auditLogs).values({
-          id: nanoid(),
-          userId: ctx.user.id,
-          action: "post.updated",
-          targetType: "post",
-          targetId: post.id,
-          metadata: JSON.stringify({ title, oldSlug: post.slug, newSlug }),
-        }),
-      ],
-      async (runUpdate, runAudit) => {
-        await runUpdate({});
-        await runAudit({});
-      },
-    );
-
-    await op.run({});
-
-    // Redirect to new slug if it changed
     if (newSlug !== post.slug) {
       return redirect(`/posts/${newSlug}/edit`);
     }
@@ -122,48 +95,44 @@ export async function action({ request, params, context }: ActionFunctionArgs) {
       return { error: "No file selected.", action: "uploadCover" };
     }
 
-    // Validate MIME type
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       return { error: "Only JPEG, PNG, and WebP images are allowed.", action: "uploadCover" };
     }
 
-    // Validate size (10MB max)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       return { error: "File size must be under 10MB.", action: "uploadCover" };
     }
 
     const key = `covers/${post.id}/${nanoid()}-${file.name}`;
+    const env = ctx.env;
 
-    await env.UPLOADS.put(key, file.stream(), {
+    await (env.UPLOADS as R2Bucket).put(key, file.stream(), {
       httpMetadata: { contentType: file.type },
     });
 
-    // Delete old cover if exists
     if (post.coverImageKey) {
-      await env.UPLOADS.delete(post.coverImageKey);
+      await (env.UPLOADS as R2Bucket).delete(post.coverImageKey);
     }
 
-    const cfDb = createCfDb(env.DB, ctx);
-    await cfDb.update(posts).set({ coverImageKey: key, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
+    await cfDb.update(posts).set({ coverImageKey: key, updatedAt: new Date() }).where(eq(posts.id, post.id)).run();
 
     return { success: true, action: "uploadCover" };
   }
 
   if (_action === "removeCover") {
     if (post.coverImageKey) {
-      await env.UPLOADS.delete(post.coverImageKey);
+      await (ctx.env.UPLOADS as R2Bucket).delete(post.coverImageKey);
     }
 
-    const cfDb = createCfDb(env.DB, ctx);
-    await cfDb.update(posts).set({ coverImageKey: null, updatedAt: new Date() }).where(eq(posts.id, post.id)).run({});
+    await cfDb.update(posts).set({ coverImageKey: null, updatedAt: new Date() }).where(eq(posts.id, post.id)).run();
 
     return { success: true, action: "removeCover" };
   }
 
   throw new Response("Bad Request", { status: 400 });
-}
+});
 
 export default function EditPost() {
   const { post, user } = useLoaderData<typeof loader>();
