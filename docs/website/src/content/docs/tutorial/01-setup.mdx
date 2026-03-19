@@ -34,13 +34,19 @@ This step lays the foundation: a Workers project with React Router, a D1 databas
 <FileTree>
 - step-01-setup/
   - app/
+    - entry.server.tsx — SSR stream handler
     - root.tsx — HTML shell and error boundary
     - routes.ts — route configuration
     - routes/
       - home.tsx — the home page component
+  - workers/
+    - app.ts — Cloudflare Worker entry point
   - package.json
   - react-router.config.ts
   - tsconfig.json
+  - tsconfig.cloudflare.json
+  - tsconfig.node.json
+  - vite.config.ts
   - wrangler.jsonc — Cloudflare Workers config
 </FileTree>
 
@@ -63,18 +69,19 @@ This step lays the foundation: a Workers project with React Router, a D1 databas
        "typecheck": "react-router typegen && tsc -b"
      },
      "dependencies": {
-       "@react-router/cloudflare": "^7.13.1",
        "react": "^19.2.4",
        "react-dom": "^19.2.4",
        "react-router": "^7.13.1"
      },
      "devDependencies": {
-       "@cloudflare/workers-types": "^4.20250620.0",
+       "@cloudflare/vite-plugin": "^1.27.0",
+       "@cloudflare/workers-types": "^4.20260310.1",
        "@react-router/dev": "^7.13.1",
        "@types/react": "^19.2.7",
        "@types/react-dom": "^19.2.3",
        "typescript": "^5.9.2",
-       "wrangler": "^4.40.2"
+       "vite": "^6.3.0",
+       "wrangler": "^4.72.0"
      }
    }
    ```
@@ -88,6 +95,7 @@ This step lays the foundation: a Workers project with React Router, a D1 databas
      "name": "team-blog",
      "compatibility_date": "2025-04-01",
      "compatibility_flags": ["nodejs_compat"],
+     "main": "./workers/app.ts",
      "d1_databases": [
        {
          "binding": "DB",
@@ -100,21 +108,90 @@ This step lays the foundation: a Workers project with React Router, a D1 databas
 
    The `nodejs_compat` flag enables Node.js-compatible APIs in the Workers runtime, which some dependencies require.
 
-3. **Configure React Router**
+3. **Configure Vite**
 
-   A one-liner that enables server-side rendering:
+   The Cloudflare Vite plugin runs your app inside the Workers runtime during development, so any Workers-incompatible code fails locally instead of in production.
+
+   ```ts title="vite.config.ts"
+   import { reactRouter } from "@react-router/dev/vite";
+   import { cloudflare } from "@cloudflare/vite-plugin";
+   import { defineConfig } from "vite";
+
+   export default defineConfig({
+     plugins: [
+       cloudflare({ viteEnvironment: { name: "ssr" } }),
+       reactRouter(),
+     ],
+   });
+   ```
+
+4. **Configure React Router**
+
+   Enable server-side rendering:
 
    ```ts title="react-router.config.ts"
    import type { Config } from "@react-router/dev/config";
 
    export default {
      ssr: true,
+     future: {
+       v8_viteEnvironmentApi: true,
+     },
    } satisfies Config;
    ```
 
    With `ssr: true`, loaders run on the server (inside the Worker) and the rendered HTML is streamed to the browser. This is how we will fetch data from D1 in later steps.
 
-4. **Create the root layout**
+5. **Create the Worker entry point**
+
+   `workers/app.ts` is the Cloudflare Worker fetch handler. It bridges incoming requests to React Router's server handler.
+
+   ```ts title="workers/app.ts"
+   import { createRequestHandler } from "react-router";
+
+   const requestHandler = createRequestHandler(
+     () => import("virtual:react-router/server-build"),
+     import.meta.env.MODE
+   );
+
+   export default {
+     async fetch(request: Request, env: Record<string, unknown>, ctx: ExecutionContext) {
+       return requestHandler(request, {
+         cloudflare: { env, ctx },
+       });
+     },
+   };
+   ```
+
+6. **Create the server entry**
+
+   `app/entry.server.tsx` handles server-side rendering by streaming HTML to the browser.
+
+   ```tsx title="app/entry.server.tsx"
+   import type { AppLoadContext, EntryContext } from "react-router";
+   import { ServerRouter } from "react-router";
+   import { renderToReadableStream } from "react-dom/server";
+
+   export default async function handleRequest(
+     request: Request,
+     responseStatusCode: number,
+     responseHeaders: Headers,
+     routerContext: EntryContext,
+     _loadContext: AppLoadContext
+   ) {
+     const body = await renderToReadableStream(
+       <ServerRouter context={routerContext} url={request.url} />
+     );
+
+     responseHeaders.set("Content-Type", "text/html");
+     return new Response(body, {
+       headers: responseHeaders,
+       status: responseStatusCode,
+     });
+   }
+   ```
+
+7. **Create the root layout**
 
    `app/root.tsx` provides the `<html>` shell that wraps every page. It also includes an `ErrorBoundary` so route errors render gracefully instead of showing a blank screen.
 
@@ -147,7 +224,7 @@ This step lays the foundation: a Workers project with React Router, a D1 databas
    }
    ```
 
-5. **Define routes**
+8. **Define routes**
 
    React Router v7 uses a `routes.ts` file for route configuration. We start with a single index route.
 
@@ -159,7 +236,7 @@ This step lays the foundation: a Workers project with React Router, a D1 databas
    ] satisfies RouteConfig;
    ```
 
-6. **Create the home page**
+9. **Create the home page**
 
    A static page that confirms everything is wired up.
 
@@ -188,7 +265,7 @@ Open `http://localhost:5173` and you should see "Team Blog" rendered by your Wor
 <Image src={stepHome} alt="The Team Blog home page showing the heading and latest posts" />
 
 <Aside type="tip">
-  `react-router dev` starts Wrangler under the hood, so your app runs in the actual Workers runtime -- not a Node.js process. This means any Workers-incompatible code will fail here, not just in production.
+  `react-router dev` uses the Cloudflare Vite plugin under the hood, so your app runs in the actual Workers runtime -- not a Node.js process. This means any Workers-incompatible code will fail here, not just in production.
 </Aside>
 
 ## What is happening under the hood
