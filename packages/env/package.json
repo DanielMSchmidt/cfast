@@ -2,6 +2,7 @@
   "name": "@cfast/env",
   "version": "0.0.1",
   "description": "Type-safe Cloudflare Worker bindings with runtime validation",
+  "keywords": ["cfast", "cloudflare-workers", "environment", "bindings", "type-safe"],
   "license": "MIT",
   "repository": {
     "type": "git",

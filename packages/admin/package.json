@@ -2,6 +2,7 @@
   "name": "@cfast/admin",
   "version": "0.0.1",
   "description": "Auto-generated admin UI from your Drizzle schema with role management and impersonation",
+  "keywords": ["cfast", "cloudflare-workers", "admin", "drizzle", "auto-generated"],
   "license": "MIT",
   "repository": {
     "type": "git",

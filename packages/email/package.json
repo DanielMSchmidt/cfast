@@ -2,6 +2,7 @@
   "name": "@cfast/email",
   "version": "0.0.3",
   "description": "Plugin-based email for Cloudflare Workers with react-email rendering",
+  "keywords": ["cfast", "cloudflare-workers", "email", "react-email", "mailgun"],
   "license": "MIT",
   "repository": {
     "type": "git",
