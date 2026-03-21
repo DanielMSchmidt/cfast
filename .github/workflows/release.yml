@@ -52,6 +52,7 @@ jobs:
       - name: Publish released packages
         env:
           PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
+          NODE_AUTH_TOKEN: ""
         run: |
           set -uo pipefail
           failed=""
