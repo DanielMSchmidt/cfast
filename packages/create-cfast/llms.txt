@@ -118,6 +118,7 @@ pnpm deploy:production      # deploy to production
 
 ```
 my-app/
+  CLAUDE.md           # LLM-friendly project conventions
   app/
     routes/           # _index.tsx, login.tsx, dashboard.tsx
     db/schema.ts      # Drizzle schema with auth tables

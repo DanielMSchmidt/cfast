@@ -57,7 +57,7 @@ jobs:
           failed=""
           for pkg_path in $(echo "$PATHS_RELEASED" | jq -r '.[]'); do
             echo "Publishing $pkg_path..."
-            if pnpm --filter "./$pkg_path" publish --access public --no-git-checks --provenance; then
+            if (cd "$pkg_path" && npm publish --access public --provenance); then
               echo "✓ Published $pkg_path"
             else
               echo "✗ Failed to publish $pkg_path"
