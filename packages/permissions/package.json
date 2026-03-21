@@ -21,7 +21,7 @@
       "types": "./dist/client.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "llms.txt"],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"

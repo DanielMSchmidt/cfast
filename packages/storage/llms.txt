@@ -1,0 +1,198 @@
+# @cfast/storage
+
+> Type-safe file uploads to Cloudflare R2. Define file schemas like database schemas.
+
+## When to use
+
+Use `@cfast/storage` when your cfast app needs file uploads, downloads, or signed URLs with R2. It handles multipart parsing, MIME/size validation, and automatic multipart uploads for large files.
+
+## Key concepts
+
+- **Schema-driven.** Declare file types with `filetype()`, group them with `defineStorage()`. Each file type has accepted MIME types, max size, bucket, and key generation function.
+- **Validated before upload.** Content-Type and Content-Length headers are checked before reading the body. Magic bytes verify the real MIME type. Byte count is verified during streaming.
+- **Multipart automatic.** Files above `multipartThreshold` (default 5MB) use R2 multipart upload. Small files use direct PUT. The caller does not choose.
+- **Client-side validation mirrors server.** `useUpload` validates MIME type and file size from the same schema before sending any bytes.
+
+## API Reference
+
+### defineStorage(schema): StorageInstance
+
+```typescript
+import { defineStorage, filetype } from "@cfast/storage";
+
+export const storage = defineStorage({
+  avatars: filetype({
+    bucket: "UPLOADS",                         // R2 binding name in env
+    accept: ["image/jpeg", "image/png", "image/webp"],
+    maxSize: "2mb",
+    key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+    replace?: boolean,                         // default: false
+    uploadable?: boolean,                      // default: true; false for system-generated files
+    multipartThreshold?: string,               // default: "5mb"
+    partSize?: string,                         // default: "10mb"
+    publicUrl?: string,                        // base URL for getPublicUrl
+    hooks?: { beforeUpload?, afterUpload? },
+  }),
+});
+```
+
+### filetype(config): FiletypeConfig
+
+Applies defaults (`uploadable: true`, `replace: false`, `multipartThreshold: "5mb"`, `partSize: "10mb"`).
+
+Key function signature: `(file: { name, extension }, ctx: { user, input }) => string`
+
+### StorageInstance methods
+
+```typescript
+// Upload: parse request, validate, upload to R2
+storage.handle(name, request, ctx): Promise<UploadResult>
+// ctx: { env, user: { id }, input? }
+// returns: { key: string, size: number, type: string }
+
+// Serve: stream from R2 as Response
+storage.serve(name, key, { env, headers? }): Promise<Response>
+
+// URLs
+storage.getPublicUrl(name, key): string                              // requires publicUrl in config
+storage.getSignedUrl(name, key, { env, expiresIn }): Promise<string> // requires STORAGE_SECRET in env
+storage.verifySignedUrl(url, { env }): Promise<boolean>
+
+// Client config (strips server-only fields)
+storage.clientConfig(): ClientStorageConfig
+```
+
+### StorageError
+
+```typescript
+import { StorageError } from "@cfast/storage";
+
+try {
+  await storage.handle("avatars", request, { env, user });
+} catch (e) {
+  if (e instanceof StorageError) {
+    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED"
+    e.detail;  // "File is 5.2MB but max allowed is 2.0MB"
+    e.status;  // 413 | 415 | 500
+  }
+}
+```
+
+### parseSize(size): number
+
+```typescript
+import { parseSize } from "@cfast/storage";
+parseSize("2mb");   // 2097152
+parseSize("1.5kb"); // 1536
+```
+
+### Client (`@cfast/storage/client`)
+
+```typescript
+import { StorageProvider, useUpload } from "@cfast/storage/client";
+
+// Wrap app with provider (pass clientConfig from server)
+<StorageProvider config={storage.clientConfig()}>
+  <App />
+</StorageProvider>
+```
+
+```typescript
+// useUpload hook
+const upload: UploadHookResult = useUpload("avatars");
+
+upload.accept           // "image/jpeg,image/png,image/webp" -- for <input accept>
+upload.start(file)      // validates client-side, then uploads via XHR
+upload.progress         // 0-100
+upload.isUploading      // boolean
+upload.result           // { key, size, type } | null
+upload.error            // server/network error string | null
+upload.validationError  // client-side validation error | null
+upload.reset()          // reset to initial state
+```
+
+## Usage Examples
+
+### Define storage and handle upload in an action
+
+```typescript
+// storage.ts
+export const storage = defineStorage({
+  postImages: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    maxSize: "10mb",
+    key: (file, ctx) => `posts/${ctx.input.postId}/${crypto.randomUUID()}-${file.name}`,
+  }),
+});
+
+// routes/upload.tsx (action)
+export async function action({ request, context }) {
+  const user = await auth.requireUser(request);
+  const result = await storage.handle("postImages", request, {
+    env: context.env,
+    user,
+    input: { postId: "123" },
+  });
+  // result: { key, size, type }
+
+  await db.insert(postImages).values({
+    storageKey: result.key,
+    size: result.size,
+  }).run({});
+
+  return { success: true };
+}
+```
+
+### Client-side upload with progress
+
+```tsx
+import { useUpload } from "@cfast/storage/client";
+
+function ImageUploader() {
+  const upload = useUpload("postImages");
+  return (
+    <div>
+      <input type="file" accept={upload.accept} onChange={e => upload.start(e.target.files[0])} />
+      {upload.validationError && <p>{upload.validationError}</p>}
+      {upload.isUploading && <progress value={upload.progress} max={100} />}
+      {upload.result && <p>Uploaded: {upload.result.key}</p>}
+      {upload.error && <p>Error: {upload.error}</p>}
+    </div>
+  );
+}
+```
+
+### Serve files with signed URLs
+
+```typescript
+// Private file: generate signed URL
+const url = await storage.getSignedUrl("documents", key, {
+  env: context.env,     // must have STORAGE_SECRET binding
+  expiresIn: "1h",
+});
+
+// Public file: direct URL
+const url = storage.getPublicUrl("postImages", key);
+
+// Stream directly with custom headers
+const response = await storage.serve("postImages", key, {
+  env: context.env,
+  headers: { "Cache-Control": "public, max-age=31536000" },
+});
+```
+
+## Integration
+
+- **@cfast/db** -- After uploading, save the storage key to your database via `db.insert()`. Permission gates happen in actions before the upload starts.
+- **@cfast/auth** -- `auth.requireUser()` provides the `user` object passed to `storage.handle()` context.
+- **@cfast/actions** -- Use `compose()` to combine permission-checked DB operations with storage uploads in a single action workflow.
+
+## Common Mistakes
+
+- **Forgetting to add the R2 binding to wrangler.toml** -- The `bucket` string in `filetype()` must match an R2 binding name in your Workers env.
+- **Missing `STORAGE_SECRET` for signed URLs** -- `getSignedUrl` and `verifySignedUrl` require a `STORAGE_SECRET` string binding in env.
+- **Not wrapping the app with `StorageProvider`** -- `useUpload` requires `StorageProvider` with the client config from `storage.clientConfig()`.
+- **Setting `uploadable: false` and trying to upload** -- File types with `uploadable: false` (e.g. system exports) throw when you call `storage.handle()`.
+- **Expecting storage to check permissions** -- Storage handles bytes, not permissions. Gate uploads via `@cfast/db` operations or `@cfast/actions` before calling `storage.handle()`.

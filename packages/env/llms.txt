@@ -1,0 +1,125 @@
+# @cfast/env
+
+> Type-safe, runtime-validated Cloudflare Worker bindings. Declare once, fail fast at startup.
+
+## When to use
+Use this package when your Cloudflare Worker has bindings (D1, KV, R2, queues, secrets, env vars) and you want type-safe access with startup validation instead of runtime crashes.
+
+## Key concepts
+- **Single schema**: One `defineEnv()` call produces both TypeScript types and runtime validation.
+- **Fail fast**: `init()` validates all bindings at Worker startup. If anything is missing, you get a single `EnvError` listing every failure.
+- **Zero hot-path cost**: Validation runs once. After that, `get()` returns a cached typed object.
+- **Duck-type validation**: Object bindings (D1, KV, etc.) are checked by probing for known methods, not constructors.
+
+## API Reference
+
+### `defineEnv(schema): { init, get }`
+```typescript
+import { defineEnv } from "@cfast/env";
+
+const env = defineEnv(schema);
+// env.init(rawEnv: Record<string, unknown>): void
+// env.get(): ParsedEnv<typeof schema>
+```
+
+**Schema keys** map binding names to `BindingDef`:
+
+| `type` value | TypeScript result | Validation |
+|---|---|---|
+| `"d1"` | `D1Database` | Has `.prepare()` |
+| `"kv"` | `KVNamespace` | Has `.get()`, `.put()` |
+| `"r2"` | `R2Bucket` | Has `.put()`, `.head()` |
+| `"queue"` | `Queue` | Has `.send()` |
+| `"durable-object"` | `DurableObjectNamespace` | Has `.get()`, `.idFromName()` |
+| `"service"` | `Fetcher` | Has `.fetch()` |
+| `"secret"` | `string` | Non-empty string, no defaults |
+| `"var"` | `string` | String (empty OK), supports `default` and `validate` |
+
+**`var` options:**
+```typescript
+{
+  type: "var",
+  default?: string | { development?: string; staging?: string; production?: string },
+  validate?: (value: string) => boolean,
+}
+```
+
+### `env.init(rawEnv)`
+Call once in your `fetch` handler. First successful call caches the result; subsequent calls are no-ops. Throws `EnvError` if any binding fails.
+
+### `env.get()`
+Returns the validated `ParsedEnv<S>` object. Throws if `init()` hasn't been called successfully.
+
+### `EnvError`
+```typescript
+import { EnvError } from "@cfast/env";
+
+class EnvError extends Error {
+  readonly errors: EnvValidationError[];  // { key: string; message: string }[]
+}
+```
+
+### Derive an `Env` type
+```typescript
+export type Env = ReturnType<typeof env.get>;
+```
+
+## Usage Examples
+
+### Basic Worker setup
+```typescript
+import { defineEnv } from "@cfast/env";
+
+const env = defineEnv({
+  DB: { type: "d1" },
+  CACHE: { type: "kv" },
+  UPLOADS: { type: "r2" },
+  MAILGUN_API_KEY: { type: "secret" },
+  APP_URL: { type: "var", default: "http://localhost:8787" },
+});
+
+export default {
+  async fetch(request, rawEnv) {
+    env.init(rawEnv);
+    const { DB, MAILGUN_API_KEY, APP_URL } = env.get();
+    // DB: D1Database, MAILGUN_API_KEY: string, APP_URL: string
+  },
+};
+```
+
+### Environment-aware defaults
+```typescript
+const env = defineEnv({
+  APP_URL: {
+    type: "var",
+    default: {
+      development: "http://localhost:8787",
+      staging: "https://staging.myapp.com",
+      production: "https://myapp.com",
+    },
+  },
+});
+```
+The current environment is read from a reserved `ENVIRONMENT` binding in `rawEnv` (defaults to `"development"`). Valid values: `"development"`, `"staging"`, `"production"`.
+
+### Custom validation
+```typescript
+const env = defineEnv({
+  LOG_LEVEL: {
+    type: "var",
+    default: "info",
+    validate: (v) => ["debug", "info", "warn", "error"].includes(v),
+  },
+});
+```
+
+## Integration
+- Pass `env.get().DB` directly to `@cfast/db`'s `createDb()`.
+- Use `ReturnType<typeof env.get>` as your `Env` type in function signatures across your app.
+
+## Common Mistakes
+- **Calling `env.get()` before `env.init()`** -- throws a plain `Error`. Always call `init()` first.
+- **Declaring `ENVIRONMENT` in your schema** -- it's a reserved binding read automatically from `rawEnv`. Don't redeclare it.
+- **Using `default` on `secret` bindings** -- secrets don't support defaults. Use `"var"` if you need a default.
+- **Catching only the first error** -- `EnvError.errors` is an array of all failures. Iterate it to fix everything in one pass.
+- **Expecting re-validation** -- after a successful `init()`, subsequent calls are no-ops. The first valid `rawEnv` wins.

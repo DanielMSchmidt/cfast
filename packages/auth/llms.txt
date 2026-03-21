@@ -1,0 +1,188 @@
+# @cfast/auth
+
+> Authentication for Cloudflare Workers: magic email links, passkeys, roles, impersonation. Built on Better Auth.
+
+## When to use
+
+Use `@cfast/auth` to add authentication to a cfast app. It handles login (magic link + passkeys), session management, role assignment, and user impersonation. It produces the `user` and `grants` objects that `@cfast/db` needs for permission-aware queries.
+
+## Key concepts
+
+- **Two-phase initialization.** `createAuth(config)` returns an `initAuth` factory. Call `initAuth({ d1, appUrl })` per-request to get an `AuthInstance`.
+- **Roles bridge auth and permissions.** Auth assigns roles to users. `@cfast/permissions` defines what roles can do. The `grants` from auth feed directly into `createDb()`.
+- **Cookie-based redirect-back.** Unauthenticated users get a `cfast_redirect_to` cookie before redirecting to `/login`. After login, the cookie restores their intended destination.
+
+## API Reference
+
+### Server: createAuth(config) => initAuth
+
+```typescript
+import { createAuth } from "@cfast/auth";
+
+export const initAuth = createAuth({
+  permissions: Permissions,            // from definePermissions()
+  magicLink?: {
+    sendMagicLink: (params: { email: string; url: string }) => Promise<void>,
+  },
+  passkeys?: { rpName: string; rpId: string },
+  session?: { expiresIn?: string },    // e.g. "30d"
+  redirects?: { afterLogin?: string; loginPath?: string },
+  anonymousRoles?: string[],
+  defaultRoles?: string[],             // default: ["reader"]
+  roleGrants?: Record<string, string[]>,  // who can assign which roles
+  impersonation?: { allowedRoles?: string[] },
+  templates?: { magicLink?: (props: { url: string; email: string }) => string },
+});
+```
+
+### initAuth(env) => AuthInstance
+
+```typescript
+const auth: AuthInstance = initAuth({ d1: env.DB, appUrl: "https://myapp.com" });
+```
+
+### AuthInstance methods
+
+```typescript
+auth.createContext(request): Promise<AuthContext>
+// { user: AuthUser | null, grants: Grant[] }
+
+auth.requireUser(request): Promise<AuthenticatedContext>
+// { user: AuthUser, grants: Grant[] }  -- throws 302 redirect if not authenticated
+
+auth.getRoles(userId): Promise<string[]>
+auth.setRole(userId, role, caller?): Promise<void>
+auth.setRoles(userId, roles, caller?): Promise<void>
+auth.removeRole(userId, role): Promise<void>
+
+auth.impersonate(adminUserId, targetUserId): Promise<void>
+auth.stopImpersonating(adminUserId): Promise<void>
+
+auth.sendMagicLink({ email, callbackURL? }): Promise<void>
+auth.handler(request): Promise<Response>   // forwards to Better Auth
+```
+
+### AuthUser type
+
+```typescript
+type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  roles: string[];
+  isImpersonating?: boolean;
+  realUser?: { id: string; name: string };
+};
+```
+
+### createAdminAuth(getAuth): AdminAuthBridge
+
+```typescript
+import { createAdminAuth } from "@cfast/auth";
+
+function createAdminAuth(getAuth: () => AuthInstance): AdminAuthBridge
+```
+
+Creates an admin auth adapter from a cfast auth instance factory. Replaces ~150 lines of manual adapter boilerplate with a single call. The factory is called per-operation to ensure fresh env bindings on Workers.
+
+Returns an object satisfying `@cfast/admin`'s `AdminAuthConfig` interface with: `requireUser`, `hasRole`, `getRoles`, `setRole`, `removeRole`, `setRoles`.
+
+```typescript
+const auth = createAdminAuth(() =>
+  initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL })
+);
+const admin = createAdmin({ auth, db: createDbForAdmin, schema });
+```
+
+### Client exports (`@cfast/auth/client`)
+
+```typescript
+// Providers
+<AuthClientProvider authClient={authClient}>   // wraps app root
+<AuthProvider user={user}>                      // wraps layout routes
+<AuthGuard user={user}>                         // layout component, provides user to children
+
+// Hooks
+useCurrentUser(): AuthUser | null              // user from nearest AuthGuard/AuthProvider
+useAuth(): UseAuthReturn                       // { signOut, registerPasskey, deletePasskey, stopImpersonating, authClient }
+
+// Login
+<LoginPage authClient={authClient} components? title? subtitle? />
+createAuthClient(): AuthClientInstance
+```
+
+### LoginComponents slots
+
+```typescript
+type LoginComponents = {
+  Layout?, EmailInput?, PasskeyButton?, MagicLinkButton?,
+  SuccessMessage?, ErrorMessage?,
+};
+```
+
+### Route plugin (`@cfast/auth/plugin`)
+
+```typescript
+import { authRoutes } from "@cfast/auth/plugin";
+// In routes.ts:
+export default [...authRoutes({ handlerFile: "routes/auth.$.tsx" }), ...otherRoutes];
+```
+
+### Schema (`@cfast/auth/schema`)
+
+Drizzle tables: `user`, `session`, `passkey`, `role`, `impersonation_log`.
+
+## Usage Examples
+
+### Protect a layout route
+
+```typescript
+// routes/_protected.tsx
+import { AuthGuard } from "@cfast/auth/client";
+
+export async function loader({ request, context }) {
+  const auth = initAuth({ d1: context.env.DB, appUrl: context.env.APP_URL });
+  const { user, grants } = await auth.requireUser(request);
+  return { user };
+}
+
+export default function ProtectedLayout() {
+  const { user } = useLoaderData<typeof loader>();
+  return <AuthGuard user={user}><Outlet /></AuthGuard>;
+}
+```
+
+### Auth -> Db flow in a loader
+
+```typescript
+export async function loader({ request, context }) {
+  const auth = initAuth({ d1: context.env.DB, appUrl: context.env.APP_URL });
+  const { user, grants } = await auth.requireUser(request);
+
+  const db = createDb({ d1: context.env.DB, schema, grants, user });
+  const posts = await db.query(postsTable).findMany().run({});
+  return { user, posts };
+}
+```
+
+### Role management
+
+```typescript
+await auth.setRole(userId, "editor");
+await auth.setRoles(userId, ["editor", "moderator"]);
+await auth.removeRole(userId, "editor");
+```
+
+## Integration
+
+- **@cfast/permissions** -- `createAuth({ permissions })` takes the permissions config. Roles defined in permissions are the same roles assigned to users. `auth.requireUser()` returns `grants` resolved from the user's roles.
+- **@cfast/db** -- Pass `{ user, grants }` from `auth.requireUser()` directly to `createDb()`. Role changes via `auth.setRole()` take effect on the next request.
+- **@cfast/ui/joy** -- Provides `joyLoginComponents` for Joy UI styled login page slots.
+
+## Common Mistakes
+
+- **Calling `createAuth()` per-request** -- `createAuth()` is called once at module level. Only `initAuth()` is called per-request with the D1 binding.
+- **Forgetting to add auth routes** -- The magic link callback and passkey endpoints need `authRoutes()` in your `routes.ts`.
+- **Using `unsafe()` instead of roles for admin** -- Admins should have a proper role with grants, not bypass permissions entirely.
+- **Not wrapping the app with `AuthClientProvider`** -- `useAuth()` and `LoginPage` require the provider at the app root.

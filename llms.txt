@@ -1,0 +1,137 @@
+# cfast
+
+> Composable TypeScript libraries for building production-ready web applications on Cloudflare Workers with React Router 7.
+
+cfast is a monorepo of packages that share three core philosophies:
+
+1. **Permissions are first-class.** Define once with `@cfast/permissions`, enforce in the DB with `@cfast/db`, reflect in the UI with `@cfast/actions` + `@cfast/ui`. Zero duplication.
+2. **The database drives the UI.** Your Drizzle schema is the source of truth. Forms, admin panels, validation, and CRUD interfaces derive from it.
+3. **Common patterns, not configuration.** Multi-action routes, infinite scroll, pagination, magic-link auth, role management -- solved once, imported.
+
+## Stack
+
+- **Runtime:** Cloudflare Workers
+- **Framework:** React Router v7+ (file-based routing)
+- **Database:** Cloudflare D1 via Drizzle ORM
+- **Auth:** Better Auth (magic email + passkeys)
+- **Email:** Mailgun via react-email
+- **Storage:** Cloudflare R2
+- **UI:** Plugin-based (ships with MUI Joy UI)
+
+## Mental Models
+
+**Permissions flow down:** `definePermissions()` -> `resolveGrants(permissions, roles)` -> `createDb({ grants })` -> every `Operation` checks permissions -> `@cfast/actions` sends `.permitted` booleans to client -> UI hides/disables.
+
+**Operations are lazy:** `db.query(posts).findMany()` returns an `Operation`, not a promise. Inspect `.permissions` before calling `.run()`. This enables client-side UI adaptation without round-trips.
+
+**Schema drives everything:** Drizzle table definitions -> `@cfast/forms` AutoForm fields, `@cfast/admin` list/detail views, `@cfast/ui` DataTable columns, `@cfast/pagination` cursor columns.
+
+**Plugins compose features:** `@cfast/core`'s `createApp().use(authPlugin()).use(dbPlugin())` wires per-request context. Each plugin's `setup()` receives prior plugins' output. Packages also work standalone without core.
+
+**Isomorphic types:** Same permission definitions, validation rules, and data types on client and server. The button knows it should be disabled before the request is made.
+
+## Packages
+
+### Core Infrastructure
+- [`@cfast/env`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/env): Type-safe Cloudflare bindings with runtime validation at startup. `defineEnv()` -> `env.init(rawEnv)` -> `env.get()`.
+- [`@cfast/permissions`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/permissions): Isomorphic permission system. `definePermissions({ roles, grants, hierarchy })` + `grant(action, subject, { where })`. Compiles to Drizzle WHERE clauses. `can(grants, action, table)` for quick grant-level boolean checks.
+- [`@cfast/db`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/db): Permission-aware Drizzle queries. `createDb({ d1, schema, grants, user })` returns lazy `Operation` objects with `.permissions` and `.run()` (params optional, defaults to `{}`). `composeSequential(ops)` shorthand for running operations in order.
+- [`@cfast/auth`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/auth): Authentication via Better Auth. Magic email + passkeys. Role management, impersonation. `createAuth({ permissions })`. `createAdminAuth(getAuth)` builds admin auth adapter from auth instance factory.
+- [`@cfast/storage`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/storage): Schema-driven R2 file uploads. `defineStorage()` + `filetype()`. Multipart, validation, client `useUpload()` hook.
+
+### UI & DX
+- [`@cfast/actions`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/actions): Multi-action routes. `createAction()` returns `.action` (server handler), `.loader()` (injects permissions), `.client` (for `useActions()` hook). `ActionForm` auto-injects hidden fields from action input.
+- [`@cfast/forms`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/forms): Auto-generated forms from Drizzle schema. `<AutoForm table={posts} mode="create" />`. Plugin-based rendering (Joy UI ships built-in).
+- [`@cfast/ui`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/ui): Permission-aware components. DataTable, FilterBar, ListView, DetailView, ActionButton, PermissionGate, AppShell, DropZone. Headless core + Joy UI plugin.
+- [`@cfast/pagination`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/pagination): Cursor-based, offset-based pagination, infinite scroll. Server helpers in `@cfast/db`, client hooks here.
+- [`@cfast/admin`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/admin): Auto-generated admin UI from Drizzle schema. One route = full admin. Uses `@cfast/ui` for rendering, `@cfast/db` for data, `@cfast/auth` for user management.
+- [`@cfast/email`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/email): Workers-native email. react-email rendering + pluggable providers (Mailgun, console). `createEmailClient({ provider })`.
+
+### Composition & Tooling
+- [`@cfast/core`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/core): Optional app object. `createApp().use(plugin)` wires per-request context + client provider tree.
+- [`create-cfast`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/create-cfast): Scaffolder. `npm create cfast@latest my-app`.
+
+## End-to-End Example
+
+```typescript
+// 1. Define permissions (isomorphic)
+import { definePermissions, grant } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+import { posts } from "./schema";
+
+export const permissions = definePermissions({
+  roles: ["anonymous", "user", "admin"] as const,
+  grants: {
+    anonymous: [grant("read", posts, { where: (p) => eq(p.published, true) })],
+    user: [
+      grant("create", posts),
+      grant("update", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+    ],
+    admin: [grant("manage", "all")],
+  },
+});
+
+// 2. Query with automatic permission enforcement (server)
+import { createDb } from "@cfast/db";
+import { can } from "@cfast/permissions";
+
+export async function loader({ request, context }) {
+  const user = await auth.requireUser(request);
+  const grants = resolveGrants(permissions, user?.role ?? "anonymous");
+  const db = createDb({ d1: context.env.DB, schema, grants, user });
+
+  // Quick grant-level check (no DB hit)
+  const canCreate = can(grants, "create", posts); // true/false
+
+  // Permission WHERE clause injected automatically
+  const op = db.query(posts).findMany();
+  op.permissions; // [{ action: "read", table: posts }]
+  return { posts: await op.run(), canCreate }; // run() params optional
+}
+
+// 3. Permission-aware UI (client)
+import { useActions } from "@cfast/actions/client";
+
+function PostActions({ postId }) {
+  const actions = useActions(composed.client);
+  const remove = actions.deletePost({ postId });
+
+  return (
+    <button onClick={remove.submit} disabled={!remove.permitted}>
+      Delete
+    </button>
+  );
+}
+```
+
+## What Not To Do
+
+- **Don't share a `Db` instance across requests.** It captures the user at creation. Create one per request.
+- **Don't use `db.unsafe()` for admin endpoints.** Use a role with `grant("manage", "all")` so actions remain auditable.
+- **Don't import tables from different paths.** Drizzle uses reference equality. Always import from the same module you pass as `schema`.
+- **Don't use `with` (relational queries) for permission-sensitive joins.** Permission filters only apply to the root table. Query relations separately.
+- **Don't forget `as const` on the roles array.** TypeScript needs the literal types for inference.
+
+## Quick Start
+
+```bash
+npm create cfast@latest my-app
+cd my-app
+pnpm dev
+```
+
+## Links
+
+- [GitHub Repository](https://github.com/DanielMSchmidt/cfast)
+- [`@cfast/env` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/env): Type-safe Cloudflare bindings
+- [`@cfast/permissions` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/permissions): Permission system
+- [`@cfast/db` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/db): Permission-aware database
+- [`@cfast/auth` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/auth): Authentication
+- [`@cfast/storage` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/storage): File uploads
+- [`@cfast/actions` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/actions): Multi-action routes
+- [`@cfast/forms` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/forms): Auto-generated forms
+- [`@cfast/ui` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/ui): Component library
+- [`@cfast/pagination` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/pagination): Pagination hooks
+- [`@cfast/admin` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/admin): Admin panel
+- [`@cfast/email` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/email): Email sending
+- [`@cfast/core` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/core): App composition

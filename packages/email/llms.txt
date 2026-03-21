@@ -1,0 +1,188 @@
+# @cfast/email
+
+> Send emails from Cloudflare Workers. Write them with react-email. Swap providers with a plugin.
+
+## When to use
+Use this package when you need to send transactional emails from Cloudflare Workers (or any edge runtime that cannot use SMTP). Templates are React components via react-email. Provider backends are pluggable.
+
+## Key concepts
+- **Workers-native**: Uses `fetch` and `FormData` instead of SMTP. No Node.js dependencies.
+- **Lazy config**: Both `provider` and `from` accept getter functions called at send time, which is the Workers-friendly pattern for accessing env bindings not available at module scope.
+- **React templates**: Email bodies are React components rendered to HTML and plain text via `@react-email/render`.
+- **Pluggable providers**: Ships with Mailgun and a console (dev) provider. Custom providers implement a simple `{ name, send }` interface.
+
+## API Reference
+
+### Core (`@cfast/email`)
+
+```typescript
+function createEmailClient(config: EmailClientConfig): EmailClient;
+
+type EmailClientConfig = {
+  provider: EmailProvider | (() => EmailProvider);  // static or lazy getter
+  from: string | (() => string);                    // default sender, static or lazy
+};
+
+type EmailClient = {
+  send: (options: SendOptions) => Promise<{ id: string }>;
+};
+
+type SendOptions = {
+  to: string;              // recipient address
+  subject: string;         // email subject
+  react: ReactElement;     // react-email component to render
+  from?: string;           // override default sender for this message
+};
+
+type EmailMessage = {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;   // rendered HTML
+  text: string;   // rendered plain text
+};
+
+type EmailProvider = {
+  name: string;
+  send: (message: EmailMessage) => Promise<{ id: string }>;
+};
+
+class EmailDeliveryError extends Error {
+  readonly provider: string;     // e.g. "mailgun"
+  readonly statusCode?: number;  // HTTP status from provider API
+  readonly response?: string;    // raw response body
+  constructor(message: string, options: { provider: string; statusCode?: number; response?: string });
+}
+```
+
+### Mailgun Provider (`@cfast/email/mailgun`)
+
+```typescript
+function mailgun(getConfig: () => { apiKey: string; domain: string }): EmailProvider;
+```
+
+### Console Provider (`@cfast/email/console`)
+
+```typescript
+function console(): EmailProvider;
+// Logs email details to console. Returns { id: "console-{uuid}" }.
+```
+
+## Usage Examples
+
+### Setup with Mailgun
+```typescript
+// app/email.server.ts
+import { createEmailClient } from "@cfast/email";
+import { mailgun } from "@cfast/email/mailgun";
+
+export const email = createEmailClient({
+  provider: mailgun(() => ({
+    apiKey: env.get().MAILGUN_API_KEY,
+    domain: env.get().MAILGUN_DOMAIN,
+  })),
+  from: () => `MyApp <noreply@${env.get().MAILGUN_DOMAIN}>`,
+});
+```
+
+### Setup for development
+```typescript
+import { createEmailClient } from "@cfast/email";
+import { console as consoleDev } from "@cfast/email/console";
+
+export const email = createEmailClient({
+  provider: consoleDev(),
+  from: "Dev <dev@localhost>",
+});
+```
+
+### Send an email
+```typescript
+import { email } from "~/email.server";
+import { WelcomeEmail } from "~/email/templates/welcome";
+
+await email.send({
+  to: "user@example.com",
+  subject: "Welcome to MyApp",
+  react: <WelcomeEmail name="Daniel" />,
+});
+```
+
+### Write a template
+```tsx
+import { Html, Head, Body, Text, Link } from "@react-email/components";
+
+type WelcomeEmailProps = { name: string };
+
+export function WelcomeEmail({ name }: WelcomeEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Body>
+        <Text>Hi {name},</Text>
+        <Text>Welcome to MyApp.</Text>
+        <Link href="https://myapp.com/dashboard">Go to Dashboard</Link>
+      </Body>
+    </Html>
+  );
+}
+```
+
+### Error handling
+```typescript
+import { EmailDeliveryError } from "@cfast/email";
+
+try {
+  await email.send({ to, subject, react: <Template /> });
+} catch (error) {
+  if (error instanceof EmailDeliveryError) {
+    console.error(error.provider);   // "mailgun"
+    console.error(error.statusCode); // 401
+    console.error(error.response);   // "Unauthorized"
+  }
+}
+```
+
+### Custom provider
+```typescript
+import type { EmailProvider, EmailMessage } from "@cfast/email";
+import { EmailDeliveryError } from "@cfast/email";
+
+const myProvider: EmailProvider = {
+  name: "my-provider",
+  async send(message: EmailMessage): Promise<{ id: string }> {
+    const res = await fetch("https://api.example.com/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify(message),
+    });
+    if (!res.ok) {
+      throw new EmailDeliveryError(await res.text(), {
+        provider: "my-provider",
+        statusCode: res.status,
+        response: await res.text(),
+      });
+    }
+    const data = await res.json();
+    return { id: data.id };
+  },
+};
+```
+
+## Package exports
+```
+@cfast/email         -> createEmailClient, EmailDeliveryError, types
+@cfast/email/mailgun -> mailgun
+@cfast/email/console -> console
+```
+
+## Integration
+- **@react-email/render**: Used internally to render React elements to HTML and plain text.
+- **@react-email/components**: Use in templates for email-safe HTML structure (`Html`, `Head`, `Body`, `Text`, `Link`, etc.).
+- **Cloudflare Workers**: Designed for Workers runtime. Config getters handle the lazy env binding pattern.
+
+## Common Mistakes
+- Passing static env values instead of getter functions. In Workers, env bindings are not available at module scope. Use `mailgun(() => ({ apiKey: env.get().KEY, ... }))` not `mailgun({ apiKey: env.KEY, ... })`.
+- Importing `console` from `@cfast/email/console` shadows the global `console`. Use a renamed import: `import { console as consoleDev } from "@cfast/email/console"`.
+- Not catching `EmailDeliveryError`. The client does not catch -- callers decide whether to fire-and-forget or handle errors.
+- Using Node.js email libraries (nodemailer, etc.) alongside this package. This package is designed for edge runtimes without SMTP support.

@@ -1,0 +1,150 @@
+# create-cfast
+
+> Scaffold a fully wired Cloudflare Workers + React Router + cfast project in one command.
+
+## When to use
+
+Use `create-cfast` to start a new cfast project. It sets up the project structure, installs selected @cfast packages, generates configuration files (wrangler.toml, env schema, auth setup), and provides working example routes.
+
+## Key concepts
+
+- **Interactive prompts**: Asks for project name, which @cfast packages to include, and UI library choice. Can be fully driven by CLI flags for non-interactive use.
+- **Feature dependency resolution**: Selecting `admin` auto-enables `db`, `ui`, and `auth`. Selecting `auth` auto-enables `db`.
+- **Template overlays**: A base template is copied first, then feature-specific overlays are applied in order: `db`, `auth`, `storage`, `email`, `ui`, `admin`.
+- **Environment-aware secrets**: Creates `.dev.vars` for local development. All secret files are `.gitignore`d.
+
+## API Reference
+
+### CLI usage
+
+```bash
+npm create cfast@latest [project-name] [options]
+```
+
+### CLI flags
+
+```
+--auth       Include @cfast/auth (magic email + passkeys)
+--db         Include @cfast/db (D1 + Drizzle ORM)
+--storage    Include @cfast/storage (R2 file uploads)
+--email      Include @cfast/email (email sending)
+--ui         Include @cfast/ui (components + actions)
+--admin      Include @cfast/admin (admin panel)
+--all        Include all packages
+--help       Show help
+```
+
+When any feature flag is provided, interactive feature selection is skipped.
+
+### Programmatic types
+
+```typescript
+type Features = {
+  auth: boolean; db: boolean; storage: boolean;
+  email: boolean; ui: boolean; admin: boolean;
+};
+
+type UiLibrary = "joy" | "headless";
+
+type Config = {
+  projectName: string;
+  targetDir: string;
+  features: Features;
+  uiLibrary: UiLibrary | null;  // null when ui feature is disabled
+};
+```
+
+### Key internal functions
+
+```typescript
+scaffold(config: Config): void              // main scaffolding entry point
+resolveFeatureDeps(features: Features): Features  // auto-enables dependencies
+resolveConfig(raw: Config): Config          // resolves deps + defaults uiLibrary to "joy"
+parseArgs(argv: string[]): CliArgs          // parses CLI arguments
+promptForConfig(args: CliArgs): Promise<Config | null>  // interactive prompts
+```
+
+### Generators (used internally by `scaffold()`)
+
+```typescript
+generateWranglerToml(config): string
+generateEnv(config): string
+generateCfastServer(config): string
+generateViteConfig(config): string
+generateRootTsx(config): string
+generateRoutesTs(config): string
+generateDevVars(config): string | null
+generateAuthSetup(config): string
+mergePackageJsons(base, overlays): Record<string, unknown>
+```
+
+## Usage Examples
+
+### Interactive
+
+```bash
+npm create cfast@latest my-app
+# Prompts for features, UI library
+# Scaffolds project, prints next steps
+```
+
+### Non-interactive (all features)
+
+```bash
+npm create cfast@latest my-app --all
+# Selects all features, defaults to Joy UI
+```
+
+### Specific features
+
+```bash
+npm create cfast@latest my-app --auth --db --email
+# auth auto-enables db (already selected), skips ui/admin/storage
+```
+
+### After scaffolding
+
+```bash
+cd my-app
+pnpm install
+pnpm dev                    # local dev (wrangler + vite)
+pnpm db:generate            # generate D1 migrations
+pnpm db:migrate:local       # apply migrations locally
+pnpm deploy:staging         # deploy to staging
+pnpm deploy:production      # deploy to production
+```
+
+## Generated project structure
+
+```
+my-app/
+  app/
+    routes/           # _index.tsx, login.tsx, dashboard.tsx
+    db/schema.ts      # Drizzle schema with auth tables
+    auth.ts           # @cfast/auth config
+    permissions.ts    # @cfast/permissions definitions
+    cfast.server.ts   # @cfast/core app setup
+    env.ts            # @cfast/env schema
+    root.tsx          # React root with providers
+    routes.ts         # React Router route config
+  wrangler.toml       # D1, KV bindings pre-configured
+  .dev.vars           # local dev secrets
+  vite.config.ts
+  package.json
+```
+
+## Integration
+
+- Scaffolds wiring for **@cfast/core** (`createApp` + plugins in `cfast.server.ts`).
+- Sets up **@cfast/auth** with magic link and passkey config.
+- Configures **@cfast/db** with Drizzle schema and D1 bindings.
+- Generates **@cfast/env** schema from selected features.
+- When `ui` is selected, sets up **@cfast/ui** with Joy UI or headless plugin.
+- When `admin` is selected, adds admin route using **@cfast/admin**.
+
+## Common Mistakes
+
+- Running in a non-empty directory -- `scaffold()` throws if the target directory exists and is not empty.
+- Expecting `--admin` alone to work without auth/db -- dependencies are auto-resolved, but be aware that admin implies auth + db + ui.
+- Forgetting to set API keys in `.dev.vars` after scaffolding -- the generated file has placeholder comments.
+- Using `npm` instead of `pnpm` for the generated project -- the scaffolded `package.json` expects pnpm.

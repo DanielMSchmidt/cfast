@@ -1,0 +1,176 @@
+# @cfast/actions
+
+> Reusable, type-safe, permission-aware actions for React Router. Define operations once -- permissions and execution come from the same place.
+
+## When to use
+Use this package when you need React Router route actions that automatically check user permissions before execution and expose permission status to the client for UI gating (disable/hide buttons).
+
+## Key concepts
+- **Action factory**: `createActions()` binds a `getContext` callback that resolves `{ db, user, grants }` per request. All actions share the same context provider.
+- **Operations**: Each action is defined as an `OperationsFn` that receives `(db, input, ctx)` and returns an `Operation<TResult>` from `@cfast/db`. The operation carries both the mutation logic and permission descriptors.
+- **Four facets**: Every action definition exposes `.action` (route handler), `.loader()` (permission-injecting loader wrapper), `.client` (descriptor for the hook), and `.buildOperation()` (for cross-action composition).
+- **Composition**: `composeActions()` merges multiple actions into one route handler, dispatching by the `_action` discriminator field.
+- **Permission flow**: Loader wraps extract permission descriptors from operations, check them against user grants, and inject `_actionPermissions` into loader data. The `useActions` hook reads this on the client.
+
+## API Reference
+
+### Server (`@cfast/actions`)
+
+```typescript
+function createActions<TUser>(config: ActionsConfig<TUser>): {
+  createAction: <TInput, TResult>(
+    operationsFn: (db: Db, input: TInput, ctx: ActionContext<TUser>) => Operation<TResult>
+  ) => ActionDefinition<TInput, TResult, TUser>;
+
+  composeActions: <TActions extends Record<string, ActionDefinition<any, any, any>>>(
+    actions: TActions
+  ) => ComposedActions<TActions>;
+};
+
+function checkPermissionStatus(grants: Grant[], descriptors: PermissionDescriptor[]): ActionPermissionStatus;
+
+type ActionsConfig<TUser> = {
+  getContext: (args: RequestArgs) => Promise<ActionContext<TUser>>;
+};
+
+type ActionContext<TUser> = { db: Db; user: TUser; grants: Grant[] };
+type RequestArgs = { request: Request; params: Record<string, string | undefined>; context?: unknown };
+
+type ActionDefinition<TInput, TResult, TUser> = {
+  action: (args: RequestArgs) => Promise<TResult>;
+  loader: <T extends Record<string, Serializable>>(
+    loaderFn: (args: RequestArgs) => Promise<T>
+  ) => (args: RequestArgs) => Promise<T & { _actionPermissions: ActionPermissionsMap }>;
+  client: ClientDescriptor;
+  buildOperation: (db: Db, input: TInput, ctx: ActionContext<TUser>) => Operation<TResult>;
+};
+
+type ComposedActions<TActions> = {
+  action: (args: RequestArgs) => Promise<unknown>;
+  loader: <T extends Record<string, Serializable>>(
+    loaderFn: (args: RequestArgs) => Promise<T>
+  ) => (args: RequestArgs) => Promise<T & { _actionPermissions: ActionPermissionsMap }>;
+  client: ClientDescriptor;
+  actions: TActions;
+};
+
+type ActionPermissionStatus = { permitted: boolean; invisible: boolean; reason: string | null };
+type ActionPermissionsMap = Record<string, ActionPermissionStatus>;
+```
+
+### Client (`@cfast/actions/client`)
+
+```typescript
+function useActions(descriptor: ClientDescriptor): Record<string, (input?: Serializable) => ActionHookResult>;
+function clientDescriptor(actionNames: readonly string[]): ClientDescriptor;
+
+function ActionForm(props: ActionFormProps): JSX.Element;
+
+type ActionHookResult = {
+  permitted: boolean;   // user has required permissions
+  invisible: boolean;   // user lacks ALL permissions (hide the UI)
+  reason: string | null; // human-readable denial reason
+  submit: () => void;   // submits via fetcher with _action discriminator
+  pending: boolean;     // fetcher in flight
+  data: unknown;        // action return value
+  error: unknown;       // error if action failed
+};
+
+type ActionFormProps = Omit<ComponentProps<typeof Form>, "children" | "action"> & {
+  action: Record<string, string | number | boolean | null | undefined>;
+  children: ReactNode;
+};
+```
+
+`ActionForm` is a form wrapper that auto-injects hidden fields from an action descriptor object. Replaces manual `<input type="hidden">` patterns when using `composeActions`.
+
+```tsx
+import { ActionForm } from "@cfast/actions/client";
+
+<ActionForm action={{ _action: "addComment", postId: post.id }} method="post">
+  <textarea name="content" />
+  <button type="submit">Comment</button>
+</ActionForm>
+```
+
+Each key/value pair in the `action` object becomes a hidden input. The above is equivalent to:
+```tsx
+<Form method="post">
+  <input type="hidden" name="_action" value="addComment" />
+  <input type="hidden" name="postId" value={post.id} />
+  <textarea name="content" />
+  <button type="submit">Comment</button>
+</Form>
+```
+
+## Usage Examples
+
+### 1. Setup the factory (once per app)
+```typescript
+// app/actions.server.ts
+import { createActions } from "@cfast/actions";
+
+export const { createAction, composeActions } = createActions({
+  getContext: async ({ request }) => {
+    const ctx = await requireAuthContext(request);
+    const db = createCfDb(env.DB, ctx);
+    return { db, user: ctx.user, grants: ctx.grants };
+  },
+});
+```
+
+### 2. Define an action
+```typescript
+import { compose } from "@cfast/db";
+import { createAction } from "~/actions.server";
+
+export const deletePost = createAction<{ postId: string }, Response>(
+  (db, input, ctx) =>
+    compose(
+      [db.delete(posts).where(eq(posts.id, input.postId))],
+      async (runDelete) => { await runDelete({}); return redirect("/"); },
+    ),
+);
+```
+
+### 3. Compose multiple actions in a route
+```typescript
+import { composeActions } from "~/actions.server";
+import { deletePost, publishPost } from "~/actions/posts";
+
+const composed = composeActions({ deletePost, publishPost });
+export const action = composed.action;
+export const loader = composed.loader(async ({ params }) => {
+  return { post: await getPost(params.slug) };
+});
+```
+
+### 4. Use on the client
+```typescript
+import { useActions } from "@cfast/actions/client";
+
+function PostActions({ postId }) {
+  const actions = useActions(composed.client);
+  const remove = actions.deletePost({ postId });
+
+  return (
+    <button
+      onClick={remove.submit}
+      disabled={!remove.permitted || remove.pending}
+      hidden={remove.invisible}
+    >
+      Delete
+    </button>
+  );
+}
+```
+
+## Integration
+- **@cfast/db**: Actions return `Operation` / `compose()` from `@cfast/db`. Permission descriptors are extracted from operations.
+- **@cfast/permissions**: User `grants` (from `getContext`) are checked against operation permission descriptors via `checkPermissionStatus`.
+
+## Common Mistakes
+- Forgetting to wrap the loader with `.loader()` -- the client will have no permission data and `useActions` will default to `permitted: true`.
+- Using `createAction` directly without first calling `createActions` to set up the factory. `createAction` is returned by `createActions`, not a standalone export.
+- Omitting the `_action` hidden input in forms when using `composeActions`. The discriminator field is required to route to the correct handler.
+- Calling `useActions` with the wrong descriptor. Use `composed.client` for composed actions, or `singleAction.client` for a single action.

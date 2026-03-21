@@ -1,0 +1,159 @@
+# @cfast/ui
+
+> Permission-aware UI components for cfast apps: data tables, page shells, typed fields, file uploads, and action feedback -- all wired to the framework.
+
+## When to use
+
+Use `@cfast/ui` when building data-driven pages in a cfast app. It sits between your primitive component library (MUI Joy UI) and your application code, providing "smart" components that integrate with `@cfast/db`, `@cfast/actions`, `@cfast/permissions`, `@cfast/pagination`, `@cfast/auth`, and `@cfast/storage`.
+
+Import styled components from `@cfast/ui/joy`. Import headless components and hooks from `@cfast/ui`.
+
+## Key concepts
+
+- **Headless core + UI plugins**: `@cfast/ui` exports hooks and logic. `@cfast/ui/joy` exports Joy UI styled implementations. Custom plugins can provide other UI libraries via `createUIPlugin()`.
+- **Permission-aware**: Components like `ActionButton`, `PermissionGate`, `EmptyState`, sidebar nav items, and `BulkActionBar` automatically hide/disable based on `@cfast/actions` permission status.
+- **Schema-driven**: Pass a Drizzle `table` to `DataTable`, `FilterBar`, `DetailView`, or `useColumnInference()` and columns/fields/filters are inferred from column types.
+- **URL-synced**: `FilterBar` serializes filter state to URL search params. `DataTable` sorting syncs to URL params. Both work with `@cfast/pagination`'s `parseParams()` in loaders.
+
+## API Reference
+
+### Hooks (from `@cfast/ui`)
+
+```typescript
+useActionStatus(descriptor: ClientDescriptor): ActionHookResult
+// Returns { permitted, invisible, pending, submit } for a single action.
+
+useToast(): ToastApi
+// Returns { show, success, error, info, warning } methods. Requires <ToastProvider>.
+
+useActionToast(descriptor: ClientDescriptor, config: Record<string, { success?: string; error?: string }>): void
+// Auto-shows toasts when action results arrive.
+
+useConfirm(): ConfirmFn
+// Returns async (options: ConfirmOptions) => Promise<boolean>. Requires <ConfirmProvider>.
+
+useColumnInference(table: Record<string, unknown> | undefined, columns?: string[]): InferredColumn[]
+// Maps Drizzle table columns to TypedField components. Memoized.
+```
+
+### Components (from `@cfast/ui/joy`)
+
+**Data display:**
+- `DataTable` -- table with sorting, selection, row actions, skeleton loading. Accepts `data` (pagination result), `table` (Drizzle), `columns`, `actions`, `selectable`.
+- `FilterBar` -- URL-synced filters. Accepts `table`, `filters` (array of FilterDef), `searchable`.
+- `ListView` -- full page: title + filters + data table + pagination + empty state + bulk actions.
+- `DetailView` -- read-only detail page for a single record. Auto-lays out TypedFields.
+
+**Layout:**
+- `AppShell` -- sidebar + header + content. Sub-components: `AppShellSidebar`, `AppShellHeader`.
+- `PageContainer` -- title + breadcrumb + tabs + action toolbar.
+- `UserMenu` -- header dropdown with avatar, role badge, auth actions.
+- `NavigationProgress` -- thin progress bar during React Router navigation.
+
+**Actions & feedback:**
+- `ActionButton` -- permission-aware button wrapping a `@cfast/actions` action. Props: `action`, `input`, `whenForbidden: "hide" | "disable" | "show"`, `confirmation`.
+- `PermissionGate` -- conditional render based on action permissions. Props: `action`, `input`, `fallback`.
+- `ConfirmDialog` -- standalone confirmation dialog.
+- `ToastProvider` -- mount once in root layout for toast notifications.
+- `FormStatus` -- renders success/error/validation from action results.
+- `BulkActionBar` -- toolbar for selected rows with bulk actions.
+
+**Files:**
+- `DropZone` -- drag-and-drop upload. Integrates with `@cfast/storage`'s `useUpload()`.
+- `ImagePreview` -- displays image from storage with signed URL handling.
+- `FileList` -- list of uploaded files with download/delete.
+
+**Utilities:**
+- `AvatarWithInitials` -- avatar with automatic initials fallback.
+- `RoleBadge` -- colored chip for user role.
+- `ImpersonationBanner` -- persistent banner when impersonating.
+- `EmptyState` -- permission-aware empty state with optional create CTA.
+
+### TypedField components (from `@cfast/ui`)
+
+```typescript
+DateField, BooleanField, NumberField, TextField,
+EmailField, UrlField, ImageField, FileField,
+RelationField, JsonField
+fieldForColumn(columnMeta): ComponentType  // maps Drizzle column type to field
+fieldsForTable(table): Record<string, ComponentType>  // field map for whole table
+```
+
+### Plugin API
+
+```typescript
+createUIPlugin({ components: { button, tooltip, table, ... } }): UIPlugin
+UIPluginProvider  // React provider for custom UI plugins
+useUIPlugin(): UIPlugin
+useComponent(slotName: string): ComponentType
+```
+
+## Usage Examples
+
+### Full list page
+
+```typescript
+import { ListView } from "@cfast/ui/joy";
+import { usePagination } from "@cfast/pagination";
+import { posts } from "~/db/schema";
+
+function PostsPage() {
+  const pagination = usePagination<Post>();
+  return (
+    <ListView
+      title="Blog Posts"
+      data={pagination}
+      table={posts}
+      columns={["title", "author", "published", "createdAt"]}
+      actions={composed.client}
+      filters={[{ column: "published", type: "select", options: publishedOptions }]}
+      searchable={["title", "content"]}
+      createAction={createPost.client}
+      selectable
+    />
+  );
+}
+```
+
+### Permission-aware button with confirmation
+
+```typescript
+import { ActionButton } from "@cfast/ui/joy";
+
+<ActionButton
+  action={deletePost}
+  input={{ postId }}
+  whenForbidden="disable"
+  confirmation="Delete this post?"
+>
+  Delete
+</ActionButton>
+```
+
+### Auto-toast on action results
+
+```typescript
+import { useActionToast } from "@cfast/ui";
+
+useActionToast(composed.client, {
+  deletePost: { success: "Post deleted", error: "Failed to delete" },
+  publishPost: { success: "Post published" },
+});
+```
+
+## Integration
+
+- **@cfast/actions** -- `ActionButton`, `PermissionGate`, `BulkActionBar`, `useActionToast` consume action descriptors.
+- **@cfast/pagination** -- `DataTable` and `ListView` accept pagination hook results. `FilterBar` serializes to URL params that `parseParams()` reads.
+- **@cfast/db** -- Drizzle schema drives column inference, filter type inference, and field type inference.
+- **@cfast/auth** -- `UserMenu` reads `useCurrentUser()`. `ImpersonationBanner` reads impersonation state.
+- **@cfast/storage** -- `DropZone` integrates with `useUpload()`. `ImagePreview`/`FileList` use storage URLs.
+- **@cfast/admin** -- Admin uses `ListView`, `DetailView`, `DataTable`, `FilterBar`, `AppShell`, etc. Admin generates config; UI renders pixels.
+
+## Common Mistakes
+
+- Importing from `@cfast/ui/joy` on the server -- Joy components are client-only. Use headless exports from `@cfast/ui` for server-safe code.
+- Forgetting `<ToastProvider>` in root layout -- `useToast()` and `useActionToast()` throw without it.
+- Forgetting `<ConfirmProvider>` -- `useConfirm()` and `ActionButton` with `confirmation` need it.
+- Passing raw data arrays to `DataTable` instead of a pagination result from `usePagination()`.
+- Using `whenForbidden="show"` on `ActionButton` when you mean `"disable"` -- `"show"` renders even when forbidden with no visual indicator.

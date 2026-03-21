@@ -18,7 +18,8 @@
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "llms.txt"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm",

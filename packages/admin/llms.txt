@@ -1,0 +1,167 @@
+# @cfast/admin
+
+> A complete admin panel generated from your Drizzle schema, with role management and user impersonation.
+
+## When to use
+
+Use `@cfast/admin` when you need an admin panel for a cfast app. It reads your Drizzle schema, generates list/detail/create/edit views, and provides user management with role assignment and impersonation. Mount it on a single React Router route.
+
+## Key concepts
+
+- **Schema introspection**: `introspectSchema()` reads Drizzle tables, infers column types/labels/relations, and produces `AdminTableMeta[]` config.
+- **Thin layer**: Admin generates configuration. Rendering is delegated to `@cfast/ui` components (`ListView`, `DetailView`, `DataTable`, etc.) and `@cfast/forms` (`AutoForm`).
+- **Permission-aware**: All CRUD operations go through `@cfast/db` with the user's grants. The admin UI respects your permission system -- an editor sees what editors see.
+- **Auth adapter pattern**: Admin does not depend on `@cfast/auth` directly. You provide an `AdminAuthConfig` with callbacks for authentication, role management, and impersonation.
+
+## API Reference
+
+### Main entry point
+
+```typescript
+import { createAdmin } from "@cfast/admin";
+
+createAdmin(config: AdminConfig): { loader, action, Component }
+```
+
+Returns a `{ loader, action, Component }` triple to mount on a React Router route.
+
+### AdminConfig
+
+```typescript
+type AdminConfig = {
+  db: CreateDbFn;                          // (grants, user) => Db
+  auth: AdminAuthConfig;                   // auth adapter (see below)
+  schema: Record<string, SQLiteTable>;     // your Drizzle schema object
+  tables?: Record<string, TableOverrides>; // per-table customization
+  users?: UserManagementConfig;            // { assignableRoles?: string[] }
+  dashboard?: DashboardConfig;             // { widgets?: DashboardWidget[] }
+  requiredRole?: string;                   // default: "admin"
+};
+```
+
+### AdminAuthConfig
+
+```typescript
+type AdminAuthConfig = {
+  requireUser: (request: Request) => Promise<{ user: AdminUser; grants: Grant[] }>;
+  hasRole: (user: AdminUser, role: string) => boolean;
+  getRoles: (userId: string) => Promise<string[]>;
+  setRole: (userId: string, role: string) => Promise<void>;
+  removeRole: (userId: string, role: string) => Promise<void>;
+  setRoles: (userId: string, roles: string[]) => Promise<void>;
+  impersonate?: (adminId: string, targetId: string, request: Request) => Promise<Response>;
+  stopImpersonation?: (request: Request) => Promise<Response>;
+};
+```
+
+### TableOverrides
+
+```typescript
+type TableOverrides = {
+  label?: string;
+  listColumns?: string[];
+  searchable?: string[];
+  defaultSort?: { column: string; direction: "asc" | "desc" };
+  fields?: Record<string, FieldConfig>;  // from @cfast/forms
+  actions?: { row?: RowAction[]; table?: TableAction[] };
+  exclude?: boolean;
+};
+```
+
+### Server/client splitting
+
+For apps where server code must not leak into client bundles:
+
+```typescript
+import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
+import { createAdminComponent } from "@cfast/admin";
+
+const tableMetas = introspectSchema(schema, tableOverrides?);
+const loader = createAdminLoader(config, tableMetas);
+const action = createAdminAction(config, tableMetas);
+const Component = createAdminComponent(tableMetas);
+```
+
+### Schema introspection
+
+```typescript
+introspectSchema(
+  schema: Record<string, SQLiteTable>,
+  tableOverrides?: Record<string, TableOverrides>,
+): AdminTableMeta[]
+```
+
+Auto-excludes auth-internal tables (`session`, `account`, `verification`, `passkey`) unless explicitly configured.
+
+## Usage Examples
+
+### Minimal setup
+
+```typescript
+// app/routes/admin.tsx
+import { createAdmin } from "@cfast/admin";
+import * as schema from "~/schema";
+
+const admin = createAdmin({
+  db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
+  auth: {
+    requireUser: async (request) => {
+      const session = await getSession(request);
+      return { user: session.user, grants: session.grants };
+    },
+    hasRole: (user, role) => user.roles.includes(role),
+    getRoles: (userId) => authInstance.getRoles(userId),
+    setRole: (userId, role) => authInstance.setRole(userId, role),
+    removeRole: (userId, role) => authInstance.removeRole(userId, role),
+    setRoles: (userId, roles) => authInstance.setRoles(userId, roles),
+  },
+  schema,
+});
+
+export const loader = admin.loader;
+export const action = admin.action;
+export default admin.Component;
+```
+
+### With table overrides and dashboard
+
+```typescript
+const admin = createAdmin({
+  db, auth, schema,
+  tables: {
+    posts: {
+      label: "Blog Posts",
+      listColumns: ["title", "author", "published", "createdAt"],
+      searchable: ["title", "content"],
+      defaultSort: { column: "createdAt", direction: "desc" },
+      fields: { content: { component: RichTextEditor } },
+      actions: {
+        row: [{ label: "Publish", action: async (id, formData) => { /* ... */ } }],
+      },
+    },
+  },
+  users: { assignableRoles: ["user", "editor", "moderator", "admin"] },
+  dashboard: {
+    widgets: [
+      { type: "count", table: "users", label: "Total Users" },
+      { type: "recent", table: "posts", label: "Recent Posts", limit: 5 },
+    ],
+  },
+});
+```
+
+## Integration
+
+- **@cfast/ui** -- All rendering. Admin generates config, UI renders pixels (`ListView`, `DetailView`, `DataTable`, `AppShell`, `RoleBadge`, `AvatarWithInitials`).
+- **@cfast/db** -- All data access via permission-checked Operations.
+- **@cfast/auth** -- User management, role assignment, impersonation (via auth adapter callbacks).
+- **@cfast/forms** -- Create/edit forms via `AutoForm`.
+- **@cfast/permissions** -- Permission grants flow through to `@cfast/db` operations.
+- **@cfast/pagination** -- List views paginate via pagination hooks.
+
+## Common Mistakes
+
+- Forgetting to provide `requireUser` that returns `grants` -- the admin needs grants to create a permission-scoped DB instance.
+- Not providing `impersonate`/`stopImpersonation` callbacks and expecting impersonation to work -- these are optional but required for that feature.
+- Trying to customize rendering by passing JSX to `createAdmin` -- instead, override fields via `TableOverrides.fields` (for forms) or use `@cfast/ui` components directly in custom routes.
+- Expecting auth-internal tables (`session`, `account`, `verification`, `passkey`) to show up -- they are auto-excluded. Set `exclude: false` in table overrides to show them.
