@@ -1,8 +1,14 @@
 {
   "name": "@cfast/auth",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Authentication for Cloudflare Workers: magic email, passkeys, roles, and impersonation",
-  "keywords": ["cfast", "cloudflare-workers", "authentication", "passkeys", "magic-link"],
+  "keywords": [
+    "cfast",
+    "cloudflare-workers",
+    "authentication",
+    "passkeys",
+    "magic-link"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",

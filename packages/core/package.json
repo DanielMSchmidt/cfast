@@ -1,8 +1,14 @@
 {
   "name": "@cfast/core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "App composition layer with plugin system for @cfast/* packages",
-  "keywords": ["cfast", "cloudflare-workers", "plugin", "composition", "framework"],
+  "keywords": [
+    "cfast",
+    "cloudflare-workers",
+    "plugin",
+    "composition",
+    "framework"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,7 +28,10 @@
       "types": "./dist/client/index.d.ts"
     }
   },
-  "files": ["dist", "llms.txt"],
+  "files": [
+    "dist",
+    "llms.txt"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"

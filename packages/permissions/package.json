@@ -1,8 +1,14 @@
 {
   "name": "@cfast/permissions",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Isomorphic, composable permission system with Drizzle-native row-level access control",
-  "keywords": ["cfast", "cloudflare-workers", "permissions", "rbac", "access-control"],
+  "keywords": [
+    "cfast",
+    "cloudflare-workers",
+    "permissions",
+    "rbac",
+    "access-control"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
