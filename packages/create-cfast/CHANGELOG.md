@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.4](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.0.3...create-cfast-v0.0.4) (2026-03-21)
+
+
+### Bug Fixes
+
+* trigger create-cfast release and document commit conventions ([#68](https://github.com/DanielMSchmidt/cfast/issues/68)) ([345aa1b](https://github.com/DanielMSchmidt/cfast/commit/345aa1b4a8113a7bed78290652a2ede01c425f81))
+
 ## [0.0.3](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.0.2...create-cfast-v0.0.3) (2026-03-14)
 
 
