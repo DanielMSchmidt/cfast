@@ -74,6 +74,37 @@ These principles are non-negotiable — all code, examples, and tests must follo
 | Manual admin auth adapter (~150 lines) | `createAdminAuth(getAuth)` from `@cfast/auth` |
 | Custom file upload endpoints | `@cfast/storage` with schema-defined file types |
 | `compose` with no data dependencies | `composeSequential(ops)` |
+| `composed.client` from `.server` import | `clientDescriptor()` from `@cfast/actions/client` |
+
+## React Router Server/Client Boundary
+
+Route files are split by React Router into server and client bundles. `.server` imports are **only safe** when they're exclusively referenced in server exports (`loader`, `action`).
+
+**Never** create a module-level variable from a `.server` import and then use it in both a server export and the component:
+
+```ts
+// BAD — `composed` bridges server import into client code
+import { composeActions } from "~/actions.server";
+const composed = composeActions({ ... });
+export const action = composed.action;   // server
+// ...
+useActions(composed.client);              // client — breaks build
+```
+
+Instead, inline the `.server` usage in the server export and use `clientDescriptor()` from `@cfast/actions/client` for client code:
+
+```ts
+// GOOD — .server import only referenced in `action` export
+import { composeActions } from "~/actions.server";
+import { clientDescriptor } from "@cfast/actions/client";
+
+const client = clientDescriptor(["create", "delete"]);
+export const action = composeActions({ create, delete }).action;
+// ...
+useActions(client);
+```
+
+The same rule applies to any `.server` module — only reference it inside `loader`/`action` exports, never at module scope if the result flows into client code.
 
 ## Commands
 
