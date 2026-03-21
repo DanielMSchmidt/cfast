@@ -1,6 +1,6 @@
 {
   "name": "@cfast/actions",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Multi-action routes and permission-aware action definitions for React Router",
   "license": "MIT",
   "repository": {
@@ -21,7 +21,10 @@
       "types": "./dist/client.d.ts"
     }
   },
-  "files": ["dist", "llms.txt"],
+  "files": [
+    "dist",
+    "llms.txt"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"

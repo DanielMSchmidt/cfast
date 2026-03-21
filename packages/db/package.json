@@ -1,6 +1,6 @@
 {
   "name": "@cfast/db",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Permission-aware Drizzle queries for Cloudflare D1",
   "license": "MIT",
   "repository": {
@@ -17,7 +17,10 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist", "llms.txt"],
+  "files": [
+    "dist",
+    "llms.txt"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"

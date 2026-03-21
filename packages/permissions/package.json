@@ -1,6 +1,6 @@
 {
   "name": "@cfast/permissions",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Isomorphic, composable permission system with Drizzle-native row-level access control",
   "license": "MIT",
   "repository": {
@@ -21,7 +21,10 @@
       "types": "./dist/client.d.ts"
     }
   },
-  "files": ["dist", "llms.txt"],
+  "files": [
+    "dist",
+    "llms.txt"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"

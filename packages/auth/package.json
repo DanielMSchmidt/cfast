@@ -1,6 +1,6 @@
 {
   "name": "@cfast/auth",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Authentication for Cloudflare Workers: magic email, passkeys, roles, and impersonation",
   "license": "MIT",
   "repository": {
@@ -29,7 +29,10 @@
       "types": "./dist/schema.d.ts"
     }
   },
-  "files": ["dist", "llms.txt"],
+  "files": [
+    "dist",
+    "llms.txt"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
