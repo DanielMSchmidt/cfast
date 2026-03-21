@@ -11,7 +11,7 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import { useActions } from "@cfast/actions/client";
+import { useActions, clientDescriptor } from "@cfast/actions/client";
 import { ActionForm } from "@cfast/actions/client";
 import { ActionButton } from "@cfast/ui/joy";
 import { can } from "@cfast/permissions";
@@ -31,15 +31,21 @@ import {
 import { getInitials, formatDate } from "~/utils";
 import { Link } from "react-router";
 
-const composed = composeActions({
+const composedClient = clientDescriptor([
+  "deletePost",
+  "publishPost",
+  "unpublishPost",
+  "addComment",
+  "deleteComment",
+]);
+
+export const action = composeActions({
   deletePost,
   publishPost,
   unpublishPost,
   addComment,
   deleteComment,
-});
-
-export const action = composed.action;
+}).action;
 
 export const loader = app.loader(async (ctx, { params, request }) => {
   const db = ctx.db.raw;
@@ -196,7 +202,7 @@ export default function PostDetail() {
   );
 
   const [commentContent, setCommentContent] = useState("");
-  const actions = useActions(composed.client);
+  const actions = useActions(composedClient);
 
   const isAuthor = user?.id === post.authorId;
   const canEdit = isAuthor || can(grants ?? [], "update", posts);
