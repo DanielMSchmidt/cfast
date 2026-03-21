@@ -86,6 +86,16 @@ pnpm typecheck        # Full typecheck across monorepo
 pnpm publish-packages # Build + lint + test + changesets + publish
 ```
 
+## Commits & Releases
+
+This repo uses **release-please** with conventional commits. The commit prefix determines whether a version bump + npm publish is triggered:
+
+- `fix:` → patch bump → release
+- `feat:` → minor bump → release
+- `docs:`, `chore:`, `ci:`, `test:` → **no release**
+
+**Important:** Changes to `create-cfast` templates, `llms.txt`, or `package.json` files are included in the published npm package. Use `fix:` or `feat:` (not `docs:`) when modifying files that ship to users, even if the change feels "documentation-like" (e.g., adding a `CLAUDE.md` template or `llms.txt`).
+
 ## CI
 
 Fix all CI failures including unrelated ones — do not leave the build broken.
