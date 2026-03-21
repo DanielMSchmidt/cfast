@@ -15,6 +15,7 @@ import { useActions, clientDescriptor } from "@cfast/actions/client";
 import { ActionForm } from "@cfast/actions/client";
 import { ActionButton } from "@cfast/ui/joy";
 import { can } from "@cfast/permissions";
+import { hasAnyRole } from "~/permissions";
 import { app } from "~/cfast.server";
 import { posts, users, comments } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
@@ -110,6 +111,13 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     },
   }));
 
+  // Pre-compute permission booleans on the server where grants have Drizzle
+  // table metadata intact. Grants don't survive serialization (Symbols are lost).
+  const isAuthor = user?.id === post.authorId;
+  const canEdit = isAuthor || can(grants, "update", posts);
+  const canDelete = isAuthor || can(grants, "delete", posts);
+  const canPublish = user ? hasAnyRole(user, ["editor", "admin"]) : false;
+
   return {
     post,
     author: author
@@ -118,7 +126,9 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     comments: formattedComments,
     nextCursor,
     user,
-    grants,
+    canEdit,
+    canDelete,
+    canPublish,
   };
 });
 
@@ -188,7 +198,7 @@ function useInfiniteComments(
 }
 
 export default function PostDetail() {
-  const { post, author, comments: initialComments, nextCursor, user, grants } =
+  const { post, author, comments: initialComments, nextCursor, user, canEdit, canDelete, canPublish } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as
     | { success: boolean; action: string }
@@ -203,11 +213,6 @@ export default function PostDetail() {
 
   const [commentContent, setCommentContent] = useState("");
   const actions = useActions(composedClient);
-
-  const isAuthor = user?.id === post.authorId;
-  const canEdit = isAuthor || can(grants ?? [], "update", posts);
-  const canDelete = isAuthor || can(grants ?? [], "delete", posts);
-  const canPublish = can(grants ?? [], "update", posts);
 
   return (
     <>

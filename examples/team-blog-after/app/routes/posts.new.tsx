@@ -19,9 +19,8 @@ import { generateSlug } from "~/utils";
 import { auditLog } from "~/utils.server";
 
 export const loader = app.loader(async (ctx) => {
-  if (!ctx.auth.user || !can(ctx.auth.grants, "create", posts)) {
-    throw redirect("/");
-  }
+  if (!ctx.auth.user) throw redirect("/login");
+  if (!can(ctx.auth.grants, "create", posts)) throw redirect("/");
   return { user: ctx.auth.user };
 });
 

@@ -316,7 +316,7 @@ export default function Profile() {
                     </Typography>
                     {pk.createdAt && (
                       <Typography level="body-xs" sx={{ color: "neutral.500" }}>
-                        Added {new Date(pk.createdAt).toLocaleDateString()}
+                        Added {new Date(pk.createdAt).toISOString().slice(0, 10)}
                       </Typography>
                     )}
                   </ListItemContent>

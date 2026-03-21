@@ -21,14 +21,18 @@ interface CommentItemProps {
   user: AuthUser | null;
 }
 
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
 function formatDate(date: Date): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const d = new Date(date);
+  const h = d.getUTCHours();
+  const m = d.getUTCMinutes().toString().padStart(2, "0");
+  const period = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}, ${h12}:${m} ${period}`;
 }
 
 export function CommentItem({ comment, user }: CommentItemProps) {
