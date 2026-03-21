@@ -2,6 +2,7 @@
   "name": "@cfast/forms",
   "version": "0.0.1",
   "description": "Auto-generated forms from Drizzle schema with progressive customization",
+  "keywords": ["cfast", "cloudflare-workers", "forms", "drizzle", "schema-driven"],
   "license": "MIT",
   "repository": {
     "type": "git",

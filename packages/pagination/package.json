@@ -2,6 +2,7 @@
   "name": "@cfast/pagination",
   "version": "0.0.1",
   "description": "Cursor-based, offset-based pagination and infinite scroll for React Router",
+  "keywords": ["cfast", "cloudflare-workers", "pagination", "cursor", "infinite-scroll"],
   "license": "MIT",
   "repository": {
     "type": "git",

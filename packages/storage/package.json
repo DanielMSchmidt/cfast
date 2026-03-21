@@ -2,6 +2,7 @@
   "name": "@cfast/storage",
   "version": "0.0.1",
   "description": "Type-safe file uploads to Cloudflare R2 with multipart support and a schema-driven routing API",
+  "keywords": ["cfast", "cloudflare-workers", "r2", "file-upload", "storage"],
   "license": "MIT",
   "repository": {
     "type": "git",

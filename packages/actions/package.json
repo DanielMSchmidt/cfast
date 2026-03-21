@@ -2,6 +2,7 @@
   "name": "@cfast/actions",
   "version": "0.0.3",
   "description": "Multi-action routes and permission-aware action definitions for React Router",
+  "keywords": ["cfast", "cloudflare-workers", "react-router", "actions", "multi-action", "permissions"],
   "license": "MIT",
   "repository": {
     "type": "git",
