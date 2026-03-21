@@ -105,10 +105,11 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
 
       return {
         permissions: allPermissions,
-        async run(params: Record<string, unknown>) {
+        async run(params?: Record<string, unknown>) {
+          const p = params ?? {};
           const results: unknown[] = [];
           for (const op of operations) {
-            results.push(await op.run(params));
+            results.push(await op.run(p));
           }
           return results;
         },

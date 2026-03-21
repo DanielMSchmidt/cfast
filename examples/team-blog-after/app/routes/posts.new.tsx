@@ -1,4 +1,3 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form, redirect } from "react-router";
 import { useState } from "react";
 import Container from "@mui/joy/Container";
@@ -10,35 +9,24 @@ import Textarea from "@mui/joy/Textarea";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
 import Alert from "@mui/joy/Alert";
-import { requireAuthContext, hasAnyRole } from "~/auth.helpers.server";
-import { createCfDb } from "~/db/cfast.server";
-import { compose } from "@cfast/db";
-import { posts, auditLogs } from "~/db/schema";
+import { can } from "@cfast/permissions";
+import { composeSequential } from "@cfast/db";
 import { nanoid } from "nanoid";
+import { app } from "~/cfast.server";
+import { posts } from "~/db/schema";
 import { Header } from "~/components/Header";
+import { generateSlug } from "~/utils";
+import { auditLog } from "~/utils.server";
 
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
+export const loader = app.loader(async (ctx) => {
+  if (!ctx.auth.user) throw redirect("/login");
+  if (!can(ctx.auth.grants, "create", posts)) throw redirect("/");
+  return { user: ctx.auth.user };
+});
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const ctx = await requireAuthContext(request);
-  if (!hasAnyRole(ctx.user, ["admin", "editor", "author"])) {
-    throw redirect("/");
-  }
-  return { user: ctx.user };
-}
-
-export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env;
-  const ctx = await requireAuthContext(request);
-  if (!hasAnyRole(ctx.user, ["admin", "editor", "author"])) {
+export const action = app.action(async (ctx, { request }) => {
+  const user = ctx.auth.user;
+  if (!user || !can(ctx.auth.grants, "create", posts)) {
     throw redirect("/");
   }
 
@@ -56,40 +44,24 @@ export async function action({ request, context }: ActionFunctionArgs) {
     return { error: "Title must contain at least one valid character." };
   }
 
-  const cfDb = createCfDb(env.DB, ctx);
-
+  const db = ctx.db.client;
   const postId = nanoid();
 
-  const op = compose(
-    [
-      cfDb.insert(posts).values({
-        id: postId,
-        title,
-        slug,
-        content,
-        excerpt,
-        authorId: ctx.user.id,
-        published: false,
-      }),
-      cfDb.unsafe().insert(auditLogs).values({
-        id: nanoid(),
-        userId: ctx.user.id,
-        action: "post.created",
-        targetType: "post",
-        targetId: postId,
-        metadata: JSON.stringify({ title, slug }),
-      }),
-    ],
-    async (runInsertPost, runInsertAudit) => {
-      await runInsertPost({});
-      await runInsertAudit({});
-    },
-  );
-
-  await op.run({});
+  await composeSequential([
+    db.insert(posts).values({
+      id: postId,
+      title,
+      slug,
+      content,
+      excerpt,
+      authorId: user.id,
+      published: false,
+    }),
+    auditLog(db, user.id, "post.created", { type: "post", id: postId }, { title, slug }),
+  ]).run();
 
   return redirect(`/posts/${slug}/edit`);
-}
+});
 
 export default function NewPost() {
   const { user } = useLoaderData<typeof loader>();

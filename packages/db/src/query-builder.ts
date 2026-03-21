@@ -64,7 +64,7 @@ function buildQueryOperation<TResult>(
 
   return {
     permissions,
-    async run(_params: Record<string, unknown>): Promise<TResult> {
+    async run(_params?: Record<string, unknown>): Promise<TResult> {
       if (!config.unsafe) {
         checkOperationPermissions(config.grants, permissions);
       }
@@ -159,7 +159,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
         const cursorColumns = (options?.cursorColumns ?? []) as Column[];
         return {
           permissions,
-          async run(_params: Record<string, unknown>): Promise<CursorPage<unknown>> {
+          async run(_params?: Record<string, unknown>): Promise<CursorPage<unknown>> {
             const key = ensureTableKey();
             const cursorValues = decodeCursor(params.cursor);
             const direction = options?.orderDirection ?? "desc";
@@ -191,7 +191,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
       // Offset pagination
       return {
         permissions,
-        async run(_params: Record<string, unknown>): Promise<OffsetPage<unknown>> {
+        async run(_params?: Record<string, unknown>): Promise<OffsetPage<unknown>> {
           const key = ensureTableKey();
           const combinedWhere = checkAndBuildWhere();
           const queryOptions = buildBaseQueryOptions(combinedWhere);

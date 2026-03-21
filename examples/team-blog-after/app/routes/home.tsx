@@ -1,22 +1,20 @@
-import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData, Link } from "react-router";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
-import { getUser } from "~/auth.helpers.server";
-import { hasAnyRole } from "~/permissions";
-import { createDbClient } from "~/db/client";
+import { can } from "@cfast/permissions";
+import { app } from "~/cfast.server";
 import { posts, users } from "~/db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { Header } from "~/components/Header";
 import { PostCard } from "~/components/PostCard";
 import { Pagination } from "~/components/Pagination";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const user = await getUser(request);
-  const db = createDbClient(env.DB);
+export const loader = app.loader(async (ctx, { request }) => {
+  const db = ctx.db.raw;
+  const user = ctx.auth.user;
+  const grants = ctx.auth.grants;
 
   const url = new URL(request.url);
   const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10));
@@ -62,11 +60,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     },
   }));
 
-  return { posts: formattedPosts, total, page, limit, user };
-}
+  return { posts: formattedPosts, total, page, limit, user, canCreatePost: can(grants, "create", posts) };
+});
 
 export default function Home() {
-  const { posts: postList, total, page, limit, user } = useLoaderData<typeof loader>();
+  const { posts: postList, total, page, limit, user, canCreatePost } = useLoaderData<typeof loader>();
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -75,7 +73,7 @@ export default function Home() {
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Typography level="h2">Latest Posts</Typography>
-          {user && hasAnyRole(user, ["admin", "editor", "author"]) && (
+          {user && canCreatePost && (
             <Button component={Link} to="/posts/new">
               New Post
             </Button>

@@ -1,6 +1,7 @@
 /** @module permissions */
 export { definePermissions } from "./define-permissions";
 export { grant } from "./grant";
+export { can } from "./can";
 export { checkPermissions } from "./check";
 export { resolveGrants } from "./resolve-grants";
 export { ForbiddenError } from "./errors";

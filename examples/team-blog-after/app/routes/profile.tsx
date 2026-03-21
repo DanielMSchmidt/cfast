@@ -1,4 +1,3 @@
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData, useActionData, Form } from "react-router";
 import { useState } from "react";
 import Container from "@mui/joy/Container";
@@ -15,24 +14,23 @@ import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
 import { useAuth } from "@cfast/auth/client";
-import { requireAuthContext } from "~/auth.helpers.server";
-import { createDbClient } from "~/db/client";
-import { createCfDb } from "~/db/cfast.server";
+import { nanoid } from "nanoid";
+import { app } from "~/cfast.server";
 import { users, passkeys } from "~/db/schema";
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { Header } from "~/components/Header";
+import { getInitials } from "~/utils";
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
-  const env = context.cloudflare.env;
-  const ctx = await requireAuthContext(request);
-  const db = createDbClient(env.DB);
+export const loader = app.loader(async (ctx) => {
+  const user = ctx.auth.user;
+  if (!user) throw new Response("Unauthorized", { status: 401 });
 
-  // Read fresh user data from DB (session may have stale name/avatar after profile updates)
+  const db = ctx.db.raw;
+
   const [freshUser] = await db
     .select()
     .from(users)
-    .where(eq(users.id, ctx.user.id))
+    .where(eq(users.id, user.id))
     .limit(1);
 
   const userPasskeys = await db
@@ -42,14 +40,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       createdAt: passkeys.createdAt,
     })
     .from(passkeys)
-    .where(eq(passkeys.userId, ctx.user.id));
+    .where(eq(passkeys.userId, user.id));
 
-  return { user: { ...ctx.user, ...freshUser }, passkeys: userPasskeys };
-}
+  return { user: { ...user, ...freshUser }, passkeys: userPasskeys };
+});
 
-export async function action({ request, context }: ActionFunctionArgs) {
-  const env = context.cloudflare.env;
-  const ctx = await requireAuthContext(request);
+export const action = app.action(async (ctx, { request }) => {
+  const user = ctx.auth.user;
+  if (!user) throw new Response("Unauthorized", { status: 401 });
+
+  const cfDb = ctx.db.client;
   const formData = await request.formData();
   const _action = formData.get("_action") as string;
 
@@ -59,8 +59,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return { error: "Name is required.", action: "updateProfile" };
     }
 
-    const cfDb = createCfDb(env.DB, ctx);
-    await cfDb.unsafe().update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, ctx.user.id)).run({});
+    await cfDb.unsafe().update(users).set({ name, updatedAt: new Date() }).where(eq(users.id, user.id)).run();
 
     return { success: true, action: "updateProfile" };
   }
@@ -81,48 +80,38 @@ export async function action({ request, context }: ActionFunctionArgs) {
       return { error: "File size must be under 2MB.", action: "uploadAvatar" };
     }
 
-    const key = `avatars/${ctx.user.id}/${nanoid()}-${file.name}`;
+    const key = `avatars/${user.id}/${nanoid()}-${file.name}`;
+    const env = ctx.env;
 
-    await env.UPLOADS.put(key, file.stream(), {
+    await (env.UPLOADS as R2Bucket).put(key, file.stream(), {
       httpMetadata: { contentType: file.type },
     });
 
-    if (ctx.user.avatarUrl && !ctx.user.avatarUrl.startsWith("http")) {
-      const oldKey = ctx.user.avatarUrl!.replace("/api/file/", "");
-      await env.UPLOADS.delete(oldKey);
+    if (user.avatarUrl && !user.avatarUrl.startsWith("http")) {
+      const oldKey = user.avatarUrl!.replace("/api/file/", "");
+      await (env.UPLOADS as R2Bucket).delete(oldKey);
     }
 
     const avatarUrl = `/api/file/${key}`;
 
-    const cfDb = createCfDb(env.DB, ctx);
-    await cfDb.unsafe().update(users).set({ avatarUrl, updatedAt: new Date() }).where(eq(users.id, ctx.user.id)).run({});
+    await cfDb.unsafe().update(users).set({ avatarUrl, updatedAt: new Date() }).where(eq(users.id, user.id)).run();
 
     return { success: true, action: "uploadAvatar" };
   }
 
   if (_action === "removeAvatar") {
-    if (ctx.user.avatarUrl && !ctx.user.avatarUrl.startsWith("http")) {
-      const key = ctx.user.avatarUrl!.replace("/api/file/", "");
-      await env.UPLOADS.delete(key);
+    if (user.avatarUrl && !user.avatarUrl.startsWith("http")) {
+      const key = user.avatarUrl!.replace("/api/file/", "");
+      await (ctx.env.UPLOADS as R2Bucket).delete(key);
     }
 
-    const cfDb = createCfDb(env.DB, ctx);
-    await cfDb.unsafe().update(users).set({ avatarUrl: null, updatedAt: new Date() }).where(eq(users.id, ctx.user.id)).run({});
+    await cfDb.unsafe().update(users).set({ avatarUrl: null, updatedAt: new Date() }).where(eq(users.id, user.id)).run();
 
     return { success: true, action: "removeAvatar" };
   }
 
   throw new Response("Bad Request", { status: 400 });
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
+});
 
 export default function Profile() {
   const { user, passkeys: userPasskeys } = useLoaderData<typeof loader>();
@@ -327,7 +316,7 @@ export default function Profile() {
                     </Typography>
                     {pk.createdAt && (
                       <Typography level="body-xs" sx={{ color: "neutral.500" }}>
-                        Added {new Date(pk.createdAt).toLocaleDateString()}
+                        Added {new Date(pk.createdAt).toISOString().slice(0, 10)}
                       </Typography>
                     )}
                   </ListItemContent>
