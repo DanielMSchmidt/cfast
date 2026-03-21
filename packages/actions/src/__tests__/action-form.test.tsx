@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { createElement } from "react";
+import { type ReactNode, createElement } from "react";
 
 vi.mock("react-router", () => ({
   Form: (props: Record<string, unknown>) => {
     const { children, ...rest } = props;
-    return createElement("form", rest, children);
+    return createElement("form", rest, children as ReactNode);
   },
 }));
 
