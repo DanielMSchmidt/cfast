@@ -9,7 +9,7 @@ dist/
 .dev.vars
 # AI tools
 .claude/
-CLAUDE.md
+!CLAUDE.md
 .cursorrules
 .cursorignore
 .cursor/

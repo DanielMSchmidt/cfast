@@ -29,7 +29,7 @@
       "types": "./dist/schema.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "llms.txt"],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"

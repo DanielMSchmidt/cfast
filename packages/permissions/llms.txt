@@ -1,0 +1,192 @@
+# @cfast/permissions
+
+> Isomorphic, Drizzle-native permission system. Define permissions once, enforce as SQL WHERE clauses.
+
+## When to use
+Use this package to define role-based permissions that compile down to Drizzle `where` clauses for Cloudflare D1. Permissions defined here are consumed by `@cfast/db` for server enforcement and `@cfast/actions` for client-side UI introspection.
+
+## Key concepts
+- **Permissions are WHERE clauses**: A read permission becomes a SQL filter. You don't write a check then repeat the logic in your query.
+- **Two layers**: (1) Structural -- "does this role have any grant for update on posts?" (2) Row-level -- "does the grant's WHERE clause include this specific row?" Structural checks are cheap and work client-side. Row-level checks happen at execution time.
+- **`"manage"` = all CRUD**: A shorthand for granting `read`, `create`, `update`, `delete`.
+- **`"all"` = every table**: `grant("manage", "all")` grants full access to everything.
+- **Role hierarchy**: Roles can inherit from parent roles. Multiple WHERE clauses on the same action+table are OR'd (more permissive grant wins).
+
+## API Reference
+
+### `definePermissions(config): Permissions`
+```typescript
+import { definePermissions, grant } from "@cfast/permissions";
+
+const permissions = definePermissions({
+  roles: ["anonymous", "user", "admin"] as const,
+  grants: {
+    anonymous: [ grant("read", posts, { where: (post) => eq(post.published, true) }) ],
+    user: [ grant("read", posts), grant("create", posts) ],
+    admin: [ grant("manage", "all") ],
+  },
+  hierarchy: {           // optional
+    user: ["anonymous"], // user inherits anonymous grants
+    admin: ["user"],     // admin inherits user grants
+  },
+});
+```
+
+**Curried form** for typed user in WHERE clauses:
+```typescript
+const permissions = definePermissions<MyUser>()({
+  roles: [...] as const,
+  grants: (grant) => ({
+    user: [ grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }) ],
+    // ...
+  }),
+});
+```
+
+**Returns** `Permissions<TRoles>`:
+```typescript
+type Permissions<TRoles> = {
+  roles: TRoles;
+  grants: Record<TRoles[number], Grant[]>;
+  resolvedGrants: Record<TRoles[number], Grant[]>; // hierarchy-expanded
+};
+```
+
+### `grant(action, subject, options?): Grant`
+```typescript
+grant(action: PermissionAction, subject: DrizzleTable | "all", options?: { where?: WhereClause }): Grant
+```
+- `PermissionAction`: `"read" | "create" | "update" | "delete" | "manage"`
+- `WhereClause`: `(columns, user) => DrizzleSQL | undefined`
+
+### `checkPermissions(role, permissions, descriptors): PermissionCheckResult`
+```typescript
+import { checkPermissions } from "@cfast/permissions";
+
+const result = checkPermissions("user", permissions, [
+  { action: "update", table: posts },
+]);
+result.permitted;  // boolean
+result.denied;     // PermissionDescriptor[]
+result.reasons;    // string[]
+```
+
+### `resolveGrants(permissions, roles): Grant[]`
+Merges grants from multiple roles into a flat array. Deduplicates by action+subject and OR-merges WHERE clauses.
+
+### `ForbiddenError`
+```typescript
+import { ForbiddenError } from "@cfast/permissions";
+
+class ForbiddenError extends Error {
+  readonly action: PermissionAction;
+  readonly table: DrizzleTable;
+  readonly role: string | undefined;
+  readonly descriptors: PermissionDescriptor[];
+  toJSON(): { name, message, action, table, role };
+}
+```
+
+### `can(grants, action, table): boolean`
+```typescript
+import { can } from "@cfast/permissions";
+function can(grants: Grant[], action: PermissionAction, table: DrizzleTable): boolean
+```
+Quick grant-level permission check that works directly with resolved grants. Unlike `checkPermissions` (which takes a role string + full permissions object), `can` works with the user's resolved grants -- the same grants available in loaders, actions, and client-side. Returns `true` if any grant permits the action on the table (including `manage`/`all` wildcards).
+
+```typescript
+can(grants, "create", posts)  // → boolean
+can(grants, "delete", comments) // → boolean
+```
+
+### `CRUD_ACTIONS`
+```typescript
+const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", "delete"];
+```
+
+### Client entrypoint
+```typescript
+import { ForbiddenError, can } from "@cfast/permissions/client";
+import type { PermissionAction, CrudAction, PermissionDescriptor, PermissionCheckResult } from "@cfast/permissions/client";
+```
+Use this in client bundles to avoid importing server-only code. `can` is available from both the main and client entrypoints.
+
+## Usage Examples
+
+### Ownership-based permissions with hierarchy
+```typescript
+import { definePermissions, grant } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+import { posts, comments } from "./schema";
+
+export const permissions = definePermissions({
+  roles: ["anonymous", "user", "editor", "admin"] as const,
+  hierarchy: {
+    user: ["anonymous"],
+    editor: ["user"],
+    admin: ["editor"],
+  },
+  grants: {
+    anonymous: [
+      grant("read", posts, { where: (p) => eq(p.published, true) }),
+    ],
+    user: [
+      grant("create", posts),
+      grant("update", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+      grant("delete", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+    ],
+    editor: [
+      grant("read", posts),   // unrestricted overrides inherited "published only"
+      grant("update", posts),
+      grant("delete", posts),
+    ],
+    admin: [
+      grant("manage", "all"),
+    ],
+  },
+});
+```
+
+### Quick permission check with `can()`
+```typescript
+import { can } from "@cfast/permissions";
+
+// In a loader/action -- grants come from auth.requireUser()
+const { grants } = await auth.requireUser(request);
+if (can(grants, "update", posts)) {
+  // user has structural permission to update posts
+}
+
+// In a React component -- grants come from loader data
+function PostCard({ post, grants }) {
+  return (
+    <div>
+      <h2>{post.title}</h2>
+      {can(grants, "update", posts) && <Button>Edit</Button>}
+      {can(grants, "delete", posts) && <Button color="danger">Delete</Button>}
+    </div>
+  );
+}
+```
+
+### Checking permissions manually
+```typescript
+const result = checkPermissions("user", permissions, [
+  { action: "delete", table: posts },
+]);
+if (!result.permitted) {
+  console.log(result.reasons); // ["Role 'user' cannot delete on 'posts'"] -- if no grant exists
+}
+```
+
+## Integration
+- **`@cfast/db`**: Pass `permissions` to `createDb()`. Operations auto-enforce permissions.
+- **`@cfast/actions`**: Actions extract `PermissionDescriptor[]` from operations for client-side `permitted` booleans.
+- **`@cfast/admin`**: Admin CRUD goes through the same permission system.
+
+## Common Mistakes
+- **Forgetting `as const` on roles array** -- without it, TypeScript infers `string[]` and you lose type checking on grant keys.
+- **Expecting WHERE on `"create"` grants** -- create is boolean (can/can't). There's no existing row to filter.
+- **Circular hierarchy** -- detected at runtime and throws `Error`. E.g., A inherits B inherits A.
+- **Using `checkPermissions` for row-level security** -- it only does structural checks (action + table). Row-level WHERE enforcement happens at execution time in `@cfast/db`.
+- **Importing `definePermissions` in client bundles** -- use `@cfast/permissions/client` instead to keep the bundle small.

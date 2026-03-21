@@ -1,0 +1,152 @@
+# @cfast/pagination
+
+> Client-side React hooks for cursor-based, offset-based pagination and infinite scroll with React Router.
+
+## When to use
+Use this package when you need pagination UI in a React Router app backed by `@cfast/db` loaders. Server-side param parsing and query building live in `@cfast/db`; this package provides the client-side hooks that consume the loader data.
+
+## Key concepts
+- **Loader + hook pairs**: Server parses params and returns paginated data (`@cfast/db`). Client hooks consume it (`@cfast/pagination`). Swap the hook to change the UX pattern.
+- **Cursor-based**: For "load more" and infinite scroll. Loader returns `{ items, nextCursor }`. Two hooks: `usePagination` (button) and `useInfiniteScroll` (auto-load on scroll).
+- **Offset-based**: For page navigation. Loader returns `{ items, total, page, totalPages }`. Hook: `useOffsetPagination`.
+- **Deduplication**: Cursor hooks deduplicate accumulated items by key (defaults to `item.id`) to handle data changes during scrolling.
+- **React Router integration**: Hooks read from `useLoaderData()` and fetch subsequent pages via `useFetcher()` or navigate via `useNavigate()`.
+
+## API Reference
+
+### `usePagination<T>(options?): UsePaginationResult<T>`
+Load-more button pattern for cursor-based pagination.
+
+```typescript
+import { usePagination } from "@cfast/pagination";
+
+const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
+```
+
+**Options** (`UsePaginationOptions<T>`):
+- `getKey?: (item: T) => string | number` -- unique key extractor for deduplication. Defaults to `item.id`.
+
+**Returns** (`UsePaginationResult<T>`):
+- `items: T[]` -- accumulated, deduplicated items from all loaded pages
+- `loadMore: () => void` -- fetches next page (no-op if loading or no more pages)
+- `hasMore: boolean` -- true if `nextCursor` exists
+- `isLoading: boolean` -- true while fetching
+
+### `useInfiniteScroll<T>(options?): UseInfiniteScrollResult<T>`
+Automatic loading via IntersectionObserver. Wraps `usePagination` internally.
+
+```typescript
+import { useInfiniteScroll } from "@cfast/pagination";
+
+const { items, sentinelRef, hasMore, isLoading } = useInfiniteScroll<Post>();
+```
+
+**Options** (`UseInfiniteScrollOptions<T>`):
+- `getKey?: (item: T) => string | number` -- same as `usePagination`
+- `rootMargin?: string` -- IntersectionObserver margin. Defaults to `"200px"`.
+
+**Returns** (`UseInfiniteScrollResult<T>`):
+- `items: T[]` -- accumulated, deduplicated items
+- `sentinelRef: RefObject<Element | null>` -- attach to a `<div>` at the bottom of your list
+- `hasMore: boolean`
+- `isLoading: boolean`
+
+### `useOffsetPagination<T>(): UseOffsetPaginationResult<T>`
+Traditional page-number navigation. No options.
+
+```typescript
+import { useOffsetPagination } from "@cfast/pagination";
+
+const { items, total, totalPages, currentPage, goToPage } = useOffsetPagination<Post>();
+```
+
+**Returns** (`UseOffsetPaginationResult<T>`):
+- `items: T[]` -- items for the current page only
+- `total: number` -- total items across all pages
+- `totalPages: number`
+- `currentPage: number` -- 1-based
+- `goToPage: (page: number) => void` -- navigates by updating `?page=` URL param
+
+## Usage Examples
+
+### Cursor-based with load more button
+```tsx
+// Loader (server, uses @cfast/db)
+import { parseCursorParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
+  return await db.query(posts)
+    .paginate(page, { orderBy: desc(posts.createdAt), cursorColumns: [posts.createdAt, posts.id] })
+    .run({});
+}
+
+// Component (client)
+import { usePagination } from "@cfast/pagination";
+
+function PostList() {
+  const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      {hasMore && <button onClick={loadMore} disabled={isLoading}>Load More</button>}
+    </div>
+  );
+}
+```
+
+### Infinite scroll (same loader, different hook)
+```tsx
+import { useInfiniteScroll } from "@cfast/pagination";
+
+function PostFeed() {
+  const { items, sentinelRef, isLoading } = useInfiniteScroll<Post>();
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      <div ref={sentinelRef} />
+      {isLoading && <Spinner />}
+    </div>
+  );
+}
+```
+
+### Offset-based page navigation
+```tsx
+// Loader
+import { parseOffsetParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseOffsetParams(request, { defaultLimit: 20 });
+  return await db.query(posts)
+    .paginate(page, { orderBy: desc(posts.createdAt) })
+    .run({});
+}
+
+// Component
+import { useOffsetPagination } from "@cfast/pagination";
+
+function PostList() {
+  const { items, totalPages, currentPage, goToPage } = useOffsetPagination<Post>();
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      {Array.from({ length: totalPages }, (_, i) => (
+        <button key={i + 1} onClick={() => goToPage(i + 1)} disabled={currentPage === i + 1}>
+          {i + 1}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+## Integration
+- **`@cfast/db`**: Provides server-side `parseCursorParams()`, `parseOffsetParams()`, and `.paginate()` on query operations. The hooks in this package consume the loader data those helpers produce.
+- **React Router**: All hooks depend on `useLoaderData()`, `useFetcher()`, `useNavigate()`, and `useLocation()` from `react-router`.
+
+## Common Mistakes
+- **Forgetting the sentinel `<div ref={sentinelRef} />`** -- `useInfiniteScroll` won't trigger loading without it.
+- **Missing `key` on items without `id`** -- if your items don't have an `id` field, pass a custom `getKey` to avoid broken deduplication.
+- **Using `useOffsetPagination` with cursor loaders** -- the hook expects `{ items, total, page, totalPages }`. Cursor loaders return `{ items, nextCursor }`. Match the hook to the loader.
+- **Not returning paginated data from the loader** -- hooks read from `useLoaderData()`. If the loader returns a different shape, hooks fall back to empty state silently.

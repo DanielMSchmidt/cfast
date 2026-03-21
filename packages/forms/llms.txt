@@ -1,0 +1,184 @@
+# @cfast/forms
+
+> Auto-generated forms from your Drizzle schema. Customize what you need, accept defaults for the rest.
+
+## When to use
+Use this package when you have a Drizzle SQLite table and want a working form without manually wiring up inputs, validation, and labels. Supports both create and edit modes, progressive field customization, and pluggable UI libraries.
+
+## Key concepts
+- **Schema-driven**: Your Drizzle table is the source of truth. Column types map to input types, nullability maps to required/optional, enums map to selects.
+- **Progressive customization**: Start with `<AutoForm table={posts} mode="create" />`. Override individual fields incrementally -- labels, components, visibility, validation -- without rewriting the form.
+- **Headless core + UI plugins**: The core (`introspectTable`, `createResolver`, `createAutoForm`) is UI-agnostic. Rendering is delegated to a plugin. Ships with MUI Joy UI (`@cfast/forms/joy`).
+- **Validation via `v()`**: Attach validation rules directly to Drizzle column builders. The rules are stored as metadata and read back during introspection.
+
+## API Reference
+
+### Core (`@cfast/forms`)
+
+```typescript
+// Introspect a Drizzle table into field definitions
+function introspectTable(table: SQLiteTable): FieldDefinition[];
+
+// Build a react-hook-form resolver from field definitions
+function createResolver(
+  fields: FieldDefinition[],
+  fieldOverrides?: Partial<Record<string, FieldConfig>>
+): Resolver<FieldValues>;
+
+// Attach validation rules to a Drizzle column builder
+function v<T extends ColumnBuilderBase>(builder: T, rules: ValidationRules): T;
+
+// Register UI components as a plugin
+function createFormPlugin(config: { components: FormPluginComponents }): FormPlugin;
+
+// Create an AutoForm component from a plugin
+function createAutoForm(plugin: FormPlugin): React.ComponentType<AutoFormProps>;
+
+type FieldDefinition = {
+  name: string;           // column key
+  inputType: InputType;   // "text" | "number" | "checkbox" | "select"
+  label: string;          // auto-generated from column name
+  required: boolean;      // from NOT NULL
+  hasDefault: boolean;
+  isPrimaryKey: boolean;
+  enumValues?: string[];
+  validation: ValidationRules;
+};
+
+type ValidationRules = {
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: RegExp;
+  message?: string;  // custom error message override
+};
+
+type FieldConfig = {
+  label?: string;
+  placeholder?: string;
+  hidden?: boolean;
+  default?: unknown;
+  component?: React.ComponentType<FieldComponentProps>;
+  validate?: (value: unknown) => string | undefined;
+};
+
+type FieldComponentProps = {
+  name: string;
+  label: string;
+  placeholder?: string;
+  required: boolean;
+  error?: string;
+  enumValues?: string[];
+  register: UseFormRegister<FieldValues>;
+};
+
+type FormPluginComponents = {
+  textInput: React.ComponentType<FieldComponentProps>;
+  numberInput: React.ComponentType<FieldComponentProps>;
+  select: React.ComponentType<FieldComponentProps>;
+  checkbox: React.ComponentType<FieldComponentProps>;
+  form: React.ComponentType<FormWrapperProps>;
+  submitButton: React.ComponentType<SubmitButtonProps>;
+};
+
+type InputType = "text" | "number" | "checkbox" | "select";
+```
+
+### AutoForm Props
+
+```typescript
+type AutoFormProps = {
+  table: SQLiteTable;                              // Drizzle table to generate from
+  mode: "create" | "edit";                         // create = empty, edit = pre-filled
+  data?: Record<string, unknown>;                  // existing data for edit mode
+  onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
+  fields?: Partial<Record<string, FieldConfig>>;   // per-field overrides
+  exclude?: string[];                              // columns to omit
+  form?: UseFormReturn<Record<string, unknown>>;   // external RHF instance
+};
+```
+
+### Joy UI Plugin (`@cfast/forms/joy`)
+
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+// Pre-built AutoForm using MUI Joy UI components. Ready to use.
+```
+
+## Usage Examples
+
+### Minimal create form
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+import { posts } from "./schema";
+
+function CreatePost() {
+  return <AutoForm table={posts} mode="create" onSubmit={handleSubmit} />;
+}
+```
+
+### Edit form with customizations
+```typescript
+<AutoForm
+  table={posts}
+  mode="edit"
+  data={existingPost}
+  fields={{
+    title: { label: "Post Title", placeholder: "Enter a title..." },
+    content: { component: RichTextEditor },
+    authorId: { hidden: true, default: currentUser.id },
+  }}
+  exclude={["createdAt", "updatedAt"]}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Schema-level validation with `v()`
+```typescript
+import { v } from "@cfast/forms";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const posts = sqliteTable("posts", {
+  title: v(text("title").notNull(), { minLength: 3, maxLength: 200 }),
+  views: v(integer("views"), { min: 0 }),
+  slug: v(text("slug").notNull(), { pattern: /^[a-z0-9-]+$/ }),
+  content: text("content").notNull(),
+});
+```
+
+### Custom UI plugin
+```typescript
+import { createFormPlugin, createAutoForm } from "@cfast/forms";
+
+const myPlugin = createFormPlugin({
+  components: {
+    textInput: MyTextInput,
+    numberInput: MyNumberInput,
+    select: MySelect,
+    checkbox: MyCheckbox,
+    form: MyFormWrapper,
+    submitButton: MySubmitButton,
+  },
+});
+
+export const AutoForm = createAutoForm(myPlugin);
+```
+
+## Column-to-input mapping
+| Drizzle Column              | InputType    |
+|-----------------------------|--------------|
+| `text` / `varchar`          | `"text"`     |
+| `integer`                   | `"number"`   |
+| `integer({ mode: "boolean" })` | `"checkbox"` |
+| `text({ enum: [...] })`    | `"select"`   |
+
+## Integration
+- **Drizzle ORM**: `introspectTable` reads column metadata via `getTableColumns`. The `v()` helper stores validation on column builder internals.
+- **react-hook-form**: `createResolver` produces a RHF-compatible resolver. AutoForm uses `useForm` internally (or accepts an external instance).
+
+## Common Mistakes
+- Using `v()` on the built column instead of the builder: `v(text("title").notNull(), rules)` is correct. `v(text("title"), rules).notNull()` is also fine. But you cannot call `v()` after the table is created.
+- Forgetting `mode="edit"` when passing `data` -- in create mode, `data` is ignored.
+- Passing a `fields.validate` function that returns `undefined` on error instead of an error string. Return a string to indicate failure, `undefined` to pass.
+- Excluding a required field without providing a default -- the form will fail validation since the field is NOT NULL but has no input.

@@ -1,0 +1,186 @@
+# @cfast/db
+
+> Lazy, permission-aware Drizzle operations for Cloudflare D1 -- application-level Row-Level Security.
+
+## When to use
+
+Use `@cfast/db` whenever you need to read or write a D1 database in a cfast app. Every query goes through permission checks automatically. You never call Drizzle directly.
+
+## Key concepts
+
+- **Operations are lazy.** Every `db.query/insert/update/delete` call returns an `Operation<TResult>` with `.permissions` (inspectable immediately) and `.run(params)` (executes with permission checks). Nothing touches D1 until you call `.run()`.
+- **Permission checks are structural.** `.run()` always checks the user's grants before executing SQL. Row-level WHERE clauses from grants are injected automatically.
+- **One Db per request.** `createDb()` captures the user at creation time. Never share a `Db` across requests.
+- **`db.unsafe()` is the only escape hatch.** Returns a `Db` that skips all permission checks. Greppable via `git grep '.unsafe()'`.
+
+## API Reference
+
+### createDb(config): Db
+
+```typescript
+import { createDb } from "@cfast/db";
+import * as schema from "./schema";   // must be `import *`
+
+const db = createDb({
+  d1: D1Database,                      // env.DB
+  schema: Record<string, DrizzleTable>,
+  grants: Grant[],                     // from resolveGrants(permissions, roles)
+  user: { id: string } | null,        // null = anonymous
+  cache?: CacheConfig | false,         // default: { backend: "cache-api" }
+});
+```
+
+### Operation<TResult>
+
+```typescript
+type Operation<TResult> = {
+  permissions: PermissionDescriptor[];   // [{ action, table }] -- available immediately
+  run: (params?: Record<string, unknown>) => Promise<TResult>;
+};
+```
+
+### Reads
+
+```typescript
+db.query(table).findMany(options?): Operation<unknown[]>
+db.query(table).findFirst(options?): Operation<unknown | undefined>
+db.query(table).paginate(params, options?): Operation<CursorPage | OffsetPage>
+```
+
+FindManyOptions: `{ columns?, where?, orderBy?, limit?, offset?, with?, cache? }`
+FindFirstOptions: same without `limit`/`offset`.
+
+### Writes
+
+```typescript
+db.insert(table).values({...}): InsertReturningBuilder      // .run() or .returning().run()
+db.update(table).set({...}).where(cond): UpdateReturningBuilder
+db.delete(table).where(cond): DeleteReturningBuilder
+```
+
+All write builders are `Operation<void>` with an optional `.returning()` that changes return type.
+
+### compose(operations, executor): Operation<TResult>
+
+```typescript
+import { compose } from "@cfast/db";
+
+const op = compose(
+  [updatePost, insertAuditLog],
+  async (doUpdate, doAudit) => {
+    const result = await doUpdate();
+    await doAudit();
+    return result;
+  },
+);
+op.permissions;  // merged + deduplicated from both operations
+await op.run(); // executor runs, each sub-op checks its own permissions
+```
+
+### composeSequential(operations): Operation<unknown[]>
+
+```typescript
+import { composeSequential } from "@cfast/db";
+
+const op = composeSequential([updatePost, insertAuditLog]);
+op.permissions;  // merged + deduplicated from all operations
+await op.run();  // runs operations in order, returns results array
+```
+
+Runs operations in order, returns results array. Shorthand for `compose` when there are no data dependencies between operations.
+
+### db.batch(operations): Operation<unknown[]>
+
+Runs operations sequentially with merged permissions. Not D1 native batch.
+
+### db.unsafe(): Db
+
+Returns a new Db that skips permission checks. Use for cron jobs, migrations, system tasks.
+
+### Pagination helpers
+
+```typescript
+import { parseCursorParams, parseOffsetParams } from "@cfast/db";
+
+const params = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
+const page = await db.query(posts).paginate(params, {
+  cursorColumns: [posts.createdAt, posts.id],
+  orderDirection: "desc",
+}).run();
+// CursorPage: { items, nextCursor }
+
+const offsetParams = parseOffsetParams(request);
+const page2 = await db.query(posts).paginate(offsetParams).run();
+// OffsetPage: { items, total, page, totalPages }
+```
+
+### Cache
+
+```typescript
+cache: {
+  backend: "cache-api" | "kv",
+  ttl?: "30s",
+  staleWhileRevalidate?: "5m",
+  exclude?: ["sessions"],
+  kv?: KVNamespace,  // required for "kv" backend
+  onHit?, onMiss?, onInvalidate?,
+}
+```
+
+Per-query: `db.query(t).findMany({ cache: false })` or `{ cache: { ttl: "5m", tags: ["posts"] } }`.
+Manual invalidation: `await db.cache.invalidate({ tags: ["posts"], tables: ["posts"] })`.
+
+## Usage Examples
+
+### Standard loader pattern
+
+```typescript
+export async function loader({ context, request }) {
+  const { user, grants } = await auth.requireUser(request);
+  const db = createDb({ d1: context.env.DB, schema, grants, user });
+
+  const posts = await db.query(postsTable).findMany({
+    where: eq(postsTable.published, true),
+    orderBy: desc(postsTable.createdAt),
+    limit: 10,
+  }).run();
+
+  return { posts };
+}
+```
+
+### Compose a multi-step action
+
+```typescript
+export async function action({ context, request }) {
+  const { user, grants } = await auth.requireUser(request);
+  const db = createDb({ d1: context.env.DB, schema, grants, user });
+
+  const workflow = compose(
+    [
+      db.update(posts).set({ published: true }).where(eq(posts.id, id)),
+      db.insert(auditLogs).values({ action: "publish", targetId: id, userId: user.id }),
+    ],
+    async (doUpdate, doAudit) => {
+      await doUpdate();
+      await doAudit();
+    },
+  );
+
+  await workflow.run();
+}
+```
+
+## Integration
+
+- **@cfast/permissions** -- `grants` come from `resolveGrants(permissions, user.roles)`. Permission WHERE clauses are defined via `grant()` in your permissions config.
+- **@cfast/auth** -- `auth.requireUser(request)` returns `{ user, grants }` which you pass directly to `createDb()`.
+- **@cfast/actions** -- Actions define operations using `@cfast/db`. The framework extracts `.permissions` for client-side UI adaptation.
+
+## Common Mistakes
+
+- **Forgetting `.run()`** -- Operations are lazy. `db.query(t).findMany()` returns an Operation, not results. You must call `.run()`.
+- **Sharing a Db across requests** -- The Db captures the user. Create a new one per request.
+- **Using `import { posts }` instead of `import * as schema`** -- The `schema` config must be `import *` so Drizzle's relational API can look up tables by key name.
+- **Using `db.unsafe()` for admin endpoints** -- Use a role with `grant("manage", "all")` instead. Reserve `unsafe()` for genuinely user-less contexts (cron, migrations).
+- **Expecting relational `with` to have permission filters** -- Permission WHERE clauses only apply to the root table, not joined relations.

@@ -1,0 +1,167 @@
+# @cfast/core
+
+> The app object that wires @cfast/* packages together with a typed plugin system.
+
+## When to use
+
+Use `@cfast/core` when you want multiple cfast packages (auth, db, storage, etc.) to share a single per-request context without repeating initialization boilerplate in every route. It is optional -- individual packages remain fully usable standalone.
+
+## Key concepts
+
+- **Plugin chain**: Plugins run in registration order via `.use()`. Each plugin's `setup()` receives everything prior plugins provided, plus `request` and `env`.
+- **Namespaced context**: Each plugin's return value is nested under its `name` key (e.g., `ctx.auth.user`, `ctx.db.client`). No flat merging, no collisions.
+- **Compile-time dependencies**: Dependent plugins declare requirements via `definePlugin<TRequires>()` (curried form). TypeScript catches missing dependencies at the `.use()` call site.
+- **Client provider composition**: `<app.Provider>` nests all plugin React providers in registration order. `useApp()` accesses client-side plugin exports.
+
+## API Reference
+
+### Server (`@cfast/core`)
+
+```typescript
+import { createApp, definePlugin, CfastPluginError, CfastConfigError } from "@cfast/core";
+
+// Create the app
+createApp(config: { env: TSchema; permissions: TPermissions }): App
+
+// App methods
+app.init(rawEnv: Record<string, unknown>): void       // validate env (call once in Workers entry)
+app.env(): ParsedEnv<TSchema>                          // typed validated environment
+app.context(request, context?): Promise<AppContext>     // build per-request context
+app.loader(fn: (ctx, args) => T): (args) => Promise<T> // convenience route wrapper
+app.action(fn: (ctx, args) => T): (args) => Promise<T> // convenience route wrapper
+app.use(plugin): App                                    // register a plugin (chainable)
+app.Provider: ComponentType<{ children: ReactNode }>    // composed React provider
+app.permissions: TPermissions                           // permissions config
+```
+
+### Plugin definition
+
+```typescript
+// Leaf plugin (no dependencies) -- direct form, full inference
+definePlugin({
+  name: "analytics",
+  setup(ctx) { return { track: (event: string) => {} }; },
+  Provider?: ComponentType<{ children: ReactNode }>,
+  client?: { /* client-side values for useApp() */ },
+}): CfastPlugin
+
+// Dependent plugin -- curried form, specify TRequires explicitly
+definePlugin<AuthPluginProvides>()({
+  name: "db",
+  setup(ctx) {
+    ctx.auth.user;  // typed from AuthPluginProvides
+    return { client: createDb({}) };
+  },
+}): CfastPlugin
+```
+
+### Plugin type token
+
+```typescript
+// Each package exports a type token for dependents:
+export type AuthPluginProvides = PluginProvides<typeof authPlugin>;
+// Resolves to: { auth: { user: AuthUser | null; grants: Grant[]; instance: AuthInstance } }
+
+// Multiple dependencies -- intersect type tokens:
+definePlugin<AuthPluginProvides & DbPluginProvides>()({ ... })
+```
+
+### Client (`@cfast/core/client`)
+
+```typescript
+import { useApp } from "@cfast/core/client";
+import { CoreContext, createCoreProvider } from "@cfast/core/client";
+
+useApp<T>(): T  // typed access to all plugins' client exports (throws outside <app.Provider>)
+```
+
+### Error classes
+
+```typescript
+CfastPluginError  // thrown when plugin setup() fails; has .pluginName and .cause
+CfastConfigError  // thrown at startup for config issues (e.g., duplicate plugin names)
+```
+
+## Usage Examples
+
+### App setup
+
+```typescript
+// app/cfast.ts
+import { createApp } from "@cfast/core";
+import { authPlugin } from "@cfast/auth";
+import { dbPlugin } from "@cfast/db";
+import { storagePlugin } from "@cfast/storage";
+
+export const app = createApp({ env: envSchema, permissions })
+  .use(authPlugin({ magicLink: { sendMagicLink: async ({ email, url }) => {} } }))
+  .use(dbPlugin({ schema }))
+  .use(storagePlugin(storageSchema));
+```
+
+### Workers entry
+
+```typescript
+// workers/app.ts
+import { app } from "~/cfast";
+export default {
+  async fetch(request, rawEnv, ctx) {
+    app.init(rawEnv);
+    return requestHandler(request, { cloudflare: { env: app.env(), ctx } });
+  },
+};
+```
+
+### Route loader
+
+```typescript
+// Using app.context() directly:
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const ctx = await app.context(request, context);
+  return ctx.db.client.query(posts).findMany().run({});
+}
+
+// Using convenience wrapper:
+export const loader = app.loader(async (ctx, { params }) => {
+  return ctx.db.client.query(posts).findMany().run({});
+});
+```
+
+### Client provider
+
+```typescript
+// app/root.tsx
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html><body>
+      <app.Provider>{children}</app.Provider>
+    </body></html>
+  );
+}
+```
+
+### Wiring with @cfast/actions
+
+```typescript
+export const { createAction, composeActions } = createActions({
+  getContext: async ({ request, context }) => {
+    const ctx = await app.context(request, context);
+    return { db: ctx.db.client, user: ctx.auth.user, grants: ctx.auth.grants };
+  },
+});
+```
+
+## Integration
+
+- **@cfast/env** -- `createApp({ env: schema })` delegates to `defineEnv()`. `app.init()` calls `env.init()`, `app.env()` calls `env.get()`.
+- **@cfast/permissions** -- Accepted directly in `createApp()`. Available to all plugins.
+- **@cfast/auth, @cfast/db, @cfast/storage** -- Each ships an optional plugin for core. The plugin wraps their standalone factory and registers with `.use()`.
+- **@cfast/actions** -- Not wrapped by core. Actions have their own context mechanism. Use `app.context()` inside `createActions({ getContext })`.
+
+## Common Mistakes
+
+- Registering plugins in the wrong order -- `dbPlugin` depends on `authPlugin`, so auth must be `.use()`'d first. TypeScript catches this at compile time.
+- Calling `app.context()` before `app.init()` -- env is not validated yet, will throw.
+- Calling `useApp()` outside `<app.Provider>` -- throws a context error.
+- Registering two plugins with the same `name` -- throws `CfastConfigError` at import time.
+- Doing expensive work in `setup()` -- it runs on every request. Move one-time init to the plugin factory (outer function).

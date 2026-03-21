@@ -1,0 +1,2501 @@
+# cfast
+
+> Composable TypeScript libraries for building production-ready web applications on Cloudflare Workers with React Router 7.
+
+cfast is a monorepo of packages that share three core philosophies:
+
+1. **Permissions are first-class.** Define once with `@cfast/permissions`, enforce in the DB with `@cfast/db`, reflect in the UI with `@cfast/actions` + `@cfast/ui`. Zero duplication.
+2. **The database drives the UI.** Your Drizzle schema is the source of truth. Forms, admin panels, validation, and CRUD interfaces derive from it.
+3. **Common patterns, not configuration.** Multi-action routes, infinite scroll, pagination, magic-link auth, role management -- solved once, imported.
+
+## Stack
+
+- **Runtime:** Cloudflare Workers
+- **Framework:** React Router v7+ (file-based routing)
+- **Database:** Cloudflare D1 via Drizzle ORM
+- **Auth:** Better Auth (magic email + passkeys)
+- **Email:** Mailgun via react-email
+- **Storage:** Cloudflare R2
+- **UI:** Plugin-based (ships with MUI Joy UI)
+
+## Architecture Overview
+
+### How Permissions Flow Through the System
+
+```
+definePermissions()          @cfast/permissions (isomorphic)
+        |
+        v
+   createDb({ grants })      @cfast/db (server)
+        |
+        v
+  db.query / db.update / ... returns Operation
+        |
+        |-- .permissions     -> PermissionDescriptor[]  (structural, no values needed)
+        |
+        `-- .run(params?)    -> checkPermissions() -> execute via Drizzle prepared statement
+                |
+                |-- Success  -> returns query results
+                `-- Denied   -> throws ForbiddenError
+
+  createAction({ operations })  @cfast/actions
+        |
+        |-- Server: calls .run() which checks + executes
+        `-- Client: server pre-computes .permitted boolean from .permissions
+```
+
+### Two-Layer Permission Model
+
+1. **Structural layer** (`PermissionDescriptor`) -- "does this role have *any* grant for `update` on `posts`?" Checked without concrete values. Used for client-side UI adaptation.
+2. **Row-level layer** (`where` clauses) -- "does this role's grant include *this specific row*?" Checked at `.run()` time with concrete parameter values. Provides actual security enforcement.
+
+---
+
+## @cfast/env
+
+Type-safe Cloudflare Worker bindings with runtime validation at startup.
+
+### API
+
+#### `defineEnv(schema)`
+
+Creates an env instance with `init()` and `get()` methods.
+
+```typescript
+import { defineEnv } from "@cfast/env";
+
+const env = defineEnv({
+  DB: { type: "d1" },
+  CACHE: { type: "kv" },
+  UPLOADS: { type: "r2" },
+  MAILGUN_API_KEY: { type: "secret" },
+  APP_URL: { type: "var", default: "http://localhost:8787" },
+  LOG_LEVEL: {
+    type: "var",
+    default: "info",
+    validate: (v) => ["debug", "info", "warn", "error"].includes(v),
+  },
+});
+```
+
+#### `env.init(rawEnv)`
+
+Validates all bindings. Call once in Worker's `fetch` handler. First successful call caches the result; subsequent calls are no-ops. Failed calls can be retried. Throws `EnvError` with all failures listed.
+
+```typescript
+export default {
+  async fetch(request, rawEnv, ctx) {
+    env.init(rawEnv);
+    const { DB, MAILGUN_API_KEY, APP_URL } = env.get();
+    //       ^-- D1Database  ^-- string       ^-- string
+  },
+};
+```
+
+#### `env.get()`
+
+Returns the validated, fully typed environment object. Throws if `init()` hasn't been called successfully.
+
+```typescript
+export type Env = ReturnType<typeof env.get>;
+```
+
+### Binding Types
+
+| Type | TypeScript Type | Validation |
+|---|---|---|
+| `d1` | `D1Database` | Object with `.prepare()` method |
+| `kv` | `KVNamespace` | Object with `.get()` and `.put()` methods |
+| `r2` | `R2Bucket` | Object with `.put()` and `.head()` methods |
+| `queue` | `Queue` | Object with `.send()` method |
+| `durable-object` | `DurableObjectNamespace` | Object with `.get()` and `.idFromName()` methods |
+| `service` | `Fetcher` | Object with `.fetch()` method |
+| `secret` | `string` | Non-empty string. No defaults allowed. |
+| `var` | `string` | String (empty allowed). Supports `default` and `validate`. |
+
+### Environment-Aware Defaults
+
+```typescript
+const env = defineEnv({
+  APP_URL: {
+    type: "var",
+    default: {
+      development: "http://localhost:8787",
+      staging: "https://staging.myapp.com",
+      production: "https://myapp.com",
+    },
+  },
+});
+```
+
+The `ENVIRONMENT` binding (reserved, read from `rawEnv`) determines which default to use. Valid values: `"development"`, `"staging"`, `"production"`. Defaults to `"development"` when absent.
+
+Set in `wrangler.toml`:
+
+```toml
+[vars]
+ENVIRONMENT = "production"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+```
+
+### Error Handling
+
+```typescript
+import { EnvError } from "@cfast/env";
+
+try {
+  env.init(rawEnv);
+} catch (e) {
+  if (e instanceof EnvError) {
+    // e.message: "@cfast/env: 2 binding error(s): ..."
+    for (const err of e.errors) {
+      console.error(err.key, err.message);
+    }
+  }
+}
+```
+
+`EnvError` has `errors: EnvValidationError[]` where each has `{ key: string; message: string }`.
+
+### Exported Types
+
+```typescript
+import type {
+  BindingDef, BindingType, BindingTypeMap, EnvironmentDefaults,
+  EnvironmentName, EnvValidationError, ParsedEnv, Schema,
+  VarBindingDef, ObjectBindingDef, SecretBindingDef,
+} from "@cfast/env";
+```
+
+---
+
+## @cfast/permissions
+
+Isomorphic, Drizzle-native permission system with application-level row-level security for D1.
+
+### API
+
+#### `definePermissions(config)`
+
+```typescript
+import { definePermissions, grant } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+import { posts, comments, users, auditLogs } from "./schema";
+
+export const permissions = definePermissions({
+  roles: ["anonymous", "user", "editor", "admin"] as const,
+
+  hierarchy: {
+    user: ["anonymous"],       // users inherit anonymous grants
+    editor: ["user"],          // editors inherit user grants
+    admin: ["editor"],         // admins inherit editor grants
+  },
+
+  grants: {
+    anonymous: [
+      grant("read", posts, { where: (post) => eq(post.published, true) }),
+      grant("read", comments),
+    ],
+
+    user: [
+      grant("create", posts),
+      grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("delete", posts, { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("create", comments),
+      grant("delete", comments, { where: (comment, user) => eq(comment.authorId, user.id) }),
+    ],
+
+    editor: [
+      grant("read", posts),      // unrestricted overrides anonymous's filtered read
+      grant("update", posts),
+      grant("create", posts),
+      grant("delete", posts),
+      grant("manage", comments),
+    ],
+
+    admin: [
+      grant("manage", "all"),
+    ],
+  },
+});
+```
+
+**Config fields:**
+
+| Field | Type | Description |
+|---|---|---|
+| `roles` | `readonly string[]` | All roles, with `as const` for type inference |
+| `grants` | `Record<Role, Grant[]>` | Map from role to `grant()` calls. Every role must be represented. |
+| `hierarchy` | `Partial<Record<Role, Role[]>>` | Optional. Which roles inherit from which. |
+
+**Returns:** A `Permissions` object for `createDb()` and client import.
+
+#### `grant(action, subject, options?)`
+
+| Field | Type | Description |
+|---|---|---|
+| `action` | `"read" \| "create" \| "update" \| "delete" \| "manage"` | `"manage"` = all four CRUD actions |
+| `subject` | `Table \| "all"` | Drizzle table reference or `"all"` for every table |
+| `options.where` | `(columns, user) => SQL \| undefined` | Drizzle filter restricting which rows this grant applies to |
+
+**Action semantics:**
+
+| Action | Maps to | Where clause behavior |
+|---|---|---|
+| `"read"` | `SELECT` | WHERE clause filters query results |
+| `"create"` | `INSERT` | Boolean check only (no existing row to filter) |
+| `"update"` | `UPDATE` | Boolean check + row-level WHERE |
+| `"delete"` | `DELETE` | Boolean check + row-level WHERE |
+| `"manage"` | All | Shorthand for full CRUD access |
+
+**Where clause resolution rules:**
+- Multiple read grants on same table: `OR`'d together (most permissive wins)
+- Any matching grant without a `where` clause = unrestricted access (no filter added)
+- For update/delete: permission WHERE AND'd with user-supplied WHERE
+- For create: `where` not applicable
+
+#### `checkPermissions(role, permissions, descriptors)`
+
+Low-level check. Returns `{ permitted: boolean, denied: PermissionDescriptor[], reasons: string[] }`.
+
+```typescript
+import { checkPermissions } from "@cfast/permissions";
+
+const result = checkPermissions("user", permissions, [
+  { action: "update", table: posts },
+  { action: "create", table: auditLogs },
+]);
+result.permitted;  // boolean
+result.denied;     // PermissionDescriptor[]
+result.reasons;    // string[]
+```
+
+#### `can(grants, action, table)`
+
+Quick grant-level permission check. Works directly with resolved grants (available in loaders, actions, client). Replaces scattered `hasRole`/`hasAnyRole` patterns.
+
+```typescript
+import { can } from "@cfast/permissions";
+
+const grants = resolveGrants(permissions, user.role);
+
+can(grants, "create", posts);   // true
+can(grants, "delete", auditLogs); // false
+can(grants, "manage", posts);   // true (if role has manage grant)
+```
+
+| Param | Type | Description |
+|---|---|---|
+| `grants` | `Grant[]` | Resolved grants from `resolveGrants()` |
+| `action` | `PermissionAction` | `"read" \| "create" \| "update" \| "delete" \| "manage"` |
+| `table` | `DrizzleTable` | Drizzle table reference |
+
+**Returns:** `boolean`. Checks structural permission only (does the role have *any* matching grant?). Does not evaluate row-level `where` clauses -- use for UI gating, not security enforcement.
+
+#### `PermissionDescriptor`
+
+```typescript
+type PermissionDescriptor = {
+  action: "read" | "create" | "update" | "delete" | "manage";
+  table: Table;
+};
+```
+
+Structural, not value-dependent. Describes *what kind* of operation on *which table*.
+
+#### `ForbiddenError`
+
+```typescript
+import { ForbiddenError } from "@cfast/permissions";
+
+// Properties: action, table, role, message, descriptors
+// Has toJSON() for server/client boundary serialization
+```
+
+#### `CRUD_ACTIONS`
+
+```typescript
+import { CRUD_ACTIONS } from "@cfast/permissions";
+CRUD_ACTIONS; // ["read", "create", "update", "delete"]
+```
+
+### Client Entrypoint
+
+```typescript
+import { ForbiddenError } from "@cfast/permissions/client";
+import type { PermissionAction, CrudAction, PermissionDescriptor } from "@cfast/permissions/client";
+```
+
+Only types and `ForbiddenError` -- no server code in client bundles.
+
+### Role Hierarchy Resolution
+
+1. Effective grants = own grants + all inherited grants (recursively)
+2. Multiple grants for same action+table: `where` clauses are `OR`'d (more permissive wins)
+3. `grant("manage", "all")` = unrestricted access to everything
+4. Circular hierarchies detected at runtime (throws `Error`)
+
+---
+
+## @cfast/db
+
+Lazy, permission-aware Drizzle operations for Cloudflare D1. Application-level Row-Level Security.
+
+### API
+
+#### `createDb(config)`
+
+```typescript
+import { createDb } from "@cfast/db";
+
+const db = createDb({
+  d1: env.DB,                    // D1Database (required)
+  schema,                        // import * as schema (required, keys must match table names)
+  grants: resolvedGrants,        // from resolveGrants(permissions, roles) (required)
+  user: currentUser,             // { id: string } | null (required)
+  cache: { backend: "cache-api" }, // CacheConfig | false (optional)
+});
+```
+
+**Returns:** A `Db` instance bound to the user. Create a new one per request -- sharing across requests applies one user's permissions to another's queries.
+
+#### `Operation<TResult>`
+
+Every `db` method returns an `Operation`:
+
+```typescript
+type Operation<TResult> = {
+  permissions: PermissionDescriptor[];  // Available immediately, no execution needed
+  run: (params?: Record<string, unknown>) => Promise<TResult>;  // Check + execute. params defaults to {}
+};
+```
+
+#### Reads: `db.query(table)`
+
+```typescript
+// findMany
+const op = db.query(posts).findMany({
+  columns: { id: true, title: true },
+  where: eq(posts.category, "tech"),    // AND'd with permission filter
+  orderBy: desc(posts.createdAt),
+  limit: 10,
+  offset: 20,
+  with: { comments: true },            // Drizzle relational queries
+  cache: { ttl: "5m", tags: ["posts"] },
+});
+op.permissions; // [{ action: "read", table: posts }]
+const results = await op.run(); // params optional, defaults to {}
+
+// findFirst
+const singleOp = db.query(posts).findFirst({
+  where: eq(posts.id, "abc-123"),
+});
+const post = await singleOp.run(); // TResult | undefined
+```
+
+**Permission WHERE injection for reads:**
+1. Find all grants matching "read" + table for user's role
+2. If any grant has no `where` -> unrestricted (no filter added)
+3. If all grants have `where` -> combine with `OR`
+4. Result: `user_filter AND (perm_filter_1 OR perm_filter_2)`
+
+#### Writes: `db.insert(table)`
+
+```typescript
+const createPost = db.insert(posts)
+  .values({ title: "Hello", authorId: currentUser.id })
+  .returning();
+
+createPost.permissions; // [{ action: "create", table: posts }]
+const inserted = await createPost.run(); // params optional
+```
+
+Create grants are boolean only -- no row-level WHERE injection for inserts.
+
+#### Writes: `db.update(table)`
+
+```typescript
+const publishPost = db.update(posts)
+  .set({ published: true })
+  .where(eq(posts.id, "abc-123"))
+  .returning();
+
+publishPost.permissions; // [{ action: "update", table: posts }]
+await publishPost.run();
+```
+
+Row-level permission WHERE is AND'd with user-supplied WHERE. Zero-match due to permission narrowing silently affects no rows (does not throw).
+
+#### Writes: `db.delete(table)`
+
+```typescript
+const removePost = db.delete(posts)
+  .where(eq(posts.id, "abc-123"));
+
+await removePost.run(); // Same row-level WHERE behavior as update
+```
+
+#### `db.unsafe()`
+
+Returns a new `Db` that skips all permission checks. Operations have empty `.permissions` and `.run()` executes directly.
+
+```typescript
+const op = db.unsafe().delete(posts).where(eq(posts.id, "abc-123"));
+op.permissions; // [] (empty)
+await op.run();
+```
+
+**When to use:** Cron jobs, migrations, seeding, background jobs (no authenticated user).
+**When NOT to use:** Admin endpoints (use a role with appropriate grants instead).
+**Auditability:** `git grep '.unsafe()'` finds every permission bypass.
+
+#### `compose(operations, executor)`
+
+Merges multiple operations with combined, deduplicated permissions.
+
+```typescript
+import { compose } from "@cfast/db";
+
+const publishWorkflow = compose(
+  [updatePost, insertAuditLog],
+  async (doUpdate, doAudit) => {
+    const updated = await doUpdate();
+    await doAudit();
+    return { published: true };
+  },
+);
+
+publishWorkflow.permissions;
+// [{ action: "update", table: posts }, { action: "create", table: auditLogs }]
+
+await publishWorkflow.run();
+```
+
+- Permission deduplication: `action:tableName` as key
+- Nesting: `compose()` returns an `Operation`, can be composed further
+- Each sub-operation's `.run()` still checks its own permissions individually
+
+#### `composeSequential(operations)`
+
+Shorthand for the common pattern of running operations in order with no data dependencies. Replaces verbose `compose([ops], async (run1, run2) => { await run1(); await run2(); })`.
+
+```typescript
+import { composeSequential } from "@cfast/db";
+
+const workflow = composeSequential([
+  db.delete(posts).where(eq(posts.id, postId)),
+  db.insert(auditLogs).values({ id: nanoid(), action: "post.deleted", targetId: postId }),
+]);
+
+workflow.permissions;
+// [{ action: "delete", table: posts }, { action: "create", table: auditLogs }]
+
+const results = await workflow.run(); // returns unknown[] (one result per operation, in order)
+```
+
+| Param | Type | Description |
+|---|---|---|
+| `operations` | `Operation<unknown>[]` | Operations to run sequentially |
+
+**Returns:** `Operation<unknown[]>` with combined, deduplicated permissions. Each sub-operation is `await`ed in array order. If any operation throws, subsequent operations are skipped.
+
+#### `db.batch(operations)`
+
+Groups operations with merged permissions. Runs sequentially (not D1 native batch).
+
+```typescript
+const batchOp = db.batch([
+  db.insert(posts).values({ title: "Post 1" }),
+  db.insert(posts).values({ title: "Post 2" }),
+]);
+await batchOp.run();
+```
+
+### Caching
+
+```typescript
+const db = createDb({
+  // ...
+  cache: {
+    backend: "cache-api",            // "cache-api" | "kv"
+    ttl: "30s",                      // Default TTL ("Ns", "Nm", "Nh")
+    staleWhileRevalidate: "5m",
+    exclude: ["sessions"],           // Tables to never cache
+    onHit: (key, table) => {},
+    onMiss: (key, table) => {},
+    onInvalidate: (tables) => {},
+  },
+});
+
+// For KV backend:
+cache: { backend: "kv", kv: env.CACHE }
+```
+
+**Cache key format:** `cfast:{role}:v{tableVersion}:{hash(sql)}`
+
+Role is embedded in the key (anonymous and editor never share cache). Table version bumps on every mutation, causing cache misses.
+
+**Per-query control:**
+
+```typescript
+db.query(posts).findMany({ cache: false });
+db.query(posts).findMany({ cache: { ttl: "5m" } });
+db.query(posts).findMany({ cache: { ttl: "1m", staleWhileRevalidate: "5m" } });
+db.query(posts).findMany({ cache: { tags: ["user-posts"] } });
+```
+
+**Manual invalidation:**
+
+```typescript
+await db.cache.invalidate({ tags: ["user-posts"] });
+await db.cache.invalidate({ tables: ["posts"] });
+```
+
+**Backend tradeoffs:** Cache API = ~0ms latency, per-edge, free. KV = 10-50ms, global, eventually consistent.
+
+### Known Limitations
+
+1. **`.run()` params not type-safe** -- `Record<string, unknown>` (optional, defaults to `{}`), Drizzle validates at runtime
+2. **Relational query permissions root-table only** -- `with` joins don't get permission filters
+3. **Cache reads not wired** -- table versioning and invalidation work, automatic read-through caching doesn't yet
+4. **`batch()` sequential** -- uses individual `.run()`, not D1 native batch
+5. **Table identity by reference** -- import tables from same module as `schema`
+
+---
+
+## @cfast/auth
+
+Authentication for Cloudflare Workers. Magic email, passkeys, roles, impersonation. Built on Better Auth.
+
+### Server Setup
+
+```typescript
+import { createAuth } from "@cfast/auth";
+
+export const initAuth = createAuth({
+  permissions,
+  magicLink: {
+    sendMagicLink: async ({ email, url }) => { /* send email */ },
+  },
+  passkeys: {
+    rpName: "MyApp",
+    rpId: "myapp.com",
+  },
+  session: { expiresIn: "30d" },
+  redirects: {
+    afterLogin: "/",
+    loginPath: "/login",
+  },
+  roleGrants: {
+    admin: ["admin", "editor", "user"],
+    editor: ["user"],
+  },
+  templates: {
+    magicLink: ({ url, email }) =>
+      `<p>Hi ${email}, <a href="${url}">click here</a>.</p>`,
+  },
+});
+
+// Per-request initialization:
+const auth = initAuth({ d1: env.DB, appUrl: "https://myapp.com" });
+```
+
+### Route Integration
+
+```typescript
+// app/routes.ts
+import { authRoutes } from "@cfast/auth/plugin";
+
+export default [
+  ...authRoutes({ handlerFile: "routes/auth.$.tsx" }),
+  // ... other routes
+] satisfies RouteConfig;
+
+// routes/auth.$.tsx
+import { createAuthRouteHandlers } from "@cfast/auth";
+const { loader, action } = createAuthRouteHandlers(() => getAuth());
+export { loader, action };
+```
+
+### Protecting Routes
+
+```typescript
+// routes/_protected.tsx
+import { AuthGuard } from "@cfast/auth/client";
+
+export async function loader({ request }) {
+  const ctx = await requireAuthContext(request);
+  return { user: ctx.user };
+}
+
+export default function ProtectedLayout() {
+  const { user } = useLoaderData<typeof loader>();
+  return (
+    <AuthGuard user={user}>
+      <Outlet />
+    </AuthGuard>
+  );
+}
+```
+
+### Client-Side Providers
+
+```typescript
+// root.tsx
+import { AuthClientProvider } from "@cfast/auth/client";
+import { authClient } from "~/auth.client";
+
+export default function App() {
+  return (
+    <AuthClientProvider authClient={authClient}>
+      <Outlet />
+    </AuthClientProvider>
+  );
+}
+```
+
+### Hooks
+
+#### `useCurrentUser()`
+
+```typescript
+import { useCurrentUser } from "@cfast/auth/client";
+
+const user = useCurrentUser();
+// Inside AuthGuard: User (non-null)
+// Outside AuthGuard: User | null
+// user.isImpersonating -- true when admin is impersonating
+// user.realUser -- { id, name } of admin doing impersonation
+```
+
+#### `useAuth()`
+
+```typescript
+import { useAuth } from "@cfast/auth/client";
+
+const {
+  signOut,            // Sign out current user
+  registerPasskey,    // Register new passkey (WebAuthn)
+  deletePasskey,      // Delete passkey by ID
+  stopImpersonating,  // Stop impersonating (admin only)
+  authClient,         // Raw Better Auth client
+} = useAuth();
+```
+
+### Login Page
+
+```typescript
+import { LoginPage } from "@cfast/auth/client";
+import { joyLoginComponents } from "@cfast/ui/joy";
+
+export default function Login() {
+  return (
+    <LoginPage
+      authClient={authClient}
+      components={joyLoginComponents}
+      title="Sign In"
+      subtitle="Sign in to My App"
+    />
+  );
+}
+```
+
+Shows email input, "Send Magic Link" button, "Sign in with Passkey" button, success/error feedback.
+
+**Component slot overrides:**
+
+```typescript
+const components: LoginComponents = {
+  Layout: ({ children }) => <MyCard>{children}</MyCard>,
+  EmailInput: ({ value, onChange, error }) => <MyInput .../>,
+  PasskeyButton: ({ onClick, loading }) => <MyButton .../>,
+  MagicLinkButton: ({ onClick, loading }) => <MyButton .../>,
+  SuccessMessage: ({ email }) => <MyAlert>Check {email}</MyAlert>,
+  ErrorMessage: ({ error }) => <MyAlert>{error}</MyAlert>,
+};
+```
+
+### Role Management
+
+```typescript
+await auth.setRole(userId, "editor");
+await auth.setRoles(userId, ["editor", "moderator"]);
+
+// In loaders, user.roles is always available:
+const user = await auth.requireUser(request);
+// user.roles -> ["editor"]
+```
+
+### Impersonation
+
+```typescript
+// Server
+await auth.impersonate(adminUserId, targetUserId);
+
+// Client
+const { stopImpersonating } = useAuth();
+await stopImpersonating();
+```
+
+### Redirect Flow
+
+1. User visits `/dashboard/settings` unauthenticated
+2. Loader sets `cfast_redirect_to=/dashboard/settings` cookie, redirects to `/login`
+3. User authenticates via magic link or passkey
+4. Server reads cookie, clears it, redirects to `/dashboard/settings`
+5. Direct `/login` visit (no prior redirect) -> redirects to `afterLogin` default
+
+Cookie: `HttpOnly`, `Secure`, `SameSite=Lax`, 10-minute TTL.
+
+### `createAdminAuth(getAuth)`
+
+Creates an admin auth adapter (`AdminAuthBridge`) from an auth instance factory. Replaces ~150 lines of manual adapter boilerplate when wiring `@cfast/auth` into `@cfast/admin`.
+
+```typescript
+import { createAdminAuth } from "@cfast/auth";
+
+const adminAuth = createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL }));
+
+const admin = createAdmin({
+  db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
+  auth: adminAuth,  // AdminAuthBridge satisfies AdminAuthConfig
+  schema,
+  requiredRole: "admin",
+});
+```
+
+| Param | Type | Description |
+|---|---|---|
+| `getAuth` | `() => AuthInstance` | Factory called per-operation for fresh Workers env bindings |
+
+**Returns:** `AdminAuthBridge` -- implements `requireUser`, `hasRole`, `getRoles`, `setRole`, `removeRole`, `setRoles`, `impersonate`, `stopImpersonation`. Compatible with `@cfast/admin`'s `AdminAuthConfig`.
+
+The factory pattern (`getAuth` instead of a static instance) ensures each operation gets fresh Cloudflare Workers bindings, avoiding stale references after cold starts.
+
+### Package Exports
+
+```
+@cfast/auth          -> createAuth, createAdminAuth, createRoleManager, createImpersonationManager, createAuthRouteHandlers
+@cfast/auth/client   -> AuthProvider, AuthClientProvider, AuthGuard, LoginPage, useCurrentUser, useAuth, createAuthClient
+@cfast/auth/plugin   -> authRoutes() for routes.ts
+@cfast/auth/schema   -> Drizzle auth tables for migrations
+```
+
+### Auth Tables (Drizzle schema)
+
+- `user` -- email, name, avatar
+- `session` -- active sessions
+- `passkey` -- WebAuthn credentials
+- `role` -- user-to-role assignments
+- `impersonation_log` -- audit trail
+
+---
+
+## @cfast/storage
+
+Type-safe file uploads to Cloudflare R2.
+
+### Defining a Storage Schema
+
+```typescript
+import { defineStorage, filetype } from "@cfast/storage";
+
+export const storage = defineStorage({
+  avatars: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png", "image/webp"],
+    maxSize: "2mb",
+    key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+    replace: true,
+  }),
+
+  postImages: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+    maxSize: "10mb",
+    key: (file, ctx) => `posts/${ctx.input.postId}/${crypto.randomUUID()}-${file.name}`,
+  }),
+
+  documents: filetype({
+    bucket: "DOCUMENTS",
+    accept: ["application/pdf", "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    maxSize: "50mb",
+    multipartThreshold: "10mb",
+    key: (file, ctx) => `docs/${ctx.user.id}/${crypto.randomUUID()}-${file.name}`,
+  }),
+
+  exports: filetype({
+    bucket: "DOCUMENTS",
+    accept: ["text/csv", "application/json"],
+    maxSize: "200mb",
+    uploadable: false,     // System-generated, no direct user upload
+    key: (file) => `exports/${crypto.randomUUID()}.${file.extension}`,
+  }),
+});
+```
+
+### Server-Side Upload
+
+```typescript
+export async function action({ request, context }) {
+  const user = await auth.requireUser(request);
+
+  const result = await storage.handle("postImages", request, {
+    env: context.env,
+    user,
+    input: { postId: "123" },
+  });
+  // result: { key, size, type, url }
+}
+```
+
+### Validation Pipeline
+
+1. Content-Type header checked before reading body -> 415
+2. Content-Length header checked before reading body -> 413
+3. MIME type verified via file magic bytes -> 415 (prevents spoofed Content-Type)
+4. Actual byte count verified during streaming -> 413 (prevents spoofed Content-Length)
+
+```typescript
+import { StorageError } from "@cfast/storage";
+
+try {
+  await storage.handle("avatars", request, { env, user });
+} catch (e) {
+  if (e instanceof StorageError) {
+    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED"
+    e.detail;  // "File is 5.2MB but avatars allows max 2MB"
+    e.status;  // 413
+  }
+}
+```
+
+### Multipart Uploads
+
+Files above `multipartThreshold` (default 5mb) automatically use R2's multipart API. Handles splitting, parallel upload, completion/abort, retries.
+
+```typescript
+documents: filetype({
+  maxSize: "200mb",
+  multipartThreshold: "10mb",
+  partSize: "10mb",
+}),
+```
+
+### Client-Side Upload Hook
+
+```typescript
+import { useUpload } from "@cfast/storage/client";
+
+function AvatarUploader() {
+  const upload = useUpload("avatars");
+
+  return (
+    <div>
+      <input
+        type="file"
+        accept={upload.accept}       // "image/jpeg,image/png,image/webp"
+        onChange={(e) => upload.start(e.target.files[0])}
+      />
+      {upload.validationError && <p>{upload.validationError}</p>}
+      {upload.isUploading && <progress value={upload.progress} max={100} />}
+      {upload.result && <img src={upload.result.url} />}
+    </div>
+  );
+}
+```
+
+Client validates size and MIME against schema before upload starts.
+
+### Serving Files
+
+```typescript
+// Signed URL (time-limited, private files)
+const url = await storage.getSignedUrl("documents", key, { expiresIn: "1h" });
+
+// Public URL
+const url = storage.getPublicUrl("postImages", key);
+
+// Stream directly from R2
+const response = await storage.serve("postImages", key, {
+  headers: { "Cache-Control": "public, max-age=31536000" },
+});
+```
+
+### Lifecycle Hooks
+
+```typescript
+postImages: filetype({
+  hooks: {
+    beforeUpload: async (file, ctx) => { /* check quota, resize */ },
+    afterUpload: async (result, ctx) => { /* save to DB, trigger processing */ },
+  },
+}),
+```
+
+### Permission Integration
+
+Storage doesn't check permissions directly. Gate uploads through `@cfast/actions`:
+
+```typescript
+const uploadPostImage = createAction({
+  input: { postId: "" as string },
+  operations: (db, input, ctx) => {
+    const checkAccess = db.query(posts).findFirst({
+      where: eq(posts.id, sql.placeholder("postId")),
+    });
+    const saveRef = db.insert(postImages).values({ /* ... */ });
+
+    return compose([checkAccess, saveRef], async (doCheck, doSave) => {
+      await doCheck({ postId: input.postId });
+      const result = await storage.handle("postImages", ctx.request, {
+        env: ctx.env, user: ctx.user, input: { postId: input.postId },
+      });
+      await doSave({ postId: input.postId, storageKey: result.key, size: result.size });
+      return { url: result.url };
+    });
+  },
+});
+```
+
+---
+
+## @cfast/actions
+
+Reusable, type-safe, permission-aware actions for React Router.
+
+### Setup
+
+```typescript
+// app/actions.server.ts
+import { createActions } from "@cfast/actions";
+
+export const { createAction, composeActions } = createActions({
+  getContext: async ({ request }) => {
+    const ctx = await requireAuthContext(request);
+    const db = createCfDb(env.DB, ctx);
+    return { db, user: ctx.user, grants: ctx.grants };
+  },
+});
+```
+
+### Defining Actions
+
+`createAction<TInput, TResult>(operationsFn)` returns:
+- `.action` -- React Router action handler
+- `.loader(loaderFn)` -- wraps loader to inject `_actionPermissions`
+- `.client` -- descriptor for `useActions` hook
+- `.buildOperation(db, input, ctx)` -- raw `Operation` (for composition)
+
+```typescript
+import { compose } from "@cfast/db";
+
+export const deletePost = createAction<{ postId: string }, Response>(
+  (db, input, ctx) =>
+    composeSequential([
+      db.delete(posts).where(eq(posts.id, input.postId)),
+      db.insert(auditLogs).values({
+        id: nanoid(),
+        userId: ctx.user.id,
+        action: "post.deleted",
+        targetType: "post",
+        targetId: input.postId,
+      }),
+    ]),
+);
+```
+
+### Composing Multiple Actions
+
+```typescript
+import { composeActions } from "~/actions.server";
+
+const composed = composeActions({
+  deletePost,
+  publishPost,
+  unpublishPost,
+  addComment,
+});
+
+export const action = composed.action;
+```
+
+Object keys become action discriminators. Forms submit with `<input type="hidden" name="_action" value="deletePost" />`. JSON requests use `{ _action: "deletePost", ...input }`.
+
+### Loader Integration
+
+```typescript
+// Single action
+export const loader = deletePost.loader(async ({ request, params }) => {
+  return { post, author };
+});
+
+// Composed actions
+export const loader = composed.loader(async ({ request, params }) => {
+  return { post, author };
+});
+```
+
+Wraps loader to inject `_actionPermissions` into loader data for client introspection.
+
+### Client Usage
+
+```typescript
+import { useActions } from "@cfast/actions/client";
+
+function PostActions({ postId }) {
+  const actions = useActions(composed.client);
+  const remove = actions.deletePost({ postId });
+  const publish = actions.publishPost({ postId });
+
+  return (
+    <>
+      <button
+        onClick={publish.submit}
+        disabled={!publish.permitted || publish.pending}
+        hidden={publish.invisible}
+      >
+        Publish
+      </button>
+      <button
+        onClick={remove.submit}
+        disabled={!remove.permitted || remove.pending}
+      >
+        Delete
+      </button>
+    </>
+  );
+}
+```
+
+**Each action returns:**
+
+| Property | Type | Description |
+|---|---|---|
+| `permitted` | `boolean` | Has required structural permissions |
+| `invisible` | `boolean` | Lacks all permissions (hide UI entirely) |
+| `reason` | `string \| null` | Human-readable denial reason |
+| `submit` | `() => void` | Submits via fetcher with `_action` discriminator |
+| `pending` | `boolean` | Fetcher in flight |
+| `data` | `unknown` | Action return value after execution |
+| `error` | `unknown` | Error if action failed |
+
+### `ActionForm`
+
+Form wrapper that auto-injects hidden fields from the action input object. Replaces manual `<input type="hidden" name="_action" value="..." />` patterns.
+
+```typescript
+import { ActionForm } from "@cfast/actions/client";
+
+function DeletePostButton({ postId }: { postId: string }) {
+  return (
+    <ActionForm action={{ _action: "deletePost", postId }}>
+      <button type="submit">Delete</button>
+    </ActionForm>
+  );
+}
+```
+
+**Props:**
+
+```typescript
+type ActionFormProps = Omit<ComponentProps<typeof Form>, "children" | "action"> & {
+  action: Record<string, string | number | boolean | null | undefined>;
+  children: ReactNode;
+};
+```
+
+| Prop | Type | Description |
+|---|---|---|
+| `action` | `Record<string, string \| number \| boolean \| null \| undefined>` | Key-value pairs injected as hidden `<input>` fields |
+| `children` | `ReactNode` | Form content (buttons, visible inputs, etc.) |
+| `...rest` | React Router `Form` props | `method`, `encType`, `onSubmit`, etc. |
+
+Each entry in `action` becomes `<input type="hidden" name={key} value={String(value)} />`. `null` and `undefined` values are omitted.
+
+**When to use:** Declarative form submissions where you have all input values up front. For programmatic submissions (e.g., on button click), prefer `useActions()`.
+
+### Exports
+
+```
+@cfast/actions         -> createActions, checkPermissionStatus
+@cfast/actions/client  -> useActions, ActionForm
+```
+
+---
+
+## @cfast/forms
+
+Auto-generated forms from Drizzle schema.
+
+### One-Line Form
+
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+import { posts } from "./schema";
+
+function CreatePost() {
+  return <AutoForm table={posts} mode="create" onSubmit={handleSubmit} />;
+}
+
+function EditPost({ post }) {
+  return <AutoForm table={posts} mode="edit" data={post} onSubmit={handleSubmit} />;
+}
+```
+
+### Field Type Mapping
+
+| Drizzle Column | Input Type |
+|---|---|
+| `text` / `varchar` | Text input |
+| `integer` | Number input |
+| `integer({ mode: "boolean" })` | Checkbox |
+| `text({ enum: [...] })` | Select dropdown |
+
+### Schema-Level Validation
+
+```typescript
+import { v } from "@cfast/forms";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const posts = sqliteTable("posts", {
+  title: v(text("title").notNull(), { minLength: 3, maxLength: 200 }),
+  views: v(integer("views"), { min: 0 }),
+  slug: v(text("slug").notNull(), { pattern: /^[a-z0-9-]+$/ }),
+  content: text("content").notNull(),
+});
+```
+
+**Supported validation rules:**
+
+| Rule | Type | Description |
+|---|---|---|
+| `minLength` | `number` | Minimum string length |
+| `maxLength` | `number` | Maximum string length |
+| `min` | `number` | Minimum numeric value |
+| `max` | `number` | Maximum numeric value |
+| `pattern` | `RegExp` | Regex for strings |
+| `message` | `string` | Custom error message |
+
+### Customizing Fields
+
+```typescript
+<AutoForm
+  table={posts}
+  mode="create"
+  fields={{
+    title: { label: "Post Title", placeholder: "Enter a title..." },
+    content: { component: RichTextEditor },
+    authorId: { hidden: true, default: currentUser.id },
+  }}
+  exclude={["createdAt", "updatedAt"]}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Per-Field Custom Validation
+
+```typescript
+<AutoForm
+  table={posts}
+  mode="create"
+  fields={{
+    title: {
+      validate: (value) => {
+        if (value.length < 3) return "Title must be at least 3 characters";
+      },
+    },
+  }}
+  onSubmit={handleSubmit}
+/>
+```
+
+### External Form Control
+
+```typescript
+import { useForm } from "react-hook-form";
+
+function MyForm() {
+  const form = useForm();
+  return <AutoForm table={posts} mode="create" form={form} onSubmit={handleSubmit} />;
+}
+```
+
+### UI Library Plugins
+
+```typescript
+import { createFormPlugin, createAutoForm } from "@cfast/forms";
+
+const myPlugin = createFormPlugin({
+  components: {
+    textInput: MyTextInput,
+    numberInput: MyNumberInput,
+    select: MySelect,
+    checkbox: MyCheckbox,
+    form: MyFormWrapper,
+    submitButton: MySubmitButton,
+  },
+});
+
+export const AutoForm = createAutoForm(myPlugin);
+```
+
+### Architecture
+
+```
+@cfast/forms (headless core)
+  v()                 -- attach validation to Drizzle columns
+  introspectTable()   -- read table metadata into FieldDefinition[]
+  createResolver()    -- build react-hook-form resolver
+  createFormPlugin()  -- register UI components
+  createAutoForm()    -- compose into AutoForm component
+
+@cfast/forms/joy (MUI Joy UI plugin)
+  Component implementations for each field type
+```
+
+---
+
+## @cfast/ui
+
+Advanced component library. Data tables, page shells, permission-aware actions, file uploads. Headless core + Joy UI plugin.
+
+### Plugin Architecture
+
+```typescript
+import { createUIPlugin } from "@cfast/ui";
+
+createUIPlugin({
+  components: {
+    button: MyButton,
+    tooltip: MyTooltip,
+    confirmDialog: MyConfirmDialog,
+    table: MyTable, tableHead: MyTableHead, tableBody: MyTableBody,
+    tableRow: MyTableRow, tableCell: MyTableCell,
+    chip: MyChip,
+    appShell: MyAppShell, sidebar: MySidebar,
+    pageContainer: MyPageContainer, breadcrumb: MyBreadcrumb,
+    toast: MyToast, alert: MyAlert,
+    dropZone: MyDropZone,
+  },
+});
+```
+
+Missing slots fall back to unstyled HTML defaults.
+
+### Data Display
+
+#### `<DataTable>`
+
+```typescript
+import { DataTable } from "@cfast/ui/joy";
+import { usePagination } from "@cfast/pagination/client";
+
+function PostsTable() {
+  const pagination = usePagination<Post>();
+
+  return (
+    <DataTable
+      data={pagination}
+      table={posts}
+      columns={[
+        "title",
+        { key: "author", label: "Written by" },
+        { key: "published", render: (v) => v ? "Live" : "Draft" },
+        { key: "createdAt", sortable: false },
+      ]}
+      actions={composed.client}
+      selectable
+    />
+  );
+}
+```
+
+**Features:** Column inference from Drizzle schema, sorting (URL synced), row actions (permission-aware), selection with `<BulkActionBar>`, typed cell rendering, loading skeletons, responsive.
+
+#### `<FilterBar>`
+
+```typescript
+import { FilterBar } from "@cfast/ui/joy";
+
+<FilterBar
+  table={posts}
+  filters={[
+    { column: "published", type: "select", options: [
+      { label: "Published", value: true },
+      { label: "Draft", value: false },
+    ]},
+    { column: "authorId", type: "relation", table: users, display: "name" },
+    { column: "createdAt", type: "dateRange" },
+  ]}
+  searchable={["title", "content"]}
+/>
+```
+
+**Filter types:** `text`, `select`, `multiSelect`, `relation`, `dateRange`, `boolean`, `number`
+
+Filter state serializes to URL search params. Loader reads them via `@cfast/pagination`'s `parseParams()`.
+
+#### TypedField Components
+
+```typescript
+import { DateField, BooleanField, EmailField, ImageField, RelationField } from "@cfast/ui/joy";
+
+<DateField value={post.createdAt} format="relative" />   // "3 days ago"
+<DateField value={post.createdAt} format="short" />       // "Mar 11, 2026"
+<BooleanField value={post.published} trueLabel="Published" falseLabel="Draft" />
+<EmailField value={user.email} />                         // mailto link
+<ImageField value={post.coverImageKey} storage={storageConfig} />
+<RelationField value={post.author} display="name" linkTo="/users/:id" />
+```
+
+**Available fields:** `TextField`, `NumberField`, `BooleanField`, `DateField`, `EmailField`, `UrlField`, `ImageField`, `FileField`, `RelationField`, `JsonField`
+
+#### `<EmptyState>`
+
+```typescript
+<EmptyState
+  title="No posts yet"
+  description="Create your first blog post."
+  createAction={createPost.client}
+  createLabel="New Post"
+  icon={DocumentIcon}
+/>
+```
+
+Permission-aware: shows CTA if permitted, description only if not, generic message if invisible.
+
+### Page Shells
+
+#### `<ListView>`
+
+```typescript
+import { ListView } from "@cfast/ui/joy";
+
+<ListView
+  title="Blog Posts"
+  data={pagination}
+  table={posts}
+  columns={["title", "author", "published", "createdAt"]}
+  actions={composed.client}
+  filters={[{ column: "published", type: "select", options: publishedOptions }]}
+  searchable={["title", "content"]}
+  createAction={createPost.client}
+  selectable
+  bulkActions={[
+    { label: "Delete", action: bulkDelete.client, confirmation: "Delete selected?" },
+    { label: "Publish", action: bulkPublish.client },
+  ]}
+/>
+```
+
+Composes `<PageContainer>`, `<FilterBar>`, `<DataTable>`, pagination controls, `<EmptyState>`, `<BulkActionBar>`.
+
+#### `<DetailView>`
+
+```typescript
+<DetailView
+  title={post.title}
+  table={posts}
+  record={post}
+  fields={["title", "content", "author", "published", "createdAt"]}
+  actions={composed.client}
+  exclude={["id", "authorId"]}
+/>
+```
+
+Auto-lays out fields using appropriate TypedField based on column type.
+
+#### `<AppShell>`
+
+```typescript
+<AppShell
+  sidebar={<AppShell.Sidebar items={navigationItems} />}
+  header={<AppShell.Header userMenu={<UserMenu />} />}
+>
+  {children}
+</AppShell>
+```
+
+Sidebar navigation can filter by permissions:
+
+```typescript
+const navigationItems = [
+  { label: "Posts", to: "/posts", icon: DocumentIcon },
+  { label: "Users", to: "/users", icon: UsersIcon, action: manageUsers.client },
+];
+```
+
+#### `<PageContainer>`
+
+```typescript
+<PageContainer
+  title="Edit Post"
+  breadcrumb={[
+    { label: "Posts", to: "/posts" },
+    { label: post.title },
+  ]}
+  actions={<ActionButton action={deletePost} input={{ postId }} />}
+>
+  {/* content */}
+</PageContainer>
+```
+
+#### `<UserMenu>`
+
+```typescript
+<UserMenu
+  links={[
+    { label: "Profile", to: "/profile" },
+    { label: "Admin", to: "/admin", action: adminAccess.client },
+  ]}
+/>
+```
+
+Shows avatar, name, email, role badge, impersonation indicator, sign out.
+
+#### `<NavigationProgress>`
+
+```typescript
+<NavigationProgress />  // Thin progress bar during React Router navigation
+```
+
+### Actions & Feedback
+
+#### `<ActionButton>`
+
+```typescript
+<ActionButton
+  action={publishPost}
+  input={{ postId }}
+  whenForbidden="disable"    // "hide" | "disable" | "show"
+  confirmation="Publish this post?"
+>
+  Publish
+</ActionButton>
+```
+
+#### `<PermissionGate>`
+
+```typescript
+<PermissionGate action={editPost} input={{ postId }} fallback={<ReadOnlyBanner />}>
+  <EditToolbar />
+</PermissionGate>
+```
+
+#### `<ConfirmDialog>` and `useConfirm()`
+
+```typescript
+import { useConfirm } from "@cfast/ui/joy";
+
+const confirm = useConfirm();
+const confirmed = await confirm({
+  title: "Delete account",
+  description: "This cannot be undone.",
+  confirmLabel: "Delete",
+  variant: "danger",
+});
+```
+
+#### `useToast()` and `useActionToast()`
+
+```typescript
+import { ToastProvider, useToast, useActionToast } from "@cfast/ui/joy";
+
+// In root layout:
+<ToastProvider />
+
+// Manual:
+const toast = useToast();
+toast.success("Post published");
+
+// Automatic per action:
+useActionToast(composed.client, {
+  deletePost: { success: "Post deleted", error: "Failed to delete" },
+});
+```
+
+#### `<FormStatus>`
+
+```typescript
+<FormStatus data={actionData} />
+// Renders success (green) or error (red) alerts from action results
+```
+
+#### `<BulkActionBar>`
+
+```typescript
+<BulkActionBar
+  selected={selectedRows}
+  actions={[
+    { label: "Delete", action: bulkDelete.client, confirmation: "Delete {count} posts?" },
+  ]}
+  onClear={() => clearSelection()}
+/>
+```
+
+### File Display
+
+#### `<DropZone>`
+
+```typescript
+import { DropZone } from "@cfast/ui/joy";
+import { useUpload } from "@cfast/storage/client";
+
+const upload = useUpload("postCoverImage");
+<DropZone upload={upload} />
+```
+
+#### `<ImagePreview>`
+
+```typescript
+<ImagePreview fileKey={post.coverImageKey} storage={storageConfig} width={200} height={150} />
+```
+
+#### `<FileList>`
+
+```typescript
+<FileList files={post.attachments} storage={storageConfig} deleteAction={deleteAttachment.client} />
+```
+
+### Utilities
+
+- `<AvatarWithInitials src={url} name={name} size="sm" />`
+- `<RoleBadge role={user.role} colors={{ admin: "danger", editor: "primary" }} />`
+- `<ImpersonationBanner />` -- persistent banner when admin is impersonating
+
+### Exports
+
+```
+@cfast/ui      -> hooks (useActionStatus, useToast, useActionToast, useConfirm, useColumnInference),
+                  headless components (PermissionGate, EmptyState, BulkActionBar),
+                  typed fields, createUIPlugin()
+
+@cfast/ui/joy  -> DataTable, FilterBar, ListView, DetailView, AppShell, PageContainer,
+                  UserMenu, NavigationProgress, ActionButton, PermissionGate, ConfirmDialog,
+                  ToastProvider, FormStatus, BulkActionBar, DropZone, ImagePreview, FileList,
+                  AvatarWithInitials, RoleBadge, ImpersonationBanner
+```
+
+---
+
+## @cfast/pagination
+
+Cursor-based, offset-based pagination, infinite scroll for React Router.
+
+### Cursor-Based Pagination
+
+**Loader (server):**
+
+```typescript
+import { parseCursorParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
+
+  const result = await db.query(posts)
+    .paginate(page, {
+      orderBy: desc(posts.createdAt),
+      cursorColumns: [posts.createdAt, posts.id],
+    })
+    .run();
+
+  return result; // { items, nextCursor }
+}
+```
+
+**Load More (client):**
+
+```typescript
+import { usePagination } from "@cfast/pagination";
+
+function PostList() {
+  const { items, loadMore, hasMore, isLoading } = usePagination<Post>();
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      {hasMore && <button onClick={loadMore} disabled={isLoading}>Load More</button>}
+    </div>
+  );
+}
+```
+
+**Infinite Scroll (client):**
+
+```typescript
+import { useInfiniteScroll } from "@cfast/pagination";
+
+function PostFeed() {
+  const { items, sentinelRef, isLoading, hasMore } = useInfiniteScroll<Post>();
+  return (
+    <div>
+      {items.map((post) => <PostCard key={post.id} post={post} />)}
+      <div ref={sentinelRef} />
+      {isLoading && <Spinner />}
+    </div>
+  );
+}
+```
+
+### Offset-Based Pagination
+
+**Loader:**
+
+```typescript
+import { parseOffsetParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseOffsetParams(request, { defaultLimit: 20 });
+  const result = await db.query(posts)
+    .paginate(page, { orderBy: desc(posts.createdAt) })
+    .run();
+  return result; // { items, total, page, totalPages }
+}
+```
+
+**Client:**
+
+```typescript
+import { useOffsetPagination } from "@cfast/pagination";
+
+const { items, totalPages, currentPage, goToPage } = useOffsetPagination<Post>();
+```
+
+### API Reference
+
+**Server (`@cfast/db`):**
+- `parseCursorParams(request, options?)` -- returns `CursorParams`
+- `parseOffsetParams(request, options?)` -- returns `OffsetParams`
+- `db.query(table).paginate(params, options)` -- returns `Operation<CursorPage>` or `Operation<OffsetPage>`
+
+Options: `{ defaultLimit?: number, maxLimit?: number }` (defaults: 20, 100)
+
+**Client (`@cfast/pagination`):**
+- `usePagination<T>(options?)` -- `{ items, loadMore, hasMore, isLoading }`
+- `useInfiniteScroll<T>(options?)` -- `{ items, sentinelRef, hasMore, isLoading }` (also accepts `rootMargin`, default `"200px"`)
+- `useOffsetPagination<T>()` -- `{ items, total, totalPages, currentPage, goToPage }`
+
+Hook options: `{ getKey?: (item: T) => string | number }` (defaults to `item.id`)
+
+Cursors are opaque base64-encoded JSON. Clients cannot depend on the format.
+
+---
+
+## @cfast/admin
+
+Complete admin panel generated from Drizzle schema. One route = full admin.
+
+### Minimal Setup
+
+```typescript
+import { createAdmin } from "@cfast/admin";
+
+const admin = createAdmin({
+  db,                     // DB factory: (grants, user) => Db
+  auth,                   // AdminAuthConfig (see below)
+  schema,                 // Drizzle schema
+  requiredRole: "admin",  // Role required to access admin
+});
+
+export const loader = admin.loader;
+export const action = admin.action;
+export default admin.Component;
+```
+
+**`AdminAuthConfig` (manual):**
+
+```typescript
+const auth: AdminAuthConfig = {
+  requireUser: async (request) => ({ user, grants }),
+  hasRole: (user, role) => user.roles.includes(role),
+  getRoles: (userId) => authInstance.getRoles(userId),
+  setRole: (userId, role) => authInstance.setRole(userId, role),
+  removeRole: (userId, role) => authInstance.removeRole(userId, role),
+  setRoles: (userId, roles) => authInstance.setRoles(userId, roles),
+  impersonate: (adminId, targetId, request) => { /* ... */ },
+  stopImpersonation: (request) => { /* ... */ },
+};
+```
+
+**Or use `createAdminAuth()` (recommended):**
+
+```typescript
+import { createAdminAuth } from "@cfast/auth";
+
+const auth = createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL }));
+// Implements all AdminAuthConfig methods automatically
+```
+
+### Server/Client Splitting
+
+```typescript
+// app/admin.server.ts
+import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
+
+const tableMetas = introspectSchema(schema);
+export const adminLoader = createAdminLoader(config, tableMetas);
+export const adminAction = createAdminAction(config, tableMetas);
+
+// app/routes/admin.tsx
+import { createAdminComponent, introspectSchema } from "@cfast/admin";
+
+const tableMetas = introspectSchema(schema);
+const AdminComponent = createAdminComponent(tableMetas);
+
+export const loader = adminLoader;
+export const action = adminAction;
+export default AdminComponent;
+```
+
+### Table Configuration
+
+```typescript
+createAdmin({
+  // ...
+  tables: {
+    posts: {
+      label: "Blog Posts",
+      listColumns: ["title", "author", "published", "createdAt"],
+      searchable: ["title", "content"],
+      defaultSort: { column: "createdAt", direction: "desc" },
+      exclude: false,
+      fields: {
+        content: { component: RichTextEditor },
+      },
+      actions: {
+        row: [
+          { label: "Publish", action: async (id, formData) => { /* ... */ },
+            confirm: "Publish?", variant: "default" },
+        ],
+        table: [
+          { label: "Export CSV", handler: async (selectedIds) => { /* ... */ } },
+        ],
+      },
+    },
+  },
+});
+```
+
+Auth-internal tables (session, account, verification, passkey) are auto-excluded.
+
+### User Management
+
+```typescript
+createAdmin({
+  users: {
+    assignableRoles: ["user", "editor", "moderator", "admin"],
+  },
+});
+```
+
+Provides: user list with search/filters, user detail page, role assignment panel (respects `roleGrants`), impersonation button.
+
+### Dashboard
+
+```typescript
+createAdmin({
+  dashboard: {
+    widgets: [
+      { type: "count", table: "users", label: "Total Users" },
+      { type: "count", table: "posts", label: "Published Posts", where: { published: true } },
+      { type: "recent", table: "posts", limit: 5, label: "Recent Posts" },
+    ],
+  },
+});
+```
+
+### Rendering Stack
+
+| Admin feature | Rendered by |
+|---|---|
+| List views | `@cfast/ui`'s `<ListView>` |
+| Detail views | `@cfast/ui`'s `<DetailView>` |
+| Create/edit forms | `@cfast/forms`'s `<AutoForm>` |
+| User roles | `@cfast/ui`'s `<RoleBadge>` |
+| Avatars | `@cfast/ui`'s `<AvatarWithInitials>` |
+| Confirmations | `@cfast/ui`'s `useConfirm` |
+
+---
+
+## @cfast/email
+
+Workers-native email. react-email rendering + pluggable providers.
+
+### Setup
+
+```typescript
+import { createEmailClient } from "@cfast/email";
+import { mailgun } from "@cfast/email/mailgun";
+
+export const email = createEmailClient({
+  provider: mailgun(() => ({
+    apiKey: env.get().MAILGUN_API_KEY,
+    domain: env.get().MAILGUN_DOMAIN,
+  })),
+  from: () => `MyApp <noreply@${env.get().MAILGUN_DOMAIN}>`,
+});
+```
+
+Provider config and `from` are getter functions (called lazily at send time -- Workers-friendly pattern).
+
+### Sending
+
+```typescript
+import { WelcomeEmail } from "~/email/templates/welcome";
+
+await email.send({
+  to: "user@example.com",
+  subject: "Welcome to MyApp",
+  react: <WelcomeEmail name="Daniel" />,
+});
+```
+
+**`send()` options:**
+
+| Field | Type | Description |
+|---|---|---|
+| `to` | `string` | Recipient |
+| `subject` | `string` | Subject |
+| `react` | `ReactElement` | react-email component |
+| `from?` | `string` | Override default sender |
+
+Returns `Promise<{ id: string }>`.
+
+### Writing Templates
+
+```tsx
+import { Html, Head, Body, Text, Link } from "@react-email/components";
+
+export function WelcomeEmail({ name }: { name: string }) {
+  return (
+    <Html>
+      <Head />
+      <Body>
+        <Text>Hi {name},</Text>
+        <Text>Welcome to MyApp.</Text>
+        <Link href="https://myapp.com/dashboard">Go to Dashboard</Link>
+      </Body>
+    </Html>
+  );
+}
+```
+
+### Providers
+
+**Mailgun:**
+
+```typescript
+import { mailgun } from "@cfast/email/mailgun";
+
+const provider = mailgun(() => ({
+  apiKey: env.get().MAILGUN_API_KEY,
+  domain: env.get().MAILGUN_DOMAIN,
+}));
+```
+
+**Console (development):**
+
+```typescript
+import { console as consoleDev } from "@cfast/email/console";
+const provider = consoleDev();
+// Logs to console, returns { id: "console-{uuid}" }
+```
+
+**Custom provider:**
+
+```typescript
+import type { EmailProvider, EmailMessage } from "@cfast/email";
+import { EmailDeliveryError } from "@cfast/email";
+
+const myProvider: EmailProvider = {
+  name: "my-provider",
+  async send(message: EmailMessage): Promise<{ id: string }> {
+    const response = await fetch("https://api.myprovider.com/send", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        to: message.to, from: message.from,
+        subject: message.subject, html: message.html, text: message.text,
+      }),
+    });
+    if (!response.ok) {
+      throw new EmailDeliveryError(await response.text(), {
+        provider: "my-provider", statusCode: response.status,
+      });
+    }
+    return { id: (await response.json()).id };
+  },
+};
+```
+
+### Error Handling
+
+```typescript
+import { EmailDeliveryError } from "@cfast/email";
+
+try {
+  await email.send({ to, subject, react: <Template /> });
+} catch (error) {
+  if (error instanceof EmailDeliveryError) {
+    error.provider;    // "mailgun"
+    error.statusCode;  // 401
+    error.response;    // "Unauthorized"
+  }
+}
+```
+
+### Exports
+
+```
+@cfast/email         -> createEmailClient, EmailDeliveryError, types
+@cfast/email/mailgun -> mailgun
+@cfast/email/console -> console
+```
+
+---
+
+## @cfast/core
+
+Optional composition layer. Wires packages together via plugins.
+
+### Setup
+
+```typescript
+import { createApp } from '@cfast/core';
+import { authPlugin } from '@cfast/auth';
+import { dbPlugin } from '@cfast/db';
+import { storagePlugin } from '@cfast/storage';
+
+export const app = createApp({ env: envSchema, permissions })
+  .use(authPlugin({
+    magicLink: { sendMagicLink: async ({ email, url }) => { /* ... */ } },
+    session: { expiresIn: '30d' },
+    defaultRoles: ['reader'],
+  }))
+  .use(dbPlugin({ schema }))
+  .use(storagePlugin(storageSchema));
+```
+
+`createApp` takes `env` and `permissions` directly (every app needs them). Everything else is a plugin.
+
+### Server API
+
+#### `app.init(rawEnv)`
+
+```typescript
+export default {
+  async fetch(request, rawEnv, ctx) {
+    app.init(rawEnv);
+    return requestHandler(request, {
+      cloudflare: { env: app.env(), ctx },
+    });
+  },
+};
+```
+
+#### `app.context(request, context)`
+
+Builds per-request context by running each plugin's `setup()` in registration order.
+
+```typescript
+export async function loader({ request, context }) {
+  const ctx = await app.context(request, context);
+  return ctx.db.client.query(posts).findMany().run();
+}
+```
+
+Return type is intersection of all plugin namespaces:
+
+```typescript
+type AppContext = {
+  env: ParsedEnv<typeof envSchema>;
+  auth: { user: AuthUser | null; grants: Grant[]; instance: AuthInstance };
+  db: { client: Db };
+  storage: { handle: HandleFn; getSignedUrl: SignedUrlFn };
+};
+```
+
+Each plugin's `setup()` receives prior plugins' output:
+
+1. `authPlugin.setup({ request, env })` -> `{ user, grants, instance }`
+2. `dbPlugin.setup({ request, env, auth: { ... } })` -> `{ client }`
+3. `storagePlugin.setup({ request, env, auth: {...}, db: {...} })` -> `{ handle, ... }`
+
+#### `app.loader()` and `app.action()`
+
+Convenience wrappers that call `app.context()` and pass as first argument:
+
+```typescript
+export const loader = app.loader(async (ctx, { params }) => {
+  return ctx.db.client.query(posts).findMany().run();
+});
+```
+
+#### Integration with `@cfast/actions`
+
+```typescript
+export const { createAction, composeActions } = createActions({
+  getContext: async ({ request, context }) => {
+    const ctx = await app.context(request, context);
+    return { db: ctx.db.client, user: ctx.auth.user, grants: ctx.auth.grants };
+  },
+});
+```
+
+### Client API
+
+#### `<app.Provider>`
+
+```typescript
+// app/root.tsx
+export function Layout({ children }) {
+  return (
+    <html><body>
+      <app.Provider>{children}</app.Provider>
+    </body></html>
+  );
+}
+```
+
+Composes all plugin providers in registration order.
+
+#### `useApp()`
+
+```typescript
+import { useApp } from '@cfast/core/client';
+
+const { auth, storage } = useApp();
+const user = auth.useCurrentUser();
+const upload = storage.useUpload('avatar');
+```
+
+Individual package hooks continue to work directly.
+
+### Plugin API
+
+#### `definePlugin(config)` / `definePlugin<TRequires>()(config)`
+
+**No dependencies (leaf plugin):**
+
+```typescript
+import { definePlugin } from '@cfast/core';
+
+export const myPlugin = (config: MyConfig) =>
+  definePlugin({
+    name: 'my-plugin',
+    setup(ctx) {
+      // ctx: { request, env }
+      return { /* values exposed as ctx['my-plugin'] */ };
+    },
+  });
+```
+
+**With dependencies (curried form):**
+
+```typescript
+import type { AuthPluginProvides } from '@cfast/auth';
+
+export const dbPlugin = (config: DbPluginConfig) =>
+  definePlugin<AuthPluginProvides>()({
+    name: 'db',
+    setup(ctx) {
+      // ctx.auth.user and ctx.auth.grants are typed
+      const client = createDb({
+        d1: ctx.env.DB, schema: config.schema,
+        grants: ctx.auth.grants, user: ctx.auth.user,
+      });
+      return { client };
+    },
+  });
+```
+
+**Multiple dependencies:**
+
+```typescript
+import type { AuthPluginProvides } from '@cfast/auth';
+import type { DbPluginProvides } from '@cfast/db';
+
+definePlugin<AuthPluginProvides & DbPluginProvides>()({
+  name: 'admin',
+  setup(ctx) {
+    ctx.auth.user;   // typed
+    ctx.db.client;   // typed
+    return { /* ... */ };
+  },
+});
+```
+
+**Plugin config fields:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | `string` | Yes | Unique ID. Namespace key in context. |
+| `setup` | `(ctx) => T \| Promise<T>` | Yes | Per-request. Returns values this plugin provides. |
+| `Provider` | `React.ComponentType<{children}>` | No | Client-side provider. |
+| `client` | `Record<string, unknown>` | No | Client values for `useApp()`. |
+
+**Type token for dependents:**
+
+```typescript
+export type AuthPluginProvides = PluginProvides<typeof authPlugin>;
+```
+
+### Complete Plugin Example
+
+```typescript
+import { definePlugin, type PluginProvides } from '@cfast/core';
+import type { AuthPluginProvides } from '@cfast/auth';
+
+export const rateLimitPlugin = (config: { kv: string; maxRequests: number; windowMs: number }) =>
+  definePlugin<AuthPluginProvides>()({
+    name: 'rate-limit',
+    async setup(ctx) {
+      const kv = ctx.env[config.kv] as KVNamespace;
+      const key = ctx.auth.user?.id ?? ctx.request.headers.get('cf-connecting-ip') ?? 'unknown';
+      const windowKey = `rl:${key}:${Math.floor(Date.now() / config.windowMs)}`;
+      const current = parseInt(await kv.get(windowKey) ?? '0', 10);
+      return {
+        limited: current >= config.maxRequests,
+        remaining: Math.max(0, config.maxRequests - current),
+        async consume() {
+          await kv.put(windowKey, String(current + 1), {
+            expirationTtl: Math.ceil(config.windowMs / 1000),
+          });
+        },
+      };
+    },
+  });
+```
+
+### Startup Validation
+
+- Duplicate plugin names -> `CfastConfigError` thrown at `.use()` time
+- Missing requirements -> TypeScript error at `.use()` call site (compile-time only)
+- Plugin `setup()` failure -> `CfastPluginError` with plugin name
+
+### Exports
+
+```
+@cfast/core         -> createApp, definePlugin, CfastPluginError, CfastConfigError
+@cfast/core/client  -> useApp, createCoreProvider, CoreContext
+```
+
+### Known Limitations
+
+1. Plugin setup runs on every request (no caching -- per-request user context makes it unsafe)
+2. Provider ordering matches registration order
+3. `useApp()` requires `app.Provider` in tree
+
+---
+
+## create-cfast
+
+Scaffold a fully wired project.
+
+```bash
+npm create cfast@latest my-app
+```
+
+### Interactive Setup
+
+Prompts for: package selection, UI library (Joy UI / Headless), API keys per environment, Cloudflare Account ID.
+
+### Generated Structure
+
+```
+my-app/
+  app/
+    routes/
+      _index.tsx, login.tsx, dashboard.tsx
+    db/
+      schema.ts, migrations/
+    auth.ts, permissions.ts
+    emails/
+      magic-link.tsx, welcome.tsx
+  wrangler.toml           # D1, KV bindings
+  .dev.vars               # Local secrets
+  .env.staging, .env.production
+  drizzle.config.ts
+  package.json, tsconfig.json
+```
+
+### Post-Scaffold Commands
+
+```bash
+pnpm dev                    # Local development
+pnpm db:generate            # Generate D1 migrations
+pnpm db:migrate:local       # Apply migrations locally
+pnpm db:migrate:remote      # Apply migrations to remote D1
+pnpm deploy:staging
+pnpm deploy:production
+```
+
+### Working Examples Included
+
+- Magic link authentication
+- Passkey registration and login
+- Permission-guarded routes
+- Multi-action route (create + delete)
+- Auto-generated form from Drizzle schema
+- Welcome email sent after registration
+
+---
+
+## Common Patterns
+
+### Full Request Lifecycle
+
+```typescript
+// 1. Schema
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+
+export const posts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content"),
+  authorId: text("author_id").notNull(),
+  published: integer("published", { mode: "boolean" }).default(false),
+});
+
+// 2. Permissions
+import { definePermissions, grant } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+
+export const permissions = definePermissions({
+  roles: ["anonymous", "user", "editor", "admin"] as const,
+  hierarchy: { user: ["anonymous"], editor: ["user"], admin: ["editor"] },
+  grants: {
+    anonymous: [grant("read", posts, { where: (p) => eq(p.published, true) })],
+    user: [
+      grant("create", posts),
+      grant("update", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+      grant("delete", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+    ],
+    editor: [grant("read", posts), grant("update", posts), grant("delete", posts)],
+    admin: [grant("manage", "all")],
+  },
+});
+
+// 3. Action definition (composeSequential for no-dependency workflows)
+import { composeSequential } from "@cfast/db";
+
+export const deletePost = createAction<{ postId: string }, Response>(
+  (db, input, ctx) =>
+    composeSequential([
+      db.delete(posts).where(eq(posts.id, input.postId)),
+      db.unsafe().insert(auditLogs).values({
+        id: nanoid(), userId: ctx.user.id,
+        action: "post.deleted", targetId: input.postId,
+      }),
+    ]),
+);
+
+// 4. Route (server) -- run() params are optional, can() for quick checks
+import { can } from "@cfast/permissions";
+
+export const action = composed.action;
+export const loader = composed.loader(async ({ request, params }) => {
+  const grants = resolveGrants(permissions, user?.role ?? "anonymous");
+  const db = createDb({ d1: env.DB, schema, grants, user });
+  const post = await db.query(posts).findFirst({
+    where: eq(posts.id, params.id),
+  }).run(); // params optional, defaults to {}
+  const canEdit = can(grants, "update", posts);
+  return { post, canEdit };
+});
+
+// 5. Route (client) -- ActionForm for declarative submissions
+import { ActionForm } from "@cfast/actions/client";
+
+export default function PostPage() {
+  const { post, canEdit } = useLoaderData<typeof loader>();
+  const actions = useActions(composed.client);
+  const remove = actions.deletePost({ postId: post.id });
+
+  return (
+    <PageContainer title={post.title}>
+      <ActionForm action={{ _action: "deletePost", postId: post.id }}>
+        <button type="submit" disabled={!remove.permitted}>Delete</button>
+      </ActionForm>
+      <DetailView table={posts} record={post}
+        fields={["title", "content", "published", "createdAt"]} />
+    </PageContainer>
+  );
+}
+```
+
+### Admin Panel in One Route
+
+```typescript
+import { createAdmin } from "@cfast/admin";
+import { createAdminAuth } from "@cfast/auth";
+import * as schema from "~/schema";
+
+const admin = createAdmin({
+  db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
+  auth: createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL })),
+  schema,
+  tables: {
+    posts: {
+      label: "Blog Posts",
+      listColumns: ["title", "author", "published", "createdAt"],
+      searchable: ["title"],
+    },
+  },
+  users: { assignableRoles: ["user", "editor", "admin"] },
+  dashboard: {
+    widgets: [
+      { type: "count", table: "users", label: "Total Users" },
+      { type: "recent", table: "posts", limit: 5, label: "Recent Posts" },
+    ],
+  },
+});
+
+export const loader = admin.loader;
+export const action = admin.action;
+export default admin.Component;
+```
+
+### Paginated List with Filters
+
+```typescript
+// Loader
+export async function loader({ request }) {
+  const page = parseOffsetParams(request, { defaultLimit: 20 });
+  const result = await db.query(posts)
+    .paginate(page, { orderBy: desc(posts.createdAt) })
+    .run();
+  return result;
+}
+
+// Component
+export default function PostsPage() {
+  const pagination = useOffsetPagination<Post>();
+
+  return (
+    <ListView
+      title="Posts"
+      data={pagination}
+      table={posts}
+      columns={["title", "author", "published", "createdAt"]}
+      filters={[
+        { column: "published", type: "boolean" },
+        { column: "createdAt", type: "dateRange" },
+      ]}
+      searchable={["title", "content"]}
+      actions={composed.client}
+      createAction={createPost.client}
+    />
+  );
+}
+```
+
+### Email After Registration
+
+```typescript
+import { email } from "~/email.server";
+import { WelcomeEmail } from "~/email/templates/welcome";
+
+// In auth callback or action:
+await email.send({
+  to: user.email,
+  subject: "Welcome to MyApp",
+  react: <WelcomeEmail name={user.name} />,
+});
+```
+
+### File Upload with Permission Gate
+
+```typescript
+// Storage schema
+const storage = defineStorage({
+  postImages: filetype({
+    bucket: "UPLOADS",
+    accept: ["image/jpeg", "image/png"],
+    maxSize: "10mb",
+    key: (file, ctx) => `posts/${ctx.input.postId}/${crypto.randomUUID()}-${file.name}`,
+  }),
+});
+
+// Action gates upload behind post edit permission
+const uploadImage = createAction<{ postId: string }, { url: string }>(
+  (db, input, ctx) =>
+    compose(
+      [db.query(posts).findFirst({ where: eq(posts.id, input.postId) })],
+      async (doCheck) => {
+        await doCheck({ postId: input.postId });
+        const result = await storage.handle("postImages", ctx.request, {
+          env: ctx.env, user: ctx.user, input: { postId: input.postId },
+        });
+        return { url: result.url };
+      },
+    ),
+);
+
+// Client
+function ImageUpload({ postId }) {
+  const upload = useUpload("postImages");
+  const actions = useActions(composed.client);
+  const uploadAction = actions.uploadImage({ postId });
+
+  if (!uploadAction.permitted) return null;
+
+  return <DropZone upload={upload} />;
+}
+```
+
+---
+
+## What Not To Do
+
+- **Don't share a `Db` instance across requests.** It captures the user at creation. Create one per request.
+- **Don't use `db.unsafe()` for admin endpoints.** Use a role with `grant("manage", "all")` so actions remain auditable.
+- **Don't import tables from different paths.** Always import from the same module you pass as `schema`.
+- **Don't use `with` (relational queries) for permission-sensitive joins.** Permission filters only apply to the root table. Query relations separately.
+- **Don't forget `as const` on the roles array.** TypeScript needs literal types for inference.
+- **Don't set very long cache TTLs.** In-memory version counters reset on cold start. Keep TTLs short (seconds to low minutes).
+- **Don't expect type-safe `.run()` params.** Uses `Record<string, unknown>` (optional, defaults to `{}`). Drizzle validates at runtime.
+- **Don't use `db.batch()` for bulk performance.** It runs sequentially. For true D1 batch, use `db.unsafe()` and D1's native API.
+
+---
+
+## Error Types Reference
+
+| Error | Package | When thrown |
+|---|---|---|
+| `EnvError` | `@cfast/env` | `env.init()` fails. Has `.errors: EnvValidationError[]` |
+| `ForbiddenError` | `@cfast/permissions` | `Operation.run()` denied. Has `.action`, `.table`, `.role`, `.descriptors` |
+| `StorageError` | `@cfast/storage` | Upload fails. Has `.code`, `.detail`, `.status` |
+| `EmailDeliveryError` | `@cfast/email` | Send fails. Has `.provider`, `.statusCode`, `.response` |
+| `CfastPluginError` | `@cfast/core` | Plugin `setup()` fails. Wraps cause with plugin name. |
+| `CfastConfigError` | `@cfast/core` | Duplicate plugin names at `.use()` time. |
+
+---
+
+## Quick Start
+
+```bash
+npm create cfast@latest my-app
+cd my-app
+pnpm dev
+```
+
+## Links
+
+- [GitHub Repository](https://github.com/DanielMSchmidt/cfast)
+- [`@cfast/env` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/env): Type-safe Cloudflare bindings
+- [`@cfast/permissions` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/permissions): Permission system
+- [`@cfast/db` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/db): Permission-aware database
+- [`@cfast/auth` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/auth): Authentication
+- [`@cfast/storage` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/storage): File uploads
+- [`@cfast/actions` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/actions): Multi-action routes
+- [`@cfast/forms` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/forms): Auto-generated forms
+- [`@cfast/ui` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/ui): Component library
+- [`@cfast/pagination` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/pagination): Pagination hooks
+- [`@cfast/admin` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/admin): Admin panel
+- [`@cfast/email` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/email): Email sending
+- [`@cfast/core` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/core): App composition
+- [`create-cfast` docs](https://github.com/DanielMSchmidt/cfast/tree/main/packages/create-cfast): Project scaffolder
