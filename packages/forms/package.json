@@ -1,8 +1,14 @@
 {
   "name": "@cfast/forms",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Auto-generated forms from Drizzle schema with progressive customization",
-  "keywords": ["cfast", "cloudflare-workers", "forms", "drizzle", "schema-driven"],
+  "keywords": [
+    "cfast",
+    "cloudflare-workers",
+    "forms",
+    "drizzle",
+    "schema-driven"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,7 +28,10 @@
       "types": "./dist/joy.d.ts"
     }
   },
-  "files": ["dist", "llms.txt"],
+  "files": [
+    "dist",
+    "llms.txt"
+  ],
   "sideEffects": false,
   "publishConfig": {
     "access": "public"
