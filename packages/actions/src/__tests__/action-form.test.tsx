@@ -1,16 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import { createElement } from "react";
 
-// Track what Form receives
-let lastFormProps: Record<string, unknown> = {};
-let lastFormChildren: unknown[] = [];
-
 vi.mock("react-router", () => ({
   Form: (props: Record<string, unknown>) => {
     const { children, ...rest } = props;
-    lastFormProps = rest;
-    lastFormChildren = Array.isArray(children) ? children.flat() : [children];
-    // Return a plain object representing the rendered tree for inspection
     return createElement("form", rest, children);
   },
 }));
