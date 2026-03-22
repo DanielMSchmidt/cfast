@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.1.0...create-cfast-v0.2.0) (2026-03-22)
+
+
+### Features
+
+* split @cfast/ui into @cfast/ui + @cfast/joy, add passkey sign-up ([#81](https://github.com/DanielMSchmidt/cfast/issues/81)) ([57b682e](https://github.com/DanielMSchmidt/cfast/commit/57b682ec7b2bfe3fbf72d4f3244118021cdcc454))
+
+
+### Bug Fixes
+
+* **create-cfast:** fix broken admin template imports and add scaffold build tests ([#82](https://github.com/DanielMSchmidt/cfast/issues/82)) ([54d4a97](https://github.com/DanielMSchmidt/cfast/commit/54d4a97b9a1695fe65cf75f9ac215cfb139b83ae))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.0.4...create-cfast-v0.1.0) (2026-03-21)
 
 
