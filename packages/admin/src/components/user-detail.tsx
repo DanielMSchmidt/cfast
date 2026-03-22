@@ -9,7 +9,7 @@ import Chip from "@mui/joy/Chip";
 import Select from "@mui/joy/Select";
 import Option from "@mui/joy/Option";
 import Divider from "@mui/joy/Divider";
-import { RoleBadge, AvatarWithInitials } from "@cfast/ui/joy";
+import { RoleBadge, AvatarWithInitials } from "@cfast/joy";
 import { buildAdminUrl } from "../utils.js";
 import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminUser } from "../types.js";
