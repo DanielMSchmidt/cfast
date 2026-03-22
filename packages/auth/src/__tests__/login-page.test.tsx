@@ -3,12 +3,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { LoginPage } from "../client/login-page";
 
-function createMockAuthClient() {
+function createMockAuthClient(opts?: { withPasskeySignUp?: boolean }) {
   return {
     signIn: {
       magicLink: vi.fn().mockResolvedValue({}),
       passkey: vi.fn().mockResolvedValue({}),
     },
+    signUp: opts?.withPasskeySignUp
+      ? { email: vi.fn().mockResolvedValue({}) }
+      : undefined,
+    passkey: opts?.withPasskeySignUp
+      ? { addPasskey: vi.fn().mockResolvedValue({}) }
+      : undefined,
   };
 }
 
@@ -187,6 +193,137 @@ describe("LoginPage", () => {
 
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+
+  describe("Passkey sign-up", () => {
+    it("shows sign-up button when both signUp.email and passkey.addPasskey are present", () => {
+      const client = createMockAuthClient({ withPasskeySignUp: true });
+      render(<LoginPage authClient={client} />);
+
+      expect(screen.getByText(/sign up with passkey/i)).toBeDefined();
+    });
+
+    it("hides sign-up button when signUp.email is missing", () => {
+      const client = createMockAuthClient();
+      render(<LoginPage authClient={client} />);
+
+      expect(screen.queryByText(/sign up with passkey/i)).toBeNull();
+    });
+
+    it("hides sign-up button when passkey.addPasskey is missing", () => {
+      const client = {
+        signIn: {
+          magicLink: vi.fn().mockResolvedValue({}),
+          passkey: vi.fn().mockResolvedValue({}),
+        },
+        signUp: { email: vi.fn().mockResolvedValue({}) },
+      };
+      render(<LoginPage authClient={client} />);
+
+      expect(screen.queryByText(/sign up with passkey/i)).toBeNull();
+    });
+
+    it("shows validation error when clicking sign-up without email", async () => {
+      const client = createMockAuthClient({ withPasskeySignUp: true });
+      render(<LoginPage authClient={client} />);
+
+      fireEvent.click(screen.getByText(/sign up with passkey/i));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Please enter your email address."),
+        ).toBeDefined();
+      });
+    });
+
+    it("calls signUp.email then addPasskey on successful sign-up", async () => {
+      const client = createMockAuthClient({ withPasskeySignUp: true });
+      const onSuccess = vi.fn();
+      render(<LoginPage authClient={client} onSuccess={onSuccess} />);
+
+      const input = screen.getByPlaceholderText("you@example.com");
+      fireEvent.change(input, { target: { value: "new@example.com" } });
+      fireEvent.click(screen.getByText(/sign up with passkey/i));
+
+      await waitFor(() => {
+        expect(client.signUp!.email).toHaveBeenCalledWith(
+          expect.objectContaining({
+            email: "new@example.com",
+            name: "",
+          }),
+        );
+      });
+
+      await waitFor(() => {
+        expect(client.passkey!.addPasskey).toHaveBeenCalled();
+      });
+
+      await waitFor(() => {
+        expect(onSuccess).toHaveBeenCalled();
+      });
+    });
+
+    it("shows error and skips addPasskey when signUp.email fails", async () => {
+      const client = createMockAuthClient({ withPasskeySignUp: true });
+      client.signUp!.email.mockResolvedValue({
+        error: { message: "User already exists" },
+      });
+
+      render(<LoginPage authClient={client} />);
+
+      const input = screen.getByPlaceholderText("you@example.com");
+      fireEvent.change(input, {
+        target: { value: "existing@example.com" },
+      });
+      fireEvent.click(screen.getByText(/sign up with passkey/i));
+
+      await waitFor(() => {
+        expect(screen.getByText("User already exists")).toBeDefined();
+      });
+
+      expect(client.passkey!.addPasskey).not.toHaveBeenCalled();
+    });
+
+    it("shows error when addPasskey fails after successful sign-up", async () => {
+      const client = createMockAuthClient({ withPasskeySignUp: true });
+      client.passkey!.addPasskey.mockResolvedValue({
+        error: { message: "Passkey registration failed" },
+      });
+
+      render(<LoginPage authClient={client} />);
+
+      const input = screen.getByPlaceholderText("you@example.com");
+      fireEvent.change(input, { target: { value: "new@example.com" } });
+      fireEvent.click(screen.getByText(/sign up with passkey/i));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Passkey registration failed"),
+        ).toBeDefined();
+      });
+    });
+
+    it("uses custom PasskeySignUpButton when provided", () => {
+      const client = createMockAuthClient({ withPasskeySignUp: true });
+      render(
+        <LoginPage
+          authClient={client}
+          components={{
+            PasskeySignUpButton: ({ onClick, loading }) => (
+              <button
+                data-testid="custom-signup"
+                onClick={onClick}
+                disabled={loading}
+              >
+                Custom Sign Up
+              </button>
+            ),
+          }}
+        />,
+      );
+
+      expect(screen.getByTestId("custom-signup")).toBeDefined();
     });
   });
 });
