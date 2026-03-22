@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/email-v0.1.0...@cfast/email-v0.1.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* log full HTML body in email console provider ([#77](https://github.com/DanielMSchmidt/cfast/issues/77)) ([c2d9120](https://github.com/DanielMSchmidt/cfast/commit/c2d91202ad810d47865ed9accbe7604513790253))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/email-v0.0.3...@cfast/email-v0.1.0) (2026-03-21)
 
 

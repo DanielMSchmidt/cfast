@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.1.0...@cfast/admin-v0.2.0) (2026-03-22)
+
+
+### Features
+
+* split @cfast/ui into @cfast/ui + @cfast/joy, add passkey sign-up ([#81](https://github.com/DanielMSchmidt/cfast/issues/81)) ([57b682e](https://github.com/DanielMSchmidt/cfast/commit/57b682ec7b2bfe3fbf72d4f3244118021cdcc454))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.0.1...@cfast/admin-v0.1.0) (2026-03-21)
 
 

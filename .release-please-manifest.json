@@ -1,15 +1,15 @@
 {
   "packages/actions": "0.1.0",
-  "packages/admin": "0.1.0",
-  "packages/auth": "0.1.0",
+  "packages/admin": "0.2.0",
+  "packages/auth": "0.2.0",
   "packages/core": "0.1.0",
-  "packages/create-cfast": "0.1.0",
+  "packages/create-cfast": "0.2.0",
   "packages/db": "0.1.0",
-  "packages/email": "0.1.0",
+  "packages/email": "0.1.1",
   "packages/env": "0.1.0",
   "packages/forms": "0.1.0",
   "packages/pagination": "0.1.0",
   "packages/permissions": "0.1.0",
   "packages/storage": "0.1.0",
-  "packages/ui": "0.1.0"
+  "packages/ui": "0.2.0"
 }
