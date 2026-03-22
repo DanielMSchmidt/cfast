@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
 import { useLoaderData } from "react-router";
 import { AdminPanel } from "@cfast/admin/client";
-import { joyAdminComponents } from "@cfast/ui/joy";
+import { joyAdminComponents } from "@cfast/joy";
 import { adminLoader, adminAction } from "~/admin.server";
 
 export async function loader(args: LoaderFunctionArgs) {

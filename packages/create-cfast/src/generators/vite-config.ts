@@ -3,7 +3,7 @@ import type { Config } from "../types";
 export function generateViteConfig(config: Config): string {
   const optimizeDeps: string[] = [];
   if (config.features.ui && config.uiLibrary === "joy") {
-    optimizeDeps.push(`"@cfast/ui/joy"`);
+    optimizeDeps.push(`"@cfast/joy"`);
   }
   if (config.features.ui) {
     optimizeDeps.push(`"@cfast/actions/client"`);

@@ -27,7 +27,7 @@ export function generateRootTsx(config: Config): string {
     imports.push(
       `import { createUIPlugin, UIPluginProvider, ConfirmProvider } from "@cfast/ui";`,
     );
-    imports.push(`import { ConfirmDialog } from "@cfast/ui/joy";`);
+    imports.push(`import { ConfirmDialog } from "@cfast/joy";`);
 
     pluginSetup = `\nconst plugin = createUIPlugin({\n  components: { confirmDialog: ConfirmDialog },\n});\n`;
 
