@@ -141,6 +141,7 @@ export function LoginPage({
       setError("Please enter your email address.");
       return;
     }
+    if (!authClient) return;
     setLoading(true);
     setError(null);
     try {
@@ -159,6 +160,7 @@ export function LoginPage({
   }
 
   async function handlePasskey() {
+    if (!authClient) return;
     setPasskeyLoading(true);
     setError(null);
     try {
@@ -180,6 +182,7 @@ export function LoginPage({
       setError("Please enter your email address.");
       return;
     }
+    if (!authClient) return;
     setPasskeySignUpLoading(true);
     setError(null);
     try {

@@ -63,7 +63,9 @@ export type LoginComponents = {
 };
 
 export type LoginPageProps = {
-  authClient: {
+  /** Pass `undefined` during SSR (e.g. from a `.client.ts` module). The
+   *  component renders a static shell and hydrates with full interactivity. */
+  authClient?: {
     signIn: {
       magicLink: (opts: {
         email: string;
