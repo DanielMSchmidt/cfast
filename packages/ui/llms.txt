@@ -6,11 +6,11 @@
 
 Use `@cfast/ui` when building data-driven pages in a cfast app. It sits between your primitive component library (MUI Joy UI) and your application code, providing "smart" components that integrate with `@cfast/db`, `@cfast/actions`, `@cfast/permissions`, `@cfast/pagination`, `@cfast/auth`, and `@cfast/storage`.
 
-Import styled components from `@cfast/ui/joy`. Import headless components and hooks from `@cfast/ui`.
+Import styled components from `@cfast/joy`. Import headless components and hooks from `@cfast/ui`.
 
 ## Key concepts
 
-- **Headless core + UI plugins**: `@cfast/ui` exports hooks and logic. `@cfast/ui/joy` exports Joy UI styled implementations. Custom plugins can provide other UI libraries via `createUIPlugin()`.
+- **Headless core + UI plugins**: `@cfast/ui` exports hooks and logic. `@cfast/joy` exports Joy UI styled implementations. Custom plugins can provide other UI libraries via `createUIPlugin()`.
 - **Permission-aware**: Components like `ActionButton`, `PermissionGate`, `EmptyState`, sidebar nav items, and `BulkActionBar` automatically hide/disable based on `@cfast/actions` permission status.
 - **Schema-driven**: Pass a Drizzle `table` to `DataTable`, `FilterBar`, `DetailView`, or `useColumnInference()` and columns/fields/filters are inferred from column types.
 - **URL-synced**: `FilterBar` serializes filter state to URL search params. `DataTable` sorting syncs to URL params. Both work with `@cfast/pagination`'s `parseParams()` in loaders.
@@ -36,7 +36,7 @@ useColumnInference(table: Record<string, unknown> | undefined, columns?: string[
 // Maps Drizzle table columns to TypedField components. Memoized.
 ```
 
-### Components (from `@cfast/ui/joy`)
+### Components (from `@cfast/joy`)
 
 **Data display:**
 - `DataTable` -- table with sorting, selection, row actions, skeleton loading. Accepts `data` (pagination result), `table` (Drizzle), `columns`, `actions`, `selectable`.
@@ -93,7 +93,7 @@ useComponent(slotName: string): ComponentType
 ### Full list page
 
 ```typescript
-import { ListView } from "@cfast/ui/joy";
+import { ListView } from "@cfast/joy";
 import { usePagination } from "@cfast/pagination";
 import { posts } from "~/db/schema";
 
@@ -118,7 +118,7 @@ function PostsPage() {
 ### Permission-aware button with confirmation
 
 ```typescript
-import { ActionButton } from "@cfast/ui/joy";
+import { ActionButton } from "@cfast/joy";
 
 <ActionButton
   action={deletePost}
@@ -152,7 +152,7 @@ useActionToast(composed.client, {
 
 ## Common Mistakes
 
-- Importing from `@cfast/ui/joy` on the server -- Joy components are client-only. Use headless exports from `@cfast/ui` for server-safe code.
+- Importing from `@cfast/joy` on the server -- Joy components are client-only. Use headless exports from `@cfast/ui` for server-safe code.
 - Forgetting `<ToastProvider>` in root layout -- `useToast()` and `useActionToast()` throw without it.
 - Forgetting `<ConfirmProvider>` -- `useConfirm()` and `ActionButton` with `confirmation` need it.
 - Passing raw data arrays to `DataTable` instead of a pagination result from `usePagination()`.

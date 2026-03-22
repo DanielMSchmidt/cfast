@@ -138,12 +138,12 @@ function Header() {
 
 ### Login Page
 
-The consumer creates their own login route and renders `<LoginPage>`. The component accepts an `authClient` prop and a `components` prop for UI slot overrides. Default slots render plain HTML — use `@cfast/ui/joy` for Joy UI styling.
+The consumer creates their own login route and renders `<LoginPage>`. The component accepts an `authClient` prop and a `components` prop for UI slot overrides. Default slots render plain HTML — use `@cfast/joy` for Joy UI styling.
 
 ```typescript
 // routes/login.tsx
 import { LoginPage } from "@cfast/auth/client";
-import { joyLoginComponents } from "@cfast/ui/joy";
+import { joyLoginComponents } from "@cfast/joy";
 import { authClient } from "~/auth.client";
 
 export default function Login() {
@@ -196,7 +196,7 @@ export default function Login() {
 }
 ```
 
-For Joy UI, use the pre-built `joyLoginComponents` from `@cfast/ui/joy` instead of writing custom slots.
+For Joy UI, use the pre-built `joyLoginComponents` from `@cfast/joy` instead of writing custom slots.
 
 ### Redirect Flow
 

@@ -157,7 +157,7 @@ A button that submits an action and disables itself when the user lacks permissi
 
 ```tsx
 import { useActions, clientDescriptor } from "@cfast/actions/client";
-import { ActionButton, PermissionGate } from "@cfast/ui/joy";
+import { ActionButton, PermissionGate } from "@cfast/joy";
 
 const postActions = clientDescriptor(["deletePost", "publishPost", "unpublishPost"]);
 
@@ -225,7 +225,7 @@ export default function NewPost() {
 ```tsx
 // app/root.tsx
 import { createUIPlugin, UIPluginProvider, ConfirmProvider } from "@cfast/ui";
-import { ConfirmDialog } from "@cfast/ui/joy";
+import { ConfirmDialog } from "@cfast/joy";
 
 const plugin = createUIPlugin({
   components: { confirmDialog: ConfirmDialog },

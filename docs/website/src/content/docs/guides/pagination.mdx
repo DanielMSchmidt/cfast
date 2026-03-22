@@ -171,7 +171,7 @@ const { items, loadMore, hasMore } = usePagination<Comment>({
 `@cfast/ui`'s `DataTable` and `ListView` accept pagination hook results directly, wiring up loading states, page controls, and infinite scroll automatically:
 
 ```typescript
-import { DataTable } from "@cfast/ui/joy";
+import { DataTable } from "@cfast/joy";
 
 function PostsTable() {
   const pagination = usePagination<Post>();
