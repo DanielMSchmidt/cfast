@@ -77,6 +77,25 @@ function DefaultPasskeyButton({
   );
 }
 
+function DefaultPasskeySignUpButton({
+  onClick,
+  loading,
+}: {
+  onClick: () => void;
+  loading: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      style={{ width: "100%", padding: 8 }}
+    >
+      {loading ? "Creating account..." : "Sign up with Passkey"}
+    </button>
+  );
+}
+
 function DefaultSuccessMessage({ email }: { email: string }) {
   return (
     <div role="status">
@@ -104,6 +123,7 @@ export function LoginPage({
   const EmailInput = components.EmailInput ?? DefaultEmailInput;
   const MagicLinkBtn = components.MagicLinkButton ?? DefaultMagicLinkButton;
   const PasskeyBtn = components.PasskeyButton ?? DefaultPasskeyButton;
+  const PasskeySignUpBtn = components.PasskeySignUpButton ?? DefaultPasskeySignUpButton;
   const SuccessMsg = components.SuccessMessage ?? DefaultSuccessMessage;
   const ErrorMsg = components.ErrorMessage ?? DefaultErrorMessage;
 
@@ -112,6 +132,9 @@ export function LoginPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeySignUpLoading, setPasskeySignUpLoading] = useState(false);
+
+  const canPasskeySignUp = !!(authClient.signUp?.email && authClient.passkey?.addPasskey);
 
   async function handleMagicLink() {
     if (!email.trim()) {
@@ -152,6 +175,36 @@ export function LoginPage({
     }
   }
 
+  async function handlePasskeySignUp() {
+    if (!email.trim()) {
+      setError("Please enter your email address.");
+      return;
+    }
+    setPasskeySignUpLoading(true);
+    setError(null);
+    try {
+      const signUpResult = await authClient.signUp!.email({
+        email,
+        password: crypto.randomUUID(),
+        name: "",
+      });
+      if (signUpResult.error) {
+        setError(signUpResult.error.message ?? "Sign-up failed.");
+        return;
+      }
+      const passkeyResult = await authClient.passkey!.addPasskey();
+      if (passkeyResult?.error) {
+        setError(passkeyResult.error.message ?? "Passkey registration failed.");
+        return;
+      }
+      onSuccess?.();
+    } catch {
+      setError("Passkey sign-up failed. Please try again.");
+    } finally {
+      setPasskeySignUpLoading(false);
+    }
+  }
+
   return (
     <Layout>
       <h2>{title}</h2>
@@ -170,6 +223,14 @@ export function LoginPage({
           {authClient?.signIn?.passkey && (
             <div style={{ marginTop: 8 }}>
               <PasskeyBtn onClick={handlePasskey} loading={passkeyLoading} />
+            </div>
+          )}
+          {canPasskeySignUp && (
+            <div style={{ marginTop: 8 }}>
+              <PasskeySignUpBtn
+                onClick={handlePasskeySignUp}
+                loading={passkeySignUpLoading}
+              />
             </div>
           )}
         </div>
