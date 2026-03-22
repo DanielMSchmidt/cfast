@@ -52,6 +52,7 @@
     "lint": "eslint src/"
   },
   "peerDependencies": {
+    "@better-auth/passkey": ">=1",
     "better-auth": ">=1",
     "drizzle-orm": ">=0.35",
     "react": ">=18"
