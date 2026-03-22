@@ -8,7 +8,7 @@ import MenuItem from "@mui/joy/MenuItem";
 import MenuButton from "@mui/joy/MenuButton";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
-import { AvatarWithInitials } from "@cfast/ui/joy";
+import { AvatarWithInitials } from "@cfast/joy";
 import type { AuthUser } from "~/permissions";
 import { hasAnyRole } from "~/permissions";
 import { authClient } from "~/auth.client";

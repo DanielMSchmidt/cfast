@@ -7,7 +7,7 @@ import Stack from "@mui/joy/Stack";
 import Chip from "@mui/joy/Chip";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { PermissionGate } from "@cfast/ui/joy";
+import { PermissionGate } from "@cfast/joy";
 import { getUser } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { posts, users } from "~/db/schema";

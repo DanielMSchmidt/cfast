@@ -8,7 +8,7 @@ import Chip from "@mui/joy/Chip";
 import Box from "@mui/joy/Box";
 import AspectRatio from "@mui/joy/AspectRatio";
 import { useActions, clientDescriptor } from "@cfast/actions/client";
-import { ActionButton, PermissionGate } from "@cfast/ui/joy";
+import { ActionButton, PermissionGate } from "@cfast/joy";
 import { getUser } from "~/auth.helpers.server";
 import { createDbClient } from "~/db/client";
 import { composeActions } from "~/actions.server";

@@ -13,7 +13,7 @@ import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
 import { useActions, clientDescriptor } from "@cfast/actions/client";
 import { ActionForm } from "@cfast/actions/client";
-import { ActionButton } from "@cfast/ui/joy";
+import { ActionButton } from "@cfast/joy";
 import { can } from "@cfast/permissions";
 import { hasAnyRole } from "~/permissions";
 import { app } from "~/cfast.server";

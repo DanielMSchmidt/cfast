@@ -24,6 +24,7 @@
     "@cfast/env": "workspace:*",
     "@cfast/db": "workspace:*",
     "@cfast/email": "workspace:*",
+    "@cfast/joy": "workspace:*",
     "@cfast/permissions": "workspace:*",
     "@cfast/ui": "workspace:*",
     "@emotion/react": "^11.14.0",
