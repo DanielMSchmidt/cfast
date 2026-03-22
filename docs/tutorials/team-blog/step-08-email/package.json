@@ -17,6 +17,7 @@
     "@cfast/email": "workspace:*",
     "@cfast/env": "workspace:*",
     "@cfast/forms": "workspace:*",
+    "@cfast/joy": "workspace:*",
     "@cfast/permissions": "workspace:*",
     "@cfast/storage": "workspace:*",
     "@cfast/ui": "workspace:*",

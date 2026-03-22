@@ -11,7 +11,7 @@ import CssBaseline from "@mui/joy/CssBaseline";
 import Typography from "@mui/joy/Typography";
 import Container from "@mui/joy/Container";
 import { createUIPlugin, UIPluginProvider, ConfirmProvider } from "@cfast/ui";
-import { ConfirmDialog } from "@cfast/ui/joy";
+import { ConfirmDialog } from "@cfast/joy";
 import { AuthClientProvider } from "@cfast/auth/client";
 import { authClient } from "~/auth.client";
 

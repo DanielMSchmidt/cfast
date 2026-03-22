@@ -13,7 +13,7 @@ import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
 import { useActions, clientDescriptor } from "@cfast/actions/client";
-import { ActionButton } from "@cfast/ui/joy";
+import { ActionButton } from "@cfast/joy";
 import { getUser } from "~/auth.helpers.server";
 import { hasRole, hasAnyRole } from "~/permissions";
 import { createDbClient } from "~/db/client";
