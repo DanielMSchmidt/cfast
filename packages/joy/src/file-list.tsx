@@ -4,7 +4,7 @@ import JoyListItem from "@mui/joy/ListItem";
 import JoyListItemContent from "@mui/joy/ListItemContent";
 import JoyTypography from "@mui/joy/Typography";
 import JoyButton from "@mui/joy/Button";
-import type { FileListProps } from "../types.js";
+import type { FileListProps } from "@cfast/ui";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

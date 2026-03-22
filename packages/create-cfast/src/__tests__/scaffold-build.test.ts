@@ -24,6 +24,7 @@ const CFAST_PACKAGES: Record<string, string> = {
   "@cfast/auth": path.join(MONOREPO_ROOT, "packages/auth"),
   "@cfast/actions": path.join(MONOREPO_ROOT, "packages/actions"),
   "@cfast/ui": path.join(MONOREPO_ROOT, "packages/ui"),
+  "@cfast/joy": path.join(MONOREPO_ROOT, "packages/joy"),
   "@cfast/forms": path.join(MONOREPO_ROOT, "packages/forms"),
   "@cfast/storage": path.join(MONOREPO_ROOT, "packages/storage"),
   "@cfast/email": path.join(MONOREPO_ROOT, "packages/email"),

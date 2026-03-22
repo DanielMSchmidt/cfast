@@ -3,7 +3,7 @@ import Card from "@mui/joy/Card";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
-import { AvatarWithInitials } from "@cfast/ui/joy";
+import { AvatarWithInitials } from "@cfast/joy";
 import type { AuthUser } from "~/permissions";
 import { hasAnyRole } from "~/permissions";
 

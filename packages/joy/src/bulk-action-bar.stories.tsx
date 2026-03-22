@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { BulkActionBar } from "./bulk-action-bar.js";
-import type { BulkAction } from "../types.js";
+import type { BulkAction } from "@cfast/ui";
 
 const ACTIONS: BulkAction[] = [
   { label: "Publish" },

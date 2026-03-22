@@ -2,9 +2,8 @@ import type { ReactElement } from "react";
 import JoyGrid from "@mui/joy/Grid";
 import JoyTypography from "@mui/joy/Typography";
 import { PageContainer } from "./page-container.js";
-import { fieldForColumn } from "../fields/field-for-column.js";
-import type { DetailViewProps, ColumnDef, ColumnShorthand } from "../types.js";
-import { getField } from "../record-access.js";
+import { fieldForColumn, getField } from "@cfast/ui";
+import type { DetailViewProps, ColumnDef, ColumnShorthand } from "@cfast/ui";
 
 function normalizeFields<T>(
   fields: ColumnShorthand<T>[] | undefined,

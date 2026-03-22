@@ -4,7 +4,7 @@ import JoyInput from "@mui/joy/Input";
 import JoySelect from "@mui/joy/Select";
 import JoyOption from "@mui/joy/Option";
 import JoyStack from "@mui/joy/Stack";
-import type { FilterBarProps, FilterDef } from "../types.js";
+import type { FilterBarProps, FilterDef } from "@cfast/ui";
 
 /**
  * Joy UI styled FilterBar — URL-synced filter controls.

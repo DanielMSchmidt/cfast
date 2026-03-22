@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, type ReactElement } from "react";
 import JoySheet from "@mui/joy/Sheet";
 import JoyTypography from "@mui/joy/Typography";
 import JoyLinearProgress from "@mui/joy/LinearProgress";
-import type { DropZoneProps } from "../types.js";
+import type { DropZoneProps } from "@cfast/ui";
 
 /**
  * Joy UI styled DropZone — drag-and-drop file upload area.

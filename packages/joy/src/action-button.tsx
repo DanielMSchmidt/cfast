@@ -3,7 +3,7 @@ import JoyButton from "@mui/joy/Button";
 import type { ButtonProps as JoyButtonProps } from "@mui/joy/Button";
 import JoyTooltip from "@mui/joy/Tooltip";
 import type { ActionHookResult } from "@cfast/actions/client";
-import type { WhenForbidden, ConfirmOptions } from "../types.js";
+import type { WhenForbidden, ConfirmOptions } from "@cfast/ui";
 import type { ReactNode } from "react";
 
 type JoyActionButtonProps = {

@@ -7,7 +7,7 @@ import Input from "@mui/joy/Input";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
-import { RoleBadge } from "@cfast/ui/joy";
+import { RoleBadge } from "@cfast/joy";
 import { buildAdminUrl } from "../utils.js";
 import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminUser } from "../types.js";

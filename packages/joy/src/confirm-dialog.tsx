@@ -4,7 +4,7 @@ import ModalDialog from "@mui/joy/ModalDialog";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
-import type { ConfirmDialogSlotProps } from "../types.js";
+import type { ConfirmDialogSlotProps } from "@cfast/ui";
 
 /**
  * Joy UI ConfirmDialog — Modal + ModalDialog based on the example app pattern.

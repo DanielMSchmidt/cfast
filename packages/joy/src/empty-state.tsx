@@ -2,8 +2,8 @@ import { type ReactElement } from "react";
 import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
-import { useActionStatus } from "../hooks/use-action-status.js";
-import type { EmptyStateProps } from "../types.js";
+import { useActionStatus } from "@cfast/ui";
+import type { EmptyStateProps } from "@cfast/ui";
 
 /**
  * Joy UI EmptyState — centered layout with optional CTA.

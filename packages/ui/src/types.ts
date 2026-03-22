@@ -59,7 +59,7 @@ export type UIPluginComponents = {
  * A UI plugin providing styled component implementations for plugin slots.
  *
  * Created via `createUIPlugin()`. Slots not provided fall back to the headless
- * defaults (unstyled HTML elements). The Joy UI plugin (`@cfast/ui/joy`) is the
+ * defaults (unstyled HTML elements). The Joy UI plugin (`@cfast/joy`) is the
  * built-in implementation; third-party plugins can target shadcn, Mantine, or
  * any other component library.
  *

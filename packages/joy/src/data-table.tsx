@@ -3,8 +3,8 @@ import JoyTable from "@mui/joy/Table";
 import JoySheet from "@mui/joy/Sheet";
 import JoyCheckbox from "@mui/joy/Checkbox";
 
-import type { DataTableProps, ColumnDef, ColumnShorthand } from "../types.js";
-import { getField, getRecordId } from "../record-access.js";
+import type { DataTableProps, ColumnDef, ColumnShorthand } from "@cfast/ui";
+import { getField, getRecordId } from "@cfast/ui";
 
 function normalizeColumns<T>(columns: ColumnShorthand<T>[] | undefined): ColumnDef<T>[] {
   if (!columns) return [];

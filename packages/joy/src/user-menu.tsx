@@ -10,10 +10,9 @@ import { Link } from "react-router";
 // MUI Joy's polymorphic `component` prop doesn't work with createElement's types.
 const AnyMenuItem = MenuItem as ComponentType<Record<string, unknown>>;
 import { useCurrentUser } from "@cfast/auth/client";
-import { getInitials } from "../components/avatar-with-initials.js";
-import { RoleBadge } from "../joy/role-badge.js";
-import { useActionStatus } from "../hooks/use-action-status.js";
-import type { UserMenuProps, UserMenuLink } from "../types.js";
+import { getInitials, useActionStatus } from "@cfast/ui";
+import { RoleBadge } from "./role-badge.js";
+import type { UserMenuProps, UserMenuLink } from "@cfast/ui";
 
 /**
  * Joy UI UserMenu — Dropdown with Avatar trigger, user info, and links.

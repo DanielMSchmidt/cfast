@@ -109,7 +109,7 @@ function ErrorMessage({ error }: { error: string }) {
  * Usage:
  * ```tsx
  * import { LoginPage } from "@cfast/auth/client";
- * import { joyLoginComponents } from "@cfast/ui/joy";
+ * import { joyLoginComponents } from "@cfast/joy";
  *
  * <LoginPage authClient={authClient} components={joyLoginComponents} />
  * ```

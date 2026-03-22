@@ -10,7 +10,7 @@ export default defineConfig({
     // Pre-bundle workspace packages used by routes loaded via client-side
     // navigation, so Vite doesn't 504 "Outdated Optimize Dep" mid-navigation.
     include: [
-      "@cfast/ui/joy",
+      "@cfast/joy",
       "@cfast/actions/client",
       "@cfast/auth/client",
     ],

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { DataTable } from "./data-table.js";
-import type { ColumnShorthand } from "../types.js";
+import type { ColumnShorthand } from "@cfast/ui";
 
 const POSTS = [
   { id: 1, title: "Getting Started with Cloudflare Workers", author: "Alice Chen", status: "published", publishedAt: "2025-11-01", views: 4821 },

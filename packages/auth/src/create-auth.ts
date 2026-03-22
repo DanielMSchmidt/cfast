@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins/magic-link";
+import { passkey } from "@better-auth/passkey";
 import { drizzle } from "drizzle-orm/d1";
 import { resolveGrants } from "@cfast/permissions";
 import type { Grant } from "@cfast/permissions";
@@ -107,6 +108,16 @@ export function createAuth(config: AuthConfig) {
     if (config.magicLink) {
       plugins.push(
         magicLink({ sendMagicLink: config.magicLink.sendMagicLink }),
+      );
+    }
+
+    if (config.passkeys) {
+      plugins.push(
+        passkey({
+          rpName: config.passkeys.rpName,
+          rpID: config.passkeys.rpId,
+          origin: env.appUrl,
+        }),
       );
     }
 

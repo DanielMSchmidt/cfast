@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@cfast/actions": "^0.1.0",
+    "@cfast/joy": "^0.1.0",
     "@cfast/ui": "^0.1.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",

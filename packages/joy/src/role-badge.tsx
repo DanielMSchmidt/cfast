@@ -1,7 +1,7 @@
 import { type ReactElement } from "react";
 import Chip from "@mui/joy/Chip";
 import type { ColorPaletteProp } from "@mui/joy/styles";
-import type { RoleBadgeProps } from "../types.js";
+import type { RoleBadgeProps } from "@cfast/ui";
 
 const VALID_COLORS = new Set<string>(["primary", "neutral", "danger", "success", "warning"]);
 

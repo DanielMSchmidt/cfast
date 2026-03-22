@@ -22,7 +22,7 @@ Peer dependencies: `@cfast/actions`, `@cfast/permissions`, `@cfast/pagination`, 
 Import styled components from the Joy UI plugin:
 
 ```typescript
-import { ActionButton, PermissionGate, DataTable, ListView } from "@cfast/ui/joy";
+import { ActionButton, PermissionGate, DataTable, ListView } from "@cfast/joy";
 ```
 
 Or use the headless core for custom integrations:
@@ -35,7 +35,7 @@ import { useActionStatus, useToast, createUIPlugin } from "@cfast/ui";
 
 ### Headless Core + Plugin Architecture
 
-The headless core (`@cfast/ui`) provides hooks, logic, and unstyled components. The Joy UI plugin (`@cfast/ui/joy`) provides styled implementations. Third-party plugins can add shadcn, Mantine, or any other library.
+The headless core (`@cfast/ui`) provides hooks, logic, and unstyled components. The Joy UI plugin (`@cfast/joy`) provides styled implementations. Third-party plugins can add shadcn, Mantine, or any other library.
 
 A plugin maps component slots to implementations. You only need to implement the slots you care about -- missing slots fall back to unstyled HTML elements:
 
@@ -79,7 +79,7 @@ Many components accept a Drizzle `table` prop and derive behavior from it. `Data
 `DataTable` integrates with `@cfast/pagination` hooks and `@cfast/actions` for row-level action menus:
 
 ```typescript
-import { DataTable } from "@cfast/ui/joy";
+import { DataTable } from "@cfast/joy";
 import { usePagination } from "@cfast/pagination/client";
 import { posts } from "~/db/schema";
 
@@ -110,7 +110,7 @@ Column headers sort on click (synced to URL params), row actions are hidden or d
 `ListView` composes a filter bar, data table, pagination controls, empty state, and bulk action bar into a single page layout:
 
 ```typescript
-import { ListView } from "@cfast/ui/joy";
+import { ListView } from "@cfast/joy";
 
 function PostsPage() {
   const pagination = useOffsetPagination<Post>();
@@ -138,7 +138,7 @@ function PostsPage() {
 `PermissionGate` conditionally renders children based on action permissions. `ActionButton` wraps a `@cfast/actions` action into a button with automatic permission checks:
 
 ```typescript
-import { ActionButton, PermissionGate } from "@cfast/ui/joy";
+import { ActionButton, PermissionGate } from "@cfast/joy";
 
 // Only shows the edit toolbar if the user can edit
 <PermissionGate action={editPost} input={{ postId }} fallback={<ReadOnlyBanner />}>
@@ -161,7 +161,7 @@ import { ActionButton, PermissionGate } from "@cfast/ui/joy";
 `AppShell` provides sidebar navigation where items can be filtered based on action permissions:
 
 ```typescript
-import { AppShell, UserMenu } from "@cfast/ui/joy";
+import { AppShell, UserMenu } from "@cfast/joy";
 
 const navigationItems = [
   { label: "Posts", to: "/posts", icon: DocumentIcon },

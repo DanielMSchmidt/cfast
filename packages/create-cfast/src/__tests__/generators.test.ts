@@ -181,7 +181,7 @@ describe("generateViteConfig", () => {
     };
     const result = generateViteConfig(config);
     expect(result).toContain("optimizeDeps");
-    expect(result).toContain("@cfast/ui/joy");
+    expect(result).toContain("@cfast/joy");
   });
 });
 

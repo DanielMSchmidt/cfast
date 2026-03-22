@@ -4,8 +4,8 @@ import List from "@mui/joy/List";
 import ListItem from "@mui/joy/ListItem";
 import ListItemButton from "@mui/joy/ListItemButton";
 import { Link } from "react-router";
-import { useActionStatus } from "../hooks/use-action-status.js";
-import type { AppShellProps, NavigationItem } from "../types.js";
+import { useActionStatus } from "@cfast/ui";
+import type { AppShellProps, NavigationItem } from "@cfast/ui";
 import type { ReactNode } from "react";
 
 // MUI Joy's polymorphic `component` prop doesn't work with createElement's types.

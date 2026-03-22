@@ -110,15 +110,43 @@ useAuth(): UseAuthReturn                       // { signOut, registerPasskey, de
 // Login
 <LoginPage authClient={authClient} components? title? subtitle? />
 createAuthClient(): AuthClientInstance
+magicLinkClient(): plugin                          // re-exported from better-auth
+passkeyClient(): plugin                            // re-exported from @better-auth/passkey
 ```
 
 ### LoginComponents slots
 
 ```typescript
 type LoginComponents = {
-  Layout?, EmailInput?, PasskeyButton?, MagicLinkButton?,
-  SuccessMessage?, ErrorMessage?,
+  Layout?, EmailInput?, PasskeyButton?, PasskeySignUpButton?,
+  MagicLinkButton?, SuccessMessage?, ErrorMessage?,
 };
+```
+
+### Passkey sign-up
+
+When the `authClient` passed to `<LoginPage>` has both `signUp.email` and `passkey.addPasskey` (i.e., the client was created with `passkeyClient()`), a "Sign up with Passkey" button appears automatically. The flow:
+
+1. User enters email, clicks "Sign up with Passkey"
+2. Account is created via `signUp.email` with a random password
+3. Browser's WebAuthn registration prompt fires immediately via `addPasskey()`
+4. User is signed up with a passkey — no magic link email needed
+
+To enable passkey sign-up, configure both server and client:
+
+```typescript
+// Server: createAuth config
+const initAuth = createAuth({
+  permissions,
+  passkeys: { rpName: "My App", rpId: "myapp.com" },
+  magicLink: { sendMagicLink: ... },
+});
+
+// Client: auth client
+import { createAuthClient, magicLinkClient, passkeyClient } from "@cfast/auth/client";
+const authClient = createAuthClient({
+  plugins: [magicLinkClient(), passkeyClient()],
+});
 ```
 
 ### Route plugin (`@cfast/auth/plugin`)
@@ -178,7 +206,7 @@ await auth.removeRole(userId, "editor");
 
 - **@cfast/permissions** -- `createAuth({ permissions })` takes the permissions config. Roles defined in permissions are the same roles assigned to users. `auth.requireUser()` returns `grants` resolved from the user's roles.
 - **@cfast/db** -- Pass `{ user, grants }` from `auth.requireUser()` directly to `createDb()`. Role changes via `auth.setRole()` take effect on the next request.
-- **@cfast/ui/joy** -- Provides `joyLoginComponents` for Joy UI styled login page slots.
+- **@cfast/joy** -- Provides `joyLoginComponents` for Joy UI styled login page slots.
 
 ## Common Mistakes
 

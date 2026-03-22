@@ -1,7 +1,7 @@
 import { type ReactElement } from "react";
 import JoyAspectRatio from "@mui/joy/AspectRatio";
 import JoyTypography from "@mui/joy/Typography";
-import type { ImagePreviewProps } from "../types.js";
+import type { ImagePreviewProps } from "@cfast/ui";
 
 /**
  * Joy UI styled ImagePreview.

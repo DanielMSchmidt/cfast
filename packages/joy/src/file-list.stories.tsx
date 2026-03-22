@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { FileList } from "./file-list.js";
-import type { FileListFile } from "../types.js";
+import type { FileListFile } from "@cfast/ui";
 
 const meta = {
   title: "Joy/FileList",

@@ -1,8 +1,8 @@
 import { useCallback, type ReactElement } from "react";
 import type { ReactNode } from "react";
 import { toast, Toaster } from "sonner";
-import { ToastContext } from "../hooks/use-toast.js";
-import type { ToastOptions } from "../types.js";
+import { ToastContext } from "@cfast/ui";
+import type { ToastOptions } from "@cfast/ui";
 
 /**
  * Joy UI ToastProvider backed by Sonner.

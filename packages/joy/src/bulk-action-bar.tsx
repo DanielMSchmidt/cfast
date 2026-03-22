@@ -3,7 +3,7 @@ import JoySheet from "@mui/joy/Sheet";
 import JoyStack from "@mui/joy/Stack";
 import JoyButton from "@mui/joy/Button";
 import JoyTypography from "@mui/joy/Typography";
-import type { BulkAction } from "../types.js";
+import type { BulkAction } from "@cfast/ui";
 
 type BulkActionBarProps = {
   selectedCount: number;

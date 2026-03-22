@@ -1,7 +1,7 @@
 import { type ReactElement } from "react";
 import Alert from "@mui/joy/Alert";
 import Stack from "@mui/joy/Stack";
-import type { FormStatusProps } from "../types.js";
+import type { FormStatusProps } from "@cfast/ui";
 
 /**
  * Joy UI FormStatus — displays action result feedback as Joy Alerts.

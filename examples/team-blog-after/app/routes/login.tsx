@@ -1,6 +1,6 @@
 import { redirect, useLoaderData } from "react-router";
 import { LoginPage } from "@cfast/auth/client";
-import { joyLoginComponents } from "@cfast/ui/joy";
+import { joyLoginComponents } from "@cfast/joy";
 import { app } from "~/cfast.server";
 import { authClient } from "~/auth.client";
 

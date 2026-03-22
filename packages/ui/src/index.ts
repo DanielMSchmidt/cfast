@@ -43,6 +43,11 @@ export { DetailView } from "./components/detail-view.js";
 // Hooks — data
 export { useColumnInference } from "./hooks/use-column-inference.js";
 
+// Utilities for @cfast/joy
+export { getField, getRecordId } from "./record-access.js";
+export { useActionStatus } from "./hooks/use-action-status.js";
+export { ToastContext } from "./hooks/use-toast.js";
+
 // Types
 export type {
   UIPlugin,

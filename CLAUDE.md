@@ -24,7 +24,8 @@ packages/
 ├── storage/       # Schema-driven R2 file uploads
 ├── actions/       # Multi-action routes with permission-aware client hooks
 ├── forms/         # Auto-generated forms from Drizzle schema
-├── ui/            # Permission-aware component library (headless + Joy UI)
+├── ui/            # Permission-aware headless component library with plugin system
+├── joy/           # Joy UI plugin for @cfast/ui (MUI Joy styled components)
 ├── pagination/    # Cursor-based, offset-based pagination hooks
 ├── email/         # Workers-native email with react-email templates
 ├── admin/         # Auto-generated admin panel from Drizzle schema

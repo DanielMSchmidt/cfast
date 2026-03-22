@@ -4,7 +4,7 @@ import Typography from "@mui/joy/Typography";
 import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
 import { useCurrentUser } from "@cfast/auth/client";
-import type { ImpersonationBannerProps } from "../types.js";
+import type { ImpersonationBannerProps } from "@cfast/ui";
 
 /**
  * Joy UI ImpersonationBanner — sticky warning sheet when impersonating.

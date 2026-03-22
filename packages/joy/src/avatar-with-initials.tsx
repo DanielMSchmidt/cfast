@@ -1,7 +1,7 @@
 import { type ReactElement } from "react";
 import Avatar from "@mui/joy/Avatar";
-import type { AvatarWithInitialsProps } from "../types.js";
-import { getInitials } from "../components/avatar-with-initials.js";
+import type { AvatarWithInitialsProps } from "@cfast/ui";
+import { getInitials } from "@cfast/ui";
 
 /**
  * Joy UI AvatarWithInitials — MUI Joy Avatar with initials fallback.

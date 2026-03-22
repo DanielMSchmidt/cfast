@@ -3,7 +3,7 @@ import Typography from "@mui/joy/Typography";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import { Link } from "react-router";
 import Stack from "@mui/joy/Stack";
-import type { BreadcrumbItem, TabItem } from "../types.js";
+import type { BreadcrumbItem, TabItem } from "@cfast/ui";
 import type { ReactNode } from "react";
 
 export type PageContainerProps = {

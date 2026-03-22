@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { MemoryRouter } from "react-router";
 import { FilterBar } from "./filter-bar.js";
-import type { FilterDef } from "../types.js";
+import type { FilterDef } from "@cfast/ui";
 
 const STATUS_OPTIONS: FilterDef = {
   column: "status",
