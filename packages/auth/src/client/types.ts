@@ -56,6 +56,10 @@ export type LoginComponents = {
   }>;
   SuccessMessage?: ComponentType<{ email: string }>;
   ErrorMessage?: ComponentType<{ error: string }>;
+  PasskeySignUpButton?: ComponentType<{
+    onClick: () => void;
+    loading: boolean;
+  }>;
 };
 
 export type LoginPageProps = {
@@ -65,6 +69,18 @@ export type LoginPageProps = {
         email: string;
       }) => Promise<{ error?: { message?: string } | null }>;
       passkey?: () => Promise<
+        { error?: { message?: string } | null } | undefined
+      >;
+    };
+    signUp?: {
+      email: (opts: {
+        email: string;
+        password: string;
+        name: string;
+      }) => Promise<{ error?: { message?: string } | null }>;
+    };
+    passkey?: {
+      addPasskey: () => Promise<
         { error?: { message?: string } | null } | undefined
       >;
     };
