@@ -24,6 +24,27 @@ describe("console provider", () => {
     const output = spy.mock.calls.map((c) => c.join(" ")).join("\n");
     expect(output).toContain("user@example.com");
     expect(output).toContain("Test Email");
+    expect(output).toContain("<p>Hello</p>");
+
+    spy.mockRestore();
+  });
+
+  it("logs full HTML body including links", async () => {
+    const spy = vi.spyOn(globalThis.console, "log").mockImplementation(() => {});
+
+    const provider = consoleDev();
+    const magicLink = "https://example.com/auth/magic?token=abc123";
+    await provider.send({
+      to: "user@example.com",
+      from: "noreply@example.com",
+      subject: "Sign in",
+      html: `<html><body><a href="${magicLink}">Sign in</a></body></html>`,
+      text: `Sign in: ${magicLink}`,
+    });
+
+    const output = spy.mock.calls.map((c) => c.join(" ")).join("\n");
+    expect(output).toContain(magicLink);
+    expect(output).toContain("<a href=");
 
     spy.mockRestore();
   });

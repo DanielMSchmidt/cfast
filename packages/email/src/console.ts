@@ -29,7 +29,7 @@ export function console(): EmailProvider {
         `  To: ${message.to}\n` +
         `  From: ${message.from}\n` +
         `  Subject: ${message.subject}\n` +
-        `  HTML: ${message.html.length} chars\n`,
+        `  HTML:\n${message.html}\n`,
       );
 
       return { id };
