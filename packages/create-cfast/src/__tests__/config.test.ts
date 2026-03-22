@@ -8,10 +8,11 @@ describe("resolveFeatureDeps", () => {
     expect(result).toEqual(features);
   });
 
-  it("auth implies db", () => {
+  it("auth implies db and ui", () => {
     const features = { auth: true, db: false, storage: false, email: false, ui: false, admin: false };
     const result = resolveFeatureDeps(features);
     expect(result.db).toBe(true);
+    expect(result.ui).toBe(true);
     expect(result.auth).toBe(true);
   });
 
@@ -60,5 +61,7 @@ describe("resolveConfig", () => {
       uiLibrary: null,
     });
     expect(config.features.db).toBe(true);
+    expect(config.features.ui).toBe(true);
+    expect(config.uiLibrary).toBe("joy");
   });
 });

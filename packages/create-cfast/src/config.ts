@@ -11,6 +11,7 @@ export function resolveFeatureDeps(features: Features): Features {
 
   if (resolved.auth) {
     resolved.db = true;
+    resolved.ui = true;
   }
 
   return resolved;
