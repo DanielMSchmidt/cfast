@@ -134,7 +134,7 @@ export function LoginPage({
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeySignUpLoading, setPasskeySignUpLoading] = useState(false);
 
-  const canPasskeySignUp = !!(authClient.signUp?.email && authClient.passkey?.addPasskey);
+  const canPasskeySignUp = !!(authClient?.signUp?.email && authClient?.passkey?.addPasskey);
 
   async function handleMagicLink() {
     if (!email.trim()) {
