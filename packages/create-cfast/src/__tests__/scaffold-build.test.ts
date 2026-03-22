@@ -12,6 +12,10 @@ const execAsync = promisify(exec);
 
 const MONOREPO_ROOT = path.resolve(__dirname, "../../../..");
 
+// These tests require all @cfast/* packages to be built (they symlink into
+// the monorepo). Skip when running in filtered CI where only create-cfast is built.
+const packagesBuilt = fs.existsSync(path.join(MONOREPO_ROOT, "packages/env/dist/index.js"));
+
 const CFAST_PACKAGES: Record<string, string> = {
   "@cfast/core": path.join(MONOREPO_ROOT, "packages/core"),
   "@cfast/env": path.join(MONOREPO_ROOT, "packages/env"),
@@ -118,7 +122,7 @@ afterAll(() => {
   }
 });
 
-describe("scaffold build", () => {
+describe.skipIf(!packagesBuilt)("scaffold build", () => {
   it("builds with no features", async () => {
     await scaffoldAndBuild({}, "minimal");
   }, 120_000);
