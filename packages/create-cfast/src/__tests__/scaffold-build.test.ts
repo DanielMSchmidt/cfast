@@ -96,7 +96,7 @@ async function runInDir(cmd: string, cwd: string): Promise<void> {
     await execAsync(cmd, { cwd, timeout: 120_000 });
   } catch (err: unknown) {
     const e = err as { stdout?: string; stderr?: string; message: string };
-    throw new Error(`Command failed: ${cmd}\n${e.stdout ?? ""}\n${e.stderr ?? ""}`);
+    throw new Error(`Command failed: ${cmd}\n${e.stdout ?? ""}\n${e.stderr ?? ""}`, { cause: err });
   }
 }
 
