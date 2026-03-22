@@ -19,7 +19,7 @@
       "@cfast/actions/client": ["../../packages/actions/src/client.ts"],
       "@cfast/ui": ["../../packages/ui/src/index.ts"],
       "@cfast/ui/client": ["../../packages/ui/src/client.ts"],
-      "@cfast/ui/joy": ["../../packages/ui/src/joy.ts"],
+      "@cfast/joy": ["../../packages/joy/src/index.ts"],
       "@cfast/forms": ["../../packages/forms/src/index.ts"],
       "@cfast/forms/joy": ["../../packages/forms/src/joy.tsx"],
       "@cfast/email": ["../../packages/email/src/index.ts"],

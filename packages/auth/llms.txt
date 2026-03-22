@@ -178,7 +178,7 @@ await auth.removeRole(userId, "editor");
 
 - **@cfast/permissions** -- `createAuth({ permissions })` takes the permissions config. Roles defined in permissions are the same roles assigned to users. `auth.requireUser()` returns `grants` resolved from the user's roles.
 - **@cfast/db** -- Pass `{ user, grants }` from `auth.requireUser()` directly to `createDb()`. Role changes via `auth.setRole()` take effect on the next request.
-- **@cfast/ui/joy** -- Provides `joyLoginComponents` for Joy UI styled login page slots.
+- **@cfast/joy** -- Provides `joyLoginComponents` for Joy UI styled login page slots.
 
 ## Common Mistakes
 

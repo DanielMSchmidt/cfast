@@ -35,7 +35,7 @@ Admin's job is **schema introspection → configuration**: it reads your Drizzle
 
 ### Headless core + plugins
 
-Same architecture as before, expanded to cover all component categories. The headless core (`@cfast/ui`) provides hooks, logic, and unstyled components. The Joy UI plugin (`@cfast/ui/joy`) provides styled implementations. Third-party plugins can add shadcn, Mantine, or any other library.
+Same architecture as before, expanded to cover all component categories. The headless core (`@cfast/ui`) provides hooks, logic, and unstyled components. The Joy UI plugin (`@cfast/joy`) provides styled implementations. Third-party plugins can add shadcn, Mantine, or any other library.
 
 The plugin contract maps component slots to implementations:
 
@@ -78,7 +78,7 @@ Plugins only need to implement the slots they care about. Missing slots fall bac
 A table component that integrates with `@cfast/pagination`, `@cfast/db`, `@cfast/permissions`, and `@cfast/actions`.
 
 ```typescript
-import { DataTable } from "@cfast/ui/joy";
+import { DataTable } from "@cfast/joy";
 import { usePagination } from "@cfast/pagination/client";
 import { posts } from "~/db/schema";
 
@@ -129,7 +129,7 @@ function PostsTable() {
 URL-synced filter controls. Column types from Drizzle schema determine the filter input type.
 
 ```typescript
-import { FilterBar } from "@cfast/ui/joy";
+import { FilterBar } from "@cfast/joy";
 import { posts } from "~/db/schema";
 
 function PostFilters() {
@@ -174,7 +174,7 @@ function PostFilters() {
 Read-only display components that format values based on their type. Used by `<DataTable>` cell renderers and `<DetailView>` field layouts.
 
 ```typescript
-import { DateField, BooleanField, EmailField, ImageField, RelationField } from "@cfast/ui/joy";
+import { DateField, BooleanField, EmailField, ImageField, RelationField } from "@cfast/joy";
 
 <DateField value={post.createdAt} format="relative" />
 // → "3 days ago"
@@ -215,7 +215,7 @@ import { DateField, BooleanField, EmailField, ImageField, RelationField } from "
 Permission-aware empty state. Shows different content based on whether the user can create records.
 
 ```typescript
-import { EmptyState } from "@cfast/ui/joy";
+import { EmptyState } from "@cfast/joy";
 
 <EmptyState
   title="No posts yet"
@@ -239,7 +239,7 @@ import { EmptyState } from "@cfast/ui/joy";
 A full page layout combining title, filters, data table, pagination, and empty state. This is the component `@cfast/admin` uses for every table view.
 
 ```typescript
-import { ListView } from "@cfast/ui/joy";
+import { ListView } from "@cfast/joy";
 
 function PostsPage() {
   const pagination = useOffsetPagination<Post>();
@@ -273,7 +273,7 @@ function PostsPage() {
 A read-only detail page for a single record. Auto-lays out fields based on Drizzle column types.
 
 ```typescript
-import { DetailView } from "@cfast/ui/joy";
+import { DetailView } from "@cfast/joy";
 
 function PostDetail({ post }: { post: Post }) {
   return (
@@ -300,7 +300,7 @@ function PostDetail({ post }: { post: Post }) {
 Base layout with sidebar navigation, header, and content area.
 
 ```typescript
-import { AppShell } from "@cfast/ui/joy";
+import { AppShell } from "@cfast/joy";
 
 function Layout({ children }) {
   return (
@@ -330,7 +330,7 @@ const navigationItems = [
 Page wrapper with title, breadcrumb, tabs, and action toolbar. Used by `<ListView>` and `<DetailView>` internally, but also useful standalone.
 
 ```typescript
-import { PageContainer } from "@cfast/ui/joy";
+import { PageContainer } from "@cfast/joy";
 
 <PageContainer
   title="Edit Post"
@@ -349,7 +349,7 @@ import { PageContainer } from "@cfast/ui/joy";
 Header dropdown showing current user info, role badge, and auth actions.
 
 ```typescript
-import { UserMenu } from "@cfast/ui/joy";
+import { UserMenu } from "@cfast/joy";
 
 <UserMenu
   // Reads user from @cfast/auth's useCurrentUser()
@@ -372,7 +372,7 @@ import { UserMenu } from "@cfast/ui/joy";
 Thin progress bar at the top of the page during React Router navigation.
 
 ```typescript
-import { NavigationProgress } from "@cfast/ui/joy";
+import { NavigationProgress } from "@cfast/joy";
 
 // In your root layout:
 <NavigationProgress />
@@ -389,7 +389,7 @@ Uses `useNavigation().state` from React Router. Shows on `loading`, hides on `id
 Permission-aware button wrapping a `@cfast/actions` action. *Already implemented in PR #6.*
 
 ```typescript
-import { ActionButton } from "@cfast/ui/joy";
+import { ActionButton } from "@cfast/joy";
 
 <ActionButton
   action={publishPost}
@@ -416,7 +416,7 @@ Conditionally renders children based on action permissions. *Already implemented
 Standalone confirmation dialog. Used internally by `<ActionButton>` when `confirmation` is set, but also available directly.
 
 ```typescript
-import { ConfirmDialog, useConfirm } from "@cfast/ui/joy";
+import { ConfirmDialog, useConfirm } from "@cfast/joy";
 
 function DangerZone() {
   const confirm = useConfirm();
@@ -440,7 +440,7 @@ function DangerZone() {
 Action result notifications. Wraps a toast library (Sonner for Joy UI plugin) with cfast-aware defaults.
 
 ```typescript
-import { ToastProvider, useToast } from "@cfast/ui/joy";
+import { ToastProvider, useToast } from "@cfast/joy";
 
 // In root layout:
 <ToastProvider />
@@ -464,7 +464,7 @@ useActionToast(composed.client, {
 Displays action result feedback (success/error messages) in a consistent format.
 
 ```typescript
-import { FormStatus } from "@cfast/ui/joy";
+import { FormStatus } from "@cfast/joy";
 
 function EditForm() {
   const actionData = useActionData();
@@ -507,7 +507,7 @@ Actions are permission-aware — hidden if the user can't perform them.
 Drag-and-drop file upload area. Integrates with `@cfast/storage`'s schema for validation and `useUpload` for upload progress.
 
 ```typescript
-import { DropZone } from "@cfast/ui/joy";
+import { DropZone } from "@cfast/joy";
 import { useUpload } from "@cfast/storage/client";
 
 function CoverImageUpload() {
@@ -539,7 +539,7 @@ function CoverImageUpload() {
 Displays an image from `@cfast/storage` with signed URL handling.
 
 ```typescript
-import { ImagePreview } from "@cfast/ui/joy";
+import { ImagePreview } from "@cfast/joy";
 
 <ImagePreview
   fileKey={post.coverImageKey}
@@ -555,7 +555,7 @@ import { ImagePreview } from "@cfast/ui/joy";
 A list of uploaded files with metadata, download links, and delete actions.
 
 ```typescript
-import { FileList } from "@cfast/ui/joy";
+import { FileList } from "@cfast/joy";
 
 <FileList
   files={post.attachments}
@@ -574,7 +574,7 @@ import { FileList } from "@cfast/ui/joy";
 Avatar component with automatic initials fallback when no image is available.
 
 ```typescript
-import { AvatarWithInitials } from "@cfast/ui/joy";
+import { AvatarWithInitials } from "@cfast/joy";
 
 <AvatarWithInitials
   src={user.avatarUrl}
@@ -589,7 +589,7 @@ import { AvatarWithInitials } from "@cfast/ui/joy";
 Colored badge displaying a user's role. Colors configurable per role.
 
 ```typescript
-import { RoleBadge } from "@cfast/ui/joy";
+import { RoleBadge } from "@cfast/joy";
 
 <RoleBadge role={user.role} />
 // → Colored chip: "Admin" (red), "Editor" (blue), "Reader" (neutral)
@@ -606,7 +606,7 @@ import { RoleBadge } from "@cfast/ui/joy";
 Persistent banner shown when an admin is impersonating another user.
 
 ```typescript
-import { ImpersonationBanner } from "@cfast/ui/joy";
+import { ImpersonationBanner } from "@cfast/joy";
 
 // In root layout:
 <ImpersonationBanner />
@@ -642,7 +642,7 @@ import { ImpersonationBanner } from "@cfast/ui/joy";
 └── Plugin API
     └── createUIPlugin()         — maps component slots to implementations
 
-@cfast/ui/joy (MUI Joy UI plugin)
+@cfast/joy (MUI Joy UI plugin)
 ├── All of the above, styled with Joy UI
 ├── DataTable                    — Joy Table + sorting + selection
 ├── FilterBar                    — Joy Input/Select/DatePicker filters
@@ -697,7 +697,7 @@ export type {
 } from "./types.js";
 ```
 
-Joy UI plugin (`@cfast/ui/joy`):
+Joy UI plugin (`@cfast/joy`):
 
 ```typescript
 export {

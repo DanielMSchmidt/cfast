@@ -23,7 +23,7 @@ This means:
 - **Permission-aware by default.** The admin panel uses `@cfast/db` under the hood. Admins see everything. Moderators see what moderators see. The admin UI doesn't bypass your permission system — it uses it.
 - **User management built in.** View users, assign roles, revoke roles, impersonate users. Integrated with `@cfast/auth`.
 - **Customizable, not locked in.** Override any view, any field, any action. But the default is good enough to ship.
-- **UI delegated to `@cfast/ui`.** Admin generates configuration. `@cfast/ui/joy` renders it.
+- **UI delegated to `@cfast/ui`.** Admin generates configuration. `@cfast/joy` renders it.
 
 ## API
 

@@ -688,7 +688,7 @@ const {
 
 ```typescript
 import { LoginPage } from "@cfast/auth/client";
-import { joyLoginComponents } from "@cfast/ui/joy";
+import { joyLoginComponents } from "@cfast/joy";
 
 export default function Login() {
   return (
@@ -1291,7 +1291,7 @@ Missing slots fall back to unstyled HTML defaults.
 #### `<DataTable>`
 
 ```typescript
-import { DataTable } from "@cfast/ui/joy";
+import { DataTable } from "@cfast/joy";
 import { usePagination } from "@cfast/pagination/client";
 
 function PostsTable() {
@@ -1319,7 +1319,7 @@ function PostsTable() {
 #### `<FilterBar>`
 
 ```typescript
-import { FilterBar } from "@cfast/ui/joy";
+import { FilterBar } from "@cfast/joy";
 
 <FilterBar
   table={posts}
@@ -1342,7 +1342,7 @@ Filter state serializes to URL search params. Loader reads them via `@cfast/pagi
 #### TypedField Components
 
 ```typescript
-import { DateField, BooleanField, EmailField, ImageField, RelationField } from "@cfast/ui/joy";
+import { DateField, BooleanField, EmailField, ImageField, RelationField } from "@cfast/joy";
 
 <DateField value={post.createdAt} format="relative" />   // "3 days ago"
 <DateField value={post.createdAt} format="short" />       // "Mar 11, 2026"
@@ -1373,7 +1373,7 @@ Permission-aware: shows CTA if permitted, description only if not, generic messa
 #### `<ListView>`
 
 ```typescript
-import { ListView } from "@cfast/ui/joy";
+import { ListView } from "@cfast/joy";
 
 <ListView
   title="Blog Posts"
@@ -1489,7 +1489,7 @@ Shows avatar, name, email, role badge, impersonation indicator, sign out.
 #### `<ConfirmDialog>` and `useConfirm()`
 
 ```typescript
-import { useConfirm } from "@cfast/ui/joy";
+import { useConfirm } from "@cfast/joy";
 
 const confirm = useConfirm();
 const confirmed = await confirm({
@@ -1503,7 +1503,7 @@ const confirmed = await confirm({
 #### `useToast()` and `useActionToast()`
 
 ```typescript
-import { ToastProvider, useToast, useActionToast } from "@cfast/ui/joy";
+import { ToastProvider, useToast, useActionToast } from "@cfast/joy";
 
 // In root layout:
 <ToastProvider />
@@ -1542,7 +1542,7 @@ useActionToast(composed.client, {
 #### `<DropZone>`
 
 ```typescript
-import { DropZone } from "@cfast/ui/joy";
+import { DropZone } from "@cfast/joy";
 import { useUpload } from "@cfast/storage/client";
 
 const upload = useUpload("postCoverImage");
@@ -1574,7 +1574,7 @@ const upload = useUpload("postCoverImage");
                   headless components (PermissionGate, EmptyState, BulkActionBar),
                   typed fields, createUIPlugin()
 
-@cfast/ui/joy  -> DataTable, FilterBar, ListView, DetailView, AppShell, PageContainer,
+@cfast/joy  -> DataTable, FilterBar, ListView, DetailView, AppShell, PageContainer,
                   UserMenu, NavigationProgress, ActionButton, PermissionGate, ConfirmDialog,
                   ToastProvider, FormStatus, BulkActionBar, DropZone, ImagePreview, FileList,
                   AvatarWithInitials, RoleBadge, ImpersonationBanner

@@ -1,0 +1,108 @@
+# @cfast/joy
+
+> Joy UI (MUI) styled component implementations for `@cfast/ui` — data tables, page shells, action buttons, file uploads, and more.
+
+## When to use
+
+Use `@cfast/joy` when you want MUI Joy UI styled implementations of `@cfast/ui` components. Install alongside `@cfast/ui` (the headless core). Import styled components from `@cfast/joy`. Import hooks and headless logic from `@cfast/ui`.
+
+## Exports
+
+### Actions & feedback
+- `ActionButton` -- permission-aware button wrapping a `@cfast/actions` action. Props: `action`, `input`, `whenForbidden`, `confirmation`.
+- `ConfirmDialog` -- standalone confirmation dialog.
+- `ToastProvider` -- mount once in root layout for toast notifications.
+- `FormStatus` -- renders success/error/validation from action results.
+
+### Empty state & navigation
+- `EmptyState` -- permission-aware empty state with optional create CTA.
+- `NavigationProgress` -- thin progress bar during React Router navigation.
+
+### Layout
+- `PageContainer` -- title + breadcrumb + tabs + action toolbar.
+- `AppShell` -- sidebar + header + content layout. Sub-components: `AppShellSidebar`, `AppShellHeader`.
+- `UserMenu` -- header dropdown with avatar, role badge, auth actions.
+
+### Data
+- `DataTable` -- table with sorting, selection, row actions, skeleton loading. Accepts `data` (pagination result), `table` (Drizzle), `columns`, `actions`, `selectable`.
+- `FilterBar` -- URL-synced filters. Accepts `table`, `filters`, `searchable`.
+- `BulkActionBar` -- toolbar for selected rows with bulk actions.
+
+### File components
+- `DropZone` -- drag-and-drop upload. Integrates with `@cfast/storage`'s `useUpload()`.
+- `ImagePreview` -- displays image from storage with signed URL handling.
+- `FileList` -- list of uploaded files with download/delete.
+
+### Composite views
+- `ListView` -- full page: title + filters + data table + pagination + empty state + bulk actions.
+- `DetailView` -- read-only detail page for a single record. Auto-lays out TypedFields.
+
+### Utilities
+- `AvatarWithInitials` -- avatar with automatic initials fallback.
+- `RoleBadge` -- colored chip for user role.
+- `ImpersonationBanner` -- persistent banner when impersonating.
+
+### Re-exports
+- `PermissionGate` -- re-exported from `@cfast/ui` for convenience.
+
+### Auth
+- `joyLoginComponents` -- Joy UI styled login page component slots for `@cfast/auth`'s `<LoginPage>`.
+
+## Usage Examples
+
+### Full list page
+
+```typescript
+import { ListView } from "@cfast/joy";
+import { usePagination } from "@cfast/pagination";
+import { posts } from "~/db/schema";
+
+function PostsPage() {
+  const pagination = usePagination<Post>();
+  return (
+    <ListView
+      title="Blog Posts"
+      data={pagination}
+      table={posts}
+      columns={["title", "author", "published", "createdAt"]}
+      actions={composed.client}
+      filters={[{ column: "published", type: "select", options: publishedOptions }]}
+      searchable={["title", "content"]}
+      createAction={createPost.client}
+      selectable
+    />
+  );
+}
+```
+
+### Permission-aware button with confirmation
+
+```typescript
+import { ActionButton } from "@cfast/joy";
+
+<ActionButton
+  action={deletePost}
+  input={{ postId }}
+  whenForbidden="disable"
+  confirmation="Delete this post?"
+>
+  Delete
+</ActionButton>
+```
+
+## Integration
+
+- **@cfast/ui** -- Provides the headless core (hooks, logic, plugin API). `@cfast/joy` is a styled plugin for `@cfast/ui`.
+- **@cfast/actions** -- `ActionButton`, `PermissionGate`, `BulkActionBar` consume action descriptors.
+- **@cfast/pagination** -- `DataTable` and `ListView` accept pagination hook results.
+- **@cfast/db** -- Drizzle schema drives column inference, filter type inference, and field type inference.
+- **@cfast/auth** -- `UserMenu` reads `useCurrentUser()`. `joyLoginComponents` provides styled login slots.
+- **@cfast/storage** -- `DropZone` integrates with `useUpload()`. `ImagePreview`/`FileList` use storage URLs.
+- **@cfast/admin** -- Admin uses `ListView`, `DetailView`, `DataTable`, `FilterBar`, `AppShell`, etc.
+
+## Common Mistakes
+
+- Importing from `@cfast/joy` on the server -- Joy components are client-only. Use headless exports from `@cfast/ui` for server-safe code.
+- Forgetting `<ToastProvider>` in root layout -- `useToast()` and `useActionToast()` throw without it.
+- Forgetting `<ConfirmProvider>` -- `useConfirm()` and `ActionButton` with `confirmation` need it.
+- Passing raw data arrays to `DataTable` instead of a pagination result from `usePagination()`.
