@@ -32,6 +32,18 @@ vi.mock("better-auth/plugins/magic-link", () => ({
   ),
 }));
 
+const { mockPasskey } = vi.hoisted(() => {
+  const mockPasskey = vi.fn((opts: unknown) => ({
+    id: "passkey",
+    ...(opts as Record<string, unknown>),
+  }));
+  return { mockPasskey };
+});
+
+vi.mock("@better-auth/passkey", () => ({
+  passkey: mockPasskey,
+}));
+
 vi.mock("drizzle-orm/d1", () => ({
   drizzle: vi.fn(() => ({})),
 }));
@@ -384,5 +396,47 @@ describe("createAuth", () => {
       appUrl: "https://example.com",
     });
     expect(auth).toBeDefined();
+  });
+
+  it("includes passkey plugin when passkeys config is provided", () => {
+    mockBetterAuth.mockClear();
+
+    const initAuth = createAuth({
+      permissions,
+      passkeys: { rpName: "Test App", rpId: "example.com" },
+    });
+    initAuth({ d1: createMockD1(), appUrl: "https://example.com" });
+
+    const callArgs = mockBetterAuth.mock.calls[0]![0] as Record<string, unknown>;
+    const plugins = callArgs.plugins as { id: string }[];
+    expect(plugins.some((p) => p.id === "passkey")).toBe(true);
+  });
+
+  it("passes rpName, rpID, and origin to passkey plugin", () => {
+    mockBetterAuth.mockClear();
+    mockPasskey.mockClear();
+
+    const initAuth = createAuth({
+      permissions,
+      passkeys: { rpName: "Test App", rpId: "example.com" },
+    });
+    initAuth({ d1: createMockD1(), appUrl: "https://example.com" });
+
+    expect(mockPasskey).toHaveBeenCalledWith({
+      rpName: "Test App",
+      rpID: "example.com",
+      origin: "https://example.com",
+    });
+  });
+
+  it("does not include passkey plugin when passkeys config is omitted", () => {
+    mockBetterAuth.mockClear();
+
+    const initAuth = createAuth({ permissions });
+    initAuth({ d1: createMockD1(), appUrl: "https://example.com" });
+
+    const callArgs = mockBetterAuth.mock.calls[0]![0] as Record<string, unknown>;
+    const plugins = callArgs.plugins as { id: string }[];
+    expect(plugins.some((p) => p.id === "passkey")).toBe(false);
   });
 });
