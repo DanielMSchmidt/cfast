@@ -45,6 +45,7 @@
     "@cfast/db": "workspace:*",
     "@cfast/forms": "workspace:*",
     "@cfast/permissions": "workspace:*",
+    "@cfast/joy": "workspace:*",
     "@cfast/ui": "workspace:*"
   },
   "devDependencies": {
