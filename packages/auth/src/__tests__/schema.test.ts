@@ -63,7 +63,7 @@ describe("auth schema", () => {
     expect(cols).toContain("id");
     expect(cols).toContain("userId");
     expect(cols).toContain("publicKey");
-    expect(cols).toContain("credentialId");
+    expect(cols).toContain("credentialID");
   });
 
   it("roles table has userId and role columns", () => {
