@@ -17,7 +17,7 @@ export async function applyAuthMigrations(db: D1Database): Promise<void> {
     "CREATE TABLE IF NOT EXISTS verifications (id TEXT PRIMARY KEY, identifier TEXT NOT NULL, value TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL DEFAULT (unixepoch()), updated_at INTEGER NOT NULL DEFAULT (unixepoch()))",
   );
   await db.exec(
-    "CREATE TABLE IF NOT EXISTS passkeys (id TEXT PRIMARY KEY, name TEXT, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, public_key TEXT NOT NULL, credential_id TEXT NOT NULL UNIQUE, counter INTEGER NOT NULL DEFAULT 0, device_type TEXT, backed_up INTEGER DEFAULT 0, transports TEXT, created_at INTEGER)",
+    "CREATE TABLE IF NOT EXISTS passkeys (id TEXT PRIMARY KEY, name TEXT, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, public_key TEXT NOT NULL, credential_id TEXT NOT NULL UNIQUE, counter INTEGER NOT NULL DEFAULT 0, device_type TEXT NOT NULL, backed_up INTEGER NOT NULL DEFAULT 0, transports TEXT, aaguid TEXT, created_at INTEGER)",
   );
   await db.exec(
     "CREATE TABLE IF NOT EXISTS roles (id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))), user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, role TEXT NOT NULL, granted_by TEXT REFERENCES users(id), created_at INTEGER NOT NULL DEFAULT (unixepoch()))",
