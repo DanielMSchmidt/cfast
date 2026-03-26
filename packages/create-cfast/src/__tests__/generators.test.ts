@@ -164,6 +164,16 @@ describe("generateCfastServer", () => {
     expect(result).toContain("dbPlugin");
     expect(result).toContain("createDb");
   });
+
+  it("casts schema to Record<string, object> (not Record<string, unknown>)", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, db: true },
+    };
+    const result = generateCfastServer(config);
+    expect(result).toContain("Record<string, object>");
+    expect(result).not.toContain("Record<string, unknown>");
+  });
 });
 
 describe("generateViteConfig", () => {

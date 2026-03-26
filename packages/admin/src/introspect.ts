@@ -1,6 +1,7 @@
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { getTableConfig } from "drizzle-orm/sqlite-core";
 import { getTableColumns, getTableName } from "drizzle-orm";
+import { isTable } from "drizzle-orm";
 import type {
   AdminColumnConfig,
   AdminTableMeta,
@@ -125,12 +126,17 @@ export function columnNameToLabel(name: string): string {
  * ```
  */
 export function introspectSchema(
-  schema: Record<string, SQLiteTable>,
+  schema: Record<string, unknown>,
   tableOverrides?: Record<string, TableOverrides>,
 ): AdminTableMeta[] {
   const result: AdminTableMeta[] = [];
 
-  for (const [_key, table] of Object.entries(schema)) {
+  for (const [_key, value] of Object.entries(schema)) {
+    // Skip non-table exports (e.g. Relations, helper functions, constants)
+    if (!isTable(value)) {
+      continue;
+    }
+    const table = value as SQLiteTable;
     const tableName = getTableName(table);
     const overrides = tableOverrides?.[tableName] ?? {};
 
