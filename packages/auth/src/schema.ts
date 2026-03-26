@@ -84,11 +84,12 @@ export const passkeys = sqliteTable("passkeys", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   publicKey: text("public_key").notNull(),
-  credentialId: text("credential_id").notNull().unique(),
+  credentialID: text("credential_id").notNull().unique(),
   counter: integer("counter").notNull().default(0),
-  deviceType: text("device_type"),
-  backedUp: integer("backed_up", { mode: "boolean" }).default(false),
+  deviceType: text("device_type").notNull(),
+  backedUp: integer("backed_up", { mode: "boolean" }).notNull().default(false),
   transports: text("transports"),
+  aaguid: text("aaguid"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
   ),
