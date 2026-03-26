@@ -301,8 +301,8 @@ export type AdminConfig = {
   db: CreateDbFn;
   /** Auth adapter that provides user authentication, role management, and impersonation. See {@link AdminAuthConfig}. */
   auth: AdminAuthConfig;
-  /** Your Drizzle schema object (e.g., `import * as schema from "~/schema"`). Tables are introspected from this. */
-  schema: Record<string, SQLiteTable>;
+  /** Your Drizzle schema object (e.g., `import * as schema from "~/schema"`). Non-table exports (Relations, helpers) are silently skipped. */
+  schema: Record<string, unknown>;
   /** Per-table display and behavior overrides, keyed by table name. See {@link TableOverrides}. */
   tables?: Record<string, TableOverrides>;
   /** Configuration for the built-in user management views. See {@link UserManagementConfig}. */

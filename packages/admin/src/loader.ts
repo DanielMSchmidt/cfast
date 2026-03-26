@@ -1,4 +1,4 @@
-import { getTableColumns, getTableName, eq, like, or, asc, desc } from "drizzle-orm";
+import { getTableColumns, getTableName, eq, like, or, asc, desc, isTable } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
@@ -94,11 +94,12 @@ function getColumn(drizzleTable: SQLiteTable, columnName: string) {
 /**
  * Find the users table in the schema by looking for a table named "user" or "users".
  */
-function findUsersTable(schema: Record<string, SQLiteTable>): SQLiteTable | undefined {
-  for (const table of Object.values(schema)) {
-    const name = getTableName(table);
+function findUsersTable(schema: Record<string, unknown>): SQLiteTable | undefined {
+  for (const value of Object.values(schema)) {
+    if (!isTable(value)) continue;
+    const name = getTableName(value);
     if (name === "user" || name === "users") {
-      return table;
+      return value as SQLiteTable;
     }
   }
   return undefined;

@@ -47,7 +47,7 @@ const dbPlugin = definePlugin<AuthProvides>()({
   setup(ctx) {
     const client = createDb({
       d1: ctx.env.DB as D1Database,
-      schema: schema as unknown as Record<string, unknown>,
+      schema: schema as unknown as Record<string, object>,
       grants: ctx.auth.grants,
       user: ctx.auth.user ? { id: ctx.auth.user.id } : null,
       cache: false,
@@ -62,7 +62,7 @@ const dbPlugin = definePlugin({
   setup(ctx) {
     const client = createDb({
       d1: ctx.env.DB as D1Database,
-      schema: schema as unknown as Record<string, unknown>,
+      schema: schema as unknown as Record<string, object>,
       grants: [],
       user: null,
       cache: false,

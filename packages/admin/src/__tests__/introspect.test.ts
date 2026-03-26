@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
 import {
   introspectSchema,
   tableNameToLabel,
@@ -311,5 +312,37 @@ describe("introspectSchema", () => {
     const result = introspectSchema({ posts }, { posts: overrides });
 
     expect(result[0].overrides).toBe(overrides);
+  });
+
+  it("skips Relations exports without throwing", () => {
+    const usersRelations = relations(users, ({ many }) => ({
+      posts: many(posts),
+    }));
+
+    const schema = {
+      users,
+      posts,
+      usersRelations,
+    };
+
+    const result = introspectSchema(schema);
+    const names = result.map((t) => t.name);
+    expect(names).toContain("users");
+    expect(names).toContain("posts");
+    expect(names).not.toContain("usersRelations");
+    expect(result).toHaveLength(2);
+  });
+
+  it("skips non-table values like strings, functions, and plain objects", () => {
+    const schema = {
+      users,
+      helperFn: () => "not a table",
+      someConstant: "a string",
+      someObject: { foo: "bar" },
+    };
+
+    const result = introspectSchema(schema as Record<string, unknown>);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe("users");
   });
 });
