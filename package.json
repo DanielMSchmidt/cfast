@@ -14,6 +14,7 @@
     "docs:build": "pnpm --filter @cfast/docs build",
     "docs:preview": "pnpm --filter @cfast/docs preview",
     "docs:screenshots": "pnpm --filter @cfast/docs screenshots",
+    "ci": "bash scripts/ci-local.sh",
     "publish-packages": "turbo run build lint test && changeset version && changeset publish"
   },
   "devDependencies": {
