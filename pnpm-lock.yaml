@@ -30,6 +30,138 @@ importers:
         specifier: ^8.57.0
         version: 8.57.0(eslint@10.0.3)(typescript@5.9.3)
 
+  ../cfast-playground/cfast-tracker: {}
+
+  ../cfast-playground/cfast-wiki:
+    dependencies:
+      '@better-auth/drizzle-adapter':
+        specifier: ^1.5.3
+        version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))
+      '@better-auth/passkey':
+        specifier: ^1.5.3
+        version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)
+      '@cfast/actions':
+        specifier: workspace:*
+        version: link:../../cfast/packages/actions
+      '@cfast/admin':
+        specifier: workspace:*
+        version: link:../../cfast/packages/admin
+      '@cfast/auth':
+        specifier: workspace:*
+        version: link:../../cfast/packages/auth
+      '@cfast/core':
+        specifier: workspace:*
+        version: link:../../cfast/packages/core
+      '@cfast/db':
+        specifier: workspace:*
+        version: link:../../cfast/packages/db
+      '@cfast/email':
+        specifier: workspace:*
+        version: link:../../cfast/packages/email
+      '@cfast/env':
+        specifier: workspace:*
+        version: link:../../cfast/packages/env
+      '@cfast/forms':
+        specifier: workspace:*
+        version: link:../../cfast/packages/forms
+      '@cfast/joy':
+        specifier: workspace:*
+        version: link:../../cfast/packages/joy
+      '@cfast/pagination':
+        specifier: workspace:*
+        version: link:../../cfast/packages/pagination
+      '@cfast/permissions':
+        specifier: workspace:*
+        version: link:../../cfast/packages/permissions
+      '@cfast/storage':
+        specifier: workspace:*
+        version: link:../../cfast/packages/storage
+      '@cfast/ui':
+        specifier: workspace:*
+        version: link:../../cfast/packages/ui
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
+      '@emotion/styled':
+        specifier: ^11.14.0
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
+      '@mui/joy':
+        specifier: ^5.0.0-beta.51
+        version: 5.0.0-beta.52(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@mui/material':
+        specifier: ^6.4.0
+        version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@react-email/components':
+        specifier: ^1.0.0
+        version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      better-auth:
+        specifier: ^1.2.0
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)))
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
+      isbot:
+        specifier: ^5.1.31
+        version: 5.1.35
+      nanoid:
+        specifier: ^5.1.0
+        version: 5.1.6
+      react:
+        specifier: ^19.2.4
+        version: 19.2.4
+      react-dom:
+        specifier: ^19.2.4
+        version: 19.2.4(react@19.2.4)
+      react-router:
+        specifier: ^7.13.1
+        version: 7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+    devDependencies:
+      '@cloudflare/vite-plugin':
+        specifier: ^1.27.0
+        version: 1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))
+      '@cloudflare/workers-types':
+        specifier: ^4.20260310.1
+        version: 4.20260312.1
+      '@playwright/test':
+        specifier: ^1.58.2
+        version: 1.58.2
+      '@react-router/dev':
+        specifier: ^7.13.1
+        version: 7.13.1(@types/node@22.19.13)(babel-plugin-macros@3.1.0)(lightningcss@1.32.0)(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))(yaml@2.8.2)
+      '@testing-library/jest-dom':
+        specifier: ^6.9.1
+        version: 6.9.1
+      '@testing-library/react':
+        specifier: ^16.3.2
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/node':
+        specifier: ^22
+        version: 22.19.13
+      '@types/react':
+        specifier: ^19.2.7
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.14)
+      drizzle-kit:
+        specifier: ^0.31.9
+        version: 0.31.9
+      jsdom:
+        specifier: ^29.0.1
+        version: 29.0.1(@noble/hashes@2.0.1)
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.3
+      vite:
+        specifier: ^8.0.0
+        version: 8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))
+      wrangler:
+        specifier: ^4.72.0
+        version: 4.73.0(@cloudflare/workers-types@4.20260312.1)
+
   docs/tutorials/team-blog/step-01-setup:
     dependencies:
       react:
@@ -90,13 +222,13 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.27.0
-        version: 1.27.0(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))
+        version: 1.27.0(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))
       '@cloudflare/workers-types':
         specifier: ^4.20260310.1
         version: 4.20260312.1
       '@react-router/dev':
         specifier: ^7.13.1
-        version: 7.13.1(@types/node@24.12.0)(babel-plugin-macros@3.1.0)(lightningcss@1.32.0)(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))(yaml@2.8.2)
+        version: 7.13.1(@types/node@24.12.0)(babel-plugin-macros@3.1.0)(lightningcss@1.32.0)(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))(yaml@2.8.2)
       '@types/react':
         specifier: ^19.2.7
         version: 19.2.14
@@ -111,7 +243,7 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^8.0.0
-        version: 8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
+        version: 8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)
       wrangler:
         specifier: ^4.72.0
         version: 4.73.0(@cloudflare/workers-types@4.20260312.1)
@@ -132,7 +264,7 @@ importers:
         version: link:../../../../packages/permissions
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -190,7 +322,7 @@ importers:
         version: link:../../../../packages/permissions
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -272,7 +404,7 @@ importers:
         version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -363,7 +495,7 @@ importers:
         version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -457,7 +589,7 @@ importers:
         version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -557,7 +689,7 @@ importers:
         version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -646,7 +778,7 @@ importers:
         version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))
       '@better-auth/passkey':
         specifier: ^1.5.3
-        version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)
+        version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)
       '@cfast/actions':
         specifier: workspace:*
         version: link:../../packages/actions
@@ -694,7 +826,7 @@ importers:
         version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -716,7 +848,7 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.27.0
-        version: 1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260310.1)(wrangler@4.72.0(@cloudflare/workers-types@4.20260312.1))
+        version: 1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.72.0(@cloudflare/workers-types@4.20260312.1))
       '@cloudflare/workers-types':
         specifier: ^4.20260310.1
         version: 4.20260312.1
@@ -755,7 +887,7 @@ importers:
         version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))
       '@better-auth/passkey':
         specifier: ^1.5.3
-        version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)
+        version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
@@ -773,7 +905,7 @@ importers:
         version: 0.0.36(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -795,7 +927,7 @@ importers:
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.27.0
-        version: 1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.72.0(@cloudflare/workers-types@4.20260312.1))
+        version: 1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260310.1)(wrangler@4.72.0(@cloudflare/workers-types@4.20260312.1))
       '@cloudflare/workers-types':
         specifier: ^4.20260310.1
         version: 4.20260312.1
@@ -856,7 +988,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/admin:
     dependencies:
@@ -911,7 +1043,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/auth:
     dependencies:
@@ -982,7 +1114,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/create-cfast:
     dependencies:
@@ -1007,7 +1139,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/db:
     dependencies:
@@ -1029,7 +1161,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/email:
     dependencies:
@@ -1057,7 +1189,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/env:
     devDependencies:
@@ -1072,7 +1204,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/forms:
     devDependencies:
@@ -1217,7 +1349,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/permissions:
     dependencies:
@@ -1233,7 +1365,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/storage:
     dependencies:
@@ -1349,7 +1481,7 @@ importers:
         version: link:../../packages/storage
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.13.0
-        version: 0.13.0(@cloudflare/workers-types@4.20260312.1)(@vitest/runner@4.1.0)(@vitest/snapshot@4.1.0)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 0.13.0(@cloudflare/workers-types@4.20260312.1)(@vitest/runner@4.1.0)(@vitest/snapshot@4.1.0)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       '@cloudflare/workers-types':
         specifier: ^4.20260305.1
         version: 4.20260312.1
@@ -1361,7 +1493,7 @@ importers:
         version: 19.2.14
       better-auth:
         specifier: ^1.2.0
-        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+        version: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
@@ -1370,7 +1502,7 @@ importers:
         version: 19.2.4
       vitest:
         specifier: ^4.1.0
-        version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
       wrangler:
         specifier: ^4
         version: 4.72.0(@cloudflare/workers-types@4.20260312.1)
@@ -1392,6 +1524,10 @@ packages:
 
   '@asamuzakjp/dom-selector@6.8.1':
     resolution: {integrity: sha512-MvRz1nCqW0fsy8Qz4dnLIvhOlMzqDVBabZx6lH+YywFDdjXhMY37SmpV1XFX3JzG5GWHn63j6HX6QPr3lZXHvQ==}
+
+  '@asamuzakjp/dom-selector@7.0.4':
+    resolution: {integrity: sha512-jXR6x4AcT3eIrS2fSNAwJpwirOkGcd+E7F7CP3zjdTqz9B/2huHOL8YJZBgekKwLML+u7qB/6P1LXQuMScsx0w==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
@@ -1830,6 +1966,14 @@ packages:
 
   '@csstools/css-syntax-patches-for-csstree@1.1.0':
     resolution: {integrity: sha512-H4tuz2nhWgNKLt1inYpoVCfbJbMwX/lQKp3g69rrrIMIYlFD9+zTykOKhNR8uGrAmbS/kT9n6hTFkmDkxLgeTA==}
+
+  '@csstools/css-syntax-patches-for-csstree@1.1.2':
+    resolution: {integrity: sha512-5GkLzz4prTIpoyeUiIu3iV6CSG3Plo7xRVOFPKI7FVEJ3mZ0A8SwK0XU3Gl7xAkiQ+mDyam+NNp875/C5y+jSA==}
+    peerDependencies:
+      css-tree: ^3.2.1
+    peerDependenciesMeta:
+      css-tree:
+        optional: true
 
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
@@ -5207,6 +5351,15 @@ packages:
       canvas:
         optional: true
 
+  jsdom@29.0.1:
+    resolution: {integrity: sha512-z6JOK5gRO7aMybVq/y/MlIpKh8JIi68FBKMUtKkK2KH/wMSRlCxQ682d08LB9fYXplyY/UXG8P4XXTScmdjApg==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24.0.0}
+    peerDependencies:
+      canvas: ^3.0.0
+    peerDependenciesMeta:
+      canvas:
+        optional: true
+
   jsesc@3.0.2:
     resolution: {integrity: sha512-xKqzzWXDttJuOcawBt4KnKHHIf5oQ/Cxax+0PWFG+DFDgHNAdi+TXECADI+RYiFUMmx8792xsMbbgXj4CwnP4g==}
     engines: {node: '>=6'}
@@ -5378,6 +5531,10 @@ packages:
 
   lru-cache@11.2.6:
     resolution: {integrity: sha512-ESL2CrkS/2wTPfuend7Zhkzo2u0daGJ/A2VucJOgQ/C48S/zB8MMeMHSGKYpXhIjbPxfuezITkaBH1wqv00DDQ==}
+    engines: {node: 20 || >=22}
+
+  lru-cache@11.2.7:
+    resolution: {integrity: sha512-aY/R+aEsRelme17KGQa/1ZSIpLpNYYrhcrepKTZgE+W3WM16YMCaPwOHLHsmopZHELU0Ojin1lPVxKR0MihncA==}
     engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
@@ -6476,6 +6633,10 @@ packages:
     resolution: {integrity: sha512-kXuRi1mtaKMrsLUxz3sQYvVl37B0Ns6MzfrtV5DvJceE9bPyspOqk9xxv7XbZWcfLWbFmm997vl83qUWVJA64w==}
     engines: {node: '>=16'}
 
+  tough-cookie@6.0.1:
+    resolution: {integrity: sha512-LktZQb3IeoUWB9lqR5EWTHgW/VTITCXg4D21M+lvybRVdylLrRMnqaIONLVb5mav8vM19m44HIcGq4qASeu2Qw==}
+    engines: {node: '>=16'}
+
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
@@ -6649,6 +6810,10 @@ packages:
 
   undici@7.22.0:
     resolution: {integrity: sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==}
+    engines: {node: '>=20.18.1'}
+
+  undici@7.24.6:
+    resolution: {integrity: sha512-Xi4agocCbRzt0yYMZGMA6ApD7gvtUFaxm4ZmeacWI4cZxaF6C+8I8QfofC20NAePiB/IcvZmzkJ7XPa471AEtA==}
     engines: {node: '>=20.18.1'}
 
   unenv@2.0.0-rc.24:
@@ -7214,6 +7379,14 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.2.6
 
+  '@asamuzakjp/dom-selector@7.0.4':
+    dependencies:
+      '@asamuzakjp/nwsapi': 2.3.9
+      bidi-js: 1.0.3
+      css-tree: 3.2.1
+      is-potential-custom-element-name: 1.0.1
+      lru-cache: 11.2.7
+
   '@asamuzakjp/nwsapi@2.3.9': {}
 
   '@astrojs/compiler@2.13.1': {}
@@ -7581,14 +7754,26 @@ snapshots:
       nanostores: 1.1.1
       zod: 4.3.6
 
-  '@better-auth/passkey@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)':
+  '@better-auth/passkey@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)':
     dependencies:
       '@better-auth/core': 1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1)
       '@better-auth/utils': 0.3.1
       '@better-fetch/fetch': 1.1.21
       '@simplewebauthn/browser': 13.2.2
       '@simplewebauthn/server': 13.2.3
-      better-auth: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
+      better-auth: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)))
+      better-call: 1.3.2(zod@4.3.6)
+      nanostores: 1.1.1
+      zod: 4.3.6
+
+  '@better-auth/passkey@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)':
+    dependencies:
+      '@better-auth/core': 1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1)
+      '@better-auth/utils': 0.3.1
+      '@better-fetch/fetch': 1.1.21
+      '@simplewebauthn/browser': 13.2.2
+      '@simplewebauthn/server': 13.2.3
+      better-auth: 1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))
       better-call: 1.3.2(zod@4.3.6)
       nanostores: 1.1.1
       zod: 4.3.6
@@ -7789,6 +7974,19 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260312.1
 
+  '@cloudflare/vite-plugin@1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))':
+    dependencies:
+      '@cloudflare/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260312.1)
+      miniflare: 4.20260310.0
+      unenv: 2.0.0-rc.24
+      vite: 8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
+      wrangler: 4.73.0(@cloudflare/workers-types@4.20260312.1)
+      ws: 8.18.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - workerd
+
   '@cloudflare/vite-plugin@1.27.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260310.1)(wrangler@4.72.0(@cloudflare/workers-types@4.20260312.1))':
     dependencies:
       '@cloudflare/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260310.1)
@@ -7815,19 +8013,6 @@ snapshots:
       - utf-8-validate
       - workerd
 
-  '@cloudflare/vite-plugin@1.27.0(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))':
-    dependencies:
-      '@cloudflare/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260312.1)
-      miniflare: 4.20260310.0
-      unenv: 2.0.0-rc.24
-      vite: 8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
-      wrangler: 4.73.0(@cloudflare/workers-types@4.20260312.1)
-      ws: 8.18.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-      - workerd
-
   '@cloudflare/vite-plugin@1.27.0(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(workerd@1.20260312.1)(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))':
     dependencies:
       '@cloudflare/unenv-preset': 2.15.0(unenv@2.0.0-rc.24)(workerd@1.20260312.1)
@@ -7841,14 +8026,14 @@ snapshots:
       - utf-8-validate
       - workerd
 
-  '@cloudflare/vitest-pool-workers@0.13.0(@cloudflare/workers-types@4.20260312.1)(@vitest/runner@4.1.0)(@vitest/snapshot@4.1.0)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))':
+  '@cloudflare/vitest-pool-workers@0.13.0(@cloudflare/workers-types@4.20260312.1)(@vitest/runner@4.1.0)(@vitest/snapshot@4.1.0)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)))':
     dependencies:
       '@vitest/runner': 4.1.0
       '@vitest/snapshot': 4.1.0
       cjs-module-lexer: 1.4.3
       esbuild: 0.27.3
       miniflare: 4.20260312.0
-      vitest: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+      vitest: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
       wrangler: 4.73.0(@cloudflare/workers-types@4.20260312.1)
       zod: 3.25.76
     transitivePeerDependencies:
@@ -7931,6 +8116,10 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.0
 
   '@csstools/css-syntax-patches-for-csstree@1.1.0': {}
+
+  '@csstools/css-syntax-patches-for-csstree@1.1.2(css-tree@3.2.1)':
+    optionalDependencies:
+      css-tree: 3.2.1
 
   '@csstools/css-tokenizer@3.0.4': {}
 
@@ -9128,6 +9317,56 @@ snapshots:
     dependencies:
       react: 19.2.4
 
+  '@react-router/dev@7.13.1(@types/node@22.19.13)(babel-plugin-macros@3.1.0)(lightningcss@1.32.0)(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))(yaml@2.8.2)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/generator': 7.29.1
+      '@babel/parser': 7.29.0
+      '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
+      '@babel/preset-typescript': 7.28.5(@babel/core@7.29.0)
+      '@babel/traverse': 7.29.0
+      '@babel/types': 7.29.0
+      '@react-router/node': 7.13.1(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
+      '@remix-run/node-fetch-server': 0.13.0
+      arg: 5.0.2
+      babel-dead-code-elimination: 1.0.12
+      chokidar: 4.0.3
+      dedent: 1.7.2(babel-plugin-macros@3.1.0)
+      es-module-lexer: 1.7.0
+      exit-hook: 2.2.1
+      isbot: 5.1.35
+      jsesc: 3.0.2
+      lodash: 4.17.23
+      p-map: 7.0.4
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      pkg-types: 2.3.0
+      prettier: 3.8.1
+      react-refresh: 0.14.2
+      react-router: 7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      semver: 7.7.4
+      tinyglobby: 0.2.15
+      valibot: 1.2.0(typescript@5.9.3)
+      vite: 8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
+      vite-node: 3.2.4(@types/node@22.19.13)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
+    optionalDependencies:
+      typescript: 5.9.3
+      wrangler: 4.73.0(@cloudflare/workers-types@4.20260312.1)
+    transitivePeerDependencies:
+      - '@types/node'
+      - babel-plugin-macros
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+
   '@react-router/dev@7.13.1(@types/node@22.19.13)(babel-plugin-macros@3.1.0)(lightningcss@1.32.0)(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))(wrangler@4.72.0(@cloudflare/workers-types@4.20260312.1))(yaml@2.8.2)':
     dependencies:
       '@babel/core': 7.29.0
@@ -9163,56 +9402,6 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
       wrangler: 4.72.0(@cloudflare/workers-types@4.20260312.1)
-    transitivePeerDependencies:
-      - '@types/node'
-      - babel-plugin-macros
-      - jiti
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-
-  '@react-router/dev@7.13.1(@types/node@24.12.0)(babel-plugin-macros@3.1.0)(lightningcss@1.32.0)(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(tsx@4.21.0)(typescript@5.9.3)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))(wrangler@4.73.0(@cloudflare/workers-types@4.20260312.1))(yaml@2.8.2)':
-    dependencies:
-      '@babel/core': 7.29.0
-      '@babel/generator': 7.29.1
-      '@babel/parser': 7.29.0
-      '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.29.0)
-      '@babel/preset-typescript': 7.28.5(@babel/core@7.29.0)
-      '@babel/traverse': 7.29.0
-      '@babel/types': 7.29.0
-      '@react-router/node': 7.13.1(react-router@7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
-      '@remix-run/node-fetch-server': 0.13.0
-      arg: 5.0.2
-      babel-dead-code-elimination: 1.0.12
-      chokidar: 4.0.3
-      dedent: 1.7.2(babel-plugin-macros@3.1.0)
-      es-module-lexer: 1.7.0
-      exit-hook: 2.2.1
-      isbot: 5.1.35
-      jsesc: 3.0.2
-      lodash: 4.17.23
-      p-map: 7.0.4
-      pathe: 1.1.2
-      picocolors: 1.1.1
-      pkg-types: 2.3.0
-      prettier: 3.8.1
-      react-refresh: 0.14.2
-      react-router: 7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      semver: 7.7.4
-      tinyglobby: 0.2.15
-      valibot: 1.2.0(typescript@5.9.3)
-      vite: 8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
-      vite-node: 3.2.4(@types/node@24.12.0)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
-    optionalDependencies:
-      typescript: 5.9.3
-      wrangler: 4.73.0(@cloudflare/workers-types@4.20260312.1)
     transitivePeerDependencies:
       - '@types/node'
       - babel-plugin-macros
@@ -9830,6 +10019,14 @@ snapshots:
     optionalDependencies:
       vite: 7.3.1(@types/node@22.19.13)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
 
+  '@vitest/mocker@4.1.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))':
+    dependencies:
+      '@vitest/spy': 4.1.0
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
+
   '@vitest/mocker@4.1.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.1.0
@@ -10149,7 +10346,7 @@ snapshots:
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
 
-  better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))):
+  better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))):
     dependencies:
       '@better-auth/core': 1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1)
       '@better-auth/kysely-adapter': 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(kysely@0.28.11)
@@ -10171,11 +10368,11 @@ snapshots:
       drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-      vitest: 4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+      vitest: 4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
 
-  better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))):
+  better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))):
     dependencies:
       '@better-auth/core': 1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1)
       '@better-auth/kysely-adapter': 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(kysely@0.28.11)
@@ -10197,7 +10394,33 @@ snapshots:
       drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-      vitest: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+      vitest: 4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+    transitivePeerDependencies:
+      - '@cloudflare/workers-types'
+
+  better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260312.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))):
+    dependencies:
+      '@better-auth/core': 1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1)
+      '@better-auth/kysely-adapter': 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(kysely@0.28.11)
+      '@better-auth/memory-adapter': 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)
+      '@better-auth/telemetry': 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))
+      '@better-auth/utils': 0.3.1
+      '@better-fetch/fetch': 1.1.21
+      '@noble/ciphers': 2.1.1
+      '@noble/hashes': 2.0.1
+      better-call: 1.3.2(zod@4.3.6)
+      defu: 6.1.4
+      jose: 6.2.0
+      kysely: 0.28.11
+      nanostores: 1.1.1
+      zod: 4.3.6
+    optionalDependencies:
+      '@better-auth/drizzle-adapter': 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260312.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11))
+      drizzle-kit: 0.31.9
+      drizzle-orm: 0.45.1(@cloudflare/workers-types@4.20260312.1)(kysely@0.28.11)
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      vitest: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
 
@@ -11443,6 +11666,32 @@ snapshots:
       - '@noble/hashes'
       - supports-color
 
+  jsdom@29.0.1(@noble/hashes@2.0.1):
+    dependencies:
+      '@asamuzakjp/css-color': 5.0.1
+      '@asamuzakjp/dom-selector': 7.0.4
+      '@bramus/specificity': 2.4.2
+      '@csstools/css-syntax-patches-for-csstree': 1.1.2(css-tree@3.2.1)
+      '@exodus/bytes': 1.15.0(@noble/hashes@2.0.1)
+      css-tree: 3.2.1
+      data-urls: 7.0.0(@noble/hashes@2.0.1)
+      decimal.js: 10.6.0
+      html-encoding-sniffer: 6.0.0(@noble/hashes@2.0.1)
+      is-potential-custom-element-name: 1.0.1
+      lru-cache: 11.2.7
+      parse5: 8.0.0
+      saxes: 6.0.0
+      symbol-tree: 3.2.4
+      tough-cookie: 6.0.1
+      undici: 7.24.6
+      w3c-xmlserializer: 5.0.0
+      webidl-conversions: 8.0.1
+      whatwg-mimetype: 5.0.0
+      whatwg-url: 16.0.1(@noble/hashes@2.0.1)
+      xml-name-validator: 5.0.0
+    transitivePeerDependencies:
+      - '@noble/hashes'
+
   jsesc@3.0.2: {}
 
   json-buffer@3.0.1: {}
@@ -11562,6 +11811,8 @@ snapshots:
   lru-cache@10.4.3: {}
 
   lru-cache@11.2.6: {}
+
+  lru-cache@11.2.7: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -13046,6 +13297,10 @@ snapshots:
     dependencies:
       tldts: 7.0.25
 
+  tough-cookie@6.0.1:
+    dependencies:
+      tldts: 7.0.25
+
   tr46@0.0.3: {}
 
   tr46@5.1.1:
@@ -13197,6 +13452,8 @@ snapshots:
   undici@7.18.2: {}
 
   undici@7.22.0: {}
+
+  undici@7.24.6: {}
 
   unenv@2.0.0-rc.24:
     dependencies:
@@ -13408,6 +13665,21 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
+  vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2):
+    dependencies:
+      '@oxc-project/runtime': 0.115.0
+      lightningcss: 1.32.0
+      picomatch: 4.0.3
+      postcss: 8.5.8
+      rolldown: 1.0.0-rc.9
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 22.19.13
+      esbuild: 0.25.12
+      fsevents: 2.3.3
+      tsx: 4.21.0
+      yaml: 2.8.2
+
   vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@oxc-project/runtime': 0.115.0
@@ -13457,7 +13729,7 @@ snapshots:
     optionalDependencies:
       vite: 6.4.1(@types/node@24.12.0)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
@@ -13485,7 +13757,7 @@ snapshots:
     optionalDependencies:
       '@types/debug': 4.1.12
       '@types/node': 22.19.13
-      jsdom: 28.1.0(@noble/hashes@2.0.1)
+      jsdom: 29.0.1(@noble/hashes@2.0.1)
     transitivePeerDependencies:
       - jiti
       - less
@@ -13500,7 +13772,35 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.1.0(@types/node@22.19.13)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)):
+  vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)):
+    dependencies:
+      '@vitest/expect': 4.1.0
+      '@vitest/mocker': 4.1.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/pretty-format': 4.1.0
+      '@vitest/runner': 4.1.0
+      '@vitest/snapshot': 4.1.0
+      '@vitest/spy': 4.1.0
+      '@vitest/utils': 4.1.0
+      es-module-lexer: 2.0.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 4.0.0
+      tinybench: 2.9.0
+      tinyexec: 1.0.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vite: 8.0.0(@types/node@22.19.13)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 22.19.13
+      jsdom: 29.0.1(@noble/hashes@2.0.1)
+    transitivePeerDependencies:
+      - msw
+
+  vitest@4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@vitest/expect': 4.1.0
       '@vitest/mocker': 4.1.0(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
@@ -13524,7 +13824,7 @@ snapshots:
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.19.13
-      jsdom: 28.1.0(@noble/hashes@2.0.1)
+      jsdom: 29.0.1(@noble/hashes@2.0.1)
     transitivePeerDependencies:
       - msw
     optional: true
@@ -13610,6 +13910,34 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.12.0
       jsdom: 28.1.0(@noble/hashes@2.0.1)
+    transitivePeerDependencies:
+      - msw
+
+  vitest@4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)):
+    dependencies:
+      '@vitest/expect': 4.1.0
+      '@vitest/mocker': 4.1.0(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/pretty-format': 4.1.0
+      '@vitest/runner': 4.1.0
+      '@vitest/snapshot': 4.1.0
+      '@vitest/spy': 4.1.0
+      '@vitest/utils': 4.1.0
+      es-module-lexer: 2.0.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 4.0.0
+      tinybench: 2.9.0
+      tinyexec: 1.0.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vite: 8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 24.12.0
+      jsdom: 29.0.1(@noble/hashes@2.0.1)
     transitivePeerDependencies:
       - msw
 
