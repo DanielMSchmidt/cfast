@@ -4,3 +4,4 @@ packages:
   - "docs/website"
   - "docs/tutorials/team-blog/*"
   - "tests/*"
+  - "../cfast-playground/*"
