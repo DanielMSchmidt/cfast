@@ -1,8 +1,12 @@
+import { drizzle } from "drizzle-orm/d1";
+import type { BatchItem } from "drizzle-orm/batch";
 import type { DrizzleTable } from "@cfast/permissions";
 import { createQueryBuilder } from "./query-builder";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "./mutate-builder";
 import { createCacheManager, type CacheManager } from "./cache";
 import { deduplicateDescriptors } from "./utils";
+import { checkOperationPermissions } from "./permissions";
+import { getBatchable } from "./batchable";
 import type {
   Db,
   DbConfig,
@@ -117,6 +121,47 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         permissions: allPermissions,
         async run(params?: Record<string, unknown>) {
           const p = params ?? {};
+
+          // Up-front permission check across every sub-operation. We refuse to
+          // run any of the SQL if the user can't perform every action in the
+          // batch -- this matches the user-visible "atomic" semantic.
+          if (!isUnsafe) {
+            checkOperationPermissions(config.grants, allPermissions);
+          }
+
+          // Try to pack everything into D1's native atomic batch via Drizzle.
+          // Every op produced by db.insert/update/delete is "batchable"; only
+          // arbitrary user-supplied operations (e.g. from compose() executors)
+          // fall through to the sequential path.
+          const batchables = operations.map((op) => getBatchable(op));
+          const everyOpBatchable =
+            operations.length > 0 && batchables.every((b) => b !== undefined);
+
+          if (everyOpBatchable) {
+            const sharedDb = drizzle(config.d1, { schema: config.schema });
+            const items = batchables.map((b) => b!.build(sharedDb));
+            // Drizzle's `db.batch()` requires a non-empty tuple type, so we
+            // cast at the boundary -- the array is guaranteed non-empty here.
+            const batchResults = (await sharedDb.batch(
+              items as unknown as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]],
+            )) as unknown[];
+
+            // Bump cache versions for every mutated table now that the batch
+            // has committed atomically.
+            const tables = new Set<string>();
+            for (const b of batchables) {
+              tables.add(b!.tableName);
+            }
+            for (const t of tables) {
+              cacheManager?.invalidateTable(t);
+            }
+
+            // Surface results in the same order as the input operations.
+            return batchables.map((b, i) => (b!.withResult ? batchResults[i] : undefined));
+          }
+
+          // Fallback: sequential execution. Used when at least one operation
+          // is not directly batchable (e.g. ops produced by compose()).
           const results: unknown[] = [];
           for (const op of operations) {
             results.push(await op.run(p));

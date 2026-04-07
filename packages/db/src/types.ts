@@ -417,7 +417,20 @@ export type Db = {
   unsafe: () => Db;
   /**
    * Groups multiple operations into a single {@link Operation} with merged, deduplicated permissions.
-   * Operations are executed sequentially (not via D1 native batch).
+   *
+   * When every operation was produced by `db.insert/update/delete`, the batch is
+   * executed via D1's native `batch()` API, which is **atomic** -- if any
+   * statement fails, the entire batch is rolled back. This is the recommended
+   * way to perform multi-step mutations that need transactional safety, such as
+   * decrementing stock across multiple products during checkout.
+   *
+   * Permissions for every sub-operation are checked **upfront**: if the user
+   * lacks any required grant, the batch throws before any SQL is issued.
+   *
+   * Operations that don't carry the internal batchable hook (for example, ops
+   * produced by `compose()` executors) cause the batch to fall back to
+   * sequential execution. This preserves backward compatibility for non-trivial
+   * compositions but loses the atomicity guarantee.
    */
   batch: (operations: Operation<unknown>[]) => Operation<unknown[]>;
   /** Cache control methods for manual invalidation. */

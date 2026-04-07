@@ -6,6 +6,7 @@ import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions, getTableName } from "./utils";
 import type { User } from "./utils";
 import type { Operation } from "./types";
+import { BATCHABLE, type BatchableMeta } from "./batchable";
 
 type MutateBuilderConfig = {
   d1: D1Database;
@@ -23,31 +24,77 @@ function checkIfNeeded(config: MutateBuilderConfig, grants: Grant[], permissions
   }
 }
 
+/**
+ * A function that builds the underlying Drizzle query for a mutation operation
+ * without executing it. Used both by the standard `.run()` path and by
+ * {@link Db.batch} when packing operations into D1's native atomic batch.
+ *
+ * The `returning` flag toggles whether the built query has `.returning()`
+ * appended (for `.returning().run()` paths).
+ */
+type DrizzleDb = ReturnType<typeof drizzle>;
+type BuildQueryFn = (
+  drizzleDb: DrizzleDb,
+  returning: boolean,
+) => {
+  // The Drizzle query, sufficient to be passed to `db.batch([...])`.
+  query: import("drizzle-orm/batch").BatchItem<"sqlite">;
+  // For the non-batch path: how to read the value back from the query.
+  // `void` execution uses `.run()`; returning execution uses `.get()`.
+  execute: (returning: boolean) => Promise<unknown>;
+};
+
 function buildMutationWithReturning(
   config: MutateBuilderConfig,
   permissions: PermissionDescriptor[],
   tableName: string,
-  execute: (returning: boolean) => Promise<unknown>,
+  buildQuery: BuildQueryFn,
 ): Operation<void> & { returning: () => Operation<unknown> } {
-  return {
+  // Construct the per-builder Drizzle instance once so .run() and the BATCHABLE
+  // hook share state (cached prepared statements, etc.).
+  const drizzleDb = drizzle(config.d1, { schema: config.schema });
+
+  const runOnce = async (returning: boolean): Promise<unknown> => {
+    checkIfNeeded(config, config.grants, permissions);
+    const built = buildQuery(drizzleDb, returning);
+    const result = await built.execute(returning);
+    config.onMutate?.(tableName);
+    return result;
+  };
+
+  const baseOp: Operation<void> & {
+    returning: () => Operation<unknown>;
+    [BATCHABLE]?: BatchableMeta;
+  } = {
     permissions,
     async run(_params?: Record<string, unknown>): Promise<void> {
-      checkIfNeeded(config, config.grants, permissions);
-      await execute(false);
-      config.onMutate?.(tableName);
+      await runOnce(false);
     },
     returning() {
-      return {
+      const returningOp: Operation<unknown> & { [BATCHABLE]?: BatchableMeta } = {
         permissions,
         async run(_params?: Record<string, unknown>): Promise<unknown> {
-          checkIfNeeded(config, config.grants, permissions);
-          const result = await execute(true);
-          config.onMutate?.(tableName);
-          return result;
+          return runOnce(true);
         },
       };
+      // The returning() variant carries the same query (with `.returning()`
+      // appended) so it can also participate in native batches.
+      returningOp[BATCHABLE] = {
+        build: (sharedDb) => buildQuery(sharedDb, true).query,
+        tableName,
+        withResult: true,
+      };
+      return returningOp;
     },
   };
+
+  baseOp[BATCHABLE] = {
+    build: (sharedDb) => buildQuery(sharedDb, false).query,
+    tableName,
+    withResult: false,
+  };
+
+  return baseOp;
 }
 
 /**
@@ -60,19 +107,25 @@ function buildMutationWithReturning(
  * @returns An insert builder with a `values()` method.
  */
 export function createInsertBuilder(config: MutateBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema });
   const permissions = makePermissions(config.unsafe, "create", config.table);
   const tableName = getTableName(config.table);
 
   return {
     values(values: Record<string, unknown>) {
-      return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
-        const query = db.insert(config.table as SQLiteTable).values(values);
-        if (returning) {
-          return query.returning().get();
-        }
-        await query.run();
-      });
+      const buildQuery: BuildQueryFn = (sharedDb, returning) => {
+        const base = sharedDb.insert(config.table as SQLiteTable).values(values);
+        const query = returning ? base.returning() : base;
+        return {
+          query: query as import("drizzle-orm/batch").BatchItem<"sqlite">,
+          execute: async (wantsResult) => {
+            if (wantsResult) {
+              return (query as ReturnType<typeof base.returning>).get();
+            }
+            await base.run();
+          },
+        };
+      };
+      return buildMutationWithReturning(config, permissions, tableName, buildQuery);
     },
   };
 }
@@ -87,7 +140,6 @@ export function createInsertBuilder(config: MutateBuilderConfig) {
  * @returns An update builder with a `set()` method that chains to `where()`.
  */
 export function createUpdateBuilder(config: MutateBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema });
   const permissions = makePermissions(config.unsafe, "update", config.table);
   const tableName = getTableName(config.table);
 
@@ -100,14 +152,21 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
           );
           const combinedWhere = combineWhere(condition as SQL | undefined, permFilter);
 
-          return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
-            const query = db.update(config.table as SQLiteTable).set(values);
-            if (combinedWhere) query.where(combinedWhere);
-            if (returning) {
-              return query.returning().get();
-            }
-            await query.run();
-          });
+          const buildQuery: BuildQueryFn = (sharedDb, returning) => {
+            const base = sharedDb.update(config.table as SQLiteTable).set(values);
+            if (combinedWhere) base.where(combinedWhere);
+            const query = returning ? base.returning() : base;
+            return {
+              query: query as import("drizzle-orm/batch").BatchItem<"sqlite">,
+              execute: async (wantsResult) => {
+                if (wantsResult) {
+                  return (query as ReturnType<typeof base.returning>).get();
+                }
+                await base.run();
+              },
+            };
+          };
+          return buildMutationWithReturning(config, permissions, tableName, buildQuery);
         },
       };
     },
@@ -124,7 +183,6 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
  * @returns A delete builder with a `where()` method.
  */
 export function createDeleteBuilder(config: MutateBuilderConfig) {
-  const db = drizzle(config.d1, { schema: config.schema });
   const permissions = makePermissions(config.unsafe, "delete", config.table);
   const tableName = getTableName(config.table);
 
@@ -135,14 +193,21 @@ export function createDeleteBuilder(config: MutateBuilderConfig) {
       );
       const combinedWhere = combineWhere(condition as SQL | undefined, permFilter);
 
-      return buildMutationWithReturning(config, permissions, tableName, async (returning) => {
-        const query = db.delete(config.table as SQLiteTable);
-        if (combinedWhere) query.where(combinedWhere);
-        if (returning) {
-          return query.returning().get();
-        }
-        await query.run();
-      });
+      const buildQuery: BuildQueryFn = (sharedDb, returning) => {
+        const base = sharedDb.delete(config.table as SQLiteTable);
+        if (combinedWhere) base.where(combinedWhere);
+        const query = returning ? base.returning() : base;
+        return {
+          query: query as import("drizzle-orm/batch").BatchItem<"sqlite">,
+          execute: async (wantsResult) => {
+            if (wantsResult) {
+              return (query as ReturnType<typeof base.returning>).get();
+            }
+            await base.run();
+          },
+        };
+      };
+      return buildMutationWithReturning(config, permissions, tableName, buildQuery);
     },
   };
 }
