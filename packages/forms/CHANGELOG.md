@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.1.0...@cfast/forms-v0.1.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **admin,forms,joy:** rewrite mui directory imports for vitest 4 compatibility ([#133](https://github.com/DanielMSchmidt/cfast/issues/133)) ([0c21d87](https://github.com/DanielMSchmidt/cfast/commit/0c21d8776c4f46895a41aa7196664edd7a0472b3))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.0.1...@cfast/forms-v0.1.0) (2026-03-21)
 
 

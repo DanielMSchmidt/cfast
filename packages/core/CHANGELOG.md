@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.1...@cfast/core-v0.1.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* **core:** plugin context inference and runtime dependency validation ([#134](https://github.com/DanielMSchmidt/cfast/issues/134)) ([5a8e9aa](https://github.com/DanielMSchmidt/cfast/commit/5a8e9aa18456d804f80075a12b2de7009f1bdc70)), closes [#110](https://github.com/DanielMSchmidt/cfast/issues/110)
+
 ## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.0...@cfast/core-v0.1.1) (2026-04-07)
 
 

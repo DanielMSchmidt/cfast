@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/pagination-v0.1.0...@cfast/pagination-v0.2.0) (2026-04-07)
+
+
+### Features
+
+* **pagination:** add server-side cursor pagination helpers ([#136](https://github.com/DanielMSchmidt/cfast/issues/136)) ([2145340](https://github.com/DanielMSchmidt/cfast/commit/21453408dc51b84c2affec037b84a1e5f2120730)), closes [#106](https://github.com/DanielMSchmidt/cfast/issues/106)
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/pagination-v0.0.1...@cfast/pagination-v0.1.0) (2026-03-21)
 
 

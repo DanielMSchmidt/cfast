@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.1.0...@cfast/permissions-v0.2.0) (2026-04-07)
+
+
+### Features
+
+* **permissions:** user-object resolveGrants and string table subjects ([#137](https://github.com/DanielMSchmidt/cfast/issues/137)) ([79018b4](https://github.com/DanielMSchmidt/cfast/commit/79018b44c2bc2d0fc54eeed38c1297f9c8bf1fb8))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.0.3...@cfast/permissions-v0.1.0) (2026-03-21)
 
 

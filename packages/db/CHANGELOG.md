@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.1.1...@cfast/db-v0.2.0) (2026-04-07)
+
+
+### Features
+
+* **db:** fill 6 gaps — schema cast, single-op, callback compose, row types, offset/limit, atomic batch ([#138](https://github.com/DanielMSchmidt/cfast/issues/138)) ([092ca9a](https://github.com/DanielMSchmidt/cfast/commit/092ca9aabfdbcbbc4a70b7bfd4d807ac1402a401))
+* **permissions:** user-object resolveGrants and string table subjects ([#137](https://github.com/DanielMSchmidt/cfast/issues/137)) ([79018b4](https://github.com/DanielMSchmidt/cfast/commit/79018b44c2bc2d0fc54eeed38c1297f9c8bf1fb8))
+
+
+### Bug Fixes
+
+* document self-referential FK pattern and @cfast/env API key bindings ([#130](https://github.com/DanielMSchmidt/cfast/issues/130)) ([6338b5d](https://github.com/DanielMSchmidt/cfast/commit/6338b5dabef54d377479f11258fec9143bf58be6))
+
 ## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.1.0...@cfast/db-v0.1.1) (2026-04-07)
 
 

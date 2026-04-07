@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/env-v0.1.0...@cfast/env-v0.1.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* document self-referential FK pattern and @cfast/env API key bindings ([#130](https://github.com/DanielMSchmidt/cfast/issues/130)) ([6338b5d](https://github.com/DanielMSchmidt/cfast/commit/6338b5dabef54d377479f11258fec9143bf58be6))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/env-v0.0.1...@cfast/env-v0.1.0) (2026-03-21)
 
 
