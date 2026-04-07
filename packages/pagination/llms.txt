@@ -1,20 +1,76 @@
 # @cfast/pagination
 
-> Client-side React hooks for cursor-based, offset-based pagination and infinite scroll with React Router.
+> Cursor-based, offset-based pagination and infinite scroll for React Router. Ships both client hooks (`@cfast/pagination`) and loader-side helpers (`@cfast/pagination/server`).
 
 ## When to use
-Use this package when you need pagination UI in a React Router app backed by `@cfast/db` loaders. Server-side param parsing and query building live in `@cfast/db`; this package provides the client-side hooks that consume the loader data.
+Use this package when you need cursor- or offset-based pagination in a React Router app. The client hooks accumulate pages, deduplicate items, and trigger loading; the server helpers parse URL params and apply cursor pagination to a query result so the loader returns the exact shape the hooks consume.
+
+For Drizzle/D1-backed queries you can also use `@cfast/db`'s `db.query(table).paginate()` which pushes the cursor into a SQL `WHERE` clause. The two helpers use the same opaque cursor format and are interchangeable.
 
 ## Key concepts
-- **Loader + hook pairs**: Server parses params and returns paginated data (`@cfast/db`). Client hooks consume it (`@cfast/pagination`). Swap the hook to change the UX pattern.
-- **Cursor-based**: For "load more" and infinite scroll. Loader returns `{ items, nextCursor }`. Two hooks: `usePagination` (button) and `useInfiniteScroll` (auto-load on scroll).
+- **Loader + hook pairs**: Server parses params and applies pagination (`@cfast/pagination/server`). Client hooks consume the loader data (`@cfast/pagination`). Swap the hook to change the UX pattern.
+- **Cursor-based**: For "load more" and infinite scroll. Loader returns `{ items, nextCursor, hasMore }`. Two hooks: `usePagination` (button) and `useInfiniteScroll` (auto-load on scroll).
 - **Offset-based**: For page navigation. Loader returns `{ items, total, page, totalPages }`. Hook: `useOffsetPagination`.
 - **Deduplication**: Cursor hooks deduplicate accumulated items by key (defaults to `item.id`) to handle data changes during scrolling.
 - **React Router integration**: Hooks read from `useLoaderData()` and fetch subsequent pages via `useFetcher()` or navigate via `useNavigate()`.
+- **Subpath import**: Server helpers live at `@cfast/pagination/server` so the client bundle never pulls in loader-only code.
 
 ## API Reference
 
-### `usePagination<T>(options?): UsePaginationResult<T>`
+### Server (`@cfast/pagination/server`)
+
+#### `applyCursorPagination<T>(query, options): Promise<CursorPage<T>>`
+Applies cursor-based pagination to a query result. Generic and dependency-free — works with any array, Promise of an array, or thenable query.
+
+```typescript
+import { applyCursorPagination, parseCursorParams } from "@cfast/pagination/server";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { cursor, limit } = parseCursorParams(request, { defaultLimit: 20 });
+
+  const result = await applyCursorPagination(
+    db.query(recipes).findMany(),
+    { cursor, limit, cursorColumns: ["createdAt", "id"] },
+  );
+
+  return {
+    items: result.items,
+    nextCursor: result.nextCursor,
+    hasMore: result.hasMore,
+  };
+}
+```
+
+**Parameters**:
+- `query: readonly T[] | Promise<readonly T[]>` -- the data source. Sort it yourself (the helper does not sort) so the cursor columns line up with the order.
+- `options.cursor: string | null` -- the opaque cursor from the URL.
+- `options.limit: number` -- max items per page.
+- `options.cursorColumns: (keyof T & string)[]` -- property names used to encode the cursor. Must match the columns the query is sorted by, in the same order.
+- `options.direction?: "asc" | "desc"` -- sort direction. Defaults to `"desc"`.
+
+**Returns** (`CursorPage<T>`):
+- `items: T[]` -- the page items (up to `limit`).
+- `nextCursor: string | null` -- opaque cursor for the next page, or `null` if last page.
+- `hasMore: boolean` -- `true` if more pages remain.
+
+The return shape matches what `usePagination` consumes on the client, so you can return it directly from the loader.
+
+#### `parseCursorParams(request, options?): { cursor, limit }`
+Reads `?cursor=...&limit=...` from a `Request` URL. Clamps `limit` between `1` and `maxLimit` (default `100`). Designed to destructure directly into `applyCursorPagination` options.
+
+```typescript
+const { cursor, limit } = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
+```
+
+#### `parseOffsetParams(request, options?): { page, limit }`
+Reads `?page=...&limit=...` from a `Request` URL. Page is clamped to `>= 1`; limit is clamped between `1` and `maxLimit`.
+
+#### `encodeCursor(values): string` / `decodeCursor(cursor): unknown[] | null`
+Low-level opaque cursor encoding (base64-encoded JSON). The format is compatible with `@cfast/db`'s cursors so the helpers are interchangeable. `Date` values are normalized to ISO 8601 strings on encode so the cursor survives JSON serialization.
+
+### Client
+
+#### `usePagination<T>(options?): UsePaginationResult<T>`
 Load-more button pattern for cursor-based pagination.
 
 ```typescript
@@ -69,16 +125,25 @@ const { items, total, totalPages, currentPage, goToPage } = useOffsetPagination<
 
 ## Usage Examples
 
-### Cursor-based with load more button
+### Cursor-based with load more button (server helper)
 ```tsx
-// Loader (server, uses @cfast/db)
-import { parseCursorParams } from "@cfast/db";
+// Loader (server, uses @cfast/pagination/server)
+import type { LoaderFunctionArgs } from "react-router";
+import { applyCursorPagination, parseCursorParams } from "@cfast/pagination/server";
 
-export async function loader({ request }) {
-  const page = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
-  return await db.query(posts)
-    .paginate(page, { orderBy: desc(posts.createdAt), cursorColumns: [posts.createdAt, posts.id] })
-    .run({});
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { cursor, limit } = parseCursorParams(request, { defaultLimit: 20 });
+
+  const result = await applyCursorPagination(
+    db.query(posts).findMany({ orderBy: desc(posts.createdAt) }),
+    { cursor, limit, cursorColumns: ["createdAt", "id"] },
+  );
+
+  return {
+    items: result.items,
+    nextCursor: result.nextCursor,
+    hasMore: result.hasMore,
+  };
 }
 
 // Component (client)
@@ -94,6 +159,20 @@ function PostList() {
   );
 }
 ```
+
+### Cursor-based with `@cfast/db` (SQL-pushed cursor)
+```tsx
+// Loader (server, uses @cfast/db)
+import { parseCursorParams } from "@cfast/db";
+
+export async function loader({ request }) {
+  const page = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
+  return await db.query(posts)
+    .paginate(page, { orderBy: desc(posts.createdAt), cursorColumns: [posts.createdAt, posts.id] })
+    .run({});
+}
+```
+The two server helpers use the same opaque cursor format and the same client hook.
 
 ### Infinite scroll (same loader, different hook)
 ```tsx
@@ -142,11 +221,14 @@ function PostList() {
 ```
 
 ## Integration
-- **`@cfast/db`**: Provides server-side `parseCursorParams()`, `parseOffsetParams()`, and `.paginate()` on query operations. The hooks in this package consume the loader data those helpers produce.
-- **React Router**: All hooks depend on `useLoaderData()`, `useFetcher()`, `useNavigate()`, and `useLocation()` from `react-router`.
+- **`@cfast/pagination/server`**: The same package, subpath import. Provides `applyCursorPagination()`, `parseCursorParams()`, and `parseOffsetParams()` for loaders. Generic and dependency-free — works with any array, Promise, or thenable query.
+- **`@cfast/db`**: Provides Drizzle-aware `parseCursorParams()`, `parseOffsetParams()`, and `.paginate()` that pushes the cursor into a SQL `WHERE` clause. Use this when you want the database to filter past the cursor instead of doing it in memory. Cursors are interchangeable with `@cfast/pagination/server`.
+- **React Router**: All hooks depend on `useLoaderData()`, `useFetcher()`, `useNavigate()`, and `useLocation()` from `react-router`. Server helpers depend only on the standard `Request` global.
 
 ## Common Mistakes
 - **Forgetting the sentinel `<div ref={sentinelRef} />`** -- `useInfiniteScroll` won't trigger loading without it.
 - **Missing `key` on items without `id`** -- if your items don't have an `id` field, pass a custom `getKey` to avoid broken deduplication.
 - **Using `useOffsetPagination` with cursor loaders** -- the hook expects `{ items, total, page, totalPages }`. Cursor loaders return `{ items, nextCursor }`. Match the hook to the loader.
 - **Not returning paginated data from the loader** -- hooks read from `useLoaderData()`. If the loader returns a different shape, hooks fall back to empty state silently.
+- **Forgetting to sort the query before `applyCursorPagination`** -- the helper does not sort. Pass an already-ordered query whose `orderBy` matches `cursorColumns` and `direction`, otherwise the cursor will skip the wrong rows.
+- **Importing server helpers from the root entry** -- use `@cfast/pagination/server`, not `@cfast/pagination`. The root entry only exposes React hooks.
