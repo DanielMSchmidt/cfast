@@ -165,3 +165,8 @@ export const { createAction, composeActions } = createActions({
 - Calling `useApp()` outside `<app.Provider>` -- throws a context error.
 - Registering two plugins with the same `name` -- throws `CfastConfigError` at import time.
 - Doing expensive work in `setup()` -- it runs on every request. Move one-time init to the plugin factory (outer function).
+
+## See Also
+
+- `@cfast/env` -- Type-safe Cloudflare bindings validated by `app.init()`.
+- `@cfast/permissions` -- Grants resolved per-request and exposed via `app.context()`.
