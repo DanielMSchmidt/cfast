@@ -193,6 +193,12 @@ describe("generateViteConfig", () => {
     expect(result).toContain("optimizeDeps");
     expect(result).toContain("@cfast/joy");
   });
+
+  it("wires the cfast routes-check plugin", () => {
+    const result = generateViteConfig(baseConfig);
+    expect(result).toContain(`from "./vite-plugin-cfast-routes"`);
+    expect(result).toContain("cfastRoutesCheckPlugin()");
+  });
 });
 
 describe("generateRootTsx", () => {
@@ -227,6 +233,13 @@ describe("generateRoutesTs", () => {
   it("always includes index route", () => {
     const result = generateRoutesTs(baseConfig);
     expect(result).toContain("index(");
+  });
+
+  it("emits JSDoc warning that routes are not auto-discovered", () => {
+    const result = generateRoutesTs(baseConfig);
+    expect(result).toContain("does NOT auto-discover");
+    expect(result).toContain("MUST be added here");
+    expect(result).toMatch(/\/\*\*[\s\S]*Route registry for this app[\s\S]*\*\//);
   });
 
   it("adds auth routes when auth enabled", () => {
