@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.2.2...@cfast/auth-v0.3.0) (2026-04-07)
+
+
+### Features
+
+* **auth:** ship test-helpers subpath with real-workflow session helpers ([#139](https://github.com/DanielMSchmidt/cfast/issues/139)) ([6eb311e](https://github.com/DanielMSchmidt/cfast/commit/6eb311e7dff68605a3f4b1f347286a957e6fe6ac)), closes [#101](https://github.com/DanielMSchmidt/cfast/issues/101)
+
 ## [0.2.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.2.1...@cfast/auth-v0.2.2) (2026-04-07)
 
 

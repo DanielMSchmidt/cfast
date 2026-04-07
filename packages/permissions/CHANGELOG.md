@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.2.0...@cfast/permissions-v0.3.0) (2026-04-07)
+
+
+### Features
+
+* **permissions,db:** support cross-table grant lookups via with (closes [#105](https://github.com/DanielMSchmidt/cfast/issues/105)) ([#141](https://github.com/DanielMSchmidt/cfast/issues/141)) ([2908f3a](https://github.com/DanielMSchmidt/cfast/commit/2908f3a87a93e2bf21a2306656baabf3303a199a))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.1.0...@cfast/permissions-v0.2.0) (2026-04-07)
 
 
