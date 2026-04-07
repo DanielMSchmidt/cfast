@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.2.1...@cfast/admin-v0.2.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* **admin:** republish to fix workspace:* in dependencies ([#120](https://github.com/DanielMSchmidt/cfast/issues/120)) ([ce3a064](https://github.com/DanielMSchmidt/cfast/commit/ce3a06466278912b31ffe24b5f898d2ac97671cd))
+
 ## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.2.0...@cfast/admin-v0.2.1) (2026-04-07)
 
 

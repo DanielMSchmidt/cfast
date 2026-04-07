@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.0...@cfast/core-v0.1.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **core:** republish to fix workspace:* in dependencies ([#122](https://github.com/DanielMSchmidt/cfast/issues/122)) ([7a3acb8](https://github.com/DanielMSchmidt/cfast/commit/7a3acb823d88330304af3bacf5b9c0675f34ff49))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.0.1...@cfast/core-v0.1.0) (2026-03-21)
 
 

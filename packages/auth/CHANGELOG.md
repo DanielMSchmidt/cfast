@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.2.1...@cfast/auth-v0.2.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* **auth:** republish to fix workspace:* in dependencies ([#121](https://github.com/DanielMSchmidt/cfast/issues/121)) ([915f031](https://github.com/DanielMSchmidt/cfast/commit/915f03198c0b36282ddbb02dc2c66da55067cfca))
+
 ## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.2.0...@cfast/auth-v0.2.1) (2026-04-07)
 
 
