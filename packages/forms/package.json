@@ -37,8 +37,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/joy.tsx --format esm --dts",
-    "dev": "tsup src/index.ts src/joy.tsx --format esm --dts --watch",
+    "build": "tsup src/index.ts src/joy.tsx --format esm --dts && node ../../scripts/fix-mui-joy-imports.mjs dist",
+    "dev": "tsup src/index.ts src/joy.tsx --format esm --dts --watch --onSuccess \"node ../../scripts/fix-mui-joy-imports.mjs dist\"",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run"
