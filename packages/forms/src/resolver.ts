@@ -54,6 +54,18 @@ function validateField(
 }
 
 /**
+ * Should the resolver run validation for this parent field?
+ * Computed fields are derived from other values, so we trust the computation
+ * rather than asking the user to satisfy required/min/max constraints.
+ */
+function shouldValidateField(
+  field: FieldDefinition,
+  fieldOverrides?: Partial<Record<string, FieldConfig>>,
+): boolean {
+  return !fieldOverrides?.[field.name]?.computed;
+}
+
+/**
  * Validate a single child row, returning per-column errors keyed by column name.
  */
 function validateChildRow(
@@ -63,6 +75,8 @@ function validateChildRow(
 ): Record<string, { type: string; message: string }> {
   const rowErrors: Record<string, { type: string; message: string }> = {};
   for (const field of fields) {
+    if (!shouldValidateField(field, fieldOverrides)) continue;
+
     const value = row[field.name];
     const error = validateField(field, value);
     if (error) {
@@ -92,6 +106,9 @@ function validateChildRow(
  *
  * If `children` is provided, the resolver also validates each child row against
  * its introspected schema and enforces `minRows` / `maxRows` constraints.
+ *
+ * Computed fields (those with `fieldOverrides[name].computed`) are skipped; they
+ * are derived from other form values rather than user input.
  *
  * @param fields - The {@link FieldDefinition} array to validate against (from {@link introspectTable}).
  * @param fieldOverrides - Optional per-field {@link FieldConfig} overrides, including custom `validate` functions.
@@ -138,6 +155,8 @@ export function createResolver(
     let hasErrors = false;
 
     for (const field of fields) {
+      if (!shouldValidateField(field, fieldOverrides)) continue;
+
       const value = values[field.name];
       const error = validateField(field, value);
 

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import type { UseFormReturn, FieldValues } from "react-hook-form";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
@@ -126,6 +126,75 @@ function ChildTableSection({
   );
 }
 
+/**
+ * Subscribes to all form value changes and pushes computed field values back
+ * into the form via `setValue` whenever any input changes.
+ *
+ * Uses `form.watch` with a subscription callback (rather than `useWatch`) so
+ * computed updates don't trigger component re-renders. A re-entrancy guard
+ * prevents the `setValue` calls made from inside the subscription from
+ * recursively triggering the subscription again.
+ *
+ * @internal
+ */
+function ComputedFieldRunner({
+  form,
+  computedFields,
+}: {
+  form: UseFormReturn<FieldValues>;
+  computedFields: Array<{ name: string; compute: (values: Record<string, unknown>) => unknown }>;
+}) {
+  // Track previously written values per field so we don't fire an update when
+  // the computed result is unchanged.
+  const lastValues = useRef<Record<string, unknown>>({});
+  // Re-entrancy guard: `form.setValue` triggers the watch subscription again,
+  // which would recursively call `run` — we ignore those nested invocations.
+  const isRunning = useRef(false);
+
+  useEffect(() => {
+    if (computedFields.length === 0) return;
+
+    const run = (rawValues: unknown) => {
+      if (isRunning.current) return;
+      isRunning.current = true;
+      try {
+        const snapshot = (rawValues ?? {}) as Record<string, unknown>;
+        for (const { name, compute } of computedFields) {
+          let next: unknown;
+          try {
+            next = compute(snapshot);
+          } catch {
+            // Swallow compute errors so a transient invalid state (e.g. mid-edit)
+            // does not crash the entire form.
+            continue;
+          }
+          if (!Object.is(lastValues.current[name], next)) {
+            lastValues.current[name] = next;
+            form.setValue(name, next as never, {
+              shouldDirty: false,
+              shouldTouch: false,
+              shouldValidate: false,
+            });
+          }
+        }
+      } finally {
+        isRunning.current = false;
+      }
+    };
+
+    // Seed once with the current values so the initial render is correct.
+    run(form.getValues());
+
+    const subscription = form.watch((value) => {
+      run(value);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [computedFields, form]);
+
+  return null;
+}
+
 function humaniseKey(key: string): string {
   return key
     .replace(/_/g, " ")
@@ -193,11 +262,14 @@ function buildDefaultValues({
  *
  * - **Create and edit modes** — `mode="create"` starts empty, `mode="edit"` pre-fills `data`.
  * - **Per-field overrides** via {@link FieldConfig}: labels, placeholders, hidden, defaults,
- *   custom components, custom validation, and `readOnly`.
+ *   custom components, custom validation, `readOnly`, and `computed`.
  * - **Column exclusion** via the `exclude` prop.
  * - **Parent-child / dynamic field arrays** via the `children` prop. Each entry is
  *   introspected like the parent table and rendered as a `useFieldArray` with add /
  *   remove / reorder controls.
+ * - **Computed fields** via `fields[name].computed`. Computed fields are recalculated
+ *   whenever any watched value changes (including child rows) and pushed into the
+ *   form via `setValue`.
  * - **External react-hook-form instances** via the `form` prop.
  *
  * @param plugin - A {@link FormPlugin} providing the UI components for rendering.
@@ -210,7 +282,7 @@ function buildDefaultValues({
  * const plugin = createFormPlugin({ components: joyComponents });
  * const AutoForm = createAutoForm(plugin);
  *
- * // Recipe + ingredients
+ * // Recipe + ingredients + computed totals
  * <AutoForm
  *   table={recipes}
  *   mode="create"
@@ -220,6 +292,14 @@ function buildDefaultValues({
  *       foreignKey: "recipe_id",
  *       minRows: 1,
  *       reorderable: true,
+ *     },
+ *   }}
+ *   fields={{
+ *     totalCalories: {
+ *       computed: (values) =>
+ *         (values.ingredients as Array<{ calories: number; amount: number }> ?? [])
+ *           .reduce((sum, ing) => sum + (ing.calories * ing.amount) / 100, 0),
+ *       readOnly: true,
  *     },
  *   }}
  *   onSubmit={async (values) => { ... }}
@@ -289,6 +369,18 @@ export function createAutoForm(plugin: FormPlugin) {
 
     const form = (externalForm as UseFormReturn<FieldValues> | undefined) ?? internalForm;
 
+    // Collect computed parent fields up front so the runner can iterate them.
+    const computedFields = useMemo(() => {
+      const list: Array<{ name: string; compute: (values: Record<string, unknown>) => unknown }> = [];
+      if (!fieldOverrides) return list;
+      for (const [name, override] of Object.entries(fieldOverrides)) {
+        if (override?.computed) {
+          list.push({ name, compute: override.computed });
+        }
+      }
+      return list;
+    }, [fieldOverrides]);
+
     const handleSubmit = form.handleSubmit(async (values) => {
       // Stamp the parent's foreign-key column placeholder onto each child row.
       // The actual parent id is unknown until the row is saved server-side, so
@@ -329,7 +421,7 @@ export function createAutoForm(plugin: FormPlugin) {
               label={label}
               placeholder={override?.placeholder}
               required={field.required}
-              readOnly={override?.readOnly}
+              readOnly={override?.readOnly || !!override?.computed}
               error={error}
               enumValues={field.enumValues}
               register={form.register}
@@ -359,6 +451,7 @@ export function createAutoForm(plugin: FormPlugin) {
               />
             );
           })}
+        <ComputedFieldRunner form={form} computedFields={computedFields} />
         <SubmitButton isSubmitting={form.formState.isSubmitting}>
           Submit
         </SubmitButton>

@@ -25,6 +25,10 @@ export function buildEmptyChildRow(
       row[field.name] = override.default;
       continue;
     }
+    if (override?.computed !== undefined) {
+      // Computed fields will be filled in by the watcher; leave undefined for now.
+      continue;
+    }
     if (field.inputType === "checkbox") {
       row[field.name] = false;
     } else if (field.inputType === "number") {
@@ -124,7 +128,7 @@ export function DefaultChildTable({
                 label={override?.label ?? field.label}
                 placeholder={override?.placeholder}
                 required={field.required}
-                readOnly={override?.readOnly}
+                readOnly={override?.readOnly || !!override?.computed}
                 error={typeof message === "string" ? message : undefined}
                 enumValues={field.enumValues}
                 register={form.register}

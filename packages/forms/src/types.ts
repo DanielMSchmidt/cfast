@@ -105,9 +105,32 @@ export type FieldConfig = {
   validate?: (value: unknown) => string | undefined;
   /**
    * Mark the field as read-only. Read-only fields are still rendered and submitted
-   * but cannot be edited by the user.
+   * but cannot be edited by the user. Pairs naturally with `computed`.
    */
   readOnly?: boolean;
+  /**
+   * Compute this field's value from the rest of the form values. The function is
+   * re-evaluated whenever any watched form value changes, and the result is written
+   * back into the form via `setValue` so it shows up in the rendered input and the
+   * submitted payload.
+   *
+   * Computed fields are typically combined with `readOnly: true`.
+   *
+   * @example
+   * ```ts
+   * fields: {
+   *   totalCalories: {
+   *     computed: (values) =>
+   *       values.ingredients.reduce(
+   *         (sum, ing) => sum + (ing.calories * ing.amount) / 100,
+   *         0,
+   *       ),
+   *     readOnly: true,
+   *   },
+   * }
+   * ```
+   */
+  computed?: (values: Record<string, unknown>) => unknown;
 };
 
 /**

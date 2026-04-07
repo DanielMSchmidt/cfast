@@ -176,7 +176,7 @@ function JoyChildTable({
                     label={override?.label ?? field.label}
                     placeholder={override?.placeholder}
                     required={field.required}
-                    readOnly={override?.readOnly}
+                    readOnly={override?.readOnly || !!override?.computed}
                     error={typeof message === "string" ? message : undefined}
                     enumValues={field.enumValues}
                     register={form.register}

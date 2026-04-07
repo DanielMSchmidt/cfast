@@ -1260,6 +1260,46 @@ add/remove buttons. The child primary key and the foreign-key column are
 automatically excluded from the row UI (the action layer stamps the parent
 id after creating the parent).
 
+### Computed Fields
+
+Use `fields[name].computed` to declare derived values that auto-recalculate
+when any dependency changes. Combined with `readOnly: true` for display-only
+computed totals.
+
+```typescript
+<AutoForm
+  table={recipes}
+  mode="create"
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipe_id",
+      minRows: 1,
+    },
+  }}
+  fields={{
+    totalCalories: {
+      readOnly: true,
+      computed: (values) => {
+        const rows = (values.ingredients as Array<{
+          calories: number;
+          amount: number;
+        }>) ?? [];
+        return rows.reduce(
+          (sum, ing) => sum + (ing.calories * ing.amount) / 100,
+          0,
+        );
+      },
+    },
+  }}
+  onSubmit={handleSubmit}
+/>;
+```
+
+Computed fields are skipped by the validation resolver — they are derived
+from other inputs rather than user-provided — so they can be backed by
+NOT NULL columns without tripping the required-field check.
+
 ### UI Library Plugins
 
 ```typescript
