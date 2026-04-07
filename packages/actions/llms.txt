@@ -174,3 +174,8 @@ function PostActions({ postId }) {
 - Using `createAction` directly without first calling `createActions` to set up the factory. `createAction` is returned by `createActions`, not a standalone export.
 - Omitting the `_action` hidden input in forms when using `composeActions`. The discriminator field is required to route to the correct handler.
 - Calling `useActions` with the wrong descriptor. Use `composed.client` for composed actions, or `singleAction.client` for a single action.
+
+## See Also
+
+- `@cfast/db` -- Permission descriptors come from Operation results.
+- `@cfast/permissions` -- Defines the grants enforced by action permissions.
