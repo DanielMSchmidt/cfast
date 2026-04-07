@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createQueryBuilder } from "../query-builder";
-import { posts, schema, createMockD1, grantsForRole } from "./helpers";
+import { posts, schema, createMockD1, grantsForRole, lookupTestConfig } from "./helpers";
 
 describe("QueryBuilder", () => {
   describe("findMany", () => {
@@ -12,6 +12,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       const op = qb.findMany();
@@ -27,6 +28,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: true,
+        ...lookupTestConfig(),
       });
 
       const op = qb.findMany();
@@ -43,6 +45,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       const op = qb.findFirst();
@@ -57,6 +60,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: true,
+        ...lookupTestConfig(),
       });
 
       const op = qb.findFirst();
@@ -73,6 +77,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       // No need to wrap in compose() for a single read.
@@ -87,6 +92,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       await expect(qb.findFirst().run()).resolves.toBeUndefined();
@@ -103,6 +109,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       await qb.findMany({ limit: 12 }).run();
@@ -122,6 +129,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       await qb.findMany({ limit: 12, offset: 24 }).run();
@@ -142,6 +150,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       // Drizzle requires limit when offset is set; we still want the API to
@@ -160,6 +169,7 @@ describe("QueryBuilder", () => {
         user: { id: "user-1" },
         table: posts,
         unsafe: false,
+        ...lookupTestConfig(),
       });
 
       // Page 3 of 12-per-page = offset 24, limit 12.

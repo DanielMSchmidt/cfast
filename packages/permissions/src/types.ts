@@ -114,12 +114,67 @@ export const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", 
  *
  * @param columns - The table's column references for building filter expressions.
  * @param user - The current user object (from `@cfast/auth`).
+ * @param lookups - Resolved values from the grant's `with` map (see {@link Grant.with}).
+ *   Empty object when the grant declares no `with` map. Each key holds the awaited
+ *   result of the lookup function with the same name.
  * @returns A Drizzle SQL expression to restrict matching rows, or `undefined` for no restriction.
  */
 export type WhereClause = (
   columns: Record<string, unknown>,
   user: unknown,
+  lookups: Record<string, unknown>,
 ) => DrizzleSQL | undefined;
+
+/**
+ * Minimal structural type for the read-only database handle passed to grant
+ * `with` lookup functions.
+ *
+ * Defined here so the permissions package stays independent of `@cfast/db`.
+ * The runtime instance is provided by `@cfast/db` (an unsafe-mode db) and
+ * is structurally compatible with this interface, so authors can call
+ * `db.query(table).findMany().run()` inside a lookup without casting.
+ *
+ * The `query` method is intentionally typed loosely (`unknown` arguments and
+ * results) to avoid pulling Drizzle generics into the permissions surface.
+ * Authors typically know exactly which table they are querying and cast the
+ * result inline.
+ */
+export interface LookupDb {
+  query: (table: DrizzleTable | string) => {
+    findMany: (options?: unknown) => { run: (params?: unknown) => Promise<unknown[]> };
+    findFirst: (options?: unknown) => { run: (params?: unknown) => Promise<unknown> };
+  };
+}
+
+/**
+ * A single prerequisite lookup function for a grant's `with` map.
+ *
+ * Lookups run **before** the main query and their resolved values are passed
+ * as the third argument to the grant's {@link WhereClause}. Use them to gather
+ * data from other tables that a row-level filter depends on (for example,
+ * the set of friend ids that a user can see content for).
+ *
+ * Lookups receive an unsafe-mode db handle so they can read freely without
+ * recursively triggering permission checks. Their results are cached for the
+ * lifetime of the per-request `Db` instance, so a single lookup runs at most
+ * once even when the same grant is consulted multiple times.
+ *
+ * @typeParam TUser - The user type (typed via `definePermissions<TUser>`).
+ */
+export type LookupFn<TUser = unknown> = (
+  user: TUser,
+  db: LookupDb,
+) => Promise<unknown> | unknown;
+
+/**
+ * A map of named prerequisite lookups for a grant.
+ *
+ * Each value is a {@link LookupFn} whose resolved result is passed to the
+ * grant's `where` clause via the third `lookups` argument under the same key.
+ *
+ * @typeParam TUser - The user type (typed via `definePermissions<TUser>`).
+ */
+export type WithLookups<TUser = unknown> = Record<string, LookupFn<TUser>>;
 
 /**
  * A single permission grant: an action on a subject, optionally restricted by a `where` clause.
@@ -138,6 +193,37 @@ export type Grant = {
    * or `"all"` for every table.
    */
   subject: DrizzleTable | string;
+  /**
+   * Optional prerequisite lookups that resolve **before** the main query and
+   * are passed to the {@link where} clause as its third argument.
+   *
+   * Each lookup receives the current user and an unsafe-mode db handle and
+   * may return any value (synchronously or as a promise). Results are cached
+   * per `Db` instance, so a single lookup runs at most once per request even
+   * when the same grant participates in multiple queries.
+   *
+   * @example
+   * ```ts
+   * grant("read", recipes, {
+   *   with: {
+   *     friendIds: async (user, db) => {
+   *       const rows = await db
+   *         .query(friendGrants)
+   *         .findMany({ where: eq(friendGrants.grantee, user.id) })
+   *         .run();
+   *       return (rows as { target: string }[]).map((r) => r.target);
+   *     },
+   *   },
+   *   where: (recipe, user, { friendIds }) =>
+   *     or(
+   *       eq(recipe.visibility, "public"),
+   *       eq(recipe.authorId, user.id),
+   *       inArray(recipe.authorId, friendIds as string[]),
+   *     ),
+   * });
+   * ```
+   */
+  with?: WithLookups;
   /** Optional row-level filter that restricts which rows this grant covers. */
   where?: WhereClause;
 };
@@ -154,10 +240,28 @@ export type Grant = {
  * @typeParam TTables - Optional schema map (e.g. `typeof schema`) used to
  *   constrain string subjects to known table-name literals.
  */
-export type GrantFn<TUser, TTables extends SchemaMap = SchemaMap> = (
+export type GrantFn<TUser, TTables extends SchemaMap = SchemaMap> = <
+  TWith extends WithLookups<TUser> = WithLookups<TUser>,
+>(
   action: PermissionAction,
   subject: SubjectInput<TTables>,
-  options?: { where?: (columns: Record<string, unknown>, user: TUser) => DrizzleSQL | undefined },
+  options?: {
+    /**
+     * Prerequisite lookups whose resolved values are passed to {@link where}
+     * via its third argument. See {@link Grant.with}.
+     */
+    with?: TWith;
+    /**
+     * Row-level filter. The third argument exposes the resolved values from
+     * {@link with}, keyed by the same names; pass an empty `with` map (or
+     * omit it) when the filter does not need cross-table data.
+     */
+    where?: (
+      columns: Record<string, unknown>,
+      user: TUser,
+      lookups: { [K in keyof TWith]: Awaited<ReturnType<TWith[K]>> },
+    ) => DrizzleSQL | undefined;
+  },
 ) => Grant;
 
 /**

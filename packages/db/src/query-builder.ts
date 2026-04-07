@@ -2,10 +2,10 @@ import { count } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import type { Column, SQL } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
-import type { Grant, DrizzleTable } from "@cfast/permissions";
+import type { Grant, DrizzleTable, LookupDb } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
-import type { User } from "./utils";
+import type { LookupCache, User } from "./utils";
 import { decodeCursor, encodeCursor, buildCursorWhere, getPrimaryKeyColumns } from "./paginate";
 import type { Operation, FindManyOptions, FindFirstOptions, CursorPage, OffsetPage, PaginateOptions } from "./types";
 import type { CursorParams, OffsetParams } from "./types";
@@ -17,6 +17,10 @@ type QueryBuilderConfig = {
   user: User | null;
   table: DrizzleTable;
   unsafe: boolean;
+  /** Per-request cache for grant `with` lookup results. */
+  lookupCache: LookupCache;
+  /** Lazily resolved unsafe sibling Db used as the LookupDb for `with` lookups. */
+  getLookupDb: () => LookupDb;
 };
 
 /**
@@ -69,8 +73,14 @@ function buildQueryOperation<TResult>(
         checkOperationPermissions(config.grants, permissions);
       }
 
-      const permFilter = buildPermissionFilter(
-        config.grants, "read", config.table, config.user, config.unsafe,
+      const permFilter = await buildPermissionFilter(
+        config.grants,
+        "read",
+        config.table,
+        config.user,
+        config.unsafe,
+        config.getLookupDb,
+        config.lookupCache,
       );
       const userWhere = options?.where as SQL | undefined;
       const combinedWhere = combineWhere(userWhere, permFilter);
@@ -133,12 +143,18 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
         return tableKey;
       }
 
-      function checkAndBuildWhere(extraWhere?: SQL | undefined) {
+      async function checkAndBuildWhere(extraWhere?: SQL | undefined) {
         if (!config.unsafe) {
           checkOperationPermissions(config.grants, permissions);
         }
-        const permFilter = buildPermissionFilter(
-          config.grants, "read", config.table, config.user, config.unsafe,
+        const permFilter = await buildPermissionFilter(
+          config.grants,
+          "read",
+          config.table,
+          config.user,
+          config.unsafe,
+          config.getLookupDb,
+          config.lookupCache,
         );
         return combineWhere(
           combineWhere(options?.where as SQL | undefined, permFilter),
@@ -183,7 +199,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
               ? buildCursorWhere(cursorColumns, cursorValues, direction)
               : undefined;
 
-            const combinedWhere = checkAndBuildWhere(cursorWhere);
+            const combinedWhere = await checkAndBuildWhere(cursorWhere);
             const queryOptions = buildBaseQueryOptions(combinedWhere);
             queryOptions.limit = params.limit + 1;
 
@@ -209,7 +225,7 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
         permissions,
         async run(_params?: Record<string, unknown>): Promise<OffsetPage<unknown>> {
           const key = ensureTableKey();
-          const combinedWhere = checkAndBuildWhere();
+          const combinedWhere = await checkAndBuildWhere();
           const queryOptions = buildBaseQueryOptions(combinedWhere);
           queryOptions.limit = params.limit;
           queryOptions.offset = (params.page - 1) * params.limit;

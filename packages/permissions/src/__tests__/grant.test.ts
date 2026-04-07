@@ -49,4 +49,22 @@ describe("grant", () => {
     expect(g.subject).toBe("projects");
     expect(g.where).toBe(whereFn);
   });
+
+  it("accepts an optional with map of prerequisite lookups", () => {
+    const whereFn: WhereClause = (_columns, _user, _lookups) => ({
+      getSQL: () => ({}),
+    });
+    const withMap = {
+      friendIds: () => Promise.resolve(["friend-1"]),
+      teamIds: () => Promise.resolve(["team-a"]),
+    };
+    const g = grant("read", posts, { with: withMap, where: whereFn });
+    expect(g.with).toBe(withMap);
+    expect(g.where).toBe(whereFn);
+  });
+
+  it("with map is undefined when not provided", () => {
+    const g = grant("read", posts);
+    expect(g.with).toBeUndefined();
+  });
 });

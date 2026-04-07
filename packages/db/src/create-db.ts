@@ -1,10 +1,10 @@
 import { drizzle } from "drizzle-orm/d1";
 import type { BatchItem } from "drizzle-orm/batch";
-import type { DrizzleTable } from "@cfast/permissions";
+import type { DrizzleTable, LookupDb } from "@cfast/permissions";
 import { createQueryBuilder } from "./query-builder";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "./mutate-builder";
 import { createCacheManager, type CacheManager } from "./cache";
-import { deduplicateDescriptors } from "./utils";
+import { createLookupCache, deduplicateDescriptors, type LookupCache } from "./utils";
 import { checkOperationPermissions } from "./permissions";
 import { getBatchable } from "./batchable";
 import type {
@@ -45,10 +45,19 @@ import type {
  * ```
  */
 export function createDb(config: DbConfig): Db {
-  return buildDb(config, false);
+  // Each `createDb()` call (typically per request) gets its own lookup cache.
+  // The cache is shared between the safe Db and its unsafe sibling so a
+  // grant's `with` lookups still hit the cache when the safe Db delegates the
+  // lookup queries to the unsafe sibling.
+  const lookupCache = createLookupCache();
+  return buildDb(config, false, lookupCache);
 }
 
-function buildDb(config: DbConfig, isUnsafe: boolean): Db {
+function buildDb(
+  config: DbConfig,
+  isUnsafe: boolean,
+  lookupCache: LookupCache,
+): Db {
   const cacheManager: CacheManager | null =
     config.cache === false
       ? null
@@ -58,7 +67,23 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
     cacheManager?.invalidateTable(tableName);
   };
 
-  return {
+  // Lazily build the unsafe sibling — used as the LookupDb passed to grant
+  // `with` lookups. We only need it when at least one grant declares a `with`
+  // map, and constructing it eagerly would needlessly recurse for every Db
+  // instance even when no cross-table grants exist.
+  let lookupDbCache: LookupDb | null = null;
+  const getLookupDb = (): LookupDb => {
+    if (lookupDbCache) return lookupDbCache;
+    // The unsafe sibling shares the same lookup cache so a lookup that runs
+    // through the unsafe handle still benefits from per-request memoization
+    // (and never accidentally diverges from the safe Db's cache state).
+    lookupDbCache = isUnsafe
+      ? (db as unknown as LookupDb)
+      : (buildDb(config, true, lookupCache) as unknown as LookupDb);
+    return lookupDbCache;
+  };
+
+  const db: Db = {
     query<TTable extends DrizzleTable>(table: TTable): QueryBuilder<TTable> {
       // The runtime builder is row-type-erased; the generic on `query` exists
       // purely to propagate `InferRow<TTable>` to callers.
@@ -69,6 +94,8 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         user: config.user,
         table,
         unsafe: isUnsafe,
+        lookupCache,
+        getLookupDb,
       }) as unknown as QueryBuilder<TTable>;
     },
 
@@ -81,6 +108,8 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         table,
         unsafe: isUnsafe,
         onMutate,
+        lookupCache,
+        getLookupDb,
       }) as unknown as InsertBuilder<TTable>;
     },
 
@@ -93,6 +122,8 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         table,
         unsafe: isUnsafe,
         onMutate,
+        lookupCache,
+        getLookupDb,
       }) as unknown as UpdateBuilder<TTable>;
     },
 
@@ -105,11 +136,15 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         table,
         unsafe: isUnsafe,
         onMutate,
+        lookupCache,
+        getLookupDb,
       }) as unknown as DeleteBuilder<TTable>;
     },
 
     unsafe() {
-      return buildDb(config, true);
+      // Reuse the same per-request lookup cache so safe + unsafe siblings
+      // never duplicate the same lookup work.
+      return buildDb(config, true, lookupCache);
     },
 
     batch(operations: Operation<unknown>[]): Operation<unknown[]> {
@@ -139,6 +174,14 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
 
           if (everyOpBatchable) {
             const sharedDb = drizzle(config.d1, { schema: config.schema });
+            // Resolve any async preparation work (e.g. permission `with`
+            // lookups for update/delete) before invoking the synchronous
+            // `build()` step. We can't make `build()` itself async because
+            // Drizzle queries are thenables and would self-execute when
+            // awaited.
+            await Promise.all(
+              batchables.map((b) => b!.prepare?.() ?? Promise.resolve()),
+            );
             const items = batchables.map((b) => b!.build(sharedDb));
             // Drizzle's `db.batch()` requires a non-empty tuple type, so we
             // cast at the boundary -- the array is guaranteed non-empty here.
@@ -185,4 +228,5 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
       },
     },
   };
+  return db;
 }

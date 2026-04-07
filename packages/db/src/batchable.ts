@@ -23,6 +23,17 @@ export const BATCHABLE = Symbol.for("@cfast/db/batchable");
  * @internal
  */
 export type BatchableMeta = {
+  /**
+   * Optional async preparation step. Resolved by the batch runner **before**
+   * `build()` is invoked, so mutate operations can fetch permission `with`
+   * lookups (cross-table prerequisite reads) and stash the resulting WHERE
+   * clause in a closure that `build()` can read synchronously.
+   *
+   * Drizzle query objects are thenables — `await drizzleQuery` actually
+   * executes the query — so `build()` itself **must** stay synchronous to
+   * avoid being awaited.
+   */
+  prepare?: () => Promise<void>;
   /** Builds the Drizzle query (un-executed) for this operation. */
   build: (drizzleDb: ReturnType<typeof drizzle>) => BatchItem<"sqlite">;
   /** The cache table name to invalidate after the batch commits. */

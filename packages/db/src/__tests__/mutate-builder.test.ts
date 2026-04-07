@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "../mutate-builder";
-import { posts, schema, createMockD1, grantsForRole } from "./helpers";
+import { posts, schema, createMockD1, grantsForRole, lookupTestConfig } from "./helpers";
 
 describe("InsertBuilder", () => {
   it("returns Operation with create permission", () => {
@@ -11,6 +11,7 @@ describe("InsertBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = builder.values({ title: "Hello" });
@@ -26,6 +27,7 @@ describe("InsertBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = builder.values({ title: "Hello" }).returning();
@@ -41,6 +43,7 @@ describe("InsertBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: true,
+      ...lookupTestConfig(),
     });
 
     expect(builder.values({ title: "Hello" }).permissions).toEqual([]);
@@ -56,6 +59,7 @@ describe("InsertBuilder", () => {
       table: posts,
       unsafe: false,
       onMutate,
+      ...lookupTestConfig(),
     });
 
     await builder.values({ title: "Hello" }).run({});
@@ -72,6 +76,7 @@ describe("InsertBuilder", () => {
       table: posts,
       unsafe: false,
       onMutate,
+      ...lookupTestConfig(),
     });
 
     // Single insert with no compose() and no params object.
@@ -89,6 +94,7 @@ describe("InsertBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     // .returning().run() should also work without params.
@@ -107,6 +113,7 @@ describe("UpdateBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = builder.set({ published: true }).where(undefined);
@@ -121,6 +128,7 @@ describe("UpdateBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = builder.set({ published: true }).where(undefined).returning();
@@ -135,6 +143,7 @@ describe("UpdateBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: true,
+      ...lookupTestConfig(),
     });
 
     expect(builder.set({}).where(undefined).permissions).toEqual([]);
@@ -148,6 +157,7 @@ describe("UpdateBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     await expect(
@@ -165,6 +175,7 @@ describe("DeleteBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = builder.where(undefined);
@@ -179,6 +190,7 @@ describe("DeleteBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: true,
+      ...lookupTestConfig(),
     });
 
     expect(builder.where(undefined).permissions).toEqual([]);
@@ -192,6 +204,7 @@ describe("DeleteBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = builder.where(undefined).returning();
@@ -206,6 +219,7 @@ describe("DeleteBuilder", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     await expect(builder.where(undefined).run()).resolves.toBeUndefined();
