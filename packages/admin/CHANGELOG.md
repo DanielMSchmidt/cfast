@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.2.2...@cfast/admin-v0.2.3) (2026-04-07)
+
+
+### Bug Fixes
+
+* **admin,forms,joy:** rewrite mui directory imports for vitest 4 compatibility ([#133](https://github.com/DanielMSchmidt/cfast/issues/133)) ([0c21d87](https://github.com/DanielMSchmidt/cfast/commit/0c21d8776c4f46895a41aa7196664edd7a0472b3))
+
 ## [0.2.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.2.1...@cfast/admin-v0.2.2) (2026-04-07)
 
 

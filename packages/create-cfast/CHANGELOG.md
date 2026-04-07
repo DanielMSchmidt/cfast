@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.2](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.2.1...create-cfast-v0.2.2) (2026-04-07)
+
+
+### Bug Fixes
+
+* **core:** plugin context inference and runtime dependency validation ([#134](https://github.com/DanielMSchmidt/cfast/issues/134)) ([5a8e9aa](https://github.com/DanielMSchmidt/cfast/commit/5a8e9aa18456d804f80075a12b2de7009f1bdc70)), closes [#110](https://github.com/DanielMSchmidt/cfast/issues/110)
+* **create-cfast:** template fixes from demo app dogfooding ([#132](https://github.com/DanielMSchmidt/cfast/issues/132)) ([d17746c](https://github.com/DanielMSchmidt/cfast/commit/d17746c72d2c6ad50871bbafabacd4ae387c8a1b))
+* document self-referential FK pattern and @cfast/env API key bindings ([#130](https://github.com/DanielMSchmidt/cfast/issues/130)) ([6338b5d](https://github.com/DanielMSchmidt/cfast/commit/6338b5dabef54d377479f11258fec9143bf58be6))
+
 ## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.2.0...create-cfast-v0.2.1) (2026-04-07)
 
 
