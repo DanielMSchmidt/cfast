@@ -1,3 +1,4 @@
+import path from "node:path";
 import prompts from "prompts";
 import { green } from "kolorist";
 import type { CliArgs, Config, FeatureName, UiLibrary } from "./types";
@@ -14,9 +15,12 @@ const FEATURE_LABELS: Record<FeatureName, string> = {
 };
 
 export async function promptForConfig(args: CliArgs): Promise<Config | null> {
-  // Project name
-  let projectName = args.projectName;
-  if (!projectName) {
+  // User input: may be a bare name ("my-app"), a relative path ("./my-app"),
+  // or an absolute path ("/tmp/my-app"). We treat the raw value as the target
+  // directory and derive the project name from its basename so that
+  // package.json, wrangler.toml bindings, etc. don't contain the full path.
+  let rawInput = args.projectName;
+  if (!rawInput) {
     const result = await prompts({
       type: "text",
       name: "projectName",
@@ -24,8 +28,10 @@ export async function promptForConfig(args: CliArgs): Promise<Config | null> {
       initial: "my-cfast-app",
     });
     if (!result.projectName) return null;
-    projectName = result.projectName as string;
+    rawInput = result.projectName as string;
   }
+
+  const projectName = path.basename(path.resolve(rawInput));
 
   // Features
   const hasAnyFeatureFlag = FEATURE_NAMES.some((f) => args[f]) || args.all;
@@ -85,7 +91,7 @@ export async function promptForConfig(args: CliArgs): Promise<Config | null> {
     }
   }
 
-  const targetDir = projectName;
+  const targetDir = rawInput;
 
   return resolveConfig({
     projectName,
