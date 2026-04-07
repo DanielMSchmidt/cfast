@@ -10,7 +10,7 @@ function printNextSteps(config: Config): void {
   console.log(green(`✔ Scaffolded ${bold(config.projectName)}/`));
   console.log();
   console.log("  Next steps:");
-  console.log(cyan(`    cd ${config.projectName}`));
+  console.log(cyan(`    cd ${config.targetDir}`));
   console.log(cyan(`    pnpm install`));
   console.log(cyan(`    pnpm dev`));
 
