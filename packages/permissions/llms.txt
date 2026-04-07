@@ -71,11 +71,61 @@ type Permissions<TRoles> = {
 
 ### `grant(action, subject, options?): Grant`
 ```typescript
-grant(action: PermissionAction, subject: DrizzleTable | string, options?: { where?: WhereClause }): Grant
+grant(action: PermissionAction, subject: DrizzleTable | string, options?: {
+  with?: WithLookups;
+  where?: WhereClause;
+}): Grant
 ```
 - `PermissionAction`: `"read" | "create" | "update" | "delete" | "manage"`
-- `WhereClause`: `(columns, user) => DrizzleSQL | undefined`
+- `WhereClause`: `(columns, user, lookups) => DrizzleSQL | undefined`
+- `WithLookups`: `Record<string, (user, db) => Promise<unknown> | unknown>`
 - `subject` may be a Drizzle table object, a string table name (e.g. `"projects"`), or `"all"`. String and object forms are interchangeable at runtime — both are normalized to the same key by `getTableName()`. To get compile-time validation that a string subject is a known table, use the `definePermissions<User, typeof schema>()` curried form.
+
+#### Cross-table grants via `with`
+
+When a row-level filter needs data from another table (e.g. "recipes are visible if the user is in the recipe author's friend list"), declare the prerequisite read in the `with` map. Each entry runs **before** the main query, its result is passed to `where` under the same name, and results are cached per-request via the `Db` instance — a lookup runs at most once per request even when consulted by multiple queries.
+
+```typescript
+import { definePermissions } from "@cfast/permissions";
+import { eq, inArray, or } from "drizzle-orm";
+import * as schema from "./schema";
+const { recipes, friendGrants } = schema;
+
+type AppUser = { id: string; roles: string[] };
+
+export const permissions = definePermissions<AppUser, typeof schema>()({
+  roles: ["user"] as const,
+  grants: (g) => ({
+    user: [
+      g("read", recipes, {
+        with: {
+          // db is an unsafe-mode handle so the lookup itself isn't filtered.
+          friendIds: async (user, db) => {
+            const rows = await db
+              .query(friendGrants)
+              .findMany({ where: eq(friendGrants.grantee, user.id) })
+              .run();
+            return (rows as { target: string }[]).map((r) => r.target);
+          },
+        },
+        where: (recipe, user, { friendIds }) =>
+          or(
+            eq(recipe.visibility, "public"),
+            eq(recipe.authorId, user.id),
+            inArray(recipe.authorId, friendIds as string[]),
+          ),
+      }),
+    ],
+  }),
+});
+```
+
+Notes on `with` semantics:
+- Lookup functions receive the user and a `LookupDb` (the unsafe sibling of the per-request `Db`); they may return any value, sync or async.
+- Multiple lookups in a single grant resolve in **parallel** before the where clause is invoked.
+- Results live in a per-`Db` cache keyed by grant identity, so the same grant participating in many `findMany`/`findFirst`/`paginate`/`update`/`delete` calls during one request only triggers each lookup once.
+- A sibling **unrestricted** grant (e.g. an admin role) collapses the group, so the lookup is skipped entirely.
+- A `with`-grant is never folded into another grant's `where` closure during `resolveGrants` — it stays a standalone grant so its lookup map can resolve independently.
 
 ### `checkPermissions(role, permissions, descriptors): PermissionCheckResult`
 ```typescript

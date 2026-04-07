@@ -106,7 +106,7 @@ export function resolveGrants(
     {
       action: Grant["action"];
       subject: Grant["subject"];
-      wheres: Array<Grant["where"]>;
+      grants: Grant[];
     }
   >();
 
@@ -129,43 +129,65 @@ export function resolveGrants(
     const key = `${g.action}:${getSubjectKey(g.subject)}`;
     let group = groups.get(key);
     if (!group) {
-      group = { action: g.action, subject: g.subject, wheres: [] };
+      group = { action: g.action, subject: g.subject, grants: [] };
       groups.set(key, group);
     }
-    group.wheres.push(g.where);
+    group.grants.push(g);
   }
 
   // Build merged grants
   const result: Grant[] = [];
   for (const group of groups.values()) {
-    const hasUnrestricted = group.wheres.some((w) => w === undefined);
+    const hasUnrestricted = group.grants.some((g) => !g.where);
 
+    // Any unrestricted grant collapses the entire group: the user can access
+    // every row, so any restricted siblings (and their `with` lookups) are
+    // moot and can be discarded.
     if (hasUnrestricted) {
       result.push({ action: group.action, subject: group.subject });
-    } else {
-      const whereFns = group.wheres.filter(
-        (w): w is NonNullable<Grant["where"]> => w !== undefined,
+      continue;
+    }
+
+    // Grants that declare prerequisite `with` lookups can't be folded into a
+    // single closure with sibling grants — each one needs its own resolved
+    // lookup map at execution time. Emit them as standalone grants so the db
+    // layer can resolve their lookups independently and OR-combine the
+    // resulting filters at run() time.
+    const withLookups = group.grants.filter((g) => g.with !== undefined);
+    const plain = group.grants.filter((g) => g.with === undefined && g.where);
+
+    for (const g of withLookups) {
+      result.push({
+        action: group.action,
+        subject: group.subject,
+        with: g.with,
+        where: g.where,
+      });
+    }
+
+    if (plain.length === 1) {
+      result.push({
+        action: group.action,
+        subject: group.subject,
+        where: plain[0].where,
+      });
+    } else if (plain.length > 1) {
+      const whereFns = plain.map(
+        (g) => g.where as NonNullable<Grant["where"]>,
       );
-
-      if (whereFns.length === 1) {
-        result.push({
-          action: group.action,
-          subject: group.subject,
-          where: whereFns[0],
-        });
-      } else {
-        // OR-merge all where clauses
-        const merged: Grant["where"] = (columns, user) =>
-          or(
-            ...whereFns.map((fn) => toSQLWrapper(fn(columns, user))),
-          );
-
-        result.push({
-          action: group.action,
-          subject: group.subject,
-          where: merged,
-        });
-      }
+      // OR-merge plain (no-`with`) where clauses, threading the empty lookup
+      // map so the merged closure satisfies the standard WhereClause shape.
+      const merged: Grant["where"] = (columns, user, lookups) =>
+        or(
+          ...whereFns.map((fn) =>
+            toSQLWrapper(fn(columns, user, lookups)),
+          ),
+        );
+      result.push({
+        action: group.action,
+        subject: group.subject,
+        where: merged,
+      });
     }
   }
 

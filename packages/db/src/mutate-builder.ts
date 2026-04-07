@@ -1,10 +1,15 @@
 import { drizzle } from "drizzle-orm/d1";
 import type { SQL } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
-import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
+import type {
+  Grant,
+  PermissionDescriptor,
+  DrizzleTable,
+  LookupDb,
+} from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions, getTableName } from "./utils";
-import type { User } from "./utils";
+import type { LookupCache, User } from "./utils";
 import type { Operation } from "./types";
 import { BATCHABLE, type BatchableMeta } from "./batchable";
 
@@ -16,6 +21,10 @@ type MutateBuilderConfig = {
   table: DrizzleTable;
   unsafe: boolean;
   onMutate?: (tableName: string) => void;
+  /** Per-request cache for grant `with` lookup results. */
+  lookupCache: LookupCache;
+  /** Lazily resolved unsafe sibling Db used as the LookupDb for `with` lookups. */
+  getLookupDb: () => LookupDb;
 };
 
 function checkIfNeeded(config: MutateBuilderConfig, grants: Grant[], permissions: PermissionDescriptor[]): void {
@@ -31,6 +40,12 @@ function checkIfNeeded(config: MutateBuilderConfig, grants: Grant[], permissions
  *
  * The `returning` flag toggles whether the built query has `.returning()`
  * appended (for `.returning().run()` paths).
+ *
+ * **Synchronous on purpose**: Drizzle query objects are thenables (`await`ing
+ * one executes it), so the build step that hands queries to `db.batch()` must
+ * never go through `await`. Permission `with` lookups that need async work
+ * are resolved by a separate {@link MutationPrepareFn} step before `build()`
+ * is invoked.
  */
 type DrizzleDb = ReturnType<typeof drizzle>;
 type BuildQueryFn = (
@@ -44,11 +59,20 @@ type BuildQueryFn = (
   execute: (returning: boolean) => Promise<unknown>;
 };
 
+/**
+ * Optional async preparation step for a mutation. Resolves any permission
+ * `with` lookups (cross-table prerequisite reads) so the subsequent
+ * synchronous `build()` step can read the resulting WHERE clause from a
+ * closure-cached value. Idempotent: calling more than once is harmless.
+ */
+type MutationPrepareFn = () => Promise<void>;
+
 function buildMutationWithReturning(
   config: MutateBuilderConfig,
   permissions: PermissionDescriptor[],
   tableName: string,
   buildQuery: BuildQueryFn,
+  prepareFn?: MutationPrepareFn,
 ): Operation<void> & { returning: () => Operation<unknown> } {
   // Construct the per-builder Drizzle instance once so .run() and the BATCHABLE
   // hook share state (cached prepared statements, etc.).
@@ -56,6 +80,7 @@ function buildMutationWithReturning(
 
   const runOnce = async (returning: boolean): Promise<unknown> => {
     checkIfNeeded(config, config.grants, permissions);
+    if (prepareFn) await prepareFn();
     const built = buildQuery(drizzleDb, returning);
     const result = await built.execute(returning);
     config.onMutate?.(tableName);
@@ -80,6 +105,7 @@ function buildMutationWithReturning(
       // The returning() variant carries the same query (with `.returning()`
       // appended) so it can also participate in native batches.
       returningOp[BATCHABLE] = {
+        prepare: prepareFn,
         build: (sharedDb) => buildQuery(sharedDb, true).query,
         tableName,
         withResult: true,
@@ -89,6 +115,7 @@ function buildMutationWithReturning(
   };
 
   baseOp[BATCHABLE] = {
+    prepare: prepareFn,
     build: (sharedDb) => buildQuery(sharedDb, false).query,
     tableName,
     withResult: false,
@@ -112,6 +139,9 @@ export function createInsertBuilder(config: MutateBuilderConfig) {
 
   return {
     values(values: Record<string, unknown>) {
+      // Inserts don't carry a permission WHERE clause (creation is boolean
+      // can/can't), so the build step is fully synchronous and no prepare()
+      // step is needed.
       const buildQuery: BuildQueryFn = (sharedDb, returning) => {
         const base = sharedDb.insert(config.table as SQLiteTable).values(values);
         const query = returning ? base.returning() : base;
@@ -147,14 +177,38 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
     set(values: Record<string, unknown>) {
       return {
         where(condition: unknown) {
-          const permFilter = buildPermissionFilter(
-            config.grants, "update", config.table, config.user, config.unsafe,
-          );
-          const combinedWhere = combineWhere(condition as SQL | undefined, permFilter);
+          // The permission WHERE clause may need async work (grant `with`
+          // lookups), so we resolve it via a `prepare()` step and stash the
+          // result in a closure variable that the synchronous `buildQuery`
+          // can read on every invocation. The promise is memoized so a single
+          // mutation that participates in both `.run()` and `db.batch()` only
+          // resolves the filter once.
+          let resolvedCombinedWhere: SQL | undefined;
+          let preparePromise: Promise<void> | undefined;
+          const prepareFn: MutationPrepareFn = () => {
+            if (!preparePromise) {
+              preparePromise = (async () => {
+                const permFilter = await buildPermissionFilter(
+                  config.grants,
+                  "update",
+                  config.table,
+                  config.user,
+                  config.unsafe,
+                  config.getLookupDb,
+                  config.lookupCache,
+                );
+                resolvedCombinedWhere = combineWhere(
+                  condition as SQL | undefined,
+                  permFilter,
+                );
+              })();
+            }
+            return preparePromise;
+          };
 
           const buildQuery: BuildQueryFn = (sharedDb, returning) => {
             const base = sharedDb.update(config.table as SQLiteTable).set(values);
-            if (combinedWhere) base.where(combinedWhere);
+            if (resolvedCombinedWhere) base.where(resolvedCombinedWhere);
             const query = returning ? base.returning() : base;
             return {
               query: query as import("drizzle-orm/batch").BatchItem<"sqlite">,
@@ -166,7 +220,13 @@ export function createUpdateBuilder(config: MutateBuilderConfig) {
               },
             };
           };
-          return buildMutationWithReturning(config, permissions, tableName, buildQuery);
+          return buildMutationWithReturning(
+            config,
+            permissions,
+            tableName,
+            buildQuery,
+            prepareFn,
+          );
         },
       };
     },
@@ -188,14 +248,38 @@ export function createDeleteBuilder(config: MutateBuilderConfig) {
 
   return {
     where(condition: unknown) {
-      const permFilter = buildPermissionFilter(
-        config.grants, "delete", config.table, config.user, config.unsafe,
-      );
-      const combinedWhere = combineWhere(condition as SQL | undefined, permFilter);
+      // The permission WHERE clause may need async work (grant `with`
+      // lookups), so we resolve it via a `prepare()` step and stash the
+      // result in a closure variable that the synchronous `buildQuery` can
+      // read on every invocation. The promise is memoized so a single
+      // mutation participating in both `.run()` and `db.batch()` only
+      // resolves the filter once.
+      let resolvedCombinedWhere: SQL | undefined;
+      let preparePromise: Promise<void> | undefined;
+      const prepareFn: MutationPrepareFn = () => {
+        if (!preparePromise) {
+          preparePromise = (async () => {
+            const permFilter = await buildPermissionFilter(
+              config.grants,
+              "delete",
+              config.table,
+              config.user,
+              config.unsafe,
+              config.getLookupDb,
+              config.lookupCache,
+            );
+            resolvedCombinedWhere = combineWhere(
+              condition as SQL | undefined,
+              permFilter,
+            );
+          })();
+        }
+        return preparePromise;
+      };
 
       const buildQuery: BuildQueryFn = (sharedDb, returning) => {
         const base = sharedDb.delete(config.table as SQLiteTable);
-        if (combinedWhere) base.where(combinedWhere);
+        if (resolvedCombinedWhere) base.where(resolvedCombinedWhere);
         const query = returning ? base.returning() : base;
         return {
           query: query as import("drizzle-orm/batch").BatchItem<"sqlite">,
@@ -207,7 +291,13 @@ export function createDeleteBuilder(config: MutateBuilderConfig) {
           },
         };
       };
-      return buildMutationWithReturning(config, permissions, tableName, buildQuery);
+      return buildMutationWithReturning(
+        config,
+        permissions,
+        tableName,
+        buildQuery,
+        prepareFn,
+      );
     },
   };
 }

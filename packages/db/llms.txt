@@ -10,8 +10,9 @@ Use `@cfast/db` whenever you need to read or write a D1 database in a cfast app.
 
 - **Operations are lazy.** Every `db.query/insert/update/delete` call returns an `Operation<TResult>` with `.permissions` (inspectable immediately) and `.run(params)` (executes with permission checks). Nothing touches D1 until you call `.run()`.
 - **Permission checks are structural.** `.run()` always checks the user's grants before executing SQL. Row-level WHERE clauses from grants are injected automatically.
-- **One Db per request.** `createDb()` captures the user at creation time. Never share a `Db` across requests.
-- **`db.unsafe()` is the only escape hatch.** Returns a `Db` that skips all permission checks. Greppable via `git grep '.unsafe()'`.
+- **Cross-table grants run prerequisite lookups.** When a grant declares a `with` map (see `@cfast/permissions`), `@cfast/db` resolves those lookups against an unsafe-mode handle **before** running the main query, caches the results for the lifetime of the per-request `Db`, and threads them into the `where` clause as its third argument. A single lookup runs at most once per request even across many queries.
+- **One Db per request.** `createDb()` captures the user at creation time. Never share a `Db` across requests. The per-request grant lookup cache lives on the `Db` instance, so creating a fresh one each request gives every request a fresh cache.
+- **`db.unsafe()` is the only escape hatch.** Returns a `Db` that skips all permission checks. Greppable via `git grep '.unsafe()'`. The unsafe sibling shares the per-request lookup cache so lookups dispatched through it (the `LookupDb` passed to grant `with` functions) never duplicate work.
 
 ## API Reference
 
@@ -251,6 +252,50 @@ export async function action({ context, request }) {
   );
 
   await workflow.run();
+}
+```
+
+### Cross-table grants ("show recipes from my friends")
+
+When a row-level filter needs data from another table, declare a `with` map on the grant. `@cfast/db` resolves every prerequisite once per request and threads the result into the `where` clause:
+
+```typescript
+// permissions.ts
+export const permissions = definePermissions<AppUser, typeof schema>()({
+  roles: ["user"] as const,
+  grants: (g) => ({
+    user: [
+      g("read", recipes, {
+        with: {
+          friendIds: async (user, db) => {
+            const rows = await db
+              .query(friendGrants)
+              .findMany({ where: eq(friendGrants.grantee, user.id) })
+              .run();
+            return (rows as { target: string }[]).map((r) => r.target);
+          },
+        },
+        where: (recipe, user, { friendIds }) =>
+          or(
+            eq(recipe.visibility, "public"),
+            eq(recipe.authorId, user.id),
+            inArray(recipe.authorId, friendIds as string[]),
+          ),
+      }),
+    ],
+  }),
+});
+
+// loader.ts -- one createDb() per request, one friend-grant fetch per request
+export async function loader({ context, request }) {
+  const { user, grants } = await auth.requireUser(request);
+  const db = createDb({ d1: context.env.DB, schema, grants, user });
+
+  // Both reads share the cached friendIds lookup -- it runs once total.
+  const myRecipes = await db.query(recipes).findMany({ limit: 10 }).run();
+  const popular = await db.query(recipes).paginate(params).run();
+
+  return { myRecipes, popular };
 }
 ```
 

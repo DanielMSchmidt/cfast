@@ -11,24 +11,35 @@ import type {
 import { CRUD_ACTIONS } from "@cfast/permissions";
 
 /**
- * Finds matching grants for an action/table combination and returns their WHERE clause functions.
+ * Finds matching grants for an action/table combination.
  *
- * If any matching grant has no `where` clause, access is unrestricted and an empty array is returned.
- * Otherwise, all `where` clause functions are returned for OR-combination.
+ * Returns the matching {@link Grant} objects so the caller can access both the
+ * `where` clause and any prerequisite `with` lookups attached to each grant.
+ *
+ * If any matching grant has no `where` clause, access is unrestricted and an
+ * empty array is returned (no further filtering required, and any `with`
+ * lookups on other matching grants can be skipped).
  *
  * @param grants - The resolved permission grants for the current user's role.
  * @param action - The permission action being performed (e.g., `"read"`, `"update"`).
  * @param table - The Drizzle table being accessed.
- * @returns Array of WHERE clause functions, or empty array if access is unrestricted.
+ * @returns Array of matching restricted grants, or empty array if access is unrestricted.
  */
 export function resolvePermissionFilters(
   grants: Grant[],
   action: PermissionAction,
   table: DrizzleTable,
-): Array<(columns: Record<string, unknown>, user: { id: string }) => unknown> {
+): Grant[] {
+  const targetName = getTableName(table);
   const matching = grants.filter((g) => {
     const actionMatch = g.action === action || g.action === "manage";
-    const tableMatch = g.subject === "all" || g.subject === table || (typeof g.subject === "object" && getTableName(g.subject) === getTableName(table));
+    // Subjects normalize through `getTableName`, so a string-subject grant
+    // (e.g. `grant("read", "recipes")`) and an object-subject grant
+    // referencing the same Drizzle table both match the same target.
+    const tableMatch =
+      g.subject === "all" ||
+      g.subject === table ||
+      getTableName(g.subject) === targetName;
     return actionMatch && tableMatch;
   });
 
@@ -37,10 +48,10 @@ export function resolvePermissionFilters(
   // If any matching grant has no where clause, access is unrestricted
   if (matching.some((g) => !g.where)) return [];
 
-  // Return all where clause functions
-  return matching
-    .filter((g): g is Grant & { where: NonNullable<Grant["where"]> } => !!g.where)
-    .map((g) => g.where as (columns: Record<string, unknown>, user: { id: string }) => unknown);
+  // Return restricted matching grants (each retains its `with` map)
+  return matching.filter(
+    (g): g is Grant & { where: NonNullable<Grant["where"]> } => !!g.where,
+  );
 }
 
 function grantMatchesAction(

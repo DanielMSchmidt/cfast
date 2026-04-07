@@ -8,7 +8,7 @@ import {
   getPrimaryKeyColumns,
 } from "../paginate";
 import { createQueryBuilder } from "../query-builder";
-import { posts, schema, createMockD1, grantsForRole } from "./helpers";
+import { posts, schema, createMockD1, grantsForRole, lookupTestConfig } from "./helpers";
 
 describe("parseCursorParams", () => {
   it("parses cursor and limit from URL", () => {
@@ -140,6 +140,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = qb.paginate(
@@ -158,6 +159,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = qb.paginate(
@@ -175,6 +177,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: true,
+      ...lookupTestConfig(),
     });
 
     const op = qb.paginate(
@@ -193,6 +196,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: unknownTable,
       unsafe: true,
+      ...lookupTestConfig(),
     });
 
     const op = qb.paginate(
@@ -210,6 +214,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     // No cursorColumns provided — should not throw and should be a valid Operation.
@@ -226,6 +231,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: posts,
       unsafe: false,
+      ...lookupTestConfig(),
     });
 
     const op = qb.paginate(
@@ -249,6 +255,7 @@ describe("QueryBuilder.paginate", () => {
       user: { id: "user-1" },
       table: noPkTable,
       unsafe: true,
+      ...lookupTestConfig(),
     });
 
     expect(() =>

@@ -104,10 +104,11 @@ describe("resolveGrants", () => {
     // Call the merged where and verify both originals are called
     const cols = { id: "col" };
     const user = { id: "user1" };
-    result[0].where!(cols, user);
+    const lookups = {};
+    result[0].where!(cols, user, lookups);
 
-    expect(where1).toHaveBeenCalledWith(cols, user);
-    expect(where2).toHaveBeenCalledWith(cols, user);
+    expect(where1).toHaveBeenCalledWith(cols, user, lookups);
+    expect(where2).toHaveBeenCalledWith(cols, user, lookups);
   });
 
   it("returns empty array for empty roles list", () => {
@@ -208,7 +209,7 @@ describe("resolveGrants", () => {
 
     const cols = {};
     const user = {};
-    result[0].where!(cols, user);
+    result[0].where!(cols, user, {});
 
     expect(where1).toHaveBeenCalledOnce();
     expect(where2).toHaveBeenCalledOnce();
@@ -284,6 +285,94 @@ describe("resolveGrants", () => {
       const result = resolveGrants(p, { roles: ["a", "b"] });
       // They live under different group keys, so two grants
       expect(result).toHaveLength(2);
+    });
+  });
+
+  describe("with-lookup grants (issue #105)", () => {
+    const noopWith = { friendIds: () => Promise.resolve([] as string[]) };
+
+    it("preserves the with map on a single grant", () => {
+      const where = vi.fn(() => fakeSql("w"));
+      const p = definePermissions({
+        roles: ["member"] as const,
+        grants: {
+          member: [grant("read", posts, { with: noopWith, where })],
+        },
+      });
+      const result = resolveGrants(p, ["member"]);
+      expect(result).toHaveLength(1);
+      expect(result[0].with).toBe(noopWith);
+      expect(result[0].where).toBe(where);
+    });
+
+    it("emits with-grants as standalone entries instead of OR-merging", () => {
+      const where1 = vi.fn(() => fakeSql("w1"));
+      const where2 = vi.fn(() => fakeSql("w2"));
+      const p = definePermissions({
+        roles: ["a", "b"] as const,
+        grants: {
+          a: [grant("read", posts, { with: noopWith, where: where1 })],
+          b: [grant("read", posts, { with: noopWith, where: where2 })],
+        },
+      });
+      const result = resolveGrants(p, ["a", "b"]);
+      // Each with-grant stays separate so each can resolve its own lookups.
+      expect(result).toHaveLength(2);
+      expect(result.every((g) => g.with === noopWith)).toBe(true);
+    });
+
+    it("keeps a with-grant alongside a sibling plain grant for the same action+subject", () => {
+      const whereWith = vi.fn(() => fakeSql("with"));
+      const wherePlain = vi.fn(() => fakeSql("plain"));
+      const p = definePermissions({
+        roles: ["a", "b"] as const,
+        grants: {
+          a: [grant("read", posts, { with: noopWith, where: whereWith })],
+          b: [grant("read", posts, { where: wherePlain })],
+        },
+      });
+      const result = resolveGrants(p, ["a", "b"]);
+      // With-grant is one entry, plain grant is another
+      expect(result).toHaveLength(2);
+      const withGrant = result.find((g) => g.with !== undefined);
+      const plainGrant = result.find((g) => g.with === undefined);
+      expect(withGrant).toBeDefined();
+      expect(plainGrant).toBeDefined();
+      expect(withGrant!.where).toBe(whereWith);
+      expect(plainGrant!.where).toBe(wherePlain);
+    });
+
+    it("an unrestricted sibling collapses both plain and with-grants for the group", () => {
+      const whereWith = vi.fn(() => fakeSql("with"));
+      const p = definePermissions({
+        roles: ["a", "b"] as const,
+        grants: {
+          a: [grant("read", posts, { with: noopWith, where: whereWith })],
+          b: [grant("read", posts)], // unrestricted
+        },
+      });
+      const result = resolveGrants(p, ["a", "b"]);
+      // Unrestricted wins; the with-grant is dropped to avoid wasted lookups.
+      expect(result).toHaveLength(1);
+      expect(result[0].where).toBeUndefined();
+      expect(result[0].with).toBeUndefined();
+    });
+
+    it("preserves with maps across hierarchy resolution", () => {
+      const where = vi.fn(() => fakeSql("w"));
+      const p = definePermissions({
+        roles: ["base", "premium"] as const,
+        hierarchy: { premium: ["base"] },
+        grants: {
+          base: [grant("read", posts, { with: noopWith, where })],
+          premium: [grant("create", posts)],
+        },
+      });
+      const result = resolveGrants(p, ["premium"]);
+      // premium inherits the read+with grant from base
+      const readGrant = result.find((g) => g.action === "read");
+      expect(readGrant).toBeDefined();
+      expect(readGrant!.with).toBe(noopWith);
     });
   });
 });

@@ -1,7 +1,8 @@
 import { definePermissions, grant, resolveGrants } from "@cfast/permissions";
-import type { Grant } from "@cfast/permissions";
+import type { Grant, LookupDb } from "@cfast/permissions";
 import { sql } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { createLookupCache, type LookupCache } from "../utils";
 
 // Real Drizzle SQLite tables for testing
 export const posts = sqliteTable("posts", {
@@ -63,6 +64,27 @@ export const testPermissions = definePermissions({
 
 export function grantsForRole(role: string): Grant[] {
   return resolveGrants(testPermissions, [role]);
+}
+
+/**
+ * Builds the boilerplate `lookupCache` + `getLookupDb` fields that
+ * `createQueryBuilder` / `createInsertBuilder` / etc. now require.
+ *
+ * Most existing tests pass no `with`-lookup grants so the LookupDb is never
+ * actually invoked; we throw on access to make accidental usage loud.
+ */
+export function lookupTestConfig(): {
+  lookupCache: LookupCache;
+  getLookupDb: () => LookupDb;
+} {
+  return {
+    lookupCache: createLookupCache(),
+    getLookupDb: () => {
+      throw new Error(
+        "lookupTestConfig: getLookupDb invoked but no `with` lookups were declared in this test",
+      );
+    },
+  };
 }
 
 // Minimal D1 mock that records prepare() calls and batch() invocations.

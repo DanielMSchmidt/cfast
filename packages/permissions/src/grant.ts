@@ -4,6 +4,7 @@ import type {
   SchemaMap,
   SubjectInput,
   WhereClause,
+  WithLookups,
 } from "./types";
 
 /**
@@ -44,6 +45,27 @@ import type {
  *   where: (post, user) => eq(post.authorId, user.id),
  * });
  *
+ * // Cross-table grant: read recipes that public, owned by the user, or
+ * // owned by a friend (resolved via a prerequisite lookup that runs once
+ * // per request and is cached for subsequent reads).
+ * grant("read", recipes, {
+ *   with: {
+ *     friendIds: async (user, db) => {
+ *       const rows = await db
+ *         .query(friendGrants)
+ *         .findMany({ where: eq(friendGrants.grantee, user.id) })
+ *         .run();
+ *       return (rows as { target: string }[]).map((r) => r.target);
+ *     },
+ *   },
+ *   where: (recipe, user, { friendIds }) =>
+ *     or(
+ *       eq(recipe.visibility, "public"),
+ *       eq(recipe.authorId, user.id),
+ *       inArray(recipe.authorId, friendIds as string[]),
+ *     ),
+ * });
+ *
  * // Full access to everything
  * grant("manage", "all");
  * ```
@@ -51,11 +73,12 @@ import type {
 export function grant<TTables extends SchemaMap = SchemaMap>(
   action: PermissionAction,
   subject: SubjectInput<TTables>,
-  options?: { where?: WhereClause },
+  options?: { with?: WithLookups; where?: WhereClause },
 ): Grant {
   return {
     action,
     subject,
+    with: options?.with,
     where: options?.where,
   };
 }
