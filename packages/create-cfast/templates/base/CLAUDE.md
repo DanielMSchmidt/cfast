@@ -5,7 +5,7 @@ Built with [cfast](https://github.com/DanielMSchmidt/cfast) — Cloudflare Worke
 ## Architecture
 
 - **Runtime:** Cloudflare Workers
-- **Framework:** React Router v7 (file-based routing)
+- **Framework:** React Router v7 (config-driven routes via `app/routes.ts` — NOT auto-discovered)
 - **Database:** Cloudflare D1 via Drizzle ORM
 - **Auth:** @cfast/auth (Better Auth — magic email + passkeys)
 - **Permissions:** @cfast/permissions (isomorphic, DB-enforced)
@@ -51,6 +51,7 @@ Schema-defined file types with R2 storage. Do NOT write custom upload handlers.
 3. Add permission grants in `app/permissions.ts`
 4. Create actions in a `*.server.ts` file using `createAction` from `~/actions.server`
 5. Create the route in `app/routes/` using `composeActions` for the action export
+6. Register the new route in `app/routes.ts` (see "Add a new page/route" above)
 
 ### Schema gotcha: self-referential foreign keys
 
@@ -73,9 +74,16 @@ Use this pattern for comment threads (`parentCommentId`), org charts (`managerId
 
 ### Add a new page/route
 
-1. Create a file in `app/routes/` (React Router file-based routing)
+> **IMPORTANT: React Router v7 does NOT auto-discover files under `app/routes/`.** Every route must be explicitly registered in `app/routes.ts`. Creating only the route file is a silent failure — the file exists but the URL 404s.
+
+1. Create the route file in `app/routes/`
 2. Export a `loader` for data fetching, `action` via `composeActions` for mutations
 3. Export a default component for the UI
+4. **Register the route in `app/routes.ts`** by adding a `route()` or `index()` entry:
+   ```ts
+   route("projects", "routes/projects._index.tsx"),
+   ```
+5. Verify with `pnpm dev` that the URL renders before marking the task done
 
 ### Add a new action to an existing route
 
@@ -119,12 +127,14 @@ Use field overrides when calling the form generator:
 | Manual `request.formData()` parsing in actions | Use `createAction` which handles parsing, validation, and permissions |
 | `hasRole()` / `hasAnyRole()` checks | Use `can()` from `@cfast/permissions` to check permissions |
 | Manually adding hidden `<input>` fields to forms | Use `<ActionForm>` which injects hidden fields (e.g. `intent`) automatically |
+| Creating `app/routes/foo.tsx` and assuming it auto-registers | React Router v7 has no auto-discovery — add a `route()` entry to `app/routes.ts` |
 
 ## Project Structure
 
 ```
 app/
-├── routes/             # React Router file-based routes
+├── routes.ts           # Route table — REGISTER every new file from routes/ here
+├── routes/             # Route component files (each MUST be registered in routes.ts)
 ├── db/
 │   ├── schema.ts       # Drizzle schema (source of truth)
 │   └── client.ts       # DB client factory

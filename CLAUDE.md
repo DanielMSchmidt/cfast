@@ -5,7 +5,7 @@ Composable TypeScript libraries for building web apps on Cloudflare Workers + Re
 ## Stack
 
 - **Runtime:** Cloudflare Workers
-- **Framework:** React Router v7 (file-based routing)
+- **Framework:** React Router v7 (config-driven routes via `app/routes.ts` — NOT auto-discovered)
 - **Database:** Cloudflare D1 via Drizzle ORM
 - **Auth:** Better Auth (magic email + passkeys)
 - **Email:** Mailgun via react-email
