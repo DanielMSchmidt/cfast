@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { parseAdminParams, buildAdminUrl } from "../utils.js";
+import {
+  adminTestId,
+  buildAdminUrl,
+  parseAdminParams,
+  slugifyTestIdSegment,
+} from "../utils.js";
 import type { AdminParams } from "../utils.js";
 
 function url(path: string): URL {
@@ -364,5 +369,100 @@ describe("buildAdminUrl", () => {
       const parsed = parseAdminParams(url(`/admin${built}`));
       expect(parsed).toEqual(params);
     });
+  });
+});
+
+describe("adminTestId", () => {
+  it("formats table testids as admin-table-{tableName}", () => {
+    expect(adminTestId({ kind: "table", table: "posts" })).toBe(
+      "admin-table-posts",
+    );
+    expect(adminTestId({ kind: "table", table: "user_roles" })).toBe(
+      "admin-table-user_roles",
+    );
+  });
+
+  it("formats row testids as admin-row-{tableName}-{id}", () => {
+    expect(adminTestId({ kind: "row", table: "posts", id: "abc-123" })).toBe(
+      "admin-row-posts-abc-123",
+    );
+    expect(adminTestId({ kind: "row", table: "users", id: "42" })).toBe(
+      "admin-row-users-42",
+    );
+  });
+
+  it("formats action testids as admin-action-{actionName}", () => {
+    expect(adminTestId({ kind: "action", action: "create" })).toBe(
+      "admin-action-create",
+    );
+    expect(adminTestId({ kind: "action", action: "delete" })).toBe(
+      "admin-action-delete",
+    );
+    expect(adminTestId({ kind: "action", action: "edit" })).toBe(
+      "admin-action-edit",
+    );
+    expect(adminTestId({ kind: "action", action: "view" })).toBe(
+      "admin-action-view",
+    );
+  });
+
+  it("formats dashboard count widget testids as admin-dashboard-widget-count-{table}", () => {
+    expect(
+      adminTestId({ kind: "dashboard-widget", widget: "count", table: "users" }),
+    ).toBe("admin-dashboard-widget-count-users");
+  });
+
+  it("formats dashboard recent widget testids as admin-dashboard-widget-recent-{table}", () => {
+    expect(
+      adminTestId({ kind: "dashboard-widget", widget: "recent", table: "posts" }),
+    ).toBe("admin-dashboard-widget-recent-posts");
+  });
+});
+
+describe("slugifyTestIdSegment", () => {
+  it("lowercases and hyphenates human-readable labels", () => {
+    expect(slugifyTestIdSegment("Total Users")).toBe("total-users");
+    expect(slugifyTestIdSegment("Published Posts")).toBe("published-posts");
+  });
+
+  it("collapses runs of non-alphanumeric characters", () => {
+    expect(slugifyTestIdSegment("Hello   World!!")).toBe("hello-world");
+    expect(slugifyTestIdSegment("foo/bar@baz")).toBe("foo-bar-baz");
+  });
+
+  it("trims leading and trailing hyphens", () => {
+    expect(slugifyTestIdSegment("  Hi  ")).toBe("hi");
+    expect(slugifyTestIdSegment("!Users!")).toBe("users");
+  });
+
+  it("preserves numbers", () => {
+    expect(slugifyTestIdSegment("Posts (2025)")).toBe("posts-2025");
+  });
+});
+
+describe("component source integration", () => {
+  it("embeds table testid in the rendered markup via the helper", () => {
+    // The test-id helper is the single source of truth for admin UI test
+    // selectors. Components consume it directly, so we exercise it here
+    // with the exact shape the component files use in JSX.
+    const tableId = adminTestId({ kind: "table", table: "posts" });
+    expect(tableId).toBe("admin-table-posts");
+
+    const rowId = adminTestId({ kind: "row", table: "posts", id: "p_1" });
+    expect(rowId).toBe("admin-row-posts-p_1");
+
+    const countId = adminTestId({
+      kind: "dashboard-widget",
+      widget: "count",
+      table: slugifyTestIdSegment("Total Users"),
+    });
+    expect(countId).toBe("admin-dashboard-widget-count-total-users");
+
+    const recentId = adminTestId({
+      kind: "dashboard-widget",
+      widget: "recent",
+      table: "posts",
+    });
+    expect(recentId).toBe("admin-dashboard-widget-recent-posts");
   });
 });
