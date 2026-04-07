@@ -8,6 +8,7 @@
   "packages/email": "0.1.1",
   "packages/env": "0.1.0",
   "packages/forms": "0.1.0",
+  "packages/joy": "0.0.1",
   "packages/pagination": "0.1.0",
   "packages/permissions": "0.1.0",
   "packages/storage": "0.1.0",

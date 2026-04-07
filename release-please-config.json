@@ -13,6 +13,7 @@
     "packages/email": { "component": "@cfast/email" },
     "packages/env": { "component": "@cfast/env" },
     "packages/forms": { "component": "@cfast/forms" },
+    "packages/joy": { "component": "@cfast/joy" },
     "packages/pagination": { "component": "@cfast/pagination" },
     "packages/permissions": { "component": "@cfast/permissions" },
     "packages/storage": { "component": "@cfast/storage" },
