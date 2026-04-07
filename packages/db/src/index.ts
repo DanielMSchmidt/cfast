@@ -1,6 +1,6 @@
 /** @module db */
 export { createDb } from "./create-db";
-export { compose, composeSequential } from "./compose";
+export { compose, composeSequential, composeSequentialCallback } from "./compose";
 export { parseCursorParams, parseOffsetParams } from "./paginate";
 export type {
   Operation,
@@ -25,4 +25,5 @@ export type {
   UpdateReturningBuilder,
   DeleteBuilder,
   DeleteReturningBuilder,
+  InferRow,
 } from "./types";

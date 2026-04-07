@@ -23,12 +23,16 @@ import * as schema from "./schema";   // must be `import *`
 
 const db = createDb({
   d1: D1Database,                      // env.DB
-  schema: Record<string, DrizzleTable>,
+  schema,                              // typeof import("./schema") -- no cast needed
   grants: Grant[],                     // from resolveGrants(permissions, roles)
   user: { id: string } | null,        // null = anonymous
   cache?: CacheConfig | false,         // default: { backend: "cache-api" }
 });
 ```
+
+`schema` is typed as `Record<string, unknown>` so you can pass `import * as schema`
+directly even when the module also exports Drizzle `relations()`. Non-table entries
+are ignored at runtime when looking up tables by key.
 
 ### Operation<TResult>
 
@@ -60,6 +64,24 @@ db.delete(table).where(cond): DeleteReturningBuilder
 
 All write builders are `Operation<void>` with an optional `.returning()` that changes return type.
 
+#### Single-op shorthand (no compose required)
+
+For a single mutation, call `.run()` directly on the Operation -- there's no need to wrap
+it in `compose()` or `db.batch()`. Reserve those for multi-op workflows.
+
+```typescript
+// Insert
+const card = await db.insert(cards).values({ title: "New" }).returning().run();
+
+// Update
+await db.update(cards).set({ archived: true }).where(eq(cards.id, id)).run();
+
+// Delete
+await db.delete(cards).where(eq(cards.id, id)).run();
+```
+
+`.run()` arguments are optional -- only pass `params` when your query uses `sql.placeholder()`.
+
 ### compose(operations, executor): Operation<TResult>
 
 ```typescript
@@ -89,9 +111,70 @@ await op.run();  // runs operations in order, returns results array
 
 Runs operations in order, returns results array. Shorthand for `compose` when there are no data dependencies between operations.
 
+### composeSequentialCallback(db, callback): Operation<TResult>
+
+For workflows where later operations depend on the **results** of earlier ones
+(e.g. inserting a child row that references the inserted parent's id):
+
+```typescript
+import { composeSequentialCallback } from "@cfast/db";
+
+const op = composeSequentialCallback(db, async (tx) => {
+  const card = await tx.insert(cards).values({ title: "New" }).returning().run();
+  await tx.insert(activityLog).values({
+    cardId: (card as { id: string }).id,
+    action: "card_created",
+  }).run();
+  return card;
+});
+
+await op.permissionsAsync();  // [{ create, cards }, { create, activityLog }]
+await op.run();
+```
+
+The callback runs **twice**: first against a tracking proxy that records each
+operation's permission descriptors and returns sentinel values from `.run()`,
+then against the real db. Because of the dry-run pass, the callback **must be
+free of side effects outside of `db.*` calls** (no `fetch`, no global state
+mutation, no `console.log` you care about).
+
+`op.permissions` is populated asynchronously after the dry-run resolves; use
+`op.permissionsAsync()` for a guaranteed-populated array. `op.run()` always
+awaits the dry-run internally, so permissions are checked on every sub-op.
+
+Use this only when you actually need data dependencies. For independent
+operations, prefer `composeSequential([...])` (faster, fully synchronous
+permissions).
+
 ### db.batch(operations): Operation<unknown[]>
 
-Runs operations sequentially with merged permissions. Not D1 native batch.
+Runs multiple operations with merged, deduplicated permissions. **Atomic** when
+every operation was produced by `db.insert/update/delete`: the batch is sent to
+D1's native `batch()` API, which executes the statements as a single transaction
+and rolls everything back if any statement fails.
+
+Use this whenever you need transactional safety -- for example, decrementing
+stock across multiple products during checkout, or inserting an order plus its
+line items together:
+
+```typescript
+// Atomic checkout: stock decrements + order creation either all succeed or
+// all roll back. Permissions for every sub-op are checked upfront.
+await db.batch([
+  db.update(products).set({ stock: sql`stock - 1` }).where(eq(products.id, id1)),
+  db.update(products).set({ stock: sql`stock - 1` }).where(eq(products.id, id2)),
+  db.insert(orders).values({ userId, items: [...] }),
+]).run();
+```
+
+Permission checks happen **before** any SQL is issued. If the user lacks any
+required grant, the batch throws and zero statements run.
+
+Operations produced by `compose()`/`composeSequential()` executors don't carry
+the batchable hook; mixing them into `db.batch([...])` causes a fallback to
+sequential execution (and loses the atomicity guarantee). For pure compose
+workflows that need atomicity, build the underlying ops with `db.insert/update/
+delete` directly and pass them straight to `db.batch([...])`.
 
 ### db.unsafe(): Db
 

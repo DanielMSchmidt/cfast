@@ -16,9 +16,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     authCtx.user ? { id: authCtx.user.id } : null,
   );
 
+  // Row type is inferred from the schema -- no manual cast required.
   const visiblePosts = await db.query(posts).findMany({
     orderBy: (cols: Record<string, unknown>, { desc }: { desc: (col: unknown) => unknown }) => desc(cols.createdAt),
-  }).run({}) as Array<{ id: string; title: string; content: string; createdAt: string }>;
+  }).run({});
 
   return {
     posts: visiblePosts,

@@ -65,9 +65,13 @@ export function grantsForRole(role: string): Grant[] {
   return resolveGrants(testPermissions, [role]);
 }
 
-// Minimal D1 mock that records calls
-export function createMockD1(): D1Database & { _calls: Array<{ sql: string; params: unknown[] }> } {
+// Minimal D1 mock that records prepare() calls and batch() invocations.
+export function createMockD1(): D1Database & {
+  _calls: Array<{ sql: string; params: unknown[] }>;
+  _batches: Array<Array<{ sql: string; params: unknown[] }>>;
+} {
   const calls: Array<{ sql: string; params: unknown[] }> = [];
+  const batches: Array<Array<{ sql: string; params: unknown[] }>> = [];
 
   const mockResults = {
     results: [] as unknown[],
@@ -75,26 +79,43 @@ export function createMockD1(): D1Database & { _calls: Array<{ sql: string; para
     meta: {},
   };
 
-  const stmt = (sqlStr: string) => ({
-    bind: (...params: unknown[]) => {
-      calls.push({ sql: sqlStr, params });
-      return {
-        all: async () => mockResults,
-        first: async () => null,
-        run: async () => mockResults,
-        raw: async () => [],
-      };
-    },
-    all: async () => { calls.push({ sql: sqlStr, params: [] }); return mockResults; },
-    first: async () => { calls.push({ sql: sqlStr, params: [] }); return null; },
-    run: async () => { calls.push({ sql: sqlStr, params: [] }); return mockResults; },
-    raw: async () => { calls.push({ sql: sqlStr, params: [] }); return []; },
-  });
+  // Each prepared statement remembers its SQL and the bound parameters so the
+  // batch() call below can capture them when the statement is included in a
+  // native batch.
+  const stmt = (sqlStr: string) => {
+    const handle: { sql: string; params: unknown[] } = { sql: sqlStr, params: [] };
+    return {
+      _handle: handle,
+      bind: (...params: unknown[]) => {
+        handle.params = params;
+        calls.push({ sql: sqlStr, params });
+        return {
+          _handle: handle,
+          all: async () => mockResults,
+          first: async () => null,
+          run: async () => mockResults,
+          raw: async () => [],
+        };
+      },
+      all: async () => { calls.push({ sql: sqlStr, params: [] }); return mockResults; },
+      first: async () => { calls.push({ sql: sqlStr, params: [] }); return null; },
+      run: async () => { calls.push({ sql: sqlStr, params: [] }); return mockResults; },
+      raw: async () => { calls.push({ sql: sqlStr, params: [] }); return []; },
+    };
+  };
 
   return {
     _calls: calls,
+    _batches: batches,
     prepare: (sqlStr: string) => stmt(sqlStr),
-    batch: async (stmts: any[]) => stmts.map(() => mockResults),
+    batch: async (stmts: any[]) => {
+      const snapshot = stmts.map((s: any) => {
+        const h = s?._handle as { sql: string; params: unknown[] } | undefined;
+        return h ? { sql: h.sql, params: h.params } : { sql: "<unknown>", params: [] };
+      });
+      batches.push(snapshot);
+      return stmts.map(() => mockResults);
+    },
     dump: async () => new ArrayBuffer(0),
     exec: async () => ({ count: 0, duration: 0 }),
   } as any;

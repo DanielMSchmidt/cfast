@@ -61,6 +61,41 @@ describe("InsertBuilder", () => {
     await builder.values({ title: "Hello" }).run({});
     expect(onMutate).toHaveBeenCalledWith("posts");
   });
+
+  it("supports the single-op shorthand: .values().run() with no args", async () => {
+    const onMutate = vi.fn();
+    const builder = createInsertBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: false,
+      onMutate,
+    });
+
+    // Single insert with no compose() and no params object.
+    await expect(
+      builder.values({ title: "Hello" }).run(),
+    ).resolves.toBeUndefined();
+    expect(onMutate).toHaveBeenCalledWith("posts");
+  });
+
+  it("supports the single-op shorthand for .returning().run() with no args", async () => {
+    const builder = createInsertBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("user"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: false,
+    });
+
+    // .returning().run() should also work without params.
+    await expect(
+      builder.values({ title: "Hello" }).returning().run(),
+    ).resolves.not.toThrow();
+  });
 });
 
 describe("UpdateBuilder", () => {
@@ -104,6 +139,21 @@ describe("UpdateBuilder", () => {
 
     expect(builder.set({}).where(undefined).permissions).toEqual([]);
   });
+
+  it("supports single-op shorthand: .set().where().run() with no args", async () => {
+    const builder = createUpdateBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: false,
+    });
+
+    await expect(
+      builder.set({ published: true }).where(undefined).run(),
+    ).resolves.toBeUndefined();
+  });
 });
 
 describe("DeleteBuilder", () => {
@@ -146,5 +196,18 @@ describe("DeleteBuilder", () => {
 
     const op = builder.where(undefined).returning();
     expect(op.permissions).toEqual([{ action: "delete", table: posts }]);
+  });
+
+  it("supports single-op shorthand: .where().run() with no args", async () => {
+    const builder = createDeleteBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      table: posts,
+      unsafe: false,
+    });
+
+    await expect(builder.where(undefined).run()).resolves.toBeUndefined();
   });
 });
