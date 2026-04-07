@@ -7,6 +7,7 @@
     "dev": "react-router dev",
     "preview": "pnpm run build && vite preview",
     "typecheck": "react-router typegen && tsc -b",
+    "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "deploy:staging": "pnpm run build && wrangler deploy --env staging",
     "deploy:production": "pnpm run build && wrangler deploy --env production"
   },
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.27.0",
     "@cloudflare/workers-types": "^4.20260310.1",
+    "@playwright/test": "^1.52.0",
     "@react-router/dev": "^7.13.1",
     "@types/node": "^22",
     "@types/react": "^19.2.7",
