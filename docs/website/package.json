@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "screenshots": "npx tsx scripts/capture-step-screenshots.mts",
-    "test:links": "astro build && astro preview --port 4321 & timeout 30 bash -c 'until curl -sf http://localhost:4321/cfast/ >/dev/null 2>&1; do sleep 1; done' && npx linkinator http://localhost:4321/cfast/ --recurse --skip '^(?!http://localhost:4321)'; EXIT=$?; kill %1 2>/dev/null; exit $EXIT",
+    "test:links": "astro build && (astro preview --port 4321 & timeout 60 bash -c 'until curl -sf http://localhost:4321/cfast/ >/dev/null 2>&1; do sleep 1; done' && npx linkinator http://localhost:4321/cfast/ --recurse --skip '^(?!http://localhost:4321)'; EXIT=$?; kill %1 2>/dev/null; exit $EXIT)",
     "test:screenshots": "npx playwright install --with-deps chromium && npx tsx scripts/capture-step-screenshots.mts"
   },
   "dependencies": {
