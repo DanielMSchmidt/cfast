@@ -157,3 +157,8 @@ useActionToast(composed.client, {
 - Forgetting `<ConfirmProvider>` -- `useConfirm()` and `ActionButton` with `confirmation` need it.
 - Passing raw data arrays to `DataTable` instead of a pagination result from `usePagination()`.
 - Using `whenForbidden="show"` on `ActionButton` when you mean `"disable"` -- `"show"` renders even when forbidden with no visual indicator.
+
+## See Also
+
+- `@cfast/joy` -- Drop-in MUI Joy plugin that styles `@cfast/ui` headless components.
+- `@cfast/actions` -- Provides the action descriptors consumed by `ActionButton`/`ActionForm`.
