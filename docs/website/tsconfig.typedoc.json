@@ -30,5 +30,10 @@
     },
     "types": ["@cloudflare/workers-types"]
   },
-  "include": ["../../packages/*/src/**/*.ts", "../../packages/*/src/**/*.tsx"]
+  "include": ["../../packages/*/src/**/*.ts", "../../packages/*/src/**/*.tsx"],
+  "exclude": [
+    "../../packages/*/src/**/__tests__/**",
+    "../../packages/*/src/**/*.test.ts",
+    "../../packages/*/src/**/*.test.tsx"
+  ]
 }
