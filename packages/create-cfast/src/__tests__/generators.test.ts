@@ -229,6 +229,13 @@ describe("generateRoutesTs", () => {
     expect(result).toContain("index(");
   });
 
+  it("emits JSDoc warning that routes are not auto-discovered", () => {
+    const result = generateRoutesTs(baseConfig);
+    expect(result).toContain("does NOT auto-discover");
+    expect(result).toContain("MUST be added here");
+    expect(result).toMatch(/\/\*\*[\s\S]*Route registry for this app[\s\S]*\*\//);
+  });
+
   it("adds auth routes when auth enabled", () => {
     const config = {
       ...baseConfig,
