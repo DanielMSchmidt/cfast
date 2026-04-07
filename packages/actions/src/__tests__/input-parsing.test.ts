@@ -7,7 +7,7 @@ import type { Grant } from "@cfast/permissions";
 import { createMockOperation, createFormDataRequest, createJsonRequest } from "./helpers.js";
 
 function makeGetContext(grants: Grant[] = []) {
-  return async (_args: RequestArgs): Promise<ActionContext<{ id: string }>> => ({
+  return async (_args: RequestArgs) => ({
     db: {} as Db,
     user: { id: "user-1" },
     grants,

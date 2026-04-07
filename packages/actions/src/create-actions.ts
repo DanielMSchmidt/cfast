@@ -8,6 +8,7 @@ import type {
   ActionDefinition,
   ActionPermissionStatus,
   ActionPermissionsMap,
+  ActionServices,
   ActionsConfig,
   ClientDescriptor,
   ComposedActions,
@@ -85,11 +86,20 @@ export function checkPermissionStatus(
  * same `getContext` callback. This ensures every action in the application resolves
  * its database, user, and grants consistently.
  *
+ * Services registered via the optional `services` config are injected into
+ * every action's context as `ctx.services`, so handlers can access shared
+ * dependencies (HTTP clients, mailers, third-party APIs) without importing
+ * module-level singletons. Services are always defined on `ctx.services`
+ * — the factory fills in `{}` when no services are configured so handlers
+ * can destructure safely.
+ *
  * @typeParam TUser - The shape of the authenticated user object.
- * @param config - The {@link ActionsConfig} providing the `getContext` callback.
+ * @typeParam TServices - The shape of the registered services map.
+ * @param config - The {@link ActionsConfig} providing the `getContext` callback
+ *   and optional `services` bag.
  * @returns An object with `createAction` and `composeActions` functions.
  *
- * @example
+ * @example Basic usage
  * ```ts
  * import { createActions } from "@cfast/actions";
  *
@@ -101,10 +111,51 @@ export function checkPermissionStatus(
  *   },
  * });
  * ```
+ *
+ * @example With service injection
+ * ```ts
+ * type Services = { nutritionApi: NutritionApi };
+ *
+ * export const { createAction } = createActions<AppUser, Services>({
+ *   getContext: async ({ request }) => { ... },
+ *   services: { nutritionApi: createNutritionApi(env.NUTRITION_API_KEY) },
+ * });
+ *
+ * const lookupFood = createAction((db, input, ctx) => ({
+ *   permissions: [],
+ *   run: async () => ctx.services.nutritionApi.lookup(input.name),
+ * }));
+ * ```
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
+export function createActions<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TUser = any,
+  TServices extends ActionServices = ActionServices,
+>(config: ActionsConfig<TUser, TServices>) {
   let counter = 0;
+
+  // Normalize services to `{}` when omitted so handlers can always
+  // safely access `ctx.services.xxx` without an undefined check.
+  const services: TServices = config.services ?? ({} as TServices);
+
+  /**
+   * Resolves the per-request action context and guarantees `services` is set.
+   *
+   * The `getContext` callback may return a context without a `services`
+   * field for backward compatibility; this helper merges in the registered
+   * services so the caller always sees a fully-formed {@link ActionContext}.
+   */
+  async function resolveContext(
+    args: RequestArgs,
+  ): Promise<ActionContext<TUser, TServices>> {
+    const ctx = await config.getContext(args);
+    return {
+      db: ctx.db,
+      user: ctx.user,
+      grants: ctx.grants,
+      services: ctx.services ?? services,
+    };
+  }
 
   /**
    * Defines a single permission-aware action.
@@ -140,7 +191,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
     const actionId = `action_${++counter}`;
 
     const action = async (args: RequestArgs): Promise<TResult> => {
-      const ctx = await config.getContext(args);
+      const ctx = await resolveContext(args);
       const input = await parseInput(args.request) as TInput;
       const operation = operationsFn(ctx.db, input, ctx);
       return operation.run({});
@@ -154,7 +205,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
       ): Promise<TLoaderData & { _actionPermissions: ActionPermissionsMap }> => {
         const [loaderData, ctx] = await Promise.all([
           loaderFn(args),
-          config.getContext(args),
+          resolveContext(args),
         ]);
 
         // Build a dummy input to extract permission descriptors
@@ -241,7 +292,7 @@ export function createActions<TUser = any>(config: ActionsConfig<TUser>) {
       ): Promise<TLoaderData & { _actionPermissions: ActionPermissionsMap }> => {
         const [loaderData, ctx] = await Promise.all([
           loaderFn(args),
-          config.getContext(args),
+          resolveContext(args),
         ]);
 
         const permissions: ActionPermissionsMap = {};

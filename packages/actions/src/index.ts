@@ -3,6 +3,7 @@ export { createActions, checkPermissionStatus } from "./create-actions.js";
 export type {
   Serializable,
   ActionContext,
+  ActionServices,
   RequestArgs,
   ActionsConfig,
   OperationsFn,
