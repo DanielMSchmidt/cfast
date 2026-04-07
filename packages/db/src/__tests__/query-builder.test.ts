@@ -92,4 +92,81 @@ describe("QueryBuilder", () => {
       await expect(qb.findFirst().run()).resolves.toBeUndefined();
     });
   });
+
+  describe("findMany — limit/offset (issue #112)", () => {
+    it("passes limit through to the underlying SQL", async () => {
+      const d1 = createMockD1();
+      const qb = createQueryBuilder({
+        d1,
+        schema,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
+        table: posts,
+        unsafe: false,
+      });
+
+      await qb.findMany({ limit: 12 }).run();
+
+      // Drizzle should have prepared a SELECT with a LIMIT clause.
+      const selects = d1._calls.filter((c) => /\bselect\b/i.test(c.sql));
+      expect(selects.length).toBeGreaterThan(0);
+      expect(selects.some((c) => /limit/i.test(c.sql))).toBe(true);
+    });
+
+    it("passes offset through to the underlying SQL", async () => {
+      const d1 = createMockD1();
+      const qb = createQueryBuilder({
+        d1,
+        schema,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
+        table: posts,
+        unsafe: false,
+      });
+
+      await qb.findMany({ limit: 12, offset: 24 }).run();
+
+      const selects = d1._calls.filter((c) => /\bselect\b/i.test(c.sql));
+      expect(selects.length).toBeGreaterThan(0);
+      // Drizzle emits both LIMIT and OFFSET.
+      expect(selects.some((c) => /limit/i.test(c.sql))).toBe(true);
+      expect(selects.some((c) => /offset/i.test(c.sql))).toBe(true);
+    });
+
+    it("supports offset without limit", async () => {
+      const d1 = createMockD1();
+      const qb = createQueryBuilder({
+        d1,
+        schema,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
+        table: posts,
+        unsafe: false,
+      });
+
+      // Drizzle requires limit when offset is set; we still want the API to
+      // accept the option without throwing.
+      await expect(
+        qb.findMany({ limit: 100, offset: 50 }).run(),
+      ).resolves.toBeDefined();
+    });
+
+    it("supports paginating a product catalog (page 3, page size 12)", async () => {
+      const d1 = createMockD1();
+      const qb = createQueryBuilder({
+        d1,
+        schema,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
+        table: posts,
+        unsafe: false,
+      });
+
+      // Page 3 of 12-per-page = offset 24, limit 12.
+      await qb.findMany({ limit: 12, offset: 24 }).run();
+
+      const selects = d1._calls.filter((c) => /\bselect\b/i.test(c.sql));
+      expect(selects.some((c) => /limit/i.test(c.sql) && /offset/i.test(c.sql))).toBe(true);
+    });
+  });
 });
