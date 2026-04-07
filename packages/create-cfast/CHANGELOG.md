@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.2.0...create-cfast-v0.2.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **admin, create-cfast:** fix type cast in generated cfast.server.ts and make introspectSchema resilient to non-table exports ([#95](https://github.com/DanielMSchmidt/cfast/issues/95)) ([299c722](https://github.com/DanielMSchmidt/cfast/commit/299c722b932b32245debaffba51f82e7b4a9c8e5))
+* **auth:** align passkeys schema with Better Auth expected field names ([#85](https://github.com/DanielMSchmidt/cfast/issues/85)) ([751f6aa](https://github.com/DanielMSchmidt/cfast/commit/751f6aa78e8bd4c25a026221b94382b2d826da7b))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.1.0...create-cfast-v0.2.0) (2026-03-22)
 
 
