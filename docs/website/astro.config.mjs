@@ -26,7 +26,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/danielschmidt/cfast",
+          href: "https://github.com/DanielMSchmidt/cfast",
         },
       ],
       sidebar: [
