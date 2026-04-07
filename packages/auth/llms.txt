@@ -214,3 +214,8 @@ await auth.removeRole(userId, "editor");
 - **Forgetting to add auth routes** -- The magic link callback and passkey endpoints need `authRoutes()` in your `routes.ts`.
 - **Using `unsafe()` instead of roles for admin** -- Admins should have a proper role with grants, not bypass permissions entirely.
 - **Not wrapping the app with `AuthClientProvider`** -- `useAuth()` and `LoginPage` require the provider at the app root.
+
+## See Also
+
+- `@cfast/permissions` -- Defines roles and grants resolved from the authenticated user.
+- `@cfast/db` -- Receives `grants` from auth to enforce permissions on queries.
