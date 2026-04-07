@@ -1,5 +1,10 @@
 import type React from "react";
-import type { UseFormRegister, FieldValues } from "react-hook-form";
+import type {
+  UseFormRegister,
+  FieldValues,
+  UseFormReturn,
+} from "react-hook-form";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 
 /**
  * Validation rules that can be attached to a Drizzle column via the {@link v} helper.
@@ -98,6 +103,105 @@ export type FieldConfig = {
   component?: React.ComponentType<FieldComponentProps>;
   /** Custom validation function. Return an error message string to fail, or `undefined` to pass. */
   validate?: (value: unknown) => string | undefined;
+  /**
+   * Mark the field as read-only. Read-only fields are still rendered and submitted
+   * but cannot be edited by the user.
+   */
+  readOnly?: boolean;
+};
+
+/**
+ * Configuration for a child table rendered as a dynamic field array under a parent
+ * AutoForm.
+ *
+ * Child tables are introspected the same way the parent table is — column types,
+ * required flags, enums, and `v()` validation rules all flow through. The rendered
+ * form exposes add / remove (and optionally reorder) controls and submits a typed
+ * array of rows under the configured key.
+ *
+ * @example
+ * ```ts
+ * createAutoForm({
+ *   table: recipes,
+ *   children: {
+ *     ingredients: {
+ *       table: ingredients,
+ *       foreignKey: "recipe_id",
+ *       minRows: 1,
+ *       maxRows: 50,
+ *       reorderable: true,
+ *       fields: { name: {}, amount: { placeholder: "g" } },
+ *     },
+ *   },
+ *   onSubmit: async (values) => {
+ *     // values.ingredients is the typed array of child rows
+ *   },
+ * });
+ * ```
+ */
+export type ChildTableConfig = {
+  /** The Drizzle SQLite table that backs each row of the array. */
+  table: SQLiteTable;
+  /**
+   * Foreign key column on the child table that points back at the parent. The
+   * column is automatically excluded from the rendered child fields and stamped
+   * onto each row at submit time.
+   */
+  foreignKey: string;
+  /** Minimum number of rows the user must provide. Defaults to 0. */
+  minRows?: number;
+  /** Maximum number of rows the user is allowed to add. Defaults to unlimited. */
+  maxRows?: number;
+  /** Show reorder controls (move up / move down). Defaults to false. */
+  reorderable?: boolean;
+  /** Per-column overrides for the child table fields, identical in shape to the parent {@link FieldConfig}. */
+  fields?: Partial<Record<string, FieldConfig>>;
+  /** Additional column names to omit from the rendered child rows. */
+  exclude?: string[];
+  /** Override the heading rendered above the child table (defaults to a humanised key). */
+  label?: string;
+  /** Override the "Add row" button label. */
+  addLabel?: string;
+};
+
+/**
+ * Props for the {@link FormPluginComponents.childTable} component.
+ *
+ * Receives the introspected child fields, the live row values, and a set of
+ * row-level callbacks. The plugin is responsible for rendering inputs for each
+ * row and wiring up the add / remove / reorder buttons.
+ */
+export type ChildTableComponentProps = {
+  /** Stable name (object key) under which the array is stored in form values. */
+  name: string;
+  /** Heading rendered above the table (label override or humanised name). */
+  label: string;
+  /** Visible field definitions for each row. */
+  fields: FieldDefinition[];
+  /** Per-field overrides for the child rows. */
+  fieldOverrides?: Partial<Record<string, FieldConfig>>;
+  /** Stable ids for each row, in render order. Use these as React keys. */
+  rowIds: string[];
+  /** Whether the user is allowed to add another row. */
+  canAddRow: boolean;
+  /** Whether the user is allowed to remove a row right now. */
+  canRemoveRow: boolean;
+  /** Whether reorder controls should be rendered. */
+  reorderable: boolean;
+  /** Append a new empty row, applying configured field defaults. */
+  onAddRow: () => void;
+  /** Remove the row at the given index. */
+  onRemoveRow: (index: number) => void;
+  /** Move the row at `index` one slot up (no-op at the top). */
+  onMoveUp: (index: number) => void;
+  /** Move the row at `index` one slot down (no-op at the bottom). */
+  onMoveDown: (index: number) => void;
+  /** Optional validation error displayed above the rows (e.g. min row violations). */
+  error?: string;
+  /** The underlying react-hook-form instance for binding row inputs via `register`. */
+  form: UseFormReturn<FieldValues>;
+  /** Plugin used to render individual cells. */
+  plugin: FormPlugin;
 };
 
 /**
@@ -115,6 +219,8 @@ export type FieldComponentProps = {
   placeholder?: string;
   /** Whether the field is required (NOT NULL in the schema). */
   required: boolean;
+  /** Whether the field should be rendered as read-only (disables editing). */
+  readOnly?: boolean;
   /** Validation error message, if any. */
   error?: string;
   /** Available options for select/enum fields. */
@@ -154,6 +260,12 @@ export type FormPluginComponents = {
   form: React.ComponentType<FormWrapperProps>;
   /** Component for the form's submit button. Receives loading state and label. */
   submitButton: React.ComponentType<SubmitButtonProps>;
+  /**
+   * Component for rendering a parent-child / dynamic field array section.
+   * Optional — if a plugin omits this, a built-in fallback (`DefaultChildTable`)
+   * is used so existing plugins keep working unchanged.
+   */
+  childTable?: React.ComponentType<ChildTableComponentProps>;
 };
 
 /**

@@ -1,5 +1,6 @@
 import type { FieldErrors, FieldValues, Resolver } from "react-hook-form";
-import type { FieldConfig, FieldDefinition } from "./types";
+import type { ChildTableConfig, FieldConfig, FieldDefinition } from "./types";
+import { introspectTable } from "./introspect";
 
 function validateField(
   field: FieldDefinition,
@@ -53,6 +54,34 @@ function validateField(
 }
 
 /**
+ * Validate a single child row, returning per-column errors keyed by column name.
+ */
+function validateChildRow(
+  fields: FieldDefinition[],
+  fieldOverrides: Partial<Record<string, FieldConfig>> | undefined,
+  row: Record<string, unknown>,
+): Record<string, { type: string; message: string }> {
+  const rowErrors: Record<string, { type: string; message: string }> = {};
+  for (const field of fields) {
+    const value = row[field.name];
+    const error = validateField(field, value);
+    if (error) {
+      rowErrors[field.name] = { type: "validation", message: error };
+      continue;
+    }
+
+    const customValidate = fieldOverrides?.[field.name]?.validate;
+    if (customValidate && value !== undefined && value !== null && value !== "") {
+      const customError = customValidate(value);
+      if (customError) {
+        rowErrors[field.name] = { type: "custom", message: customError };
+      }
+    }
+  }
+  return rowErrors;
+}
+
+/**
  * Create a react-hook-form resolver that validates form values against
  * introspected {@link FieldDefinition} rules.
  *
@@ -61,8 +90,12 @@ function validateField(
  * Schema-derived rules (from {@link introspectTable}) and custom rules (from {@link v})
  * are both enforced.
  *
+ * If `children` is provided, the resolver also validates each child row against
+ * its introspected schema and enforces `minRows` / `maxRows` constraints.
+ *
  * @param fields - The {@link FieldDefinition} array to validate against (from {@link introspectTable}).
  * @param fieldOverrides - Optional per-field {@link FieldConfig} overrides, including custom `validate` functions.
+ * @param children - Optional child table configurations keyed by array name.
  * @returns A react-hook-form `Resolver` that validates form values and returns errors.
  *
  * @example
@@ -81,7 +114,25 @@ function validateField(
 export function createResolver(
   fields: FieldDefinition[],
   fieldOverrides?: Partial<Record<string, FieldConfig>>,
+  children?: Record<string, ChildTableConfig>,
 ): Resolver<FieldValues> {
+  // Pre-introspect each child table once so the resolver doesn't redo it on
+  // every keystroke.
+  const childIntrospection: Record<
+    string,
+    { fields: FieldDefinition[]; config: ChildTableConfig }
+  > = {};
+  if (children) {
+    for (const [key, child] of Object.entries(children)) {
+      childIntrospection[key] = {
+        fields: introspectTable(child.table).filter(
+          (f) => f.name !== child.foreignKey && !f.isPrimaryKey,
+        ),
+        config: child,
+      };
+    }
+  }
+
   return async (values) => {
     const errors: FieldErrors<FieldValues> = {};
     let hasErrors = false;
@@ -104,6 +155,50 @@ export function createResolver(
           hasErrors = true;
           errors[field.name] = { type: "custom", message: customError };
         }
+      }
+    }
+
+    // Validate child arrays
+    for (const [key, { fields: childFields, config }] of Object.entries(
+      childIntrospection,
+    )) {
+      const rawRows = values[key];
+      const rows = Array.isArray(rawRows) ? rawRows : [];
+
+      if (config.minRows !== undefined && rows.length < config.minRows) {
+        hasErrors = true;
+        errors[key] = {
+          type: "minRows",
+          message: `${config.label ?? key} must have at least ${config.minRows} row${config.minRows === 1 ? "" : "s"}`,
+        };
+        continue;
+      }
+      if (config.maxRows !== undefined && rows.length > config.maxRows) {
+        hasErrors = true;
+        errors[key] = {
+          type: "maxRows",
+          message: `${config.label ?? key} can have at most ${config.maxRows} row${config.maxRows === 1 ? "" : "s"}`,
+        };
+        continue;
+      }
+
+      const rowErrorEntries: Record<string, unknown>[] = [];
+      let childHasErrors = false;
+      for (let i = 0; i < rows.length; i++) {
+        const row =
+          rows[i] && typeof rows[i] === "object"
+            ? (rows[i] as Record<string, unknown>)
+            : {};
+        const rowErrors = validateChildRow(childFields, config.fields, row);
+        if (Object.keys(rowErrors).length > 0) {
+          childHasErrors = true;
+          rowErrorEntries[i] = rowErrors;
+        }
+      }
+      if (childHasErrors) {
+        hasErrors = true;
+        // react-hook-form represents array field errors as an array indexed by row.
+        errors[key] = rowErrorEntries as unknown as FieldErrors<FieldValues>[string];
       }
     }
 

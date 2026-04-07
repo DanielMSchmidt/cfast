@@ -1224,6 +1224,42 @@ function MyForm() {
 }
 ```
 
+### Parent-Child Tables (Dynamic Field Arrays)
+
+Use the `children` prop to declare child tables that render as dynamic field
+arrays. Each child entry is introspected from its Drizzle table, rendered with
+add / remove / reorder controls, and submitted as a typed array under the
+configured key.
+
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+import { recipes, ingredients } from "./schema";
+
+<AutoForm
+  table={recipes}
+  mode="create"
+  exclude={["id"]}
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipe_id",  // excluded from the child row UI
+      minRows: 1,
+      maxRows: 50,
+      reorderable: true,
+      fields: { name: { placeholder: "Flour" } },
+    },
+  }}
+  onSubmit={async (values) => {
+    // values.ingredients is Array<{ name, amount, unit, ... }>
+  }}
+/>;
+```
+
+`minRows` and `maxRows` are enforced by the resolver and by disabling the
+add/remove buttons. The child primary key and the foreign-key column are
+automatically excluded from the row UI (the action layer stamps the parent
+id after creating the parent).
+
 ### UI Library Plugins
 
 ```typescript
