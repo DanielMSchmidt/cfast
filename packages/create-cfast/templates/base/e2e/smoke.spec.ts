@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 /**
  * Auto-discovers routes from app/routes.ts and verifies each one:
@@ -12,8 +13,11 @@ import { join } from "node:path";
  * the route file has a runtime error.
  */
 
+// ESM-safe __dirname (scaffolded projects are `"type": "module"`).
+const HERE = dirname(fileURLToPath(import.meta.url));
+
 function discoverRoutes(): string[] {
-  const file = readFileSync(join(__dirname, "..", "app", "routes.ts"), "utf-8");
+  const file = readFileSync(join(HERE, "..", "app", "routes.ts"), "utf-8");
   // Match index("routes/_index.tsx") -> "/"
   // Match route("foo", "routes/foo.tsx") -> "/foo"
   // Skip dynamic routes (":id", "*") that we can't resolve for a smoke test

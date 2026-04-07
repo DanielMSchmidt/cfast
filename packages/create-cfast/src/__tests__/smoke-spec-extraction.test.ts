@@ -109,7 +109,9 @@ describe("scaffold ships e2e infrastructure", () => {
     const targetDir = scaffoldFixture("smoke");
     const smoke = fs.readFileSync(path.join(targetDir, "e2e", "smoke.spec.ts"), "utf-8");
     expect(smoke).toContain("discoverRoutes");
-    expect(smoke).toContain('readFileSync(join(__dirname, "..", "app", "routes.ts"');
+    // ESM-safe __dirname resolution (scaffolded projects are `"type": "module"`)
+    expect(smoke).toContain("fileURLToPath(import.meta.url)");
+    expect(smoke).toContain('join(HERE, "..", "app", "routes.ts"');
     expect(smoke).toContain("Get started by editing");
     expect(smoke).toContain("/Users/");
     expect(smoke).toContain("/home/");
