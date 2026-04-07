@@ -10,6 +10,8 @@ Use this package when you have a Drizzle SQLite table and want a working form wi
 - **Progressive customization**: Start with `<AutoForm table={posts} mode="create" />`. Override individual fields incrementally -- labels, components, visibility, validation -- without rewriting the form.
 - **Headless core + UI plugins**: The core (`introspectTable`, `createResolver`, `createAutoForm`) is UI-agnostic. Rendering is delegated to a plugin. Ships with MUI Joy UI (`@cfast/forms/joy`).
 - **Validation via `v()`**: Attach validation rules directly to Drizzle column builders. The rules are stored as metadata and read back during introspection.
+- **Parent-child forms**: Declare child tables via the `children` prop — each becomes a `useFieldArray` with add / remove / reorder controls, full schema-derived validation, and `minRows` / `maxRows` constraints. See the "Parent-child tables" section below.
+- **Computed fields**: Declare derived fields via `fields[name].computed` — they auto-recalculate when any dependency (including child row values) changes. Typically paired with `readOnly: true`.
 
 ## API Reference
 
@@ -61,6 +63,23 @@ type FieldConfig = {
   default?: unknown;
   component?: React.ComponentType<FieldComponentProps>;
   validate?: (value: unknown) => string | undefined;
+  readOnly?: boolean;
+  // Compute this field's value from the rest of the form. Runs on every
+  // change and pushes the result back via setValue. Typically paired with
+  // readOnly: true. Skipped by the validation resolver.
+  computed?: (values: Record<string, unknown>) => unknown;
+};
+
+type ChildTableConfig = {
+  table: SQLiteTable;              // Drizzle table for each row
+  foreignKey: string;              // parent-pointing column, excluded from the child UI
+  minRows?: number;                // default 0; enforced on submit
+  maxRows?: number;                // default unlimited; enforced on submit
+  reorderable?: boolean;           // show move-up / move-down buttons
+  fields?: Partial<Record<string, FieldConfig>>;  // per-column overrides
+  exclude?: string[];              // extra columns to omit from the row UI
+  label?: string;                  // heading override
+  addLabel?: string;               // "Add row" button override
 };
 
 type FieldComponentProps = {
@@ -68,6 +87,7 @@ type FieldComponentProps = {
   label: string;
   placeholder?: string;
   required: boolean;
+  readOnly?: boolean;
   error?: string;
   enumValues?: string[];
   register: UseFormRegister<FieldValues>;
@@ -80,6 +100,8 @@ type FormPluginComponents = {
   checkbox: React.ComponentType<FieldComponentProps>;
   form: React.ComponentType<FormWrapperProps>;
   submitButton: React.ComponentType<SubmitButtonProps>;
+  // Optional. If omitted, `DefaultChildTable` is used.
+  childTable?: React.ComponentType<ChildTableComponentProps>;
 };
 
 type InputType = "text" | "number" | "checkbox" | "select";
@@ -94,6 +116,7 @@ type AutoFormProps = {
   data?: Record<string, unknown>;                  // existing data for edit mode
   onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
   fields?: Partial<Record<string, FieldConfig>>;   // per-field overrides
+  children?: Record<string, ChildTableConfig>;     // parent-child dynamic field arrays
   exclude?: string[];                              // columns to omit
   form?: UseFormReturn<Record<string, unknown>>;   // external RHF instance
 };
@@ -147,6 +170,80 @@ export const posts = sqliteTable("posts", {
 });
 ```
 
+### Parent-child tables (dynamic field arrays)
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+import { recipes, ingredients } from "./schema";
+
+<AutoForm
+  table={recipes}
+  mode="create"
+  exclude={["id"]}
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipe_id",  // column on ingredients pointing at recipes.id
+      minRows: 1,
+      maxRows: 50,
+      reorderable: true,
+      fields: {
+        name: { placeholder: "Flour" },
+        amount: { placeholder: "g" },
+      },
+    },
+  }}
+  onSubmit={async (values) => {
+    // values.ingredients is the array of typed ingredient rows.
+    // The foreign-key column is automatically excluded from the rendered
+    // rows — the action layer stamps the parent id after creating the
+    // parent row.
+  }}
+/>;
+```
+
+Each child entry is introspected like the parent: column types drive inputs,
+NOT NULL drives `required`, enums become selects, and `v()` rules flow through.
+The default child table renders add / remove / reorder buttons; plugins can
+ship their own `childTable` component to match their design system
+(`@cfast/forms/joy` includes one).
+
+### Computed fields
+```typescript
+<AutoForm
+  table={recipes}
+  mode="create"
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipe_id",
+      minRows: 1,
+    },
+  }}
+  fields={{
+    totalCalories: {
+      readOnly: true,
+      computed: (values) => {
+        const rows = (values.ingredients as Array<{
+          calories: number;
+          amount: number;
+        }>) ?? [];
+        return rows.reduce(
+          (sum, ing) => sum + (ing.calories * ing.amount) / 100,
+          0,
+        );
+      },
+    },
+  }}
+  onSubmit={handleSubmit}
+/>;
+```
+
+`computed` functions run whenever any watched form value changes (including
+child rows), and the result is written back to the field via `setValue`.
+Computed fields are skipped by the validation resolver — they are derived
+from other inputs rather than user-provided. Pair with `readOnly: true` to
+prevent the user from typing into the computed cell.
+
 ### Custom UI plugin
 ```typescript
 import { createFormPlugin, createAutoForm } from "@cfast/forms";
@@ -182,3 +279,6 @@ export const AutoForm = createAutoForm(myPlugin);
 - Forgetting `mode="edit"` when passing `data` -- in create mode, `data` is ignored.
 - Passing a `fields.validate` function that returns `undefined` on error instead of an error string. Return a string to indicate failure, `undefined` to pass.
 - Excluding a required field without providing a default -- the form will fail validation since the field is NOT NULL but has no input.
+- Forgetting to `exclude` the parent primary key when the child table points at it: the parent primary key is often auto-generated server-side, so add it to `exclude` on the parent form.
+- Declaring a `computed` field without `readOnly: true`: the user will be able to type into it but their input will be immediately overwritten the next time a dependency changes. Almost always a bug — set `readOnly: true`.
+- Throwing from a `computed` function: thrown errors are swallowed (so transient mid-edit invalid states don't crash), but the field value will not update until the next successful run.

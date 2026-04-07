@@ -1224,6 +1224,82 @@ function MyForm() {
 }
 ```
 
+### Parent-Child Tables (Dynamic Field Arrays)
+
+Use the `children` prop to declare child tables that render as dynamic field
+arrays. Each child entry is introspected from its Drizzle table, rendered with
+add / remove / reorder controls, and submitted as a typed array under the
+configured key.
+
+```typescript
+import { AutoForm } from "@cfast/forms/joy";
+import { recipes, ingredients } from "./schema";
+
+<AutoForm
+  table={recipes}
+  mode="create"
+  exclude={["id"]}
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipe_id",  // excluded from the child row UI
+      minRows: 1,
+      maxRows: 50,
+      reorderable: true,
+      fields: { name: { placeholder: "Flour" } },
+    },
+  }}
+  onSubmit={async (values) => {
+    // values.ingredients is Array<{ name, amount, unit, ... }>
+  }}
+/>;
+```
+
+`minRows` and `maxRows` are enforced by the resolver and by disabling the
+add/remove buttons. The child primary key and the foreign-key column are
+automatically excluded from the row UI (the action layer stamps the parent
+id after creating the parent).
+
+### Computed Fields
+
+Use `fields[name].computed` to declare derived values that auto-recalculate
+when any dependency changes. Combined with `readOnly: true` for display-only
+computed totals.
+
+```typescript
+<AutoForm
+  table={recipes}
+  mode="create"
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipe_id",
+      minRows: 1,
+    },
+  }}
+  fields={{
+    totalCalories: {
+      readOnly: true,
+      computed: (values) => {
+        const rows = (values.ingredients as Array<{
+          calories: number;
+          amount: number;
+        }>) ?? [];
+        return rows.reduce(
+          (sum, ing) => sum + (ing.calories * ing.amount) / 100,
+          0,
+        );
+      },
+    },
+  }}
+  onSubmit={handleSubmit}
+/>;
+```
+
+Computed fields are skipped by the validation resolver — they are derived
+from other inputs rather than user-provided — so they can be backed by
+NOT NULL columns without tripping the required-field check.
+
 ### UI Library Plugins
 
 ```typescript
