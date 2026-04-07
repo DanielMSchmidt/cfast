@@ -165,3 +165,8 @@ const admin = createAdmin({
 - Not providing `impersonate`/`stopImpersonation` callbacks and expecting impersonation to work -- these are optional but required for that feature.
 - Trying to customize rendering by passing JSX to `createAdmin` -- instead, override fields via `TableOverrides.fields` (for forms) or use `@cfast/ui` components directly in custom routes.
 - Expecting auth-internal tables (`session`, `account`, `verification`, `passkey`) to show up -- they are auto-excluded. Set `exclude: false` in table overrides to show them.
+
+## See Also
+
+- `@cfast/forms` -- Schema-derived forms used for create/edit views.
+- `@cfast/ui` + `@cfast/joy` -- Headless components and Joy UI styling.
