@@ -214,4 +214,48 @@ describe("resolveGrants", () => {
     expect(where2).toHaveBeenCalledOnce();
     expect(where3).toHaveBeenCalledOnce();
   });
+
+  describe("user-object signature (issue #89)", () => {
+    it("accepts a user object with a roles array", () => {
+      const user = {
+        id: "u1",
+        email: "u1@example.com",
+        roles: ["author"],
+      };
+      const result = resolveGrants(perms, user);
+      // author inherits anonymous, so 2 grants total
+      expect(result).toHaveLength(2);
+    });
+
+    it("returns the same grants whether called with user or roles array", () => {
+      const user = { id: "u1", roles: ["editor"] };
+      const fromUser = resolveGrants(perms, user);
+      const fromArray = resolveGrants(perms, ["editor"]);
+      expect(fromUser).toHaveLength(fromArray.length);
+      // Compare by action+subject pairs (where clauses are functions, can't deep-equal)
+      const userKeys = fromUser.map((g) => `${g.action}:${String(g.subject)}`).sort();
+      const arrayKeys = fromArray.map((g) => `${g.action}:${String(g.subject)}`).sort();
+      expect(userKeys).toEqual(arrayKeys);
+    });
+
+    it("handles user with empty roles array", () => {
+      const user = { id: "u1", roles: [] };
+      const result = resolveGrants(perms, user);
+      expect(result).toEqual([]);
+    });
+
+    it("handles user with multiple roles", () => {
+      const user = { id: "u1", roles: ["anonymous", "author"] };
+      const result = resolveGrants(perms, user);
+      // Both anonymous and author have read:posts (via hierarchy), plus author has create:posts
+      // After dedup, expect read:posts and create:posts
+      expect(result).toHaveLength(2);
+    });
+
+    it("treats arrays as the legacy roles signature, not as a user object", () => {
+      // A bare array should still be the roles form even though arrays are objects
+      const result = resolveGrants(perms, ["anonymous"]);
+      expect(result).toHaveLength(1);
+    });
+  });
 });

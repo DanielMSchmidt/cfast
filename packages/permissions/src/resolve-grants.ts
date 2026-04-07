@@ -20,6 +20,22 @@ function toSQLWrapper(value: DrizzleSQL | undefined): SQLWrapper | undefined {
 }
 
 /**
+ * Minimal user shape accepted by {@link resolveGrants}: any object with a
+ * `roles` array. The function reads `.roles` and forwards them to the
+ * underlying merge logic.
+ */
+export type UserWithRoles = { roles: readonly string[] };
+
+function isUserWithRoles(value: unknown): value is UserWithRoles {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Array.isArray((value as { roles?: unknown }).roles)
+  );
+}
+
+/**
  * Resolves and merges grants for multiple roles into a single flat array.
  *
  * Looks up each role's pre-expanded grants (from hierarchy resolution) and
@@ -30,14 +46,42 @@ function toSQLWrapper(value: DrizzleSQL | undefined): SQLWrapper | undefined {
  *
  * This is used when a user has multiple roles and their grants need to be combined.
  *
+ * Two calling styles are supported (both equivalent):
+ * - **User object (preferred):** `resolveGrants(permissions, user)` where
+ *   `user` has a `roles` field. The function extracts roles internally.
+ * - **Roles array (legacy):** `resolveGrants(permissions, roles)` where
+ *   `roles` is a string array. Still supported for backwards compatibility.
+ *
  * @param permissions - The permissions object from {@link definePermissions}.
- * @param roles - Array of role names whose grants should be merged.
+ * @param userOrRoles - Either a user object with a `roles` field, or an
+ *   array of role names whose grants should be merged.
  * @returns A deduplicated array of {@link Grant} objects with merged `where` clauses.
+ *
+ * @example
+ * ```ts
+ * // Preferred: pass the user directly
+ * const grants = resolveGrants(permissions, user);
+ *
+ * // Legacy: pass roles array (still works)
+ * const grants = resolveGrants(permissions, user.roles);
+ * ```
  */
 export function resolveGrants(
   permissions: Permissions,
-  roles: string[],
+  user: UserWithRoles,
+): Grant[];
+export function resolveGrants(
+  permissions: Permissions,
+  roles: readonly string[],
+): Grant[];
+export function resolveGrants(
+  permissions: Permissions,
+  userOrRoles: UserWithRoles | readonly string[],
 ): Grant[] {
+  const roles: readonly string[] = isUserWithRoles(userOrRoles)
+    ? userOrRoles.roles
+    : userOrRoles;
+
   // Collect all grants from all roles
   const allGrants: Grant[] = [];
   for (const role of roles) {
@@ -50,26 +94,39 @@ export function resolveGrants(
   if (allGrants.length === 0) return [];
 
   // Group by action + subject identity.
-  // Subject uses reference equality for DrizzleTable, string comparison for "all".
+  // - For "all" grants, group by the literal "all" key.
+  // - For string subjects, group by the string itself.
+  // - For DrizzleTable object subjects, group by reference identity (so two
+  //   distinct table objects with the same name remain separate, preserving
+  //   the original behavior). String subjects with the same name as an object
+  //   subject are NOT merged with the object — they live under their own key.
   type GroupKey = string;
-  const groups = new Map<GroupKey, { action: Grant["action"]; subject: Grant["subject"]; wheres: Array<Grant["where"]> }>();
+  const groups = new Map<
+    GroupKey,
+    {
+      action: Grant["action"];
+      subject: Grant["subject"];
+      wheres: Array<Grant["where"]>;
+    }
+  >();
 
-  // Create unique keys for action+subject pairs using reference identity.
-  // A regular Map is needed since "all" is a string (not valid for WeakMap).
-  const subjectIds = new Map<Grant["subject"], number>();
+  // Reference-identity ids for object subjects.
+  const subjectIds = new Map<object, number>();
   let nextId = 0;
 
-  function getSubjectId(subject: Grant["subject"]): number {
+  function getSubjectKey(subject: Grant["subject"]): string {
+    if (subject === "all") return "all";
+    if (typeof subject === "string") return `s:${subject}`;
     let id = subjectIds.get(subject);
     if (id === undefined) {
       id = nextId++;
       subjectIds.set(subject, id);
     }
-    return id;
+    return `o:${id}`;
   }
 
   for (const g of allGrants) {
-    const key = `${g.action}:${getSubjectId(g.subject)}`;
+    const key = `${g.action}:${getSubjectKey(g.subject)}`;
     let group = groups.get(key);
     if (!group) {
       group = { action: g.action, subject: g.subject, wheres: [] };
