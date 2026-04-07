@@ -25,6 +25,7 @@ export function generateViteConfig(config: Config): string {
   return `import { reactRouter } from "@react-router/dev/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { defineConfig } from "vite";
+import { cfastRoutesCheckPlugin } from "./vite-plugin-cfast-routes";
 
 export default defineConfig({
   resolve: {
@@ -33,6 +34,7 @@ export default defineConfig({
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     reactRouter(),
+    cfastRoutesCheckPlugin(),
   ],
 });
 `;
