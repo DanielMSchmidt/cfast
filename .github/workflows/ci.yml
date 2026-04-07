@@ -44,8 +44,6 @@ jobs:
           pnpm turbo build typecheck lint test
           ${{ github.event_name == 'pull_request' && '--filter=...[origin/main]' || '' }}
 
-      - run: pnpm test
-
       - name: Build Storybook
         run: pnpm turbo build-storybook --filter=@cfast/ui
 
