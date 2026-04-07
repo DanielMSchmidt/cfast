@@ -138,8 +138,13 @@ export type DbConfig = {
   /**
    * Drizzle schema object. Must be `import * as schema` so that keys match
    * table variable names (required by Drizzle's relational query API).
+   *
+   * Typed as `Record<string, unknown>` so callers can pass `import * as schema`
+   * directly without casting -- Drizzle schemas typically include `Relations`
+   * exports alongside tables, and the `@cfast/db` runtime ignores any non-table
+   * entries when looking up tables by key.
    */
-  schema: Record<string, DrizzleTable>;
+  schema: Record<string, unknown>;
   /** Resolved permission grants for the current user's role, from `resolveGrants()`. */
   grants: Grant[];
   /**

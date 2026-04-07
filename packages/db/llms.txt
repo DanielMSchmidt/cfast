@@ -23,12 +23,16 @@ import * as schema from "./schema";   // must be `import *`
 
 const db = createDb({
   d1: D1Database,                      // env.DB
-  schema: Record<string, DrizzleTable>,
+  schema,                              // typeof import("./schema") -- no cast needed
   grants: Grant[],                     // from resolveGrants(permissions, roles)
   user: { id: string } | null,        // null = anonymous
   cache?: CacheConfig | false,         // default: { backend: "cache-api" }
 });
 ```
+
+`schema` is typed as `Record<string, unknown>` so you can pass `import * as schema`
+directly even when the module also exports Drizzle `relations()`. Non-table entries
+are ignored at runtime when looking up tables by key.
 
 ### Operation<TResult>
 
