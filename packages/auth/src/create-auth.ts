@@ -97,7 +97,7 @@ export function createAuth(config: AuthConfig) {
   );
   const loginPath = config.redirects?.loginPath ?? "/login";
 
-  return function initAuth(env: AuthEnvConfig): AuthInstance {
+  return function initAuth(env: AuthEnvConfig, request?: Request): AuthInstance {
     const roleManager = createRoleManager(env.d1, {
       tableName: config.roleTableName,
       roleGrants: config.roleGrants,
@@ -112,10 +112,30 @@ export function createAuth(config: AuthConfig) {
     }
 
     if (config.passkeys) {
+      // Resolve `rpId`: accepts a static string (the common case) or a
+      // `(request) => string` function for multi-tenant deployments. When
+      // a resolver is provided but no `request` is available (e.g. the
+      // caller still uses the 1-arg form of `initAuth`), we throw a clear
+      // error instead of silently registering an invalid passkey plugin.
+      const rpIdConfig = config.passkeys.rpId;
+      let rpID: string;
+      if (typeof rpIdConfig === "function") {
+        if (!request) {
+          throw new Error(
+            "[cfast/auth] passkeys.rpId is a function but initAuth() was called " +
+              "without a request argument. Pass `request` as the second argument " +
+              "to initAuth(env, request) so the rpId resolver can inspect it.",
+          );
+        }
+        rpID = rpIdConfig(request);
+      } else {
+        rpID = rpIdConfig;
+      }
+
       plugins.push(
         passkey({
           rpName: config.passkeys.rpName,
-          rpID: config.passkeys.rpId,
+          rpID,
           origin: env.appUrl,
         }),
       );

@@ -1,5 +1,7 @@
-import { and, or, lt, gt, eq } from "drizzle-orm";
+import { and, or, lt, gt, eq, getTableColumns } from "drizzle-orm";
 import type { Column, SQL } from "drizzle-orm";
+import { getTableConfig } from "drizzle-orm/sqlite-core";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { CursorParams, OffsetParams } from "./types";
 
 /**
@@ -127,6 +129,45 @@ export function decodeCursor(cursor: string | null): unknown[] | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Returns the primary key columns of a Drizzle SQLite table.
+ *
+ * Handles both common cases:
+ * - Single-column primary key (e.g., `id: text("id").primaryKey()`) — read from `column.primary`.
+ * - Composite primary key declared via `primaryKey({ columns: [...] })` in the
+ *   table's extra config — read from `getTableConfig(table).primaryKeys`.
+ *
+ * Used as the default for cursor-based pagination so callers don't have to
+ * repeat the primary key column at every call site.
+ *
+ * @param table - The Drizzle SQLite table to inspect.
+ * @returns The primary key columns in declaration order, or an empty array
+ *   if the table has no primary key.
+ */
+export function getPrimaryKeyColumns(table: SQLiteTable): Column[] {
+  // Check for column-level `.primaryKey()` first (the most common case).
+  const tableColumns = getTableColumns(table);
+  const singleColumnPks: Column[] = [];
+  for (const col of Object.values(tableColumns)) {
+    if ((col as Column).primary) {
+      singleColumnPks.push(col as Column);
+    }
+  }
+  if (singleColumnPks.length > 0) {
+    return singleColumnPks;
+  }
+
+  // Fall back to composite primary keys defined via `primaryKey({ columns })`
+  // in the table's extra config builder.
+  const config = getTableConfig(table);
+  if (config.primaryKeys.length > 0) {
+    // A composite PK exposes its columns via the `columns` property.
+    return config.primaryKeys[0].columns as Column[];
+  }
+
+  return [];
 }
 
 /**

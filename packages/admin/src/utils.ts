@@ -156,3 +156,62 @@ function parsePageParam(value: string | null): number {
   const parsed = parseInt(value, 10);
   return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1;
 }
+
+/**
+ * Discriminated union describing every stable `data-testid` the admin panel
+ * applies to its auto-generated UI.
+ *
+ * The auto-generated admin is meant to be end-to-end tested by downstream
+ * apps (Playwright, Cypress, etc.), so each key element gets a predictable
+ * selector. Centralizing the format in {@link adminTestId} ensures downstream
+ * tests stay in lock-step with the rendered markup.
+ */
+export type AdminTestIdInput =
+  | { kind: "table"; table: string }
+  | { kind: "row"; table: string; id: string }
+  | { kind: "action"; action: string }
+  | { kind: "dashboard-widget"; widget: "count" | "recent"; table: string };
+
+/**
+ * Build the `data-testid` value for a given admin UI element.
+ *
+ * Formats:
+ * - `admin-table-{tableName}` — the `<table>` for a table list view.
+ * - `admin-row-{tableName}-{id}` — each row in the table list.
+ * - `admin-action-{actionName}` — action buttons (create, edit, delete, view, ...).
+ * - `admin-dashboard-widget-{type}-{table}` — dashboard widgets
+ *   (count cards and recent-item sections).
+ *
+ * The `table` segment for count widgets is a slug derived from the widget
+ * label (e.g. `"Total Users"` → `"total-users"`) because count widgets are
+ * identified by their user-provided label, not by the underlying table.
+ *
+ * @param input - The element identification details.
+ * @returns The fully formatted test id string.
+ */
+export function adminTestId(input: AdminTestIdInput): string {
+  switch (input.kind) {
+    case "table":
+      return `admin-table-${input.table}`;
+    case "row":
+      return `admin-row-${input.table}-${input.id}`;
+    case "action":
+      return `admin-action-${input.action}`;
+    case "dashboard-widget":
+      return `admin-dashboard-widget-${input.widget}-${input.table}`;
+  }
+}
+
+/**
+ * Slugify a human-readable label into a test-id-safe segment.
+ *
+ * Lowercases, collapses non-alphanumeric runs to single hyphens, and
+ * trims leading/trailing hyphens. Used for dashboard count widgets whose
+ * labels are user-provided free text (e.g. `"Published Posts"`).
+ */
+export function slugifyTestIdSegment(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

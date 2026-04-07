@@ -439,4 +439,86 @@ describe("createAuth", () => {
     const plugins = callArgs.plugins as { id: string }[];
     expect(plugins.some((p) => p.id === "passkey")).toBe(false);
   });
+
+  it("resolves passkey rpId from a function at request time", () => {
+    mockBetterAuth.mockClear();
+    mockPasskey.mockClear();
+
+    const initAuth = createAuth({
+      permissions,
+      passkeys: {
+        rpName: "Multi Tenant",
+        rpId: (request) => new URL(request.url).hostname,
+      },
+    });
+
+    const request = new Request("https://tenant-a.example.com/auth");
+    initAuth(
+      { d1: createMockD1(), appUrl: "https://tenant-a.example.com" },
+      request,
+    );
+
+    expect(mockPasskey).toHaveBeenCalledWith({
+      rpName: "Multi Tenant",
+      rpID: "tenant-a.example.com",
+      origin: "https://tenant-a.example.com",
+    });
+  });
+
+  it("resolves a different rpId for a different request hostname", () => {
+    mockBetterAuth.mockClear();
+    mockPasskey.mockClear();
+
+    const initAuth = createAuth({
+      permissions,
+      passkeys: {
+        rpName: "Multi Tenant",
+        rpId: (request) => new URL(request.url).hostname,
+      },
+    });
+
+    initAuth(
+      { d1: createMockD1(), appUrl: "https://tenant-b.example.com" },
+      new Request("https://tenant-b.example.com/auth"),
+    );
+
+    expect(mockPasskey).toHaveBeenCalledWith({
+      rpName: "Multi Tenant",
+      rpID: "tenant-b.example.com",
+      origin: "https://tenant-b.example.com",
+    });
+  });
+
+  it("still accepts a static string rpId (backward compat)", () => {
+    mockBetterAuth.mockClear();
+    mockPasskey.mockClear();
+
+    const initAuth = createAuth({
+      permissions,
+      passkeys: { rpName: "Test App", rpId: "example.com" },
+    });
+
+    // No request argument — static rpId still works.
+    initAuth({ d1: createMockD1(), appUrl: "https://example.com" });
+
+    expect(mockPasskey).toHaveBeenCalledWith({
+      rpName: "Test App",
+      rpID: "example.com",
+      origin: "https://example.com",
+    });
+  });
+
+  it("throws a clear error when rpId is a function but no request is passed", () => {
+    const initAuth = createAuth({
+      permissions,
+      passkeys: {
+        rpName: "Multi Tenant",
+        rpId: (request) => new URL(request.url).hostname,
+      },
+    });
+
+    expect(() =>
+      initAuth({ d1: createMockD1(), appUrl: "https://example.com" }),
+    ).toThrow("passkeys.rpId is a function but initAuth() was called without a request");
+  });
 });

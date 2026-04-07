@@ -8,7 +8,7 @@ import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
 import Stack from "@mui/joy/Stack";
 import { useConfirm } from "@cfast/ui";
-import { buildAdminUrl } from "../utils.js";
+import { adminTestId, buildAdminUrl } from "../utils.js";
 import { ActionResultDisplay } from "./action-result.js";
 import type { AdminActionResult, AdminColumnConfig } from "../types.js";
 
@@ -98,6 +98,7 @@ export function TableList({
         <Button
           component={Link}
           to={buildAdminUrl({ kind: "create", table: tableName })}
+          data-testid={adminTestId({ kind: "action", action: "create" })}
         >
           Create
         </Button>
@@ -121,7 +122,7 @@ export function TableList({
       )}
 
       <Sheet variant="outlined" sx={{ borderRadius: "sm", overflow: "auto" }}>
-        <Table hoverRow>
+        <Table hoverRow data-testid={adminTestId({ kind: "table", table: tableName })}>
           <thead>
             <tr>
               {listColumns.map((col) => (
@@ -149,7 +150,7 @@ export function TableList({
             {items.map((item) => {
               const id = String(item[primaryKey] ?? "");
               return (
-                <tr key={id}>
+                <tr key={id} data-testid={adminTestId({ kind: "row", table: tableName, id })}>
                   {listColumns.map((col) => (
                     <td key={col.name}>{formatCellValue(item[col.name])}</td>
                   ))}
@@ -160,6 +161,7 @@ export function TableList({
                         to={buildAdminUrl({ kind: "detail", table: tableName, id })}
                         size="sm"
                         variant="plain"
+                        data-testid={adminTestId({ kind: "action", action: "view" })}
                       >
                         View
                       </Button>
@@ -168,6 +170,7 @@ export function TableList({
                         variant="plain"
                         color="danger"
                         onClick={() => { void handleDelete(id); }}
+                        data-testid={adminTestId({ kind: "action", action: "delete" })}
                       >
                         Delete
                       </Button>

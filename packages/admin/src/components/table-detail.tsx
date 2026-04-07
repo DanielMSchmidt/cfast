@@ -6,7 +6,7 @@ import Button from "@mui/joy/Button";
 import Card from "@mui/joy/Card";
 import Stack from "@mui/joy/Stack";
 import { useConfirm } from "@cfast/ui";
-import { buildAdminUrl } from "../utils.js";
+import { adminTestId, buildAdminUrl } from "../utils.js";
 import type { AdminColumnConfig } from "../types.js";
 
 type TableDetailProps = {
@@ -77,6 +77,7 @@ export function TableDetail({
             component={Link}
             to={buildAdminUrl({ kind: "edit", table: tableName, id })}
             variant="outlined"
+            data-testid={adminTestId({ kind: "action", action: "edit" })}
           >
             Edit
           </Button>
@@ -84,6 +85,7 @@ export function TableDetail({
             variant="outlined"
             color="danger"
             onClick={() => { void handleDelete(); }}
+            data-testid={adminTestId({ kind: "action", action: "delete" })}
           >
             Delete
           </Button>

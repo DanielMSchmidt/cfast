@@ -16,29 +16,62 @@ export type Serializable =
   | { [key: string]: Serializable };
 
 /**
- * Context provided to every action's {@link OperationsFn}.
+ * A record of arbitrary external services an action handler may depend on.
  *
- * Created by the `getContext` callback in {@link ActionsConfig} and passed
- * alongside the database instance and parsed input to each action.
- *
- * @typeParam TUser - The shape of the authenticated user object.
+ * Services are registered once at {@link createActions} time and made
+ * available on every action's {@link ActionContext} via `ctx.services`.
+ * Use this to inject HTTP clients, email providers, cache adapters,
+ * third-party APIs, etc., without each handler having to import them
+ * directly — which both improves testability (services can be mocked
+ * per-suite) and keeps action modules decoupled from concrete providers.
  *
  * @example
  * ```ts
- * const ctx: ActionContext<{ id: string; role: string }> = {
- *   db,
- *   user: { id: "u_1", role: "author" },
- *   grants: [{ action: "manage", subject: "all" }],
+ * type Services = {
+ *   nutritionApi: { lookup: (name: string) => Promise<Nutrition> };
+ *   mailer: { sendWelcome: (to: string) => Promise<void> };
  * };
  * ```
  */
-export type ActionContext<TUser> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ActionServices = Record<string, any>;
+
+/**
+ * Context provided to every action's {@link OperationsFn}.
+ *
+ * Created by the `getContext` callback in {@link ActionsConfig} and passed
+ * alongside the database instance and parsed input to each action. When
+ * `services` are registered with {@link createActions}, they appear on
+ * `ctx.services` so handlers can access them without importing module-
+ * level singletons.
+ *
+ * @typeParam TUser - The shape of the authenticated user object.
+ * @typeParam TServices - The shape of the registered services map. Defaults
+ *   to an empty record when no services are registered.
+ *
+ * @example
+ * ```ts
+ * const ctx: ActionContext<{ id: string; role: string }, { nutritionApi: NutritionApi }> = {
+ *   db,
+ *   user: { id: "u_1", role: "author" },
+ *   grants: [{ action: "manage", subject: "all" }],
+ *   services: { nutritionApi },
+ * };
+ * ```
+ */
+export type ActionContext<TUser, TServices extends ActionServices = ActionServices> = {
   /** The Drizzle database instance from `@cfast/db`. */
   db: Db;
   /** The authenticated user for the current request. */
   user: TUser;
   /** The user's permission {@link Grant | grants}, used for permission checking. */
   grants: Grant[];
+  /**
+   * External services registered with {@link createActions}. Defaults to
+   * an empty object `{}` when no services are provided at factory time,
+   * so handlers can always safely destructure `ctx.services`.
+   */
+  services: TServices;
 };
 
 /**
@@ -60,11 +93,19 @@ export type RequestArgs = {
  * Configuration for the {@link createActions} factory.
  *
  * Provides a `getContext` callback that resolves the per-request
- * {@link ActionContext} (database, user, grants) for every action invocation.
+ * {@link ActionContext} (database, user, grants) for every action
+ * invocation, plus an optional `services` bag that is injected into
+ * every action's context as `ctx.services`.
+ *
+ * `getContext` is allowed to return an `ActionContext` without the
+ * `services` field (the backward-compatible shape) — the factory will
+ * fill it in with the registered services (or an empty object) so that
+ * every handler can always rely on `ctx.services` being defined.
  *
  * @typeParam TUser - The shape of the authenticated user object.
+ * @typeParam TServices - The shape of the registered services map.
  *
- * @example
+ * @example Basic usage without services
  * ```ts
  * const config: ActionsConfig<AppUser> = {
  *   getContext: async ({ request }) => {
@@ -74,10 +115,39 @@ export type RequestArgs = {
  *   },
  * };
  * ```
+ *
+ * @example With service injection
+ * ```ts
+ * const { createAction } = createActions<AppUser, { nutritionApi: NutritionApi }>({
+ *   getContext: async ({ request }) => { ... },
+ *   services: { nutritionApi: createNutritionApi(env.NUTRITION_API_KEY) },
+ * });
+ *
+ * const lookupFood = createAction((db, input, ctx) => ({
+ *   permissions: [],
+ *   run: async () => ctx.services.nutritionApi.lookup(input.name),
+ * }));
+ * ```
  */
-export type ActionsConfig<TUser> = {
-  /** Resolves the per-request action context from the route handler arguments. */
-  getContext: (args: RequestArgs) => Promise<ActionContext<TUser>>;
+export type ActionsConfig<TUser, TServices extends ActionServices = ActionServices> = {
+  /**
+   * Resolves the per-request action context from the route handler arguments.
+   *
+   * The returned context does not need to include `services` — the factory
+   * merges the registered `services` config in automatically. This keeps
+   * the callback ergonomic for the common case (auth + DB only) while
+   * still letting advanced users return a fully-formed context.
+   */
+  getContext: (
+    args: RequestArgs,
+  ) => Promise<Omit<ActionContext<TUser, TServices>, "services"> & { services?: TServices }>;
+  /**
+   * External services made available to every action handler as
+   * `ctx.services`. Registering services here keeps handlers free of
+   * module-level imports of third-party APIs and makes it trivial to
+   * mock them in tests. Defaults to `{}` when omitted.
+   */
+  services?: TServices;
 };
 
 /**

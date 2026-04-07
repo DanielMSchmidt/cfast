@@ -2,7 +2,17 @@ export { AuthProvider, useCurrentUser, useLoginPath } from "./client/auth-provid
 export { AuthGuard } from "./client/auth-guard";
 export { AuthClientProvider, useAuth } from "./client/auth-client-provider";
 export { LoginPage } from "./client/login-page";
-export { createAuthClient, magicLinkClient } from "./client/create-auth-client";
+export {
+  createAuthClient,
+  magicLinkClient,
+  passkeyClient,
+} from "./client/create-auth-client";
+export type {
+  AuthClient,
+  AuthClientErrorResult,
+  AuthClientSession,
+  AuthClientSessionHookResult,
+} from "./client/create-auth-client";
 export type {
   AuthProviderProps,
   AuthClientProviderProps,

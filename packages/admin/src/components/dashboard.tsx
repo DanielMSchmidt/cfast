@@ -5,7 +5,7 @@ import Card from "@mui/joy/Card";
 import Typography from "@mui/joy/Typography";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
-import { buildAdminUrl } from "../utils.js";
+import { adminTestId, buildAdminUrl, slugifyTestIdSegment } from "../utils.js";
 import type { DashboardStat, RecentItem } from "../types.js";
 
 type DashboardProps = {
@@ -30,7 +30,15 @@ export function Dashboard({ stats, recentItems }: DashboardProps): ReactElement 
           }}
         >
           {stats.map((stat) => (
-            <Card key={stat.label} variant="outlined">
+            <Card
+              key={stat.label}
+              variant="outlined"
+              data-testid={adminTestId({
+                kind: "dashboard-widget",
+                widget: "count",
+                table: slugifyTestIdSegment(stat.label),
+              })}
+            >
               <Typography level="body-sm" textColor="text.secondary">
                 {stat.label}
               </Typography>
@@ -41,7 +49,15 @@ export function Dashboard({ stats, recentItems }: DashboardProps): ReactElement 
       )}
 
       {recentItems.map((section) => (
-        <Box key={section.table} sx={{ mb: 4 }}>
+        <Box
+          key={section.table}
+          sx={{ mb: 4 }}
+          data-testid={adminTestId({
+            kind: "dashboard-widget",
+            widget: "recent",
+            table: section.table,
+          })}
+        >
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
             <Typography level="title-lg">{section.label}</Typography>
             <Typography

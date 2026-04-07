@@ -9,7 +9,7 @@ const mockTable = { [Symbol.for("drizzle:Name")]: "posts" };
 const otherTable = { [Symbol.for("drizzle:Name")]: "comments" };
 
 function makeGetContext(grants: Grant[] = []) {
-  return async (_args: RequestArgs): Promise<ActionContext<{ id: string }>> => ({
+  return async (_args: RequestArgs) => ({
     db: {} as Db,
     user: { id: "user-1" },
     grants,
@@ -495,5 +495,161 @@ describe("composeActions", () => {
     expect(composed.client._brand).toBe("ActionClientDescriptor");
     expect(composed.client.actionNames).toEqual(["create", "remove"]);
     expect(composed.actions).toEqual({ create, remove });
+  });
+});
+
+describe("service injection via createActions({ services })", () => {
+  type NutritionApi = {
+    lookup: (name: string) => Promise<{ calories: number }>;
+  };
+
+  type Services = { nutritionApi: NutritionApi };
+
+  function makeNutritionApi(): NutritionApi {
+    return {
+      lookup: vi.fn(async (name: string) => ({
+        calories: name === "apple" ? 95 : 0,
+      })),
+    };
+  }
+
+  it("passes registered services to the handler via ctx.services", async () => {
+    const nutritionApi = makeNutritionApi();
+
+    const { createAction } = createActions<{ id: string }, Services>({
+      getContext: async () => ({
+        db: {} as Db,
+        user: { id: "u1" },
+        grants: [],
+      }),
+      services: { nutritionApi },
+    });
+
+    const lookup = createAction(
+      (_db, input: { food: string }, ctx) => ({
+        permissions: [],
+        run: async () => {
+          // The whole point: ctx.services is fully typed with the registered shape.
+          return ctx.services.nutritionApi.lookup(input.food);
+        },
+      }),
+    );
+
+    const result = await lookup.action({
+      request: createFormDataRequest({ food: "apple" }),
+      params: {},
+    });
+
+    expect(result).toEqual({ calories: 95 });
+    expect(nutritionApi.lookup).toHaveBeenCalledWith("apple");
+  });
+
+  it("passes the same services instance to multiple composed actions", async () => {
+    const nutritionApi = makeNutritionApi();
+    const received: unknown[] = [];
+
+    const { createAction, composeActions } = createActions<{ id: string }, Services>({
+      getContext: async () => ({
+        db: {} as Db,
+        user: { id: "u1" },
+        grants: [],
+      }),
+      services: { nutritionApi },
+    });
+
+    const lookup = createAction(
+      (_db, input: { food: string }, ctx) => ({
+        permissions: [],
+        run: async () => {
+          received.push(ctx.services.nutritionApi);
+          return ctx.services.nutritionApi.lookup(input.food);
+        },
+      }),
+    );
+
+    const lookupAgain = createAction(
+      (_db, input: { food: string }, ctx) => ({
+        permissions: [],
+        run: async () => {
+          received.push(ctx.services.nutritionApi);
+          return ctx.services.nutritionApi.lookup(input.food);
+        },
+      }),
+    );
+
+    const composed = composeActions({ lookup, lookupAgain });
+
+    await composed.action({
+      request: createFormDataRequest({ _action: "lookup", food: "apple" }),
+      params: {},
+    });
+    await composed.action({
+      request: createFormDataRequest({ _action: "lookupAgain", food: "banana" }),
+      params: {},
+    });
+
+    expect(received).toHaveLength(2);
+    // Both actions see the exact same services instance — not a copy.
+    expect(received[0]).toBe(nutritionApi);
+    expect(received[1]).toBe(nutritionApi);
+  });
+
+  it("defaults ctx.services to {} when no services are configured", async () => {
+    const { createAction } = createActions({
+      getContext: makeGetContext(),
+    });
+
+    let sawServices: unknown = null;
+    const noServicesAction = createAction(
+      (_db, _input: Record<string, never>, ctx) => ({
+        permissions: [],
+        run: async () => {
+          sawServices = ctx.services;
+          return null;
+        },
+      }),
+    );
+
+    await noServicesAction.action({
+      request: createFormDataRequest({}),
+      params: {},
+    });
+
+    expect(sawServices).toEqual({});
+  });
+
+  it("getContext may override registered services for a specific request", async () => {
+    const defaultApi = makeNutritionApi();
+    const overrideApi = makeNutritionApi();
+
+    const { createAction } = createActions<{ id: string }, Services>({
+      getContext: async () => ({
+        db: {} as Db,
+        user: { id: "u1" },
+        grants: [],
+        // Per-request override takes precedence over the factory-level default.
+        services: { nutritionApi: overrideApi },
+      }),
+      services: { nutritionApi: defaultApi },
+    });
+
+    let seenApi: NutritionApi | null = null;
+    const lookup = createAction(
+      (_db, _input: Record<string, never>, ctx) => ({
+        permissions: [],
+        run: async () => {
+          seenApi = ctx.services.nutritionApi;
+          return null;
+        },
+      }),
+    );
+
+    await lookup.action({
+      request: createFormDataRequest({}),
+      params: {},
+    });
+
+    expect(seenApi).toBe(overrideApi);
+    expect(seenApi).not.toBe(defaultApi);
   });
 });
