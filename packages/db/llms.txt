@@ -64,6 +64,24 @@ db.delete(table).where(cond): DeleteReturningBuilder
 
 All write builders are `Operation<void>` with an optional `.returning()` that changes return type.
 
+#### Single-op shorthand (no compose required)
+
+For a single mutation, call `.run()` directly on the Operation -- there's no need to wrap
+it in `compose()` or `db.batch()`. Reserve those for multi-op workflows.
+
+```typescript
+// Insert
+const card = await db.insert(cards).values({ title: "New" }).returning().run();
+
+// Update
+await db.update(cards).set({ archived: true }).where(eq(cards.id, id)).run();
+
+// Delete
+await db.delete(cards).where(eq(cards.id, id)).run();
+```
+
+`.run()` arguments are optional -- only pass `params` when your query uses `sql.placeholder()`.
+
 ### compose(operations, executor): Operation<TResult>
 
 ```typescript

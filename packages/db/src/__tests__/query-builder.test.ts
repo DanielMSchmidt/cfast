@@ -63,4 +63,33 @@ describe("QueryBuilder", () => {
       expect(op.permissions).toEqual([]);
     });
   });
+
+  describe("single-op shorthand", () => {
+    it("findMany().run() works without arguments", async () => {
+      const qb = createQueryBuilder({
+        d1: createMockD1(),
+        schema,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
+        table: posts,
+        unsafe: false,
+      });
+
+      // No need to wrap in compose() for a single read.
+      await expect(qb.findMany().run()).resolves.toBeDefined();
+    });
+
+    it("findFirst().run() works without arguments", async () => {
+      const qb = createQueryBuilder({
+        d1: createMockD1(),
+        schema,
+        grants: grantsForRole("editor"),
+        user: { id: "user-1" },
+        table: posts,
+        unsafe: false,
+      });
+
+      await expect(qb.findFirst().run()).resolves.toBeUndefined();
+    });
+  });
 });
