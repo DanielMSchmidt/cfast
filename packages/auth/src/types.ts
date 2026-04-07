@@ -67,8 +67,31 @@ export type AuthConfig = {
   passkeys?: {
     /** Relying party display name shown during WebAuthn registration. */
     rpName: string;
-    /** Relying party identifier, typically the app's domain (e.g., `"myapp.com"`). */
-    rpId: string;
+    /**
+     * Relying party identifier, typically the app's domain (e.g., `"myapp.com"`).
+     *
+     * Accepts either a static string or a function that resolves the RP ID
+     * from the incoming request. Use the function form for multi-tenant
+     * deployments that serve multiple domains from a single worker — the
+     * request-aware variant lets you return the actual hostname the user
+     * is connecting from instead of hard-coding a single value at factory
+     * time. The function form requires calling `initAuth(env, request)`
+     * so the request is available when Better Auth is constructed.
+     *
+     * @example Static value
+     * ```ts
+     * passkeys: { rpName: "My App", rpId: "myapp.com" }
+     * ```
+     *
+     * @example Per-request resolver
+     * ```ts
+     * passkeys: {
+     *   rpName: "My App",
+     *   rpId: (request) => new URL(request.url).hostname,
+     * }
+     * ```
+     */
+    rpId: string | ((request: Request) => string);
   };
   /** Magic link email configuration. Required to enable magic link authentication. */
   magicLink?: {
