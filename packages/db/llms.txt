@@ -184,3 +184,8 @@ export async function action({ context, request }) {
 - **Using `import { posts }` instead of `import * as schema`** -- The `schema` config must be `import *` so Drizzle's relational API can look up tables by key name.
 - **Using `db.unsafe()` for admin endpoints** -- Use a role with `grant("manage", "all")` instead. Reserve `unsafe()` for genuinely user-less contexts (cron, migrations).
 - **Expecting relational `with` to have permission filters** -- Permission WHERE clauses only apply to the root table, not joined relations.
+
+## See Also
+
+- `@cfast/permissions` -- Defines the grants checked by every Operation.
+- `@cfast/actions` -- Surfaces Operation `.permissions` to the client.
