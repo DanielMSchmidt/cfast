@@ -3,7 +3,15 @@ import { createQueryBuilder } from "./query-builder";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "./mutate-builder";
 import { createCacheManager, type CacheManager } from "./cache";
 import { deduplicateDescriptors } from "./utils";
-import type { Db, DbConfig, Operation } from "./types";
+import type {
+  Db,
+  DbConfig,
+  Operation,
+  QueryBuilder,
+  InsertBuilder,
+  UpdateBuilder,
+  DeleteBuilder,
+} from "./types";
 
 /**
  * Creates a permission-aware database instance bound to the given user.
@@ -47,7 +55,9 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
   };
 
   return {
-    query(table: DrizzleTable) {
+    query<TTable extends DrizzleTable>(table: TTable): QueryBuilder<TTable> {
+      // The runtime builder is row-type-erased; the generic on `query` exists
+      // purely to propagate `InferRow<TTable>` to callers.
       return createQueryBuilder({
         d1: config.d1,
         schema: config.schema,
@@ -55,10 +65,10 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         user: config.user,
         table,
         unsafe: isUnsafe,
-      });
+      }) as unknown as QueryBuilder<TTable>;
     },
 
-    insert(table: DrizzleTable) {
+    insert<TTable extends DrizzleTable>(table: TTable): InsertBuilder<TTable> {
       return createInsertBuilder({
         d1: config.d1,
         schema: config.schema,
@@ -67,10 +77,10 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         table,
         unsafe: isUnsafe,
         onMutate,
-      });
+      }) as unknown as InsertBuilder<TTable>;
     },
 
-    update(table: DrizzleTable) {
+    update<TTable extends DrizzleTable>(table: TTable): UpdateBuilder<TTable> {
       return createUpdateBuilder({
         d1: config.d1,
         schema: config.schema,
@@ -79,10 +89,10 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         table,
         unsafe: isUnsafe,
         onMutate,
-      });
+      }) as unknown as UpdateBuilder<TTable>;
     },
 
-    delete(table: DrizzleTable) {
+    delete<TTable extends DrizzleTable>(table: TTable): DeleteBuilder<TTable> {
       return createDeleteBuilder({
         d1: config.d1,
         schema: config.schema,
@@ -91,7 +101,7 @@ function buildDb(config: DbConfig, isUnsafe: boolean): Db {
         table,
         unsafe: isUnsafe,
         onMutate,
-      });
+      }) as unknown as DeleteBuilder<TTable>;
     },
 
     unsafe() {

@@ -25,4 +25,5 @@ export type {
   UpdateReturningBuilder,
   DeleteBuilder,
   DeleteReturningBuilder,
+  InferRow,
 } from "./types";

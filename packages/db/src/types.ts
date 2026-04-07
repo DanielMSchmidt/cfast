@@ -1,5 +1,22 @@
 import type { Grant, PermissionDescriptor, DrizzleTable } from "@cfast/permissions";
 
+// --- Row inference helpers ---
+
+/**
+ * Extracts the row type from a Drizzle table reference.
+ *
+ * Drizzle tables expose `$inferSelect` (the row shape returned by `SELECT *`).
+ * `InferRow<typeof posts>` resolves to `{ id: string; title: string; ... }`.
+ *
+ * Falls back to `Record<string, unknown>` for opaque `DrizzleTable` references
+ * (e.g. when callers do not specify a concrete table type generic).
+ *
+ * @typeParam TTable - The Drizzle table type (e.g. `typeof posts`).
+ */
+export type InferRow<TTable> = TTable extends { $inferSelect: infer R }
+  ? R
+  : Record<string, unknown>;
+
 // --- Operation ---
 
 /**
@@ -378,14 +395,19 @@ export type PaginateOptions = {
  * ```
  */
 export type Db = {
-  /** Creates a {@link QueryBuilder} for reading rows from the given table. */
-  query: (table: DrizzleTable) => QueryBuilder;
+  /**
+   * Creates a {@link QueryBuilder} for reading rows from the given table.
+   *
+   * The builder is generic over `TTable`, so `findMany`/`findFirst` return rows
+   * typed via `InferRow<TTable>` -- callers don't need to cast to `as any`.
+   */
+  query: <TTable extends DrizzleTable>(table: TTable) => QueryBuilder<TTable>;
   /** Creates an {@link InsertBuilder} for inserting rows into the given table. */
-  insert: (table: DrizzleTable) => InsertBuilder;
+  insert: <TTable extends DrizzleTable>(table: TTable) => InsertBuilder<TTable>;
   /** Creates an {@link UpdateBuilder} for updating rows in the given table. */
-  update: (table: DrizzleTable) => UpdateBuilder;
+  update: <TTable extends DrizzleTable>(table: TTable) => UpdateBuilder<TTable>;
   /** Creates a {@link DeleteBuilder} for deleting rows from the given table. */
-  delete: (table: DrizzleTable) => DeleteBuilder;
+  delete: <TTable extends DrizzleTable>(table: TTable) => DeleteBuilder<TTable>;
   /**
    * Returns a new `Db` instance that skips all permission checks.
    *
@@ -430,21 +452,29 @@ export type Db = {
  * const page = await builder.paginate(params, { orderBy: desc(posts.createdAt) }).run({});
  * ```
  */
-export type QueryBuilder = {
-  /** Returns an {@link Operation} that fetches multiple rows matching the given options. */
-  findMany: (options?: FindManyOptions) => Operation<unknown[]>;
-  /** Returns an {@link Operation} that fetches the first matching row, or `undefined` if none match. */
-  findFirst: (options?: FindFirstOptions) => Operation<unknown | undefined>;
+export type QueryBuilder<TTable extends DrizzleTable = DrizzleTable> = {
+  /**
+   * Returns an {@link Operation} that fetches multiple rows matching the given options.
+   *
+   * The result is typed via `InferRow<TTable>`, so callers get IntelliSense on
+   * `(row) => row.title` without any cast.
+   */
+  findMany: (options?: FindManyOptions) => Operation<InferRow<TTable>[]>;
+  /**
+   * Returns an {@link Operation} that fetches the first matching row, or `undefined`
+   * if none match. The row type is propagated from `TTable`.
+   */
+  findFirst: (options?: FindFirstOptions) => Operation<InferRow<TTable> | undefined>;
   /**
    * Returns a paginated {@link Operation} using either cursor-based or offset-based strategy.
    *
    * The return type depends on the `params.type` discriminant: {@link CursorPage} for `"cursor"`,
-   * {@link OffsetPage} for `"offset"`.
+   * {@link OffsetPage} for `"offset"`. Each page's items are typed as `InferRow<TTable>`.
    */
   paginate: (
     params: CursorParams | OffsetParams,
     options?: PaginateOptions,
-  ) => Operation<CursorPage<unknown>> | Operation<OffsetPage<unknown>>;
+  ) => Operation<CursorPage<InferRow<TTable>>> | Operation<OffsetPage<InferRow<TTable>>>;
 };
 
 /**
@@ -465,21 +495,22 @@ export type QueryBuilder = {
  *   .run({});
  * ```
  */
-export type InsertBuilder = {
+export type InsertBuilder<TTable extends DrizzleTable = DrizzleTable> = {
   /** Specifies the column values to insert, returning an {@link InsertReturningBuilder}. */
-  values: (values: Record<string, unknown>) => InsertReturningBuilder;
+  values: (values: Record<string, unknown>) => InsertReturningBuilder<TTable>;
 };
 
 /**
  * An insert {@link Operation} that optionally returns the inserted row via `.returning()`.
  *
  * Without `.returning()`, the operation resolves to `void`. With `.returning()`,
- * it resolves to the full inserted row.
+ * it resolves to the full inserted row, typed as `InferRow<TTable>`.
  */
-export type InsertReturningBuilder = Operation<void> & {
-  /** Chains `.returning()` to get the inserted row back from D1. */
-  returning: () => Operation<unknown>;
-};
+export type InsertReturningBuilder<TTable extends DrizzleTable = DrizzleTable> =
+  Operation<void> & {
+    /** Chains `.returning()` to get the inserted row back from D1. */
+    returning: () => Operation<InferRow<TTable>>;
+  };
 
 /**
  * Builder for update operations on a single table.
@@ -495,9 +526,9 @@ export type InsertReturningBuilder = Operation<void> & {
  *   .run({});
  * ```
  */
-export type UpdateBuilder = {
+export type UpdateBuilder<TTable extends DrizzleTable = DrizzleTable> = {
   /** Specifies the column values to update, returning an {@link UpdateWhereBuilder}. */
-  set: (values: Record<string, unknown>) => UpdateWhereBuilder;
+  set: (values: Record<string, unknown>) => UpdateWhereBuilder<TTable>;
 };
 
 /**
@@ -505,21 +536,22 @@ export type UpdateBuilder = {
  *
  * The WHERE condition is AND'd with any permission-based WHERE clauses from the user's grants.
  */
-export type UpdateWhereBuilder = {
+export type UpdateWhereBuilder<TTable extends DrizzleTable = DrizzleTable> = {
   /** Specifies the WHERE condition (AND'd with permission filters at `.run()` time). */
-  where: (condition: unknown) => UpdateReturningBuilder;
+  where: (condition: unknown) => UpdateReturningBuilder<TTable>;
 };
 
 /**
  * An update {@link Operation} that optionally returns the updated row via `.returning()`.
  *
  * Without `.returning()`, the operation resolves to `void`. With `.returning()`,
- * it resolves to the full updated row.
+ * it resolves to the full updated row, typed as `InferRow<TTable>`.
  */
-export type UpdateReturningBuilder = Operation<void> & {
-  /** Chains `.returning()` to get the updated row back from D1. */
-  returning: () => Operation<unknown>;
-};
+export type UpdateReturningBuilder<TTable extends DrizzleTable = DrizzleTable> =
+  Operation<void> & {
+    /** Chains `.returning()` to get the updated row back from D1. */
+    returning: () => Operation<InferRow<TTable>>;
+  };
 
 /**
  * Builder for delete operations on a single table.
@@ -532,18 +564,19 @@ export type UpdateReturningBuilder = Operation<void> & {
  * await db.delete(posts).where(eq(posts.id, "abc-123")).run({});
  * ```
  */
-export type DeleteBuilder = {
+export type DeleteBuilder<TTable extends DrizzleTable = DrizzleTable> = {
   /** Specifies the WHERE condition (AND'd with permission filters at `.run()` time). */
-  where: (condition: unknown) => DeleteReturningBuilder;
+  where: (condition: unknown) => DeleteReturningBuilder<TTable>;
 };
 
 /**
  * A delete {@link Operation} that optionally returns the deleted row via `.returning()`.
  *
  * Without `.returning()`, the operation resolves to `void`. With `.returning()`,
- * it resolves to the full deleted row.
+ * it resolves to the full deleted row, typed as `InferRow<TTable>`.
  */
-export type DeleteReturningBuilder = Operation<void> & {
-  /** Chains `.returning()` to get the deleted row back from D1. */
-  returning: () => Operation<unknown>;
-};
+export type DeleteReturningBuilder<TTable extends DrizzleTable = DrizzleTable> =
+  Operation<void> & {
+    /** Chains `.returning()` to get the deleted row back from D1. */
+    returning: () => Operation<InferRow<TTable>>;
+  };

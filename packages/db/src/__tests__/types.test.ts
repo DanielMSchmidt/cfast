@@ -1,8 +1,8 @@
 import { describe, it, expectTypeOf } from "vitest";
 import { relations } from "drizzle-orm";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createDb } from "../create-db";
-import type { Operation, Db, DbConfig } from "../types";
+import type { Operation, Db, DbConfig, InferRow } from "../types";
 import { createMockD1 } from "./helpers";
 
 describe("types", () => {
@@ -20,6 +20,80 @@ describe("types", () => {
     expectTypeOf<Db>().toHaveProperty("unsafe");
     expectTypeOf<Db>().toHaveProperty("batch");
     expectTypeOf<Db>().toHaveProperty("cache");
+  });
+
+  it("InferRow extracts the row shape from a Drizzle table", () => {
+    const _products = sqliteTable("products", {
+      id: text("id").primaryKey(),
+      name: text("name").notNull(),
+      price: integer("price").notNull(),
+    });
+
+    type Row = InferRow<typeof _products>;
+    expectTypeOf<Row>().toEqualTypeOf<{
+      id: string;
+      name: string;
+      price: number;
+    }>();
+  });
+
+  it("db.query(table).findMany() returns Operation<Row[]>", () => {
+    const products = sqliteTable("products", {
+      id: text("id").primaryKey(),
+      name: text("name").notNull(),
+      price: integer("price").notNull(),
+    });
+
+    const db = createDb({
+      d1: createMockD1(),
+      schema: { products },
+      grants: [],
+      user: null,
+      cache: false,
+    });
+
+    const op = db.query(products).findMany();
+    expectTypeOf(op).toEqualTypeOf<
+      Operation<{ id: string; name: string; price: number }[]>
+    >();
+  });
+
+  it("db.query(table).findFirst() returns Operation<Row | undefined>", () => {
+    const products = sqliteTable("products", {
+      id: text("id").primaryKey(),
+      name: text("name").notNull(),
+    });
+
+    const db = createDb({
+      d1: createMockD1(),
+      schema: { products },
+      grants: [],
+      user: null,
+      cache: false,
+    });
+
+    const op = db.query(products).findFirst();
+    expectTypeOf(op).toEqualTypeOf<
+      Operation<{ id: string; name: string } | undefined>
+    >();
+  });
+
+  it("db.insert(table).values().returning() returns Operation<Row>", () => {
+    const products = sqliteTable("products", {
+      id: text("id").primaryKey(),
+      name: text("name").notNull(),
+    });
+
+    const db = createDb({
+      d1: createMockD1(),
+      schema: { products },
+      grants: [],
+      user: null,
+      cache: false,
+    });
+
+    const op = db.insert(products).values({ id: "p1", name: "Hat" }).returning();
+    expectTypeOf(op).toEqualTypeOf<Operation<{ id: string; name: string }>>();
   });
 
   it("DbConfig.schema accepts a wide record (no cast required)", () => {
