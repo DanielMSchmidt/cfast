@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.2.0...@cfast/auth-v0.2.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **auth:** align passkeys schema with Better Auth expected field names ([#85](https://github.com/DanielMSchmidt/cfast/issues/85)) ([751f6aa](https://github.com/DanielMSchmidt/cfast/commit/751f6aa78e8bd4c25a026221b94382b2d826da7b))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.1.0...@cfast/auth-v0.2.0) (2026-03-22)
 
 
