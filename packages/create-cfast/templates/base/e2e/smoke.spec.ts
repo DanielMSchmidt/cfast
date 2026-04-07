@@ -44,6 +44,12 @@ for (const path of ROUTES) {
     const status = response!.status();
     expect(OK(status), `${path} returned ${status}`).toBe(true);
 
+    // Wait for the page to settle. In vite dev mode the first visit may
+    // trigger a dependency optimization reload — reading `page.content()`
+    // mid-navigation throws. `networkidle` is overkill for most production
+    // deploys but is the simplest thing that's reliable in dev.
+    await page.waitForLoadState("networkidle");
+
     // Catch placeholder pages even if status is 200
     const body = await page.content();
     expect(body, `${path} contains scaffold placeholder`).not.toContain(

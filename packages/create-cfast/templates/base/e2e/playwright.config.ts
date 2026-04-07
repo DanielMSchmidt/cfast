@@ -1,6 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
-const PORT = 5173;
+// Port can be overridden via E2E_PORT (useful for running against a non-default
+// dev server port, or for test harnesses that pick a free port per run).
+const PORT = Number(process.env.E2E_PORT ?? 5173);
 const LOCAL_BASE_URL = `http://localhost:${PORT}`;
 const baseURL = process.env.E2E_BASE_URL ?? LOCAL_BASE_URL;
 const isLocal = baseURL === LOCAL_BASE_URL;
@@ -16,7 +18,7 @@ export default defineConfig({
   // Auto-start the dev server only when running locally
   webServer: isLocal
     ? {
-        command: "pnpm dev",
+        command: `pnpm dev --port=${PORT}`,
         url: LOCAL_BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
