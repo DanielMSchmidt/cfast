@@ -161,6 +161,50 @@ export default [...authRoutes({ handlerFile: "routes/auth.$.tsx" }), ...otherRou
 
 Drizzle tables: `user`, `session`, `passkey`, `role`, `impersonation_log`.
 
+### Test helpers (`@cfast/auth/test-helpers`)
+
+Real-workflow helpers for driving the magic-link flow from tests. Every helper hits the actual Better Auth pipeline — no mocks, no hand-written session inserts — so a session produced by `loginAs()` is indistinguishable from one a user created by clicking a link in their inbox.
+
+```typescript
+import {
+  createTestApp,
+  loginAs,
+  createTestSession,
+  applyAuthSchema,
+} from "@cfast/auth/test-helpers";
+
+// 1. Spin up a real auth instance against a D1 binding (env.DB for
+//    vitest-pool-workers, or any other D1 you control).
+const app = await createTestApp({
+  d1: env.DB,
+  appUrl: env.APP_URL,
+  auth: { permissions, schema: authSchema, defaultRoles: ["user"] },
+});
+
+// 2. Log in as a user by completing the REAL magic-link flow:
+//    sendMagicLink -> capture URL -> issue verify request -> parse cookie.
+const { cookie, user, session } = await loginAs(app, {
+  email: "alice@test.com",
+  name: "Alice",
+  roles: ["editor"], // assigned via the real auth.setRole() API
+});
+
+// 3. Drive your production loaders with the helper's cookie — the same
+//    requireUser() call that runs in prod will authenticate it.
+const response = await loader({
+  request: new Request("http://localhost/dashboard", {
+    headers: { Cookie: cookie },
+  }),
+});
+
+// Lower-level: skip the email-send callback and mint a session via
+// auth.api.signInMagicLink directly. Same end result (real session row,
+// real cookie), just less surface area exercised.
+await createTestSession(app, { email: "bob@test.com", roles: ["admin"] });
+```
+
+`createTestApp` also exposes `capturedMagicLinks` and `waitForMagicLink(email?)` so tests can assert on the URLs Better Auth generates. Use `applyAuthSchema(d1)` to set up the tables if you want to manage lifecycle yourself and pass `applyMigrations: false`.
+
 ## Usage Examples
 
 ### Protect a layout route

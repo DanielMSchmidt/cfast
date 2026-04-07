@@ -34,6 +34,10 @@
     "./schema": {
       "import": "./dist/schema.js",
       "types": "./dist/schema.d.ts"
+    },
+    "./test-helpers": {
+      "import": "./dist/test-helpers/index.js",
+      "types": "./dist/test-helpers/index.d.ts"
     }
   },
   "files": [
@@ -45,8 +49,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts --format esm --dts --watch",
+    "build": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts src/test-helpers/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts src/test-helpers/index.ts --format esm --dts --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/"
