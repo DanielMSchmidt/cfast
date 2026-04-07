@@ -258,4 +258,32 @@ describe("resolveGrants", () => {
       expect(result).toHaveLength(1);
     });
   });
+
+  describe("string subject support", () => {
+    it("merges string-keyed string subjects across roles", () => {
+      const p = definePermissions({
+        roles: ["a", "b"] as const,
+        grants: {
+          a: [grant("read", "posts")],
+          b: [grant("read", "posts")],
+        },
+      });
+      const result = resolveGrants(p, { roles: ["a", "b"] });
+      expect(result).toHaveLength(1);
+      expect(result[0].subject).toBe("posts");
+    });
+
+    it("does NOT merge string and object subjects with the same name (preserves identity)", () => {
+      const p = definePermissions({
+        roles: ["a", "b"] as const,
+        grants: {
+          a: [grant("read", posts)],   // object subject
+          b: [grant("read", "posts")], // string subject
+        },
+      });
+      const result = resolveGrants(p, { roles: ["a", "b"] });
+      // They live under different group keys, so two grants
+      expect(result).toHaveLength(2);
+    });
+  });
 });

@@ -1,12 +1,22 @@
-import type { Grant, GrantFn, Permissions, PermissionsConfig } from "./types";
+import type {
+  Grant,
+  GrantFn,
+  Permissions,
+  PermissionsConfig,
+  SchemaMap,
+} from "./types";
 import { grant } from "./grant";
 
-function buildPermissions<TRoles extends readonly string[]>(
-  config: PermissionsConfig<TRoles>,
+function buildPermissions<
+  TRoles extends readonly string[],
+  TUser = unknown,
+  TTables extends SchemaMap = SchemaMap,
+>(
+  config: PermissionsConfig<TRoles, TUser, TTables>,
 ): Permissions<TRoles> {
   const { roles, hierarchy } = config;
 
-  const grantFn: GrantFn<unknown> = grant;
+  const grantFn = grant as GrantFn<TUser, TTables>;
   const grants =
     typeof config.grants === "function"
       ? config.grants(grantFn)
@@ -25,9 +35,13 @@ function buildPermissions<TRoles extends readonly string[]>(
  * Creates a permission configuration that can be shared between server-side
  * enforcement (`@cfast/db`) and client-side introspection (`@cfast/actions`).
  *
- * Supports two calling styles:
+ * Supports three calling styles:
  * - **Direct:** `definePermissions(config)` when no custom user type is needed.
- * - **Curried:** `definePermissions<MyUser>()(config)` to get typed `where` clause user parameters.
+ * - **Curried (user only):** `definePermissions<MyUser>()(config)` for typed
+ *   `where` clause user parameters.
+ * - **Curried (user + tables):** `definePermissions<MyUser, typeof schema>()(config)`
+ *   to additionally constrain string subjects passed to the `grant` callback
+ *   to known table names from the schema map.
  *
  * @param config - The permissions configuration with roles, grants, and optional hierarchy.
  * @returns A {@link Permissions} object containing roles, raw grants, and hierarchy-expanded `resolvedGrants`.
@@ -36,8 +50,10 @@ function buildPermissions<TRoles extends readonly string[]>(
  * ```typescript
  * import { definePermissions, grant } from "@cfast/permissions";
  * import { eq } from "drizzle-orm";
- * import { posts, comments } from "./schema";
+ * import * as schema from "./schema";
+ * const { posts, comments } = schema;
  *
+ * // Direct form — accepts table objects
  * const permissions = definePermissions({
  *   roles: ["anonymous", "user", "admin"] as const,
  *   grants: {
@@ -47,20 +63,35 @@ function buildPermissions<TRoles extends readonly string[]>(
  *     user: [
  *       grant("read", posts),
  *       grant("create", posts),
- *       grant("update", posts, { where: (p, u) => eq(p.authorId, u.id) }),
  *     ],
  *     admin: [grant("manage", "all")],
  *   },
+ * });
+ *
+ * // Curried form — string subjects constrained to known tables
+ * type AuthUser = { id: string };
+ * const perms = definePermissions<AuthUser, typeof schema>()({
+ *   roles: ["user", "admin"] as const,
+ *   grants: (grant) => ({
+ *     user: [
+ *       grant("read", "posts"),               // string form
+ *       grant("update", posts, {              // object form still works
+ *         where: (p, u) => eq(p.authorId, u.id),
+ *       }),
+ *     ],
+ *     admin: [grant("manage", "all")],
+ *   }),
  * });
  * ```
  */
 export function definePermissions<TRoles extends readonly string[]>(
   config: PermissionsConfig<TRoles>,
 ): Permissions<TRoles>;
-export function definePermissions<TUser>(): <
-  TRoles extends readonly string[],
->(
-  config: PermissionsConfig<TRoles, TUser>,
+export function definePermissions<
+  TUser,
+  TTables extends SchemaMap = SchemaMap,
+>(): <TRoles extends readonly string[]>(
+  config: PermissionsConfig<TRoles, TUser, TTables>,
 ) => Permissions<TRoles>;
 export function definePermissions<TRoles extends readonly string[]>(
   config?: PermissionsConfig<TRoles>,

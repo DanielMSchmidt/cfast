@@ -4,6 +4,7 @@ export { grant } from "./grant";
 export { can } from "./can";
 export { checkPermissions } from "./check";
 export { resolveGrants } from "./resolve-grants";
+export type { UserWithRoles } from "./resolve-grants";
 export { ForbiddenError } from "./errors";
 export { CRUD_ACTIONS, getTableName } from "./types";
 export type {
@@ -12,6 +13,9 @@ export type {
   DrizzleTable,
   Grant,
   GrantFn,
+  SchemaMap,
+  SubjectInput,
+  TableName,
   WhereClause,
   PermissionDescriptor,
   PermissionCheckResult,

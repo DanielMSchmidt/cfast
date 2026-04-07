@@ -43,6 +43,23 @@ const permissions = definePermissions<MyUser>()({
 });
 ```
 
+**Curried form with schema** to constrain string subjects to known table names at compile time:
+```typescript
+import * as schema from "./schema";
+
+const permissions = definePermissions<MyUser, typeof schema>()({
+  roles: ["member", "admin"] as const,
+  grants: (grant) => ({
+    member: [
+      grant("read", "projects"),                  // ✓ string form, type-checked
+      grant("read", schema.projects),             // ✓ object form still works
+      // grant("read", "unknownTable"),           // ✗ TypeScript error
+    ],
+    admin: [grant("manage", "all")],
+  }),
+});
+```
+
 **Returns** `Permissions<TRoles>`:
 ```typescript
 type Permissions<TRoles> = {
@@ -54,25 +71,39 @@ type Permissions<TRoles> = {
 
 ### `grant(action, subject, options?): Grant`
 ```typescript
-grant(action: PermissionAction, subject: DrizzleTable | "all", options?: { where?: WhereClause }): Grant
+grant(action: PermissionAction, subject: DrizzleTable | string, options?: { where?: WhereClause }): Grant
 ```
 - `PermissionAction`: `"read" | "create" | "update" | "delete" | "manage"`
 - `WhereClause`: `(columns, user) => DrizzleSQL | undefined`
+- `subject` may be a Drizzle table object, a string table name (e.g. `"projects"`), or `"all"`. String and object forms are interchangeable at runtime — both are normalized to the same key by `getTableName()`. To get compile-time validation that a string subject is a known table, use the `definePermissions<User, typeof schema>()` curried form.
 
 ### `checkPermissions(role, permissions, descriptors): PermissionCheckResult`
 ```typescript
 import { checkPermissions } from "@cfast/permissions";
 
 const result = checkPermissions("user", permissions, [
-  { action: "update", table: posts },
+  { action: "update", table: posts },         // object form
+  { action: "create", table: "comments" },    // string form also accepted
 ]);
 result.permitted;  // boolean
 result.denied;     // PermissionDescriptor[]
 result.reasons;    // string[]
 ```
 
-### `resolveGrants(permissions, roles): Grant[]`
+### `resolveGrants(permissions, userOrRoles): Grant[]`
 Merges grants from multiple roles into a flat array. Deduplicates by action+subject and OR-merges WHERE clauses.
+
+Two calling styles are supported (both equivalent):
+
+```typescript
+// Preferred: pass the user directly — the function extracts user.roles
+const grants = resolveGrants(permissions, user);
+
+// Legacy: pass the roles array yourself (still supported)
+const grants = resolveGrants(permissions, user.roles);
+```
+
+The user-object form accepts any value with a `roles: readonly string[]` field, so it works directly with the user shape from `@cfast/auth` without manual extraction.
 
 ### `ForbiddenError`
 ```typescript
@@ -90,13 +121,23 @@ class ForbiddenError extends Error {
 ### `can(grants, action, table): boolean`
 ```typescript
 import { can } from "@cfast/permissions";
-function can(grants: Grant[], action: PermissionAction, table: DrizzleTable): boolean
+function can<TTables extends Record<string, DrizzleTable> = Record<string, DrizzleTable>>(
+  grants: Grant[],
+  action: PermissionAction,
+  table: DrizzleTable | string,
+): boolean
 ```
 Quick grant-level permission check that works directly with resolved grants. Unlike `checkPermissions` (which takes a role string + full permissions object), `can` works with the user's resolved grants -- the same grants available in loaders, actions, and client-side. Returns `true` if any grant permits the action on the table (including `manage`/`all` wildcards).
 
+Accepts either a Drizzle table object or a string table name. To get compile-time validation that a string is an actual table, supply the schema map as a generic argument.
+
 ```typescript
-can(grants, "create", posts)  // → boolean
-can(grants, "delete", comments) // → boolean
+import * as schema from "../db/schema";
+
+can(grants, "create", schema.posts)        // ✓ object form
+can(grants, "create", "posts")             // ✓ string form (untyped)
+can<typeof schema>(grants, "create", "posts")        // ✓ string form, type-checked
+// can<typeof schema>(grants, "create", "unknownTable")  // ✗ TypeScript error
 ```
 
 ### `CRUD_ACTIONS`

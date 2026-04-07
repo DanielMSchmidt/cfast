@@ -34,4 +34,19 @@ describe("grant", () => {
     expect(grant("delete", posts).action).toBe("delete");
     expect(grant("manage", posts).action).toBe("manage");
   });
+
+  it("accepts a string subject (table name)", () => {
+    const g = grant("read", "projects");
+    expect(g.action).toBe("read");
+    expect(g.subject).toBe("projects");
+    expect(g.where).toBeUndefined();
+  });
+
+  it("accepts a string subject with a where clause", () => {
+    const whereFn: WhereClause = (_columns, _user) => ({ getSQL: () => ({}) });
+    const g = grant("update", "projects", { where: whereFn });
+    expect(g.action).toBe("update");
+    expect(g.subject).toBe("projects");
+    expect(g.where).toBe(whereFn);
+  });
 });
