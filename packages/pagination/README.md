@@ -2,7 +2,7 @@
 
 **Cursor-based, offset-based pagination and infinite scroll for React Router.**
 
-Server-side helpers live in `@cfast/db` (param parsing, query building). This package provides the client-side React hooks that consume paginated loader data.
+Ships both the client React hooks (`@cfast/pagination`) and matching loader-side helpers (`@cfast/pagination/server`). The two halves share an opaque cursor format so the full client/server loop works seamlessly. For Drizzle/D1-pushed pagination you can also use `@cfast/db`'s `db.query(table).paginate()`, which uses the same cursor format.
 
 ## Design Goals
 
@@ -13,7 +13,36 @@ Server-side helpers live in `@cfast/db` (param parsing, query building). This pa
 
 ## Cursor-Based Pagination
 
-### Loader (server)
+### Loader (server) — `@cfast/pagination/server`
+
+```typescript
+import type { LoaderFunctionArgs } from "react-router";
+import { applyCursorPagination, parseCursorParams } from "@cfast/pagination/server";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { cursor, limit } = parseCursorParams(request, {
+    defaultLimit: 20,
+    maxLimit: 100,
+  });
+
+  const result = await applyCursorPagination(
+    db.query(posts).findMany({ orderBy: desc(posts.createdAt) }),
+    { cursor, limit, cursorColumns: ["createdAt", "id"] },
+  );
+
+  return {
+    items: result.items,
+    nextCursor: result.nextCursor,
+    hasMore: result.hasMore,
+  };
+}
+```
+
+`applyCursorPagination` accepts an array, a `Promise` of an array, or any thenable
+query result. Sort the underlying query yourself so the order matches `cursorColumns`
+and `direction` (default `"desc"`).
+
+### Loader (server) — `@cfast/db` (SQL-pushed cursor)
 
 ```typescript
 import { parseCursorParams } from "@cfast/db";
@@ -121,13 +150,18 @@ function PostList() {
 
 ## API Reference
 
+### Server (`@cfast/pagination/server`)
+
+- **`applyCursorPagination<T>(query, options)`** — Applies cursor pagination to an array, Promise, or thenable query. Returns `Promise<{ items, nextCursor, hasMore }>`. Options: `{ cursor, limit, cursorColumns, direction? }`.
+- **`parseCursorParams(request, options?)`** — Parses `?cursor=X&limit=Y`. Returns `{ cursor, limit }`.
+- **`parseOffsetParams(request, options?)`** — Parses `?page=X&limit=Y`. Returns `{ page, limit }`.
+- **`encodeCursor(values)` / `decodeCursor(cursor)`** — Low-level opaque cursor encoding (base64-encoded JSON; compatible with `@cfast/db`).
+
+Parser options: `{ defaultLimit?: number, maxLimit?: number }` (defaults: 20, 100).
+
 ### Server (`@cfast/db`)
 
-- **`parseCursorParams(request, options?)`** — Parses `?cursor=X&limit=Y`. Returns `CursorParams`.
-- **`parseOffsetParams(request, options?)`** — Parses `?page=X&limit=Y`. Returns `OffsetParams`.
-- **`db.query(table).paginate(params, options)`** — Returns `Operation<CursorPage>` or `Operation<OffsetPage>` depending on params type.
-
-Options: `{ defaultLimit?: number, maxLimit?: number }` (defaults: 20, 100).
+- **`db.query(table).paginate(params, options)`** — Drizzle-aware pagination that pushes the cursor into a SQL `WHERE` clause. Cursors are interchangeable with `@cfast/pagination/server`.
 
 ### Client (`@cfast/pagination`)
 
