@@ -113,6 +113,81 @@ const env = defineEnv({
 });
 ```
 
+### Cloudflare bindings vs external API keys
+
+`type: "secret"` is **not** Cloudflare-specific -- it just declares "this must be a non-empty string read from the environment". Use it for both Cloudflare-managed secrets (set via `wrangler secret put`) and plain external API keys for third-party services (Stripe, Nutritionix, OpenAI, etc.). Use `type: "var"` for non-sensitive identifiers like app IDs, region codes, or feature flags.
+
+```typescript
+// app/env.ts
+import { defineEnv } from "@cfast/env";
+
+export const env = defineEnv({
+  // --- Cloudflare resource bindings ---
+  DB: { type: "d1" as const },
+  CACHE: { type: "kv" as const },
+  UPLOADS: { type: "r2" as const },
+
+  // --- External API secrets (set via `wrangler secret put`) ---
+  STRIPE_SECRET_KEY: { type: "secret" as const },
+  NUTRITIONIX_API_KEY: { type: "secret" as const },
+
+  // --- Plain non-secret config (set in wrangler.toml [vars]) ---
+  NUTRITIONIX_APP_ID: { type: "var" as const },
+  APP_URL: { type: "var" as const, default: "http://localhost:8787" },
+});
+```
+
+The matching `wrangler.toml`:
+```toml
+name = "my-app"
+main = "workers/app.ts"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "my-app-db"
+database_id = "..."
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "..."
+
+[[r2_buckets]]
+binding = "UPLOADS"
+bucket_name = "my-app-uploads"
+
+[vars]
+NUTRITIONIX_APP_ID = "abc123"
+APP_URL = "https://my-app.workers.dev"
+```
+
+For local development, put secrets in `.dev.vars` (gitignored):
+```ini
+# .dev.vars -- never commit this file
+STRIPE_SECRET_KEY=sk_test_...
+NUTRITIONIX_API_KEY=...
+```
+
+For production, push secrets via wrangler:
+```bash
+wrangler secret put STRIPE_SECRET_KEY
+wrangler secret put NUTRITIONIX_API_KEY
+```
+
+The validated env is fully typed, and missing secrets fail at Worker startup with an `EnvError` listing every problem at once -- you find out at deploy time, not at 3am when a request hits the missing key.
+
+```typescript
+// workers/app.ts
+import { env } from "../app/env";
+
+export default {
+  async fetch(request, rawEnv) {
+    env.init(rawEnv);
+    const { DB, STRIPE_SECRET_KEY, NUTRITIONIX_API_KEY, NUTRITIONIX_APP_ID } = env.get();
+    // All four are typed: D1Database, string, string, string
+  },
+};
+```
+
 ## Integration
 - Pass `env.get().DB` directly to `@cfast/db`'s `createDb()`.
 - Use `ReturnType<typeof env.get>` as your `Env` type in function signatures across your app.
