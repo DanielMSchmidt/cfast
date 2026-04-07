@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.1.1...@cfast/forms-v0.2.0) (2026-04-07)
+
+
+### Features
+
+* **forms:** parent-child tables + computed fields ([#142](https://github.com/DanielMSchmidt/cfast/issues/142)) ([9174a0d](https://github.com/DanielMSchmidt/cfast/commit/9174a0d78ac5690b218a688c74b9c47fdd4256f5))
+
 ## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.1.0...@cfast/forms-v0.1.1) (2026-04-07)
 
 
