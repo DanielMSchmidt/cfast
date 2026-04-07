@@ -52,6 +52,15 @@ export type CfastPlugin<
 > = {
   /** Unique identifier used as the namespace key in the app context. */
   name: TName;
+  /**
+   * Optional list of plugin references this plugin depends on.
+   *
+   * When supplied, `setup(ctx)` is automatically typed with the union of each
+   * required plugin's provides, and `app.use(this)` will throw at registration
+   * time if any of these plugins have not yet been registered.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requires?: readonly CfastPlugin<string, unknown, any, unknown>[];
   /** Called per-request to produce the values this plugin provides. */
   setup: (
     ctx: PluginSetupContext<TRequires>,
@@ -61,6 +70,50 @@ export type CfastPlugin<
   /** Optional client-side values exposed via `useApp()`. */
   client?: TClient;
 };
+
+/**
+ * Converts a union type to an intersection type.
+ *
+ * Used by {@link RequiresFromPlugins} to merge each required plugin's provides
+ * into a single intersection that becomes the `setup(ctx)` parameter shape.
+ */
+export type UnionToIntersection<U> = (
+  U extends unknown ? (k: U) => void : never
+) extends (k: infer I) => void
+  ? I
+  : never;
+
+/**
+ * Derives the `TRequires` shape for a `setup(ctx)` parameter from an array of
+ * plugin references passed via `definePlugin({ requires: [...] })`.
+ *
+ * Each plugin in the tuple contributes `{ [name]: provides }` and the results
+ * are intersected so `ctx` exposes every required plugin's namespace at the
+ * right key. An empty `requires` tuple resolves to `unknown` (no extra fields).
+ *
+ * Implementation note: we walk the tuple positionally with a mapped type
+ * (`{ [K in keyof R]: ... }[number]`) instead of using `R[number]` directly.
+ * The mapped form preserves per-element inference of `N` and `P`, so multiple
+ * required plugins each contribute their own `{ name: provides }` shape rather
+ * than collapsing into a union of widened `provides` values.
+ */
+export type RequiresFromPlugins<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  R extends readonly CfastPlugin<string, unknown, any, unknown>[],
+> = R extends readonly []
+  ? unknown
+  : UnionToIntersection<
+      {
+        [K in keyof R]: R[K] extends CfastPlugin<
+          infer N,
+          infer P,
+          unknown,
+          unknown
+        >
+          ? { [Key in N]: P }
+          : never;
+      }[number]
+    >;
 
 /**
  * Minimal plugin shape used internally for runtime iteration in `buildApp`.
@@ -79,6 +132,14 @@ export type CfastPlugin<
 export type RuntimePlugin = {
   /** Plugin name used as the namespace key. */
   name: string;
+  /**
+   * Optional dependencies declared via `definePlugin({ requires: [...] })`.
+   *
+   * `app.use(plugin)` walks this list and verifies each entry is already
+   * registered, throwing `CfastConfigError` immediately if not.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  requires?: readonly CfastPlugin<string, unknown, any, unknown>[];
   /**
    * Setup function called per-request.
    *

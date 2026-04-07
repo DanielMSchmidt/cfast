@@ -41,9 +41,9 @@ const authPlugin = definePlugin({
 
     if (config.features.auth) {
       pluginDefs.push(`
-type AuthProvides = { auth: { user: AuthUser | null; grants: Grant[] } };
-const dbPlugin = definePlugin<AuthProvides>()({
+const dbPlugin = definePlugin({
   name: "db",
+  requires: [authPlugin],
   setup(ctx) {
     const client = createDb({
       d1: ctx.env.DB as D1Database,
