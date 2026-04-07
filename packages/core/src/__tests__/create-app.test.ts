@@ -54,6 +54,82 @@ describe("createApp", () => {
       const app2 = app.use(p);
       expect(app2).not.toBe(app);
     });
+
+    it("throws when a plugin's `requires` dependency is not yet registered", () => {
+      const authPlugin = definePlugin({
+        name: "auth",
+        setup: () => ({ user: { id: "u1" } }),
+      });
+      const dbPlugin = definePlugin({
+        name: "db",
+        requires: [authPlugin],
+        setup: (ctx) => ({ userId: ctx.auth.user.id }),
+      });
+
+      const app = createApp({ env: envSchema, permissions });
+      // Misordered: dbPlugin used before its `auth` dependency. The compile
+      // checker also catches this (TPluginContext is still `unknown` here),
+      // but we suppress it to assert that the runtime check fires with a
+      // clear, actionable message even when types are bypassed.
+      expect(() =>
+        // @ts-expect-error testing runtime guard against missing dependency
+        app.use(dbPlugin),
+      ).toThrow(CfastConfigError);
+      expect(() =>
+        // @ts-expect-error testing runtime guard against missing dependency
+        app.use(dbPlugin),
+      ).toThrow(
+        /Plugin "db" requires "auth" but it has not been registered/,
+      );
+      expect(() =>
+        // @ts-expect-error testing runtime guard against missing dependency
+        app.use(dbPlugin),
+      ).toThrow(
+        /Did you call \.use\(authPlugin\) before \.use\(dbPlugin\)\?/,
+      );
+    });
+
+    it("does not throw when dependencies are registered in the correct order", () => {
+      const authPlugin = definePlugin({
+        name: "auth",
+        setup: () => ({ user: { id: "u1" } }),
+      });
+      const dbPlugin = definePlugin({
+        name: "db",
+        requires: [authPlugin],
+        setup: (ctx) => ({ userId: ctx.auth.user.id }),
+      });
+
+      const app = createApp({ env: envSchema, permissions });
+      expect(() => app.use(authPlugin).use(dbPlugin)).not.toThrow();
+    });
+
+    it("throws on the first missing dependency when multiple are required", () => {
+      const a = definePlugin({ name: "a", setup: () => ({ x: 1 }) });
+      const b = definePlugin({ name: "b", setup: () => ({ y: 2 }) });
+      const c = definePlugin({
+        name: "c",
+        requires: [a, b],
+        setup: (ctx) => ({ z: ctx.a.x + ctx.b.y }),
+      });
+
+      const app = createApp({ env: envSchema, permissions });
+      // Only `a` registered — `b` is still missing when `c` is used.
+      expect(() =>
+        // @ts-expect-error testing runtime guard against missing dependency
+        app.use(a).use(c),
+      ).toThrow(/Plugin "c" requires "b" but it has not been registered/);
+    });
+
+    it("accepts plugins with an empty `requires` array", () => {
+      const leaf = definePlugin({
+        name: "leaf",
+        requires: [],
+        setup: () => ({ ok: true }),
+      });
+      const app = createApp({ env: envSchema, permissions });
+      expect(() => app.use(leaf)).not.toThrow();
+    });
   });
 
   describe("context", () => {

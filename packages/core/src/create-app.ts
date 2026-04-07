@@ -145,6 +145,22 @@ function buildApp<
         );
       }
 
+      // Validate declared dependencies are registered. If a plugin lists
+      // `requires: [authPlugin]` but `authPlugin` has not been `.use()`d
+      // before this plugin, throw immediately with a clear, actionable error
+      // instead of letting the misordering surface as an undefined access in
+      // setup() at request time.
+      if (plugin.requires) {
+        for (const dep of plugin.requires) {
+          if (!pluginNames.has(dep.name)) {
+            throw new CfastConfigError(
+              `Plugin "${plugin.name}" requires "${dep.name}" but it has not been registered. ` +
+                `Did you call .use(${dep.name}Plugin) before .use(${plugin.name}Plugin)?`,
+            );
+          }
+        }
+      }
+
       // No cast needed: CfastPlugin<TName, TProvides, TPluginContext, TClient>
       // is structurally assignable to RuntimePlugin because RuntimePlugin.setup
       // uses PluginSetupContext<never> in the contravariant parameter position,
