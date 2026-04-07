@@ -6,7 +6,7 @@ import type { Grant, DrizzleTable } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
 import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
 import type { User } from "./utils";
-import { decodeCursor, encodeCursor, buildCursorWhere } from "./paginate";
+import { decodeCursor, encodeCursor, buildCursorWhere, getPrimaryKeyColumns } from "./paginate";
 import type { Operation, FindManyOptions, FindFirstOptions, CursorPage, OffsetPage, PaginateOptions } from "./types";
 import type { CursorParams, OffsetParams } from "./types";
 
@@ -156,7 +156,23 @@ export function createQueryBuilder(config: QueryBuilderConfig) {
       }
 
       if (params.type === "cursor") {
-        const cursorColumns = (options?.cursorColumns ?? []) as Column[];
+        // Default cursor columns to the table's primary key when not specified.
+        // This makes cursor-based pagination work out of the box for the
+        // common case (single-column primary key) without requiring callers
+        // to repeat the column reference at every call site.
+        const explicitCursorColumns = options?.cursorColumns as Column[] | undefined;
+        const cursorColumns: Column[] =
+          explicitCursorColumns && explicitCursorColumns.length > 0
+            ? explicitCursorColumns
+            : getPrimaryKeyColumns(config.table as SQLiteTable);
+
+        if (cursorColumns.length === 0) {
+          throw new Error(
+            "paginate(): cursor pagination requires either explicit `cursorColumns` " +
+              "or a table with a primary key. Pass `cursorColumns` in the paginate options.",
+          );
+        }
+
         return {
           permissions,
           async run(_params?: Record<string, unknown>): Promise<CursorPage<unknown>> {
