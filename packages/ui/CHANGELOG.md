@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/ui-v0.2.0...@cfast/ui-v0.2.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **ui:** republish to fix workspace:* in dependencies ([#124](https://github.com/DanielMSchmidt/cfast/issues/124)) ([4bd4930](https://github.com/DanielMSchmidt/cfast/commit/4bd493049ef4aab5214ebd5311519cfddb636ec2))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/ui-v0.1.0...@cfast/ui-v0.2.0) (2026-03-22)
 
 

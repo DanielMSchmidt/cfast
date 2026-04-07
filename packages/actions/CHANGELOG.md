@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.1.0...@cfast/actions-v0.1.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **actions:** republish to fix workspace:* in dependencies ([#119](https://github.com/DanielMSchmidt/cfast/issues/119)) ([cf536b7](https://github.com/DanielMSchmidt/cfast/commit/cf536b7683e2f9cd5d6ceb096266dbbb3d363764))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.0.3...@cfast/actions-v0.1.0) (2026-03-21)
 
 

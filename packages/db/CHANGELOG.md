@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.1.0...@cfast/db-v0.1.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* **db:** republish to fix workspace:* in dependencies ([#123](https://github.com/DanielMSchmidt/cfast/issues/123)) ([069877e](https://github.com/DanielMSchmidt/cfast/commit/069877ed5f5657cd848534cf7b212891cf3573a9))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.0.3...@cfast/db-v0.1.0) (2026-03-21)
 
 
