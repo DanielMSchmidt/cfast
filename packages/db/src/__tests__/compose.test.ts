@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { compose, composeSequential } from "../compose";
+import { compose, composeSequential, composeSequentialCallback } from "../compose";
+import { createDb } from "../create-db";
+import {
+  posts as realPosts,
+  auditLogs as realAuditLogs,
+  schema as realSchema,
+  createMockD1,
+  grantsForRole,
+} from "./helpers";
 import type { Operation } from "../types";
 
 const posts = { _: { name: "posts" } } as any;
@@ -153,5 +161,171 @@ describe("compose — optional run params", () => {
     const composed = composeSequential([op]);
     const result = await composed.run();
     expect(result).toEqual(["ok"]);
+  });
+});
+
+describe("composeSequentialCallback", () => {
+  it("collects permissions from operations created inside the callback", async () => {
+    const db = createDb({
+      d1: createMockD1(),
+      schema: realSchema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      cache: false,
+    });
+
+    const op = composeSequentialCallback(db, async (tx) => {
+      const card = await tx.insert(realPosts).values({ title: "New" }).returning().run();
+      await tx
+        .insert(realAuditLogs)
+        .values({
+          action: "create",
+          targetId: (card as { id: string }).id,
+          userId: "editor-1",
+        })
+        .run();
+      return card;
+    });
+
+    const perms = await op.permissionsAsync();
+    expect(perms).toEqual([
+      { action: "create", table: realPosts },
+      { action: "create", table: realAuditLogs },
+    ]);
+  });
+
+  it("supports data dependencies between sequential operations", async () => {
+    const db = createDb({
+      d1: createMockD1(),
+      schema: realSchema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      cache: false,
+    });
+
+    // The real D1 mock returns null from .first() so the real run can't read
+    // back an inserted id. We exercise the data-dependency path purely through
+    // the dry-run pass: the callback uses `card?.id` so it survives both phases.
+    const op = composeSequentialCallback(db, async (tx) => {
+      const card = (await tx
+        .insert(realPosts)
+        .values({ title: "New" })
+        .returning()
+        .run()) as { id?: unknown };
+      const targetId = String(card?.id ?? "fallback");
+      await tx
+        .insert(realAuditLogs)
+        .values({
+          action: "create",
+          targetId,
+          userId: "editor-1",
+        })
+        .run();
+      return { ok: true };
+    });
+
+    const result = await op.run();
+    expect(result).toEqual({ ok: true });
+    // The dry-run should have populated permissions before the real run executed.
+    expect(op.permissions).toEqual([
+      { action: "create", table: realPosts },
+      { action: "create", table: realAuditLogs },
+    ]);
+  });
+
+  it("permissions reflect the discovered set after run()", async () => {
+    const db = createDb({
+      d1: createMockD1(),
+      schema: realSchema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      cache: false,
+    });
+
+    const op = composeSequentialCallback(db, async (tx) => {
+      await tx.insert(realPosts).values({ title: "First" }).run();
+      await tx.update(realPosts).set({ published: true }).where(undefined).run();
+      return { done: true };
+    });
+
+    await op.run();
+    expect(op.permissions).toEqual([
+      { action: "create", table: realPosts },
+      { action: "update", table: realPosts },
+    ]);
+  });
+
+  it("deduplicates identical permission descriptors", async () => {
+    const db = createDb({
+      d1: createMockD1(),
+      schema: realSchema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      cache: false,
+    });
+
+    const op = composeSequentialCallback(db, async (tx) => {
+      await tx.insert(realPosts).values({ title: "a" }).run();
+      await tx.insert(realPosts).values({ title: "b" }).run();
+    });
+
+    const perms = await op.permissionsAsync();
+    expect(perms).toHaveLength(1);
+    expect(perms[0]).toEqual({ action: "create", table: realPosts });
+  });
+
+  it("propagates the callback's return value", async () => {
+    const db = createDb({
+      d1: createMockD1(),
+      schema: realSchema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      cache: false,
+    });
+
+    const op = composeSequentialCallback(db, async () => {
+      return { hello: "world" };
+    });
+
+    const result = await op.run();
+    expect(result).toEqual({ hello: "world" });
+  });
+
+  it("real run uses the actual db (not the tracking proxy)", async () => {
+    const d1 = createMockD1();
+    const db = createDb({
+      d1,
+      schema: realSchema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      cache: false,
+    });
+
+    const op = composeSequentialCallback(db, async (tx) => {
+      await tx.insert(realPosts).values({ title: "Real" }).run();
+    });
+
+    await op.run();
+
+    // The mock D1 records every prepared statement. The dry-run does not touch
+    // D1 (sentinel run), so we expect at least one INSERT from the real run.
+    const inserts = d1._calls.filter((c) => /insert\s+into\s+["`]?posts/i.test(c.sql));
+    expect(inserts.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("checks permissions on each sub-op at real run time", async () => {
+    const db = createDb({
+      d1: createMockD1(),
+      schema: realSchema,
+      grants: grantsForRole("anonymous"),
+      user: { id: "anon" },
+      cache: false,
+    });
+
+    const op = composeSequentialCallback(db, async (tx) => {
+      await tx.insert(realPosts).values({ title: "Bad" }).run();
+    });
+
+    await expect(op.run()).rejects.toThrow("Cannot create");
   });
 });

@@ -111,6 +111,41 @@ await op.run();  // runs operations in order, returns results array
 
 Runs operations in order, returns results array. Shorthand for `compose` when there are no data dependencies between operations.
 
+### composeSequentialCallback(db, callback): Operation<TResult>
+
+For workflows where later operations depend on the **results** of earlier ones
+(e.g. inserting a child row that references the inserted parent's id):
+
+```typescript
+import { composeSequentialCallback } from "@cfast/db";
+
+const op = composeSequentialCallback(db, async (tx) => {
+  const card = await tx.insert(cards).values({ title: "New" }).returning().run();
+  await tx.insert(activityLog).values({
+    cardId: (card as { id: string }).id,
+    action: "card_created",
+  }).run();
+  return card;
+});
+
+await op.permissionsAsync();  // [{ create, cards }, { create, activityLog }]
+await op.run();
+```
+
+The callback runs **twice**: first against a tracking proxy that records each
+operation's permission descriptors and returns sentinel values from `.run()`,
+then against the real db. Because of the dry-run pass, the callback **must be
+free of side effects outside of `db.*` calls** (no `fetch`, no global state
+mutation, no `console.log` you care about).
+
+`op.permissions` is populated asynchronously after the dry-run resolves; use
+`op.permissionsAsync()` for a guaranteed-populated array. `op.run()` always
+awaits the dry-run internally, so permissions are checked on every sub-op.
+
+Use this only when you actually need data dependencies. For independent
+operations, prefer `composeSequential([...])` (faster, fully synchronous
+permissions).
+
 ### db.batch(operations): Operation<unknown[]>
 
 Runs operations sequentially with merged permissions. Not D1 native batch.
