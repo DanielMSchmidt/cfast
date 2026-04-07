@@ -52,6 +52,25 @@ Schema-defined file types with R2 storage. Do NOT write custom upload handlers.
 4. Create actions in a `*.server.ts` file using `createAction` from `~/actions.server`
 5. Create the route in `app/routes/` using `composeActions` for the action export
 
+### Schema gotcha: self-referential foreign keys
+
+Drizzle cannot infer the return type of a `references()` callback that points back at the same table.
+TypeScript fails with `TS7022: ... implicitly has type 'any'`. Annotate the callback with `AnySQLiteColumn`:
+
+```ts
+import { sqliteTable, text, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+
+export const folders = sqliteTable("folders", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  parentFolderId: text("parent_folder_id").references(
+    (): AnySQLiteColumn => folders.id,
+  ),
+});
+```
+
+Use this pattern for comment threads (`parentCommentId`), org charts (`managerId`), category trees, etc.
+
 ### Add a new page/route
 
 1. Create a file in `app/routes/` (React Router file-based routing)

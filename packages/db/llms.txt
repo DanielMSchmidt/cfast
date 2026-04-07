@@ -177,6 +177,26 @@ export async function action({ context, request }) {
 - **@cfast/auth** -- `auth.requireUser(request)` returns `{ user, grants }` which you pass directly to `createDb()`.
 - **@cfast/actions** -- Actions define operations using `@cfast/db`. The framework extracts `.permissions` for client-side UI adaptation.
 
+## Schema Gotchas
+
+### Self-referential foreign keys
+
+Drizzle cannot infer the return type of a `references()` callback that points at the same table. Without an explicit annotation, TypeScript fails with `TS7022: ... implicitly has type 'any'`. Annotate the callback with `AnySQLiteColumn`:
+
+```typescript
+import { sqliteTable, text, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+
+export const folders = sqliteTable("folders", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  parentFolderId: text("parent_folder_id").references(
+    (): AnySQLiteColumn => folders.id,
+  ),
+});
+```
+
+Use `AnyPgColumn` / `AnyMySqlColumn` for other dialects. The same pattern applies to any self-reference (comment threads, org charts, category trees).
+
 ## Common Mistakes
 
 - **Forgetting `.run()`** -- Operations are lazy. `db.query(t).findMany()` returns an Operation, not results. You must call `.run()`.
@@ -184,6 +204,7 @@ export async function action({ context, request }) {
 - **Using `import { posts }` instead of `import * as schema`** -- The `schema` config must be `import *` so Drizzle's relational API can look up tables by key name.
 - **Using `db.unsafe()` for admin endpoints** -- Use a role with `grant("manage", "all")` instead. Reserve `unsafe()` for genuinely user-less contexts (cron, migrations).
 - **Expecting relational `with` to have permission filters** -- Permission WHERE clauses only apply to the root table, not joined relations.
+- **Self-referential FK without `AnySQLiteColumn` annotation** -- TypeScript fails with TS7022. See "Schema Gotchas" above.
 
 ## See Also
 

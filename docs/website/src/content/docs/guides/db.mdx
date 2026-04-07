@@ -168,6 +168,28 @@ await publishWorkflow.run({});
 
 Composed operations can themselves be nested inside other `compose()` calls.
 
+### Self-Referential Foreign Keys
+
+Drizzle cannot infer the type of a `references()` callback that points back at the same table. Without an explicit return type, TypeScript fails with `TS7022: 'tableName' implicitly has type 'any' because it does not have a type annotation`.
+
+Annotate the callback with `AnySQLiteColumn` (or `AnyPgColumn` / `AnyMySqlColumn` for other dialects):
+
+```typescript
+import { sqliteTable, text, integer, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+
+export const folders = sqliteTable("folders", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  // Self-reference: parentFolderId points back at folders.id
+  parentFolderId: text("parent_folder_id").references(
+    (): AnySQLiteColumn => folders.id,
+  ),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+```
+
+The same pattern applies to any table that needs to reference itself -- e.g. comment threads with `parentCommentId`, org charts with `managerId`, or category trees.
+
 ### Bypassing Permissions with `unsafe()`
 
 For system operations without an authenticated user (cron jobs, migrations, background tasks), use `db.unsafe()`:
