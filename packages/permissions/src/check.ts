@@ -13,11 +13,11 @@ function grantMatches(
   table: PermissionDescriptor["table"],
 ): boolean {
   const actionOk = g.action === action || g.action === "manage";
-  const subjectOk =
-    g.subject === "all" ||
-    g.subject === table ||
-    getTableName(g.subject) === getTableName(table);
-  return actionOk && subjectOk;
+  if (!actionOk) return false;
+  if (g.subject === "all") return true;
+  // Both string and object subjects normalize to the same key via getTableName,
+  // so the two forms are interchangeable for matching.
+  return getTableName(g.subject) === getTableName(table);
 }
 
 function hasGrantFor(

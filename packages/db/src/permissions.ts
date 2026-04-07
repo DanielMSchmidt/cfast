@@ -53,8 +53,8 @@ function grantMatchesAction(
 }
 
 function grantMatchesTable(
-  grantSubject: DrizzleTable | "all",
-  requiredTable: DrizzleTable,
+  grantSubject: DrizzleTable | string,
+  requiredTable: DrizzleTable | string,
 ): boolean {
   if (grantSubject === "all") return true;
   if (grantSubject === requiredTable) return true;
@@ -64,7 +64,7 @@ function grantMatchesTable(
 function hasGrantFor(
   grants: Grant[],
   action: PermissionAction,
-  table: DrizzleTable,
+  table: DrizzleTable | string,
 ): boolean {
   return grants.some(
     (g) =>
@@ -73,7 +73,10 @@ function hasGrantFor(
   );
 }
 
-function hasManagePermission(grants: Grant[], table: DrizzleTable): boolean {
+function hasManagePermission(
+  grants: Grant[],
+  table: DrizzleTable | string,
+): boolean {
   if (hasGrantFor(grants, "manage", table)) return true;
   return CRUD_ACTIONS.every((action) => hasGrantFor(grants, action, table));
 }

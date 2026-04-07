@@ -58,4 +58,48 @@ describe("can", () => {
   it("returns false for empty grants array", () => {
     expect(can([], "read", posts)).toBe(false);
   });
+
+  describe("string subject form", () => {
+    it("matches when grant uses object and call uses string", () => {
+      // user has create:posts grant via an object subject
+      expect(can(grantsFor("user"), "create", "posts")).toBe(true);
+    });
+
+    it("matches when grant uses string and call uses object", () => {
+      // Build a permissions set whose grants use string subjects
+      const stringPerms = definePermissions({
+        roles: ["author"] as const,
+        grants: {
+          author: [grant("create", "posts")],
+        },
+      });
+      const g = resolveGrants(stringPerms, ["author"]);
+      // Calling with the matching object form should succeed
+      expect(can(g, "create", posts)).toBe(true);
+    });
+
+    it("string and object forms produce equivalent answers", () => {
+      const g = grantsFor("user");
+      expect(can(g, "create", posts)).toBe(can(g, "create", "posts"));
+      expect(can(g, "delete", auditLogs)).toBe(can(g, "delete", "audit_logs"));
+    });
+
+    it("returns false for unknown string table", () => {
+      expect(can(grantsFor("user"), "create", "nonexistent_table")).toBe(false);
+    });
+
+    it("manage:'all' grant matches string subjects", () => {
+      expect(can(grantsFor("admin"), "delete", "audit_logs")).toBe(true);
+    });
+
+    it("constrains string subjects to known table names when generic supplied", () => {
+      type Schema = { posts: typeof posts; comments: typeof comments };
+      const g = grantsFor("admin");
+      // Both of these are valid keys of Schema
+      expect(can<Schema>(g, "read", "posts")).toBe(true);
+      expect(can<Schema>(g, "read", "comments")).toBe(true);
+      // @ts-expect-error - "unknownTable" is not a key of Schema
+      expect(can<Schema>(g, "read", "unknownTable")).toBe(true);
+    });
+  });
 });

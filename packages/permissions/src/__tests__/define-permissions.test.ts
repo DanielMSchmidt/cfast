@@ -148,4 +148,88 @@ describe("definePermissions", () => {
       expect(perms.resolvedGrants.d).toHaveLength(4);
     });
   });
+
+  describe("with curried <User, Tables> form", () => {
+    type AuthUser = { id: string };
+    // Mock schema-like object — same shape as `import * as schema from "./schema"`
+    const schema = {
+      posts,
+      comments: { _: { name: "comments" } } as DrizzleTable,
+    };
+    type Schema = typeof schema;
+
+    it("accepts string subjects constrained to known table names", () => {
+      const perms = definePermissions<AuthUser, Schema>()({
+        roles: ["member", "admin"] as const,
+        grants: (g) => ({
+          member: [g("read", "posts"), g("create", "comments")],
+          admin: [g("manage", "all")],
+        }),
+      });
+
+      expect(perms.grants.member).toHaveLength(2);
+      expect(perms.grants.member[0].subject).toBe("posts");
+      expect(perms.grants.member[1].subject).toBe("comments");
+    });
+
+    it("accepts object subjects in the same call", () => {
+      const perms = definePermissions<AuthUser, Schema>()({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [g("read", schema.posts), g("create", "comments")],
+        }),
+      });
+
+      expect(perms.grants.member).toHaveLength(2);
+      expect(perms.grants.member[0].subject).toBe(schema.posts);
+      expect(perms.grants.member[1].subject).toBe("comments");
+    });
+
+    it("rejects unknown string subjects at compile time", () => {
+      definePermissions<AuthUser, Schema>()({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          // @ts-expect-error - "unknownTable" is not a key of Schema
+          member: [g("read", "unknownTable")],
+        }),
+      });
+    });
+
+    it("string-form grants produce same matching behavior as object-form grants", () => {
+      const stringPerms = definePermissions<AuthUser, Schema>()({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [g("read", "posts"), g("create", "posts")],
+        }),
+      });
+      const objectPerms = definePermissions<AuthUser, Schema>()({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [g("read", schema.posts), g("create", schema.posts)],
+        }),
+      });
+
+      // Both should resolve to grants that match the same descriptors
+      expect(stringPerms.grants.member).toHaveLength(2);
+      expect(objectPerms.grants.member).toHaveLength(2);
+    });
+
+    it("typed user is still threaded through where clauses", () => {
+      const perms = definePermissions<AuthUser, Schema>()({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [
+            g("update", "posts", {
+              where: (_cols, user) => {
+                // user should be typed as AuthUser
+                void user.id;
+                return undefined;
+              },
+            }),
+          ],
+        }),
+      });
+      expect(perms.grants.member).toHaveLength(1);
+    });
+  });
 });

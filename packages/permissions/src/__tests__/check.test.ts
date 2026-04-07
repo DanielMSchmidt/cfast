@@ -236,3 +236,49 @@ describe("checkPermissions — name-based table matching", () => {
     expect(result.reasons[0]).toContain("orders");
   });
 });
+
+describe("checkPermissions — string subject support", () => {
+  const tbl = mockTable("posts");
+
+  it("matches grant with string subject against descriptor with string table", () => {
+    const perms = definePermissions({
+      roles: ["user"] as const,
+      grants: {
+        user: [grant("read", "posts")],
+      },
+    });
+
+    const result = checkPermissions("user", perms, [
+      { action: "read", table: "posts" },
+    ]);
+    expect(result.permitted).toBe(true);
+  });
+
+  it("matches grant with object subject against descriptor with string table", () => {
+    const perms = definePermissions({
+      roles: ["user"] as const,
+      grants: {
+        user: [grant("read", tbl)],
+      },
+    });
+
+    const result = checkPermissions("user", perms, [
+      { action: "read", table: "posts" },
+    ]);
+    expect(result.permitted).toBe(true);
+  });
+
+  it("matches grant with string subject against descriptor with object table", () => {
+    const perms = definePermissions({
+      roles: ["user"] as const,
+      grants: {
+        user: [grant("read", "posts")],
+      },
+    });
+
+    const result = checkPermissions("user", perms, [
+      { action: "read", table: tbl },
+    ]);
+    expect(result.permitted).toBe(true);
+  });
+});

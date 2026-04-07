@@ -5,8 +5,8 @@ import { getTableName } from "./types";
 type ForbiddenErrorOptions = {
   /** The action that was denied. */
   action: PermissionAction;
-  /** The Drizzle table the action targeted. */
-  table: DrizzleTable;
+  /** The Drizzle table or string table name the action targeted. */
+  table: DrizzleTable | string;
   /** The role that lacked the permission, if known. */
   role?: string;
   /** The full list of permission descriptors that were checked. */
@@ -23,8 +23,8 @@ type ForbiddenErrorOptions = {
 export class ForbiddenError extends Error {
   /** The action that was denied (e.g., `"delete"`). */
   readonly action: PermissionAction;
-  /** The Drizzle table the action targeted. */
-  readonly table: DrizzleTable;
+  /** The Drizzle table or string table name the action targeted. */
+  readonly table: DrizzleTable | string;
   /** The role that lacked the permission, or `undefined` if not specified. */
   readonly role: string | undefined;
   /** The full list of permission descriptors that were checked. */
