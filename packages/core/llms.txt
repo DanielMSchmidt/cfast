@@ -10,7 +10,7 @@ Use `@cfast/core` when you want multiple cfast packages (auth, db, storage, etc.
 
 - **Plugin chain**: Plugins run in registration order via `.use()`. Each plugin's `setup()` receives everything prior plugins provided, plus `request` and `env`.
 - **Namespaced context**: Each plugin's return value is nested under its `name` key (e.g., `ctx.auth.user`, `ctx.db.client`). No flat merging, no collisions.
-- **Compile-time dependencies**: Dependent plugins declare requirements via `definePlugin<TRequires>()` (curried form). TypeScript catches missing dependencies at the `.use()` call site.
+- **Inferred dependencies**: Dependent plugins list their requirements as plugin references in `requires: [authPlugin]`. TypeScript infers `setup(ctx)` from the listed plugins -- no manual `TRequires` type token needed. TypeScript also catches missing dependencies at the `.use()` call site, and `app.use(plugin)` throws a clear `CfastConfigError` at runtime if a required plugin has not yet been registered.
 - **Client provider composition**: `<app.Provider>` nests all plugin React providers in registration order. `useApp()` accesses client-side plugin exports.
 
 ## API Reference
@@ -37,7 +37,7 @@ app.permissions: TPermissions                           // permissions config
 ### Plugin definition
 
 ```typescript
-// Leaf plugin (no dependencies) -- direct form, full inference
+// Leaf plugin (no dependencies) -- types are fully inferred
 definePlugin({
   name: "analytics",
   setup(ctx) { return { track: (event: string) => {} }; },
@@ -45,26 +45,66 @@ definePlugin({
   client?: { /* client-side values for useApp() */ },
 }): CfastPlugin
 
-// Dependent plugin -- curried form, specify TRequires explicitly
-definePlugin<AuthPluginProvides>()({
+// Dependent plugin -- list plugin references in `requires`. The setup ctx is
+// inferred from those plugins automatically; no manual generic, no type token.
+const authPlugin = definePlugin({
+  name: "auth",
+  setup() { return { user: getUser(), grants: getGrants() }; },
+});
+
+const dbPlugin = definePlugin({
   name: "db",
+  requires: [authPlugin],
   setup(ctx) {
-    ctx.auth.user;  // typed from AuthPluginProvides
-    return { client: createDb({}) };
+    ctx.auth.user;   // typed from authPlugin
+    ctx.auth.grants; // typed from authPlugin
+    return { client: createDb({ grants: ctx.auth.grants }) };
   },
 }): CfastPlugin
+
+// Multiple dependencies -- list each one
+const adminPlugin = definePlugin({
+  name: "admin",
+  requires: [authPlugin, dbPlugin],
+  setup(ctx) {
+    ctx.auth.user;   // typed
+    ctx.db.client;   // typed
+    return { /* ... */ };
+  },
+});
 ```
 
-### Plugin type token
+### Runtime dependency validation
+
+`app.use(plugin)` throws `CfastConfigError` immediately if a plugin listed in
+`requires` has not yet been registered:
+
+```
+CfastConfigError: Plugin "db" requires "auth" but it has not been registered.
+Did you call .use(authPlugin) before .use(dbPlugin)?
+```
+
+This catches misordering at composition time instead of letting it surface as
+an undefined access deep in the request lifecycle.
+
+### Plugin type token (legacy curried form)
+
+For situations where you only have access to a *type*, not the actual plugin
+value (e.g. you cannot import the plugin module), the legacy curried form is
+still available:
 
 ```typescript
-// Each package exports a type token for dependents:
 export type AuthPluginProvides = PluginProvides<typeof authPlugin>;
 // Resolves to: { auth: { user: AuthUser | null; grants: Grant[]; instance: AuthInstance } }
 
-// Multiple dependencies -- intersect type tokens:
-definePlugin<AuthPluginProvides & DbPluginProvides>()({ ... })
+definePlugin<AuthPluginProvides>()({
+  name: "db",
+  setup(ctx) { ctx.auth.user; return { /* ... */ }; },
+});
 ```
+
+Prefer the inferred form (`requires: [authPlugin]`) when you can — it removes
+the need to declare and import a `PluginProvides` type token.
 
 ### Client (`@cfast/core/client`)
 
@@ -160,7 +200,7 @@ export const { createAction, composeActions } = createActions({
 
 ## Common Mistakes
 
-- Registering plugins in the wrong order -- `dbPlugin` depends on `authPlugin`, so auth must be `.use()`'d first. TypeScript catches this at compile time.
+- Registering plugins in the wrong order -- `dbPlugin` depends on `authPlugin`, so auth must be `.use()`'d first. TypeScript catches this at compile time, and `.use()` also throws `CfastConfigError` immediately at runtime if a plugin's `requires` are unsatisfied.
 - Calling `app.context()` before `app.init()` -- env is not validated yet, will throw.
 - Calling `useApp()` outside `<app.Provider>` -- throws a context error.
 - Registering two plugins with the same `name` -- throws `CfastConfigError` at import time.
