@@ -1,0 +1,219 @@
+---
+title: "Handling Large Files"
+description: "Stream multi-MB uploads through @cfast/storage with per-mime limits, multipart, and progress reporting."
+---
+
+By default `@cfast/storage` is configured for small files — 5MB-ish attachments, avatars, thumbnails. When your users need to upload videos, high-res raw photos, exports, or backups, a few settings need to change. This guide walks through the knobs for large files: per-mime size limits, multipart streaming, progress reporting with `<UploadField>`, and the multipart pattern for very large files (>100MB).
+
+## The short version
+
+| Size | What happens |
+|---|---|
+| Up to `multipartThreshold` (default `"5mb"`) | Direct `R2Bucket.put` — body is buffered in worker memory |
+| Above `multipartThreshold` | R2 multipart upload — body streams, parts uploaded as data arrives |
+| Above `maxSize` (or the per-mime group limit) | `StorageError` with code `FILE_TOO_LARGE`, returned as HTTP 413 |
+
+You do not call the multipart API yourself — `storage.handle()` picks the right strategy based on the incoming file's `Content-Length` and your filetype config.
+
+## Per-mime size limits
+
+A filetype can accept multiple MIME types with different ceilings. Use the per-mime form of `filetype()` when — for example — you want images up to 10MB but PDFs up to 50MB in the same filetype:
+
+```ts
+// app/storage.ts
+import { defineStorage, filetype } from "@cfast/storage";
+
+export const storage = defineStorage({
+  assets: filetype(
+    {
+      image: {
+        mimes: ["image/jpeg", "image/png", "image/webp"],
+        maxSize: "10mb",
+      },
+      document: {
+        mimes: ["application/pdf"],
+        maxSize: "50mb",
+      },
+      video: {
+        mimes: ["video/mp4", "video/quicktime"],
+        maxSize: "500mb",
+      },
+    },
+    {
+      bucket: "UPLOADS",
+      key: (file, ctx) => `assets/${ctx.user.id}/${file.name}`,
+      ownerCheck: async (key, user) => key.startsWith(`assets/${user?.id}/`),
+      multipartThreshold: "5mb",
+      partSize: "10mb",
+    },
+  ),
+});
+```
+
+Each group's `maxSize` is enforced independently. An image submitted with `Content-Type: image/png` is rejected at 10.1MB even though the filetype would accept a 49MB PDF. A video larger than 500MB returns `FILE_TOO_LARGE` before any bytes are written to R2.
+
+The global `maxSize` on the filetype (if set) acts as an upper bound across all groups. The effective limit for any given upload is `min(groupMaxSize, globalMaxSize)`.
+
+## How streaming works
+
+`storage.handle(filetype, request, ctx)` does not buffer the whole body into memory before deciding what to do with it. It:
+
+1. Reads the `Content-Type` and `Content-Length` headers and rejects the upload immediately if either fails validation (`INVALID_MIME_TYPE`, `FILE_TOO_LARGE`).
+2. Reads the multipart form boundary out of the request body as a stream.
+3. Compares `Content-Length` to `multipartThreshold`. If below, calls `R2Bucket.put()` with the buffered body. If above, opens an `R2MultipartUpload` and streams parts as they arrive.
+4. Uses a counting stream to verify the actual byte count matches `Content-Length` and does not exceed the filetype's `maxSize`. If either check fails mid-stream, the upload is aborted and `FILE_TOO_LARGE` is returned.
+
+The practical effect: uploading a 200MB video through the default `POST /uploads/:filetype` route does not allocate a 200MB buffer in the worker. Memory usage stays bounded by `partSize` (default `"10mb"`) times the part concurrency.
+
+## Wiring it up in a route
+
+Mount the storage routes once and let them handle everything:
+
+```ts
+// app/routes.ts
+import { type RouteConfig, route } from "@react-router/dev/routes";
+import { storageRoutes } from "@cfast/storage/plugin";
+
+export default [
+  // ... other routes
+  ...storageRoutes({ handlerFile: "routes/uploads.$.tsx" }),
+] satisfies RouteConfig;
+```
+
+```ts
+// app/routes/uploads.$.tsx
+import { createStorageRouteHandlers } from "@cfast/storage";
+import { requireUser } from "~/auth.server";
+import { storage } from "~/storage";
+
+const { loader, action } = createStorageRouteHandlers({
+  storage,
+  requireUser,
+});
+
+export { loader, action };
+```
+
+`POST /uploads/assets` now accepts any filetype in the `assets` group with streaming multipart, per-group size limits, and the configured `ownerCheck` on the `GET /uploads/*` proxy side.
+
+If you need to combine the upload with structured form fields in one action (e.g. "create post + attach video"), use the `File` overload of `storage.handle()` — parse `request.formData()` yourself, then pass the extracted `File` to `storage.handle("assets", file, ctx)`. Same streaming path; you just get the metadata fields alongside.
+
+## Progress reporting with `<UploadField>`
+
+`@cfast/joy` (and the headless `@cfast/ui`) ship an `<UploadField>` component that wraps the storage upload endpoint and reports progress through an XHR `upload.progress` listener. It works for any file size — small or large — because the progress events come from the request body being consumed by the worker, not from any R2-specific API.
+
+```tsx
+// app/routes/assets.new.tsx
+import { useState } from "react";
+import { UploadField } from "@cfast/joy";
+
+export default function NewAsset() {
+  const [keys, setKeys] = useState<string[]>([]);
+
+  return (
+    <UploadField
+      label="Upload files"
+      filetype="assets"
+      basePath="/uploads"
+      multiple
+      maxFiles={5}
+      accept="image/*,application/pdf,video/mp4"
+      maxSize={500 * 1024 * 1024} // 500MB — matches the largest group
+      value={keys}
+      onChange={setKeys}
+      onError={(file) => console.error("upload failed", file)}
+    />
+  );
+}
+```
+
+What the field gives you out of the box:
+
+- **Drop zone + file picker** — drag-and-drop or click to browse.
+- **Client-side validation** — rejects the file before uploading if it fails the `accept` or `maxSize` check. Mirrors the server-side validation.
+- **Per-file progress bar** — driven by `xhr.upload.progress`, updating 0–100% as the part stream is consumed.
+- **Concurrent uploads** — multiple files are sent in parallel, each with its own progress bar.
+- **Controlled value** — `value` is an array of R2 keys; wire it into an `AutoForm` or a hidden field to persist as part of your action.
+
+For very long uploads (videos, backups), progress events come in reliably up until the request body is fully consumed. The final 5–15% — while R2 completes the multipart upload server-side — appears as a stall at 100% before the response lands. If you want to show "processing..." during that window, flip a local flag on `upload.progress === 100 && upload.isUploading === true`.
+
+### Using the headless `useUpload` hook
+
+If you're not using Joy UI, `@cfast/storage/client` exposes `useUpload` with the same progress data:
+
+```tsx
+import { useUpload } from "@cfast/storage/client";
+
+function Uploader() {
+  const upload = useUpload("assets");
+  return (
+    <>
+      <input
+        type="file"
+        accept={upload.accept}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) upload.start(file);
+        }}
+      />
+      {upload.isUploading && (
+        <progress value={upload.progress} max={100} />
+      )}
+      {upload.result && <p>Uploaded: {upload.result.key}</p>}
+    </>
+  );
+}
+```
+
+Wrap your app with `<StorageProvider config={storage.clientConfig()}>` at the root so the hook can read the client-safe filetype config (accept lists, max sizes, base path).
+
+## Very large files (>100MB)
+
+For uploads above ~100MB you have two levers on the server side. Both live in the filetype config:
+
+```ts
+filetype({
+  // ... other fields
+  maxSize: "2gb",
+  multipartThreshold: "5mb", // files above this stream via multipart
+  partSize: "20mb",          // size of each multipart chunk
+});
+```
+
+- **`maxSize`** — the hard ceiling. `storage.handle()` rejects anything above this with HTTP 413. R2 itself supports objects up to 5TB per key, so the limit is entirely driven by your policy.
+- **`multipartThreshold`** — anything above this uses `R2Bucket.createMultipartUpload` instead of a single `put()`. Keep it close to the default (`"5mb"`) — the only reason to raise it is if you're paying for many small PUTs and want to avoid the multipart overhead on borderline files.
+- **`partSize`** — the chunk granularity. R2 requires all parts except the last to be the same size and at least 5MB. `"10mb"` is a reasonable default; raise it to `"20mb"` or `"50mb"` for very large uploads to reduce the number of round trips, and keep worker memory in check.
+
+The upstream multipart code uploads parts with bounded concurrency as they stream in, so memory stays roughly proportional to `partSize * concurrency`. For a 1GB upload with `partSize: "10mb"` and the default concurrency, peak memory is on the order of tens of megabytes, not the full gigabyte.
+
+### Per-request limits on Cloudflare Workers
+
+Workers have a per-request subrequest limit and a CPU-time budget. Multipart uploads split a single logical "put" into N subrequests (one per part plus `create` and `complete`), so very large files can bump into the subrequest cap on the free or Bundled plan. On the Unbound / Workers Paid plan the cap is high enough (1000+) that a 5GB file at `partSize: "20mb"` (≈250 parts) fits comfortably.
+
+If your worker plan limits are tight and you need to stay under them, raise `partSize` to reduce the part count. `"50mb"` parts give you ~100 parts for a 5GB upload and keep the subrequest count bounded. Don't push past the R2 part-size max (`"5gb"`) or the minimum (`"5mb"`).
+
+### Client-initiated multipart (not yet supported)
+
+`@cfast/storage` currently runs the multipart upload **server-side** — the client sends a single HTTP POST and the worker splits it into parts for R2. There is no built-in client-initiated multipart flow (pre-signed part URLs, browser-side chunking, upload resumption). If the worker request is interrupted partway through, the client must retry from byte zero.
+
+For flows that need true resumable chunked uploads (e.g. unreliable mobile networks, >1GB backups), track progress on the client and either:
+
+1. Retry the full upload on failure — simple, but wastes bandwidth.
+2. Split the file into smaller logical uploads client-side (e.g. 100MB chunks) and store the keys separately, reassembling them on read.
+
+Native client-initiated multipart with signed part URLs is tracked as a follow-up. If you need this today and the workarounds above don't fit your use case, please open an issue so we can prioritize it.
+
+## Common errors
+
+| Error | Cause | Fix |
+|---|---|---|
+| `FILE_TOO_LARGE` (413) | File exceeds the filetype or per-mime group `maxSize` | Raise `maxSize` or move the MIME type into a larger group |
+| `INVALID_MIME_TYPE` (415) | `Content-Type` not in the filetype's `accept` list | Add the MIME type or use the per-mime form to split it into a group |
+| `UPLOAD_FAILED` (500) | R2 multipart `complete` failed mid-upload | Check R2 binding name matches `wrangler.toml`; retry the upload |
+| Worker timeout | Very large upload exceeds CPU time budget | Raise `partSize` to reduce subrequest count, or move to the Unbound plan |
+
+## See also
+
+- [`@cfast/storage`](/cfast/guides/storage/) — full package reference
+- [`@cfast/ui`](/cfast/guides/ui/) — headless `UploadField` component
+- [Cloudflare R2 multipart docs](https://developers.cloudflare.com/r2/api/workers/workers-multipart-usage/) — upstream API this package wraps
