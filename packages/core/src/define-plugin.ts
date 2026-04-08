@@ -77,7 +77,7 @@ export function definePlugin<
   TName extends string,
   TProvides,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const TRequires extends readonly CfastPlugin<string, unknown, any, unknown>[] = [],
+  const TRequires extends readonly CfastPlugin<string, unknown, any, unknown, any>[] = [],
   TClient = unknown,
 >(config: {
   name: TName;
@@ -117,4 +117,66 @@ export function definePlugin(config?: unknown): unknown {
   // field, if present, is preserved and consumed by `app.use()` to validate
   // that all dependencies have been registered.
   return config;
+}
+
+/**
+ * Returns an env-typed `definePlugin` factory.
+ *
+ * The scaffolded `Cloudflare.Env` type from `worker-configuration.d.ts` is
+ * not known to `@cfast/core` at build time, so the generic `definePlugin`
+ * exposes `ctx.env` as the loose `Record<string, unknown>` shape and
+ * consumers have to cast bindings (e.g. `ctx.env.DB as D1Database`). Apps
+ * that want precise bindings call this factory once with their env type
+ * and re-export the typed `definePlugin` from a local module:
+ *
+ * ```ts
+ * // app/plugins/define-plugin.ts
+ * import { definePluginFor } from "@cfast/core";
+ *
+ * export const definePlugin = definePluginFor<Cloudflare.Env>();
+ * ```
+ *
+ * Plugin authors then import from their local module and get `ctx.env.DB`
+ * typed as `D1Database` without any casting:
+ *
+ * ```ts
+ * import { definePlugin } from "~/plugins/define-plugin";
+ *
+ * export const dbPlugin = definePlugin({
+ *   name: "db",
+ *   setup(ctx) {
+ *     const db = ctx.env.DB; // D1Database, no cast
+ *     return { client: createDb({ d1: db }) };
+ *   },
+ * });
+ * ```
+ *
+ * The returned factory has the same shape as {@link definePlugin} (with the
+ * curried legacy overload preserved) so existing code that switches from the
+ * generic form to the env-typed form only needs an import swap.
+ */
+export function definePluginFor<TEnv>(): {
+  <
+    TName extends string,
+    TProvides,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const TRequires extends readonly CfastPlugin<string, unknown, any, unknown, any>[] = [],
+    TClient = unknown,
+  >(config: {
+    name: TName;
+    requires?: TRequires;
+    setup: (
+      ctx: PluginSetupContext<RequiresFromPlugins<TRequires>, TEnv>,
+    ) => TProvides | Promise<TProvides>;
+    Provider?: ComponentType<{ children: ReactNode }>;
+    client?: TClient;
+  }): CfastPlugin<
+    TName,
+    Awaited<TProvides>,
+    RequiresFromPlugins<TRequires>,
+    TClient,
+    TEnv
+  >;
+} {
+  return (config) => config as never;
 }

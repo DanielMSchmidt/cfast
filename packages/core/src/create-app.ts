@@ -131,8 +131,14 @@ function buildApp<
       };
     },
 
-    use<TName extends string, TProvides, TClient>(
-      plugin: CfastPlugin<TName, TProvides, TPluginContext, TClient>,
+    use<
+      TName extends string,
+      TProvides,
+      TClient,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      TEnv = any,
+    >(
+      plugin: CfastPlugin<TName, TProvides, TPluginContext, TClient, TEnv>,
     ): App<
       TSchema,
       TPermissions,

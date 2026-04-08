@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { definePlugin } from "../define-plugin";
+import { definePlugin, definePluginFor } from "../define-plugin";
 
 describe("definePlugin", () => {
   it("returns the plugin config with name and setup", () => {
@@ -123,6 +123,85 @@ describe("definePlugin", () => {
         auth: { user: { id: "u1" } },
       });
       expect(result).toEqual({ userId: "u1" });
+    });
+  });
+
+  describe("definePluginFor<Env> (issue #184)", () => {
+    // Consumer app types — mimics the scaffolded `Cloudflare.Env` that would
+    // otherwise force every `setup(ctx)` to cast `ctx.env.DB as D1Database`.
+    type AppEnv = {
+      DB: { query: (sql: string) => Promise<unknown> };
+      BUCKET: { put: (key: string, value: unknown) => Promise<void> };
+      API_KEY: string;
+    };
+
+    it("returns a factory that types ctx.env precisely, no casts needed", async () => {
+      const definePlugin = definePluginFor<AppEnv>();
+
+      const dbPlugin = definePlugin({
+        name: "db",
+        setup: (ctx) => {
+          // Compile-time assertion: ctx.env.DB is typed as the binding, not unknown.
+          // If this line compiled without the typed factory, ctx.env.DB would be
+          // `unknown` and ctx.env.DB.query would error.
+          return { db: ctx.env.DB };
+        },
+      });
+
+      const fakeDb = { query: async () => ({ rows: [] }) };
+      const result = await dbPlugin.setup({
+        request: new Request("http://localhost"),
+        env: {
+          DB: fakeDb,
+          BUCKET: { put: async () => {} },
+          API_KEY: "sk_test",
+        },
+      });
+      expect((result as { db: typeof fakeDb }).db).toBe(fakeDb);
+    });
+
+    it("composes with inferred requires — env + requires both flow through", async () => {
+      const definePlugin = definePluginFor<AppEnv>();
+
+      const authPlugin = definePlugin({
+        name: "auth",
+        setup: (ctx) => ({ user: { id: "u1" }, apiKey: ctx.env.API_KEY }),
+      });
+
+      const dbPlugin = definePlugin({
+        name: "db",
+        requires: [authPlugin],
+        setup: (ctx) => ({
+          // ctx.env.DB is typed (from definePluginFor), ctx.auth.user is typed
+          // (from requires inference). No cast on either.
+          userDb: `${ctx.auth.user.id}:${ctx.env.DB.query.name}`,
+        }),
+      });
+
+      const result = await dbPlugin.setup({
+        request: new Request("http://localhost"),
+        env: {
+          DB: { query: async function named() { return {}; } },
+          BUCKET: { put: async () => {} },
+          API_KEY: "sk_test",
+        },
+        auth: { user: { id: "u1" }, apiKey: "sk_test" },
+      });
+      expect(result).toEqual({ userDb: "u1:named" });
+    });
+
+    it("returned plugins are assignable to the generic plugin slot in app.use()", () => {
+      const definePlugin = definePluginFor<AppEnv>();
+      const plugin = definePlugin({
+        name: "scoped",
+        setup: (ctx) => ({ hasDb: ctx.env.DB !== undefined }),
+      });
+      // Structural assertion: the typed factory returns a `CfastPlugin` with
+      // its `TEnv` slot specialised to `AppEnv`, but the name / provides /
+      // requires shape is identical to a generic `definePlugin` result so it
+      // slots into existing `use()` signatures.
+      expect(plugin.name).toBe("scoped");
+      expect(typeof plugin.setup).toBe("function");
     });
   });
 });

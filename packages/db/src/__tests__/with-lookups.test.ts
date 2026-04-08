@@ -4,6 +4,7 @@ import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { definePermissions, resolveGrants } from "@cfast/permissions";
 import type { LookupDb } from "@cfast/permissions";
 import { createDb } from "../create-db";
+import { runWithLookupCache } from "../utils";
 import { createMockD1 } from "./helpers";
 
 // Schema purpose-built to exercise cross-table grants from issue #105:
@@ -576,6 +577,85 @@ describe("with-lookups (cross-table grants, issue #105)", () => {
 
       await db.query(recipes).findMany().run();
       expect(syncLookup).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe("AsyncLocalStorage-scoped lookup cache (issue #176)", () => {
+    it("runWithLookupCache scopes the cache so a reused Db sees fresh lookups per logical request", async () => {
+      const lookup = makeFriendGrantsLookup([{ target: "friend-1" }]);
+      const permissions = buildPermissions({ friendIdsLookup: lookup });
+      const grants = resolveGrants(permissions, ["user"]);
+
+      // A single Db intentionally reused across two logical "requests",
+      // mirroring the test reuse pattern described in #176.
+      const db = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+
+      // First logical request — fresh cache scope.
+      await runWithLookupCache(async () => {
+        await db.query(recipes).findMany().run();
+        await db.query(recipes).findMany().run();
+      });
+
+      // Second logical request — separate scope, fresh cache. The lookup
+      // must run again even though the Db instance is the same.
+      await runWithLookupCache(async () => {
+        await db.query(recipes).findMany().run();
+      });
+
+      expect(lookup).toHaveBeenCalledTimes(2);
+    });
+
+    it("nested runs inside a single runWithLookupCache share the cache", async () => {
+      const lookup = makeFriendGrantsLookup([{ target: "friend-1" }]);
+      const permissions = buildPermissions({ friendIdsLookup: lookup });
+      const grants = resolveGrants(permissions, ["user"]);
+
+      const db = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+
+      await runWithLookupCache(async () => {
+        // Multiple queries in a single scope should share the cache.
+        await Promise.all([
+          db.query(recipes).findMany().run(),
+          db.query(recipes).findFirst().run(),
+          db.query(recipes).findMany().run(),
+        ]);
+      });
+
+      expect(lookup).toHaveBeenCalledOnce();
+    });
+
+    it("falls back to the Db-owned cache when no ALS scope is active", async () => {
+      // This preserves the behaviour of the existing request-scoped caching
+      // test suite: consumers who follow the "one Db per request" pattern
+      // continue to hit the per-Db cache without needing to wrap every call.
+      const lookup = makeFriendGrantsLookup([{ target: "friend-1" }]);
+      const permissions = buildPermissions({ friendIdsLookup: lookup });
+      const grants = resolveGrants(permissions, ["user"]);
+
+      const db = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+
+      await db.query(recipes).findMany().run();
+      await db.query(recipes).findMany().run();
+
+      expect(lookup).toHaveBeenCalledOnce();
     });
   });
 });

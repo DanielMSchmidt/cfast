@@ -1135,15 +1135,6 @@ importers:
 
   packages/joy:
     dependencies:
-      '@emotion/react':
-        specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
-      '@emotion/styled':
-        specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
-      '@mui/joy':
-        specifier: ^5.0.0-beta.52
-        version: 5.0.0-beta.52(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@mui/material':
         specifier: ^6.5.0
         version: 6.5.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1160,6 +1151,15 @@ importers:
       '@cfast/ui':
         specifier: workspace:*
         version: link:../ui
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
+      '@emotion/styled':
+        specifier: ^11.14.1
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4)
+      '@mui/joy':
+        specifier: ^5.0.0-beta.52
+        version: 5.0.0-beta.52(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@storybook/react':
         specifier: ^8.6.14
         version: 8.6.18(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(storybook@8.6.18(prettier@3.8.1))(typescript@5.9.3)
