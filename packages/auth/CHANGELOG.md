@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.4.0...@cfast/auth-v0.4.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **auth:** normalize passkey credentialId to standard base64 for CDP ([#212](https://github.com/DanielMSchmidt/cfast/issues/212)) ([1d8dab9](https://github.com/DanielMSchmidt/cfast/commit/1d8dab9e83c68b6382246881df8e7b1023555aae)), closes [#210](https://github.com/DanielMSchmidt/cfast/issues/210)
+
 ## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.3.0...@cfast/auth-v0.4.0) (2026-04-08)
 
 
