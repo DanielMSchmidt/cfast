@@ -522,3 +522,181 @@ describe("createAuth", () => {
     ).toThrow("passkeys.rpId is a function but initAuth() was called without a request");
   });
 });
+
+describe("AuthConfig.defaultRoles typing", () => {
+  // These tests exercise the `RoleNameOf<P>` narrowing added for #154.
+  // The runtime assertions are trivial (we just verify the strings round-
+  // trip through `defaultRoles`); the real value lives in the compile-
+  // time @ts-expect-error checks below. They're part of the test file so
+  // `tsc --noEmit` against the auth package verifies the constraint.
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetSession.mockResolvedValue(null);
+  });
+
+  it("accepts role names declared in definePermissions", () => {
+    const typed = definePermissions({
+      roles: ["admin", "editor", "reader"] as const,
+      grants: {
+        admin: [grant("read", "all"), grant("create", "all")],
+        editor: [grant("read", "all"), grant("create", "all")],
+        reader: [grant("read", "all")],
+      },
+    });
+
+    // Known roles compile fine.
+    const initAuth = createAuth({
+      permissions: typed,
+      defaultRoles: ["editor"],
+      anonymousRoles: ["reader"],
+    });
+    expect(initAuth).toBeDefined();
+  });
+
+  it("rejects unknown role names at the type level", () => {
+    const typed = definePermissions({
+      roles: ["admin", "editor"] as const,
+      grants: {
+        admin: [grant("read", "all")],
+        editor: [grant("read", "all")],
+      },
+    });
+
+    createAuth({
+      permissions: typed,
+      // @ts-expect-error — "viewer" was not declared in the permissions roles tuple
+      defaultRoles: ["viewer"],
+    });
+
+    createAuth({
+      permissions: typed,
+      // @ts-expect-error — "guest" was not declared in the permissions roles tuple
+      anonymousRoles: ["guest"],
+    });
+
+    // Verify passes at runtime when we DO use a known role so the test
+    // doesn't fail purely on the ts-expect-error above being "wasted"
+    // when type-checking is disabled by a consumer.
+    const ok = createAuth({
+      permissions: typed,
+      defaultRoles: ["editor"],
+    });
+    expect(ok).toBeDefined();
+  });
+});
+
+describe("AuthInstance.roles (grouped namespace)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  /**
+   * Builds a mock D1 that captures every `prepare()` call and records
+   * which statements bind with which args. Returned alongside the calls
+   * array so tests can assert on the SQL the roles API runs.
+   */
+  function makeRecordingD1() {
+    const calls: Array<{ sql: string; params: unknown[] }> = [];
+    const d1 = {
+      prepare: (sql: string) => ({
+        bind: (...params: unknown[]) => {
+          calls.push({ sql, params });
+          return {
+            all: async () => ({ results: [{ role: "editor" }] }),
+            first: async () => null,
+            run: async () => ({ results: [] }),
+            raw: async () => [],
+          };
+        },
+      }),
+      batch: async () => [],
+      dump: async () => new ArrayBuffer(0),
+      exec: async () => ({ count: 0, duration: 0 }),
+    } as unknown as D1Database;
+    return { d1, calls };
+  }
+
+  it("exposes a `roles` namespace on the AuthInstance", () => {
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({
+      d1: createMockD1(),
+      appUrl: "https://example.com",
+    });
+
+    expect(auth.roles).toBeDefined();
+    expect(typeof auth.roles.get).toBe("function");
+    expect(typeof auth.roles.set).toBe("function");
+    expect(typeof auth.roles.setAll).toBe("function");
+    expect(typeof auth.roles.remove).toBe("function");
+  });
+
+  it("auth.roles.get returns the same result as the legacy getRoles alias", async () => {
+    const { d1 } = makeRecordingD1();
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({ d1, appUrl: "https://example.com" });
+
+    const viaNew = await auth.roles.get("user-1");
+    const viaOld = await auth.getRoles("user-1");
+    expect(viaNew).toEqual(viaOld);
+    expect(viaNew).toEqual(["editor"]);
+  });
+
+  it("auth.roles.set runs a single INSERT against the role table", async () => {
+    const { d1, calls } = makeRecordingD1();
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({ d1, appUrl: "https://example.com" });
+
+    await auth.roles.set("user-1", "editor");
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.sql).toContain("INSERT OR IGNORE INTO roles");
+    expect(calls[0]!.params).toEqual(["user-1", "editor"]);
+  });
+
+  it("auth.roles.remove runs a DELETE scoped to user+role", async () => {
+    const { d1, calls } = makeRecordingD1();
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({ d1, appUrl: "https://example.com" });
+
+    await auth.roles.remove("user-1", "editor");
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.sql).toContain("DELETE FROM roles");
+    expect(calls[0]!.sql).toContain("user_id = ?");
+    expect(calls[0]!.sql).toContain("role = ?");
+    expect(calls[0]!.params).toEqual(["user-1", "editor"]);
+  });
+
+  it("legacy aliases and grouped namespace share the same underlying role manager", async () => {
+    // If the grouped namespace instantiated its own `createRoleManager`,
+    // we'd see two sets of prepared statements for identical calls. This
+    // test makes sure `roles.set` hits the same D1 handle (and therefore
+    // the same role manager) as `auth.setRole`.
+    const { d1, calls } = makeRecordingD1();
+    const initAuth = createAuth({ permissions });
+    const auth = initAuth({ d1, appUrl: "https://example.com" });
+
+    await auth.setRole("u1", "editor");
+    await auth.roles.set("u1", "editor");
+
+    expect(calls).toHaveLength(2);
+    expect(calls[0]!.sql).toBe(calls[1]!.sql);
+    expect(calls[0]!.params).toEqual(calls[1]!.params);
+  });
+
+  it("auth.roles.setAll enforces roleGrants rules like the legacy setRoles", async () => {
+    const { d1 } = makeRecordingD1();
+    const initAuth = createAuth({
+      permissions,
+      roleGrants: {
+        admin: ["admin", "editor", "reader"],
+        editor: ["reader"],
+      },
+    });
+    const auth = initAuth({ d1, appUrl: "https://example.com" });
+
+    await expect(
+      auth.roles.setAll("u1", ["admin"], { callerRoles: ["editor"] }),
+    ).rejects.toThrow('Not authorized to assign role "admin"');
+  });
+});

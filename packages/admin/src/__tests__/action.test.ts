@@ -823,4 +823,151 @@ describe("custom action", () => {
 
     expect(result).toEqual({ error: "action exploded" });
   });
+
+  // ---------------------------------------------------------------------
+  // Row action email client (#155)
+  //
+  // The RowActionContext must expose an optional `email` client so row
+  // actions like "approve vendor" can send notifications through the
+  // app's existing email pipeline. These tests pin:
+  //
+  //   1. `ctx.email` is undefined when no email config is provided.
+  //   2. A direct client is passed through unchanged.
+  //   3. A lazy getter is resolved per-request (not memoized at module
+  //      scope) so Workers-native env binding patterns still work.
+  //   4. The handler can call `ctx.email.send({...})` and the mock
+  //      client records the exact payload.
+  // ---------------------------------------------------------------------
+
+  it("ctx.email is undefined when no email client is configured", async () => {
+    let captured: RowActionContext | undefined;
+    const handler = vi.fn(async (_id, _fd, ctx: RowActionContext) => {
+      captured = ctx;
+    });
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig(); // no email field
+
+    await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    expect(captured).toBeDefined();
+    expect(captured!.email).toBeUndefined();
+  });
+
+  it("ctx.email is the client passed in AdminConfig.email", async () => {
+    const emailClient = {
+      send: vi.fn().mockResolvedValue({ id: "msg-123" }),
+    };
+    let captured: RowActionContext | undefined;
+    const handler = vi.fn(async (_id, _fd, ctx: RowActionContext) => {
+      captured = ctx;
+    });
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig({ email: emailClient });
+
+    await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    expect(captured!.email).toBe(emailClient);
+  });
+
+  it("ctx.email is resolved via the lazy getter form on every invocation", async () => {
+    // The getter form exists so consumers can defer resolving Cloudflare
+    // bindings until send time (`env.get()` inside a Worker). Each custom
+    // action dispatch should go through the getter so per-request state
+    // (e.g. APP_URL) is fresh.
+    const emailClient = {
+      send: vi.fn().mockResolvedValue({ id: "msg-1" }),
+    };
+    const getter = vi.fn(() => emailClient);
+
+    let captured: RowActionContext | undefined;
+    const handler = vi.fn(async (_id, _fd, ctx: RowActionContext) => {
+      captured = ctx;
+    });
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig({ email: getter });
+
+    // First dispatch.
+    await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+    expect(getter).toHaveBeenCalledTimes(1);
+    expect(captured!.email).toBe(emailClient);
+
+    // Second dispatch — the getter is called again, not memoized at
+    // module scope. This matches the lazy env-binding pattern the email
+    // package documents.
+    await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-2",
+      }),
+      metas,
+    );
+    expect(getter).toHaveBeenCalledTimes(2);
+  });
+
+  it("handler can send a notification through ctx.email", async () => {
+    const emailClient = {
+      send: vi.fn().mockResolvedValue({ id: "vendor-approved-msg" }),
+    };
+    const handler = vi.fn(async (id: string, _fd, ctx: RowActionContext) => {
+      // Representative "approve vendor" flow: write to D1 (omitted in
+      // the mock), then notify the vendor by email.
+      await ctx.email!.send({
+        to: "vendor@example.com",
+        subject: "Your application has been approved",
+        react: null, // real usage passes a React element
+      });
+      return { id };
+    });
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig({ email: emailClient });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "vendor-42",
+      }),
+      metas,
+    );
+
+    expect(result).toEqual({ success: 'Action "archive" completed.' });
+    expect(emailClient.send).toHaveBeenCalledTimes(1);
+    expect(emailClient.send).toHaveBeenCalledWith({
+      to: "vendor@example.com",
+      subject: "Your application has been approved",
+      react: null,
+    });
+  });
 });

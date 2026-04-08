@@ -30,6 +30,10 @@
     "./console": {
       "import": "./dist/console.js",
       "types": "./dist/console.d.ts"
+    },
+    "./test-helpers": {
+      "import": "./dist/test-helpers.js",
+      "types": "./dist/test-helpers.d.ts"
     }
   },
   "files": [
@@ -41,8 +45,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/mailgun.ts src/console.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/mailgun.ts src/console.ts --format esm --dts --watch",
+    "build": "tsup src/index.ts src/mailgun.ts src/console.ts src/test-helpers.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/mailgun.ts src/console.ts src/test-helpers.ts --format esm --dts --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/"

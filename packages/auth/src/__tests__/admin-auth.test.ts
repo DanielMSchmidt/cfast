@@ -3,6 +3,10 @@ import { createAdminAuth } from "../admin-auth";
 
 describe("createAdminAuth", () => {
   function mockAuthInstance() {
+    const getRoles = vi.fn().mockResolvedValue(["admin"]);
+    const setRole = vi.fn().mockResolvedValue(undefined);
+    const setRoles = vi.fn().mockResolvedValue(undefined);
+    const removeRole = vi.fn().mockResolvedValue(undefined);
     return {
       createContext: vi.fn().mockResolvedValue({
         user: { id: "u1", email: "a@b.com", name: "Admin", avatarUrl: null, roles: ["admin"] },
@@ -12,10 +16,19 @@ describe("createAdminAuth", () => {
         user: { id: "u1", email: "a@b.com", name: "Admin", avatarUrl: null, roles: ["admin"] },
         grants: [{ action: "manage" as const, subject: "all" as const }],
       }),
-      getRoles: vi.fn().mockResolvedValue(["admin"]),
-      setRole: vi.fn().mockResolvedValue(undefined),
-      setRoles: vi.fn().mockResolvedValue(undefined),
-      removeRole: vi.fn().mockResolvedValue(undefined),
+      // Grouped roles namespace (the recommended surface) reuses the same
+      // mock spies as the legacy top-level aliases so existing delegation
+      // assertions keep working without duplicating expectations.
+      roles: {
+        get: getRoles,
+        set: setRole,
+        setAll: setRoles,
+        remove: removeRole,
+      },
+      getRoles,
+      setRole,
+      setRoles,
+      removeRole,
       impersonate: vi.fn().mockResolvedValue(undefined),
       stopImpersonating: vi.fn().mockResolvedValue(undefined),
       handler: vi.fn(),

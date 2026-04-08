@@ -4,6 +4,23 @@ import type { FieldConfig } from "@cfast/forms";
 import type { Grant } from "@cfast/permissions";
 
 /**
+ * Structural shape of an email client exposed to row actions.
+ *
+ * Matches the `EmailClient` returned by `createEmailClient` in `@cfast/email`
+ * but duplicated here as an interface so `@cfast/admin` does not take a
+ * hard dependency on `@cfast/email`. Apps that wire both packages can pass
+ * their real `EmailClient` directly.
+ */
+export type RowActionEmailClient = {
+  send: (options: {
+    to: string;
+    subject: string;
+    react: unknown;
+    from?: string;
+  }) => Promise<{ id: string }>;
+};
+
+/**
  * A user representation for the admin panel, decoupled from `@cfast/auth`.
  *
  * This is the shape the admin expects from your auth adapter. It includes
@@ -148,6 +165,17 @@ export type RowActionContext = {
   grants: Grant[];
   /** The raw `Request` that triggered the action. Useful for forwarding cookies or reading headers. */
   request: Request;
+  /**
+   * An email client the row action can use to send notifications (e.g.
+   * "your vendor application has been approved"). Populated when the app
+   * passes an `email` field into {@link AdminConfig}; otherwise `undefined`.
+   *
+   * The client is structurally compatible with `EmailClient` from
+   * `@cfast/email` — pass your existing email client directly. The admin
+   * package does not depend on `@cfast/email` to keep the type surface
+   * minimal.
+   */
+  email?: RowActionEmailClient;
 };
 
 /**
@@ -362,6 +390,19 @@ export type AdminConfig = {
   db: CreateDbFn;
   /** Auth adapter that provides user authentication, role management, and impersonation. See {@link AdminAuthConfig}. */
   auth: AdminAuthConfig;
+  /**
+   * Optional email client exposed to row actions via
+   * {@link RowActionContext.email}. Pass your app's existing
+   * `EmailClient` (from `@cfast/email` or any structurally compatible
+   * implementation) so row actions like "approve vendor" can send
+   * notification emails without rebuilding a client per invocation.
+   *
+   * Accepts either the client directly or a zero-arg getter that
+   * returns one — the getter form matches the lazy env-binding pattern
+   * the email package already uses and avoids capturing Cloudflare
+   * bindings at module scope.
+   */
+  email?: RowActionEmailClient | (() => RowActionEmailClient);
   /** Your Drizzle schema object (e.g., `import * as schema from "~/schema"`). Non-table exports (Relations, helpers) are silently skipped. */
   schema: Record<string, unknown>;
   /** Per-table display and behavior overrides, keyed by table name. See {@link TableOverrides}. */

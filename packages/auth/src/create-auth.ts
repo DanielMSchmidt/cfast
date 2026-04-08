@@ -4,7 +4,7 @@ import { magicLink } from "better-auth/plugins/magic-link";
 import { passkey } from "@better-auth/passkey";
 import { drizzle } from "drizzle-orm/d1";
 import { resolveGrants } from "@cfast/permissions";
-import type { Grant } from "@cfast/permissions";
+import type { Grant, Permissions } from "@cfast/permissions";
 import { createRoleManager } from "./roles";
 import { createImpersonationManager } from "./impersonation";
 import type {
@@ -89,7 +89,9 @@ function parseExpiresIn(value: string): number {
  * const ctx = await auth.requireUser(request);
  * ```
  */
-export function createAuth(config: AuthConfig) {
+export function createAuth<
+  P extends Permissions<readonly string[]>,
+>(config: AuthConfig<P>) {
   const anonymousRoles = config.anonymousRoles ?? [];
   const anonymousGrants: Grant[] = resolveGrants(
     config.permissions,
@@ -247,9 +249,21 @@ export function createAuth(config: AuthConfig) {
     const allowedImpersonationRoles =
       config.impersonation?.allowedRoles ?? ["admin"];
 
+    // Grouped roles namespace. Shares the SAME `roleManager` instance
+    // that backs the legacy top-level aliases below — there is a single
+    // `createRoleManager` call per `initAuth(env)`, so the grouped API is
+    // purely an ergonomic surface, not a second client instantiation.
+    const roles: AuthInstance["roles"] = {
+      get: roleManager.getRoles,
+      set: roleManager.setRole,
+      setAll: roleManager.setRoles,
+      remove: roleManager.removeRole,
+    };
+
     return {
       createContext,
       requireUser,
+      roles,
       getRoles: roleManager.getRoles,
       setRole: roleManager.setRole,
       setRoles: roleManager.setRoles,

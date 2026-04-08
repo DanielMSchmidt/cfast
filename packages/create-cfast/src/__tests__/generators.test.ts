@@ -326,3 +326,72 @@ describe("base template package.json", () => {
     expect(basePkg.scripts.typecheck).toContain("tsc -b");
   });
 });
+
+// Regression guards for the `auth.helpers.server.ts` and `admin.server.ts`
+// templates. The scaffold-build tests already prove these files type-check
+// and build end-to-end; these tests pin the specific shape we care about
+// (#151 and #156) so an accidental revert is caught immediately without
+// waiting for the 5-minute e2e pass.
+describe("auth overlay template: auth.helpers.server.ts (#151)", () => {
+  const helpersPath = path.join(
+    getTemplatesDir(),
+    "auth",
+    "app",
+    "auth.helpers.server.ts",
+  );
+  const source = fs.readFileSync(helpersPath, "utf-8");
+
+  it("caches the auth instance per Request via a WeakMap", () => {
+    // The whole point of the fix: subsequent helper calls during one
+    // request must reuse a single `AuthInstance` instead of re-running
+    // `initAuth()`. A WeakMap<Request, AuthInstance> is the shape we
+    // settled on so entries drop automatically with the request.
+    expect(source).toMatch(/WeakMap<Request,\s*AuthInstance>/);
+  });
+
+  it("exposes `getAuth(request)` and every helper threads the request through", () => {
+    expect(source).toMatch(/export function getAuth\(request: Request\)/);
+    // None of the downstream helpers should re-run `initAuth()` — they
+    // should all go through the cached `getAuth(request)` indirection.
+    const bodies = source.slice(source.indexOf("export async function getAuthContext"));
+    expect(bodies).toContain("getAuth(request).createContext(request)");
+    expect(bodies).toContain("getAuth(request).requireUser(request)");
+    // `initAuth` is only called inside the WeakMap cache miss branch.
+    const initCallSites = bodies.match(/initAuth\(/g);
+    expect(initCallSites).toBeNull();
+  });
+});
+
+describe("admin overlay template: admin.server.ts (#156)", () => {
+  const adminPath = path.join(
+    getTemplatesDir(),
+    "admin",
+    "app",
+    "admin.server.ts",
+  );
+  const source = fs.readFileSync(adminPath, "utf-8");
+
+  it("memoizes the AuthInstance by D1 handle", () => {
+    // Every role callback previously re-ran `initAuth()` from scratch.
+    // The fix memoizes by the D1 binding so a user-detail view that
+    // touches getRoles + setRole + removeRole shares a single instance.
+    expect(source).toMatch(/WeakMap<D1Database,\s*AuthInstance>/);
+    expect(source).toMatch(/function getAdminAuth\(\)/);
+  });
+
+  it("uses the grouped `auth.roles.*` API on the shared instance", () => {
+    expect(source).toContain("getAdminAuth().roles.get(userId)");
+    expect(source).toContain("getAdminAuth().roles.set(userId, role)");
+    expect(source).toContain("getAdminAuth().roles.remove(userId, role)");
+    expect(source).toContain("getAdminAuth().roles.setAll(userId, roles)");
+  });
+
+  it("does not re-run initAuth() inside each role callback", () => {
+    // The regression we are guarding against: a fresh `initAuth(...)`
+    // call inside every callback. The only initAuth call should live
+    // inside the `getAdminAuth()` cache miss branch.
+    const callbacksStart = source.indexOf("const auth: AdminAuthConfig");
+    const callbacks = source.slice(callbacksStart);
+    expect(callbacks).not.toContain("initAuth({");
+  });
+});

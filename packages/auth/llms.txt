@@ -27,13 +27,20 @@ export const initAuth = createAuth({
   passkeys?: { rpName: string; rpId: string },
   session?: { expiresIn?: string },    // e.g. "30d"
   redirects?: { afterLogin?: string; loginPath?: string },
-  anonymousRoles?: string[],
-  defaultRoles?: string[],             // default: ["reader"]
+  anonymousRoles?: RoleName[],         // constrained to the roles declared in permissions
+  defaultRoles?: RoleName[],           // default: ["reader"] — TS error if the role is not in permissions
   roleGrants?: Record<string, string[]>,  // who can assign which roles
   impersonation?: { allowedRoles?: string[] },
   templates?: { magicLink?: (props: { url: string; email: string }) => string },
 });
 ```
+
+> **Typed `defaultRoles` / `anonymousRoles` (v0.4.0)** — both fields are now
+> narrowed to the role union declared inside `definePermissions({ roles: [...] as const })`.
+> Passing a role that is not in that tuple is a compile-time error, so
+> `defaultRoles: ["memberr"]` fails `tsc` instead of silently defaulting
+> to `"reader"` at runtime. No code changes are needed when your roles
+> already line up.
 
 ### initAuth(env) => AuthInstance
 
@@ -50,6 +57,13 @@ auth.createContext(request): Promise<AuthContext>
 auth.requireUser(request): Promise<AuthenticatedContext>
 // { user: AuthUser, grants: Grant[] }  -- throws 302 redirect if not authenticated
 
+// Grouped roles namespace (preferred).
+auth.roles.get(userId): Promise<string[]>
+auth.roles.set(userId, role, caller?): Promise<void>
+auth.roles.setAll(userId, roles, caller?): Promise<void>
+auth.roles.remove(userId, role): Promise<void>
+
+// Legacy top-level aliases — same underlying role manager, kept for back-compat.
 auth.getRoles(userId): Promise<string[]>
 auth.setRole(userId, role, caller?): Promise<void>
 auth.setRoles(userId, roles, caller?): Promise<void>
@@ -61,6 +75,11 @@ auth.stopImpersonating(adminUserId): Promise<void>
 auth.sendMagicLink({ email, callbackURL? }): Promise<void>
 auth.handler(request): Promise<Response>   // forwards to Better Auth
 ```
+
+> **`auth.roles` grouped namespace (v0.4.0)** — `auth.roles.get/set/setAll/remove`
+> reuse the exact same D1-backed role manager as the legacy top-level aliases.
+> No second Better Auth client is created. Prefer the grouped form in new code;
+> the legacy aliases stay for back-compat and are marked `@deprecated`.
 
 ### AuthUser type
 
@@ -195,6 +214,7 @@ import {
   createTestApp,
   loginAs,
   createTestSession,
+  createTestUser,
   applyAuthSchema,
 } from "@cfast/auth/test-helpers";
 
@@ -226,6 +246,20 @@ const response = await loader({
 // auth.api.signInMagicLink directly. Same end result (real session row,
 // real cookie), just less surface area exercised.
 await createTestSession(app, { email: "bob@test.com", roles: ["admin"] });
+
+// Seed helper: create a user (no active session) through the real
+// Better Auth signup pipeline. Use this in seeds and test fixtures
+// instead of inserting into `users`/`accounts`/`passkeys` directly —
+// the row you get is byte-for-byte identical to one a production
+// magic-link signup would produce, but the helper drops the session
+// it used to mint the user so you're left with "just the user".
+const alice = await createTestUser(app, {
+  email: "alice@example.com",
+  name: "Alice",          // optional — defaults to the local part of the email
+  emailVerified: true,    // optional — defaults to true
+  roles: ["admin"],       // optional — assigned via the real auth.setRole() API
+});
+// alice: { id, email, name, emailVerified, roles }
 ```
 
 `createTestApp` also exposes `capturedMagicLinks` and `waitForMagicLink(email?)` so tests can assert on the URLs Better Auth generates. Use `applyAuthSchema(d1)` to set up the tables if you want to manage lifecycle yourself and pass `applyMigrations: false`.
@@ -377,6 +411,7 @@ await auth.removeRole(userId, "editor");
 ## Common Mistakes
 
 - **Calling `createAuth()` per-request** -- `createAuth()` is called once at module level. Only `initAuth()` is called per-request with the D1 binding.
+- **Calling `initAuth()` multiple times in one request** -- `initAuth()` instantiates Better Auth, the Drizzle adapter, the role manager, and the impersonation manager from scratch. If a loader calls `getUser` then `requireUser` then `getAuthContext`, each reaching for `initAuth()`, you're paying that cost 3x. The scaffolded `app/auth.helpers.server.ts` template now memoizes via `WeakMap<Request, AuthInstance>` so all helpers share one instance per request — match that pattern in hand-rolled helpers. See cfast issue #151.
 - **Forgetting to add auth routes** -- The magic link callback and passkey endpoints need `authRoutes()` in your `routes.ts`.
 - **Using `unsafe()` instead of roles for admin** -- Admins should have a proper role with grants, not bypass permissions entirely.
 - **Not wrapping the app with `AuthClientProvider`** -- `useAuth()` and `LoginPage` require the provider at the app root.

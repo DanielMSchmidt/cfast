@@ -11,4 +11,6 @@ export type {
   AuthConfig,
   AuthEnvConfig,
   AuthInstance,
+  AuthRolesApi,
+  RoleNameOf,
 } from "./types";
