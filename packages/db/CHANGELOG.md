@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.3.0...@cfast/db-v0.4.0) (2026-04-08)
+
+
+### Features
+
+* **create-cfast:** scaffold template improvements bundle ([#210](https://github.com/DanielMSchmidt/cfast/issues/210)) ([154d8df](https://github.com/DanielMSchmidt/cfast/commit/154d8df5bdcae673482245d5477f56977ae29962))
+* **db:** ship db.transaction() with callback API (closes [#144](https://github.com/DanielMSchmidt/cfast/issues/144)) ([#199](https://github.com/DanielMSchmidt/cfast/issues/199)) ([b0e1273](https://github.com/DanielMSchmidt/cfast/commit/b0e1273eecfdbf1f2c9fa64219b7e4e0aedff86f))
+
+
+### Bug Fixes
+
+* convert cross-package @cfast/* deps to peerDependencies (closes [#173](https://github.com/DanielMSchmidt/cfast/issues/173)) ([#200](https://github.com/DanielMSchmidt/cfast/issues/200)) ([bee1d01](https://github.com/DanielMSchmidt/cfast/commit/bee1d01554647281670f270af0b1a92a892b6f08))
+* framework debt cleanup bundle ([#211](https://github.com/DanielMSchmidt/cfast/issues/211)) ([d1a8e78](https://github.com/DanielMSchmidt/cfast/commit/d1a8e785ed3b1b317cef43c6dd136fe81c2f2339))
+
 ## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.2.0...@cfast/db-v0.3.0) (2026-04-07)
 
 

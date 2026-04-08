@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.2.0...@cfast/forms-v0.3.0) (2026-04-08)
+
+
+### Features
+
+* **forms:** nested parent-child API with full type inference (closes [#145](https://github.com/DanielMSchmidt/cfast/issues/145) [#191](https://github.com/DanielMSchmidt/cfast/issues/191)) ([#201](https://github.com/DanielMSchmidt/cfast/issues/201)) ([bec26ab](https://github.com/DanielMSchmidt/cfast/commit/bec26ab006e444fea388c241983a50ec2ab75f8d))
+* UploadField component for @cfast/ui + @cfast/joy + AutoForm ([#204](https://github.com/DanielMSchmidt/cfast/issues/204)) ([d4e3ca3](https://github.com/DanielMSchmidt/cfast/commit/d4e3ca38fc993feda15fdc4e0e7c89e26ad6b4c9))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.1.1...@cfast/forms-v0.2.0) (2026-04-07)
 
 

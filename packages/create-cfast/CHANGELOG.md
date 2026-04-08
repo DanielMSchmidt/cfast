@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.2.2...create-cfast-v0.3.0) (2026-04-08)
+
+
+### Features
+
+* **create-cfast:** scaffold template improvements bundle ([#210](https://github.com/DanielMSchmidt/cfast/issues/210)) ([154d8df](https://github.com/DanielMSchmidt/cfast/commit/154d8df5bdcae673482245d5477f56977ae29962))
+* **create-cfast:** ship local-first e2e smoke spec template ([#167](https://github.com/DanielMSchmidt/cfast/issues/167)) ([11c358d](https://github.com/DanielMSchmidt/cfast/commit/11c358d7adac1e5632a5e54bdcea065b80df06de))
+* **create-cfast:** validate template smoke spec works against fresh scaffolds ([#171](https://github.com/DanielMSchmidt/cfast/issues/171)) ([06807ce](https://github.com/DanielMSchmidt/cfast/commit/06807cef70761fe3f25b4b7239de9008eb08da92))
+
+
+### Bug Fixes
+
+* **auth,email,admin:** six papercut fixes ([#151](https://github.com/DanielMSchmidt/cfast/issues/151) [#154](https://github.com/DanielMSchmidt/cfast/issues/154) [#155](https://github.com/DanielMSchmidt/cfast/issues/155) [#156](https://github.com/DanielMSchmidt/cfast/issues/156) [#160](https://github.com/DanielMSchmidt/cfast/issues/160) [#161](https://github.com/DanielMSchmidt/cfast/issues/161)) ([#207](https://github.com/DanielMSchmidt/cfast/issues/207)) ([b0b67fa](https://github.com/DanielMSchmidt/cfast/commit/b0b67fa3d144a5a1f57e4fb03c7ca329cf33d9eb))
+* convert cross-package @cfast/* deps to peerDependencies (closes [#173](https://github.com/DanielMSchmidt/cfast/issues/173)) ([#200](https://github.com/DanielMSchmidt/cfast/issues/200)) ([bee1d01](https://github.com/DanielMSchmidt/cfast/commit/bee1d01554647281670f270af0b1a92a892b6f08))
+* **create-cfast:** prepend wrangler types to typecheck script so fresh checkouts work (closes [#174](https://github.com/DanielMSchmidt/cfast/issues/174)) ([#202](https://github.com/DanielMSchmidt/cfast/issues/202)) ([1ccd158](https://github.com/DanielMSchmidt/cfast/commit/1ccd158fced49567eeb855e90ba3ccf5303af651))
+* **create-cfast:** prevent orphaned route files via docs + Vite plugin warning ([#170](https://github.com/DanielMSchmidt/cfast/issues/170)) ([ce4b6d0](https://github.com/DanielMSchmidt/cfast/commit/ce4b6d002d1438468b9e7387c5aa587501a83b3c))
+* **create-cfast:** use fileURLToPath for __dirname in e2e smoke spec ([#169](https://github.com/DanielMSchmidt/cfast/issues/169)) ([6c237da](https://github.com/DanielMSchmidt/cfast/commit/6c237da960c78fb69a7680ad8c09bbae78d5bbab))
+* framework debt cleanup bundle ([#211](https://github.com/DanielMSchmidt/cfast/issues/211)) ([d1a8e78](https://github.com/DanielMSchmidt/cfast/commit/d1a8e785ed3b1b317cef43c6dd136fe81c2f2339))
+
 ## [0.2.2](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.2.1...create-cfast-v0.2.2) (2026-04-07)
 
 

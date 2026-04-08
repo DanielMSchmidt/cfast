@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/storage-v0.1.0...@cfast/storage-v0.2.0) (2026-04-08)
+
+
+### Features
+
+* **storage:** opinionated routes helper, per-mime limits, signedUrl (closes [#147](https://github.com/DanielMSchmidt/cfast/issues/147) [#148](https://github.com/DanielMSchmidt/cfast/issues/148) [#180](https://github.com/DanielMSchmidt/cfast/issues/180)) ([#196](https://github.com/DanielMSchmidt/cfast/issues/196)) ([8ce4f0f](https://github.com/DanielMSchmidt/cfast/commit/8ce4f0f4cd4e664fb4063be132a9e8938b8ee7fa))
+
 ## [0.1.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/storage-v0.0.1...@cfast/storage-v0.1.0) (2026-03-21)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@cfast/db",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Permission-aware Drizzle queries for Cloudflare D1",
   "keywords": [
     "cfast",
