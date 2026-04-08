@@ -9,7 +9,24 @@ import type {
   AdminTableMeta,
   AdminUser,
   RowActionContext,
+  RowActionEmailClient,
 } from "./types.js";
+
+/**
+ * Resolve the optional email client from an {@link AdminConfig}.
+ *
+ * Accepts the "direct value" form (`email: client`) and the "lazy getter"
+ * form (`email: () => client`) — the getter path exists because production
+ * email clients in cfast apps capture Cloudflare bindings via `env.get()`,
+ * which is not safe to call at module scope. Returns `undefined` when no
+ * email client is configured so row actions can branch on availability.
+ */
+function resolveEmailClient(
+  config: AdminConfig,
+): RowActionEmailClient | undefined {
+  if (!config.email) return undefined;
+  return typeof config.email === "function" ? config.email() : config.email;
+}
 
 /**
  * Internal field names that should be skipped when extracting form values.
@@ -179,6 +196,7 @@ export function createAdminAction(
           db,
           grants,
           request,
+          email: resolveEmailClient(config),
         });
 
       default:
@@ -379,7 +397,13 @@ async function handleImpersonate(
 async function handleCustomAction(
   tableMetas: AdminTableMeta[],
   formData: FormData,
-  ctx: { user: AdminUser; db: Db; grants: Grant[]; request: Request },
+  ctx: {
+    user: AdminUser;
+    db: Db;
+    grants: Grant[];
+    request: Request;
+    email?: RowActionEmailClient;
+  },
 ): Promise<AdminActionResult> {
   const tableName = formData.get("_table");
   if (typeof tableName !== "string" || !tableName) {
@@ -416,6 +440,7 @@ async function handleCustomAction(
     db: ctx.db,
     grants: ctx.grants,
     request: ctx.request,
+    ...(ctx.email ? { email: ctx.email } : {}),
   };
 
   try {

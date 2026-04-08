@@ -31,6 +31,7 @@ Returns a `{ loader, action, Component }` triple to mount on a React Router rout
 type AdminConfig = {
   db: CreateDbFn;                          // (grants, user) => Db
   auth: AdminAuthConfig;                   // auth adapter (see below)
+  email?: EmailClient | (() => EmailClient); // optional — surfaced on ctx.email in row actions
   schema: Record<string, SQLiteTable>;     // your Drizzle schema object
   tables?: Record<string, TableOverrides>; // per-table customization
   users?: UserManagementConfig;            // { assignableRoles?: string[] }
@@ -80,6 +81,7 @@ type RowActionContext = {
   db: Db;               // permission-scoped Db (NOT manage-all)
   grants: Grant[];      // resolved grants for the admin
   request: Request;     // raw request, for cookie forwarding if needed
+  email?: EmailClient;  // populated when AdminConfig.email is configured (see below)
 };
 
 type RowAction = {
@@ -127,6 +129,64 @@ const archiveEverywhere: RowAction = {
       .run({});
   },
 };
+```
+
+### Row actions that send emails (`ctx.email`)
+
+Pass the app's email client to `AdminConfig.email` so row actions can send
+notifications without rebuilding a client per invocation. The shape is
+intentionally loose — any object with a `send({ to, subject, react })`
+method works, so pass the `EmailClient` from `@cfast/email` directly.
+
+```typescript
+// app/admin.server.ts
+import { createAdmin } from "@cfast/admin";
+import { email } from "~/email.server";
+import { VendorApprovedEmail } from "~/email/templates/vendor-approved";
+import { eq } from "drizzle-orm";
+import { vendors } from "~/db/schema";
+import type { RowAction } from "@cfast/admin";
+
+const approveVendor: RowAction = {
+  label: "Approve vendor",
+  confirm: "Approve this vendor and notify them by email?",
+  async action(id, _formData, ctx) {
+    // 1. Update the row using the admin's own grants — no bypass.
+    await ctx.db
+      .update(vendors)
+      .set({ status: "approved", approvedBy: ctx.user.id })
+      .where(eq(vendors.id, id))
+      .run({});
+
+    // 2. Fetch the vendor (scoped db — respects the admin's read grants)
+    //    so we have an email address for the notification.
+    const [vendor] = await ctx.db
+      .query(vendors)
+      .findMany({ where: eq(vendors.id, id), limit: 1 })
+      .run();
+
+    // 3. Send the notification via the email client that was plumbed
+    //    through `AdminConfig.email`. `ctx.email` is `undefined` when
+    //    the app did not configure one, so guard before calling.
+    if (ctx.email && vendor?.email) {
+      await ctx.email.send({
+        to: vendor.email,
+        subject: "Your vendor application has been approved",
+        react: VendorApprovedEmail({ vendor }),
+      });
+    }
+  },
+};
+
+createAdmin({
+  db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
+  auth,
+  schema,
+  email, // or `email: () => email` for lazy env-binding resolution
+  tables: {
+    vendors: { actions: { row: [approveVendor] } },
+  },
+});
 ```
 
 > **Breaking (v0.3.0):** `RowAction.action` handlers now receive a third
