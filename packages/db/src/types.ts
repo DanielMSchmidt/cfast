@@ -561,23 +561,57 @@ export type QueryBuilder<TTable extends DrizzleTable = DrizzleTable> = {
    *
    * The result is typed via `InferRow<TTable>`, so callers get IntelliSense on
    * `(row) => row.title` without any cast.
+   *
+   * **Relations escape hatch (#158):** when you pass `with: { relation: true }`,
+   * Drizzle's relational query builder embeds the joined rows into the result,
+   * but `@cfast/db` cannot statically infer that shape from the
+   * `Record<string, unknown>` schema we accept here. Override the row type via
+   * the optional `TRow` generic to claim the shape you know the query will
+   * produce, instead of having to `as any` the result downstream:
+   *
+   * ```ts
+   * type RecipeWithIngredients = Recipe & { ingredients: Ingredient[] };
+   * const recipes = await db
+   *   .query(recipesTable)
+   *   .findMany<RecipeWithIngredients>({ with: { ingredients: true } })
+   *   .run();
+   * // recipes is RecipeWithIngredients[], no cast needed
+   * ```
    */
-  findMany: (options?: FindManyOptions) => Operation<InferRow<TTable>[]>;
+  findMany: <TRow = InferRow<TTable>>(
+    options?: FindManyOptions,
+  ) => Operation<TRow[]>;
   /**
    * Returns an {@link Operation} that fetches the first matching row, or `undefined`
    * if none match. The row type is propagated from `TTable`.
+   *
+   * Same `TRow` generic escape hatch as {@link findMany} for `with`-relation
+   * shapes that the framework can't infer from the runtime-typed schema.
+   *
+   * ```ts
+   * type RecipeWithIngredients = Recipe & { ingredients: Ingredient[] };
+   * const recipe = await db
+   *   .query(recipesTable)
+   *   .findFirst<RecipeWithIngredients>({ where: eq(recipes.id, id), with: { ingredients: true } })
+   *   .run();
+   * // recipe is RecipeWithIngredients | undefined
+   * ```
    */
-  findFirst: (options?: FindFirstOptions) => Operation<InferRow<TTable> | undefined>;
+  findFirst: <TRow = InferRow<TTable>>(
+    options?: FindFirstOptions,
+  ) => Operation<TRow | undefined>;
   /**
    * Returns a paginated {@link Operation} using either cursor-based or offset-based strategy.
    *
    * The return type depends on the `params.type` discriminant: {@link CursorPage} for `"cursor"`,
-   * {@link OffsetPage} for `"offset"`. Each page's items are typed as `InferRow<TTable>`.
+   * {@link OffsetPage} for `"offset"`. Each page's items are typed as `InferRow<TTable>` by
+   * default; pass an explicit `TRow` to claim a wider shape (e.g. when using
+   * `with: { ... }` to embed related rows).
    */
-  paginate: (
+  paginate: <TRow = InferRow<TTable>>(
     params: CursorParams | OffsetParams,
     options?: PaginateOptions,
-  ) => Operation<CursorPage<InferRow<TTable>>> | Operation<OffsetPage<InferRow<TTable>>>;
+  ) => Operation<CursorPage<TRow>> | Operation<OffsetPage<TRow>>;
 };
 
 /**

@@ -96,6 +96,71 @@ describe("types", () => {
     expectTypeOf(op).toEqualTypeOf<Operation<{ id: string; name: string }>>();
   });
 
+  it("findMany<TRow>() honors the explicit row generic for `with` relations (#158)", () => {
+    // Regression for #158: Drizzle's relational `with` includes embed
+    // joined rows into the result, but `@cfast/db` cannot infer that shape
+    // from the runtime-typed schema. The escape hatch lets callers claim
+    // the wider shape via an explicit generic instead of `as any`.
+    const recipes = sqliteTable("recipes", {
+      id: text("id").primaryKey(),
+      title: text("title").notNull(),
+    });
+
+    const db = createDb({
+      d1: createMockD1(),
+      schema: { recipes },
+      grants: [],
+      user: null,
+      cache: false,
+    });
+
+    type Ingredient = { id: string; name: string };
+    type RecipeWithIngredients = {
+      id: string;
+      title: string;
+      ingredients: Ingredient[];
+    };
+
+    const op = db
+      .query(recipes)
+      .findMany<RecipeWithIngredients>({ with: { ingredients: true } });
+    expectTypeOf(op).toEqualTypeOf<Operation<RecipeWithIngredients[]>>();
+
+    // Default (no generic) still infers from the table.
+    const plain = db.query(recipes).findMany();
+    expectTypeOf(plain).toEqualTypeOf<
+      Operation<{ id: string; title: string }[]>
+    >();
+  });
+
+  it("findFirst<TRow>() honors the explicit row generic for `with` relations (#158)", () => {
+    const recipes = sqliteTable("recipes", {
+      id: text("id").primaryKey(),
+      title: text("title").notNull(),
+    });
+
+    const db = createDb({
+      d1: createMockD1(),
+      schema: { recipes },
+      grants: [],
+      user: null,
+      cache: false,
+    });
+
+    type RecipeWithIngredients = {
+      id: string;
+      title: string;
+      ingredients: { id: string }[];
+    };
+
+    const op = db
+      .query(recipes)
+      .findFirst<RecipeWithIngredients>({ with: { ingredients: true } });
+    expectTypeOf(op).toEqualTypeOf<
+      Operation<RecipeWithIngredients | undefined>
+    >();
+  });
+
   it("DbConfig.schema accepts a wide record (no cast required)", () => {
     // Simulate `import * as schema from "./schema"` where the module
     // exports both tables and Drizzle `relations()` definitions.
