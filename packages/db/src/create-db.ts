@@ -7,6 +7,7 @@ import { createCacheManager, type CacheManager } from "./cache";
 import { createLookupCache, deduplicateDescriptors, type LookupCache } from "./utils";
 import { checkOperationPermissions } from "./permissions";
 import { getBatchable } from "./batchable";
+import { runTransaction } from "./transaction";
 import type {
   Db,
   DbConfig,
@@ -15,6 +16,7 @@ import type {
   InsertBuilder,
   UpdateBuilder,
   DeleteBuilder,
+  Tx,
 } from "./types";
 
 /**
@@ -212,6 +214,10 @@ function buildDb(
           return results;
         },
       };
+    },
+
+    transaction<T>(callback: (tx: Tx) => Promise<T>): Promise<T> {
+      return runTransaction(db, callback);
     },
 
     cache: {

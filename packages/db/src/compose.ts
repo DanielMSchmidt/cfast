@@ -180,7 +180,7 @@ function wrapForTracking<T extends object>(
  * callback-style {@link composeSequentialCallback} before executing for real.
  */
 function createTrackingDb(real: Db, perms: PermissionDescriptor[]): Db {
-  return {
+  const trackingDb: Db = {
     query: (table) => wrapForTracking(real.query(table), perms),
     insert: (table) => wrapForTracking(real.insert(table), perms),
     update: (table) => wrapForTracking(real.update(table), perms),
@@ -197,8 +197,29 @@ function createTrackingDb(real: Db, perms: PermissionDescriptor[]): Db {
         },
       };
     },
+    transaction: async <T>(callback: (tx: import("./types").Tx) => Promise<T>): Promise<T> => {
+      // Dry-run pass through transactions: the callback is invoked against a
+      // tx handle that simply delegates to the tracking db's builder methods,
+      // so every sub-op's permissions still flow into `perms`. The callback's
+      // return value is typed as T but during the dry-run we can only produce
+      // a sentinel; the real run will surface the actual value.
+      const trackingTx: import("./types").Tx = {
+        query: trackingDb.query,
+        insert: trackingDb.insert,
+        update: trackingDb.update,
+        delete: trackingDb.delete,
+        transaction: (cb) => trackingDb.transaction(cb),
+      };
+      try {
+        await callback(trackingTx);
+      } catch {
+        // Swallow dry-run errors — the real run will surface them.
+      }
+      return createSentinel() as T;
+    },
     cache: real.cache,
   };
+  return trackingDb;
 }
 
 /**
