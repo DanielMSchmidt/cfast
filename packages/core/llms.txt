@@ -106,6 +106,38 @@ definePlugin<AuthPluginProvides>()({
 Prefer the inferred form (`requires: [authPlugin]`) when you can — it removes
 the need to declare and import a `PluginProvides` type token.
 
+### Typed env (`definePluginFor<Env>`)
+
+The generic `definePlugin` exposes `ctx.env` as `Record<string, unknown>`
+because `@cfast/core` cannot know your scaffolded `Cloudflare.Env` shape. To
+avoid `ctx.env.DB as D1Database` casts in every plugin, call `definePluginFor`
+once with your env type and re-export the typed factory from a local module:
+
+```typescript
+// app/plugins/define-plugin.ts
+import { definePluginFor } from "@cfast/core";
+export const definePlugin = definePluginFor<Cloudflare.Env>();
+```
+
+```typescript
+// app/plugins/db.ts
+import { definePlugin } from "~/plugins/define-plugin";
+
+export const dbPlugin = definePlugin({
+  name: "db",
+  requires: [authPlugin],
+  setup(ctx) {
+    const db = ctx.env.DB; // typed as D1Database — no cast
+    return { client: createDb({ d1: db, /* ... */ }) };
+  },
+});
+```
+
+The returned factory has the same shape as `definePlugin`, so plugins built
+with it slot into existing `app.use()` calls without further changes. If you
+prefer to type a single plugin in-place without a factory, import the
+`PluginContext<Env, TRequires>` helper and annotate the parameter directly.
+
 ### Client (`@cfast/core/client`)
 
 ```typescript

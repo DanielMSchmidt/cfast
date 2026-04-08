@@ -24,14 +24,50 @@ export type CreateAppConfig<
  * Contains the current request, validated env, and all values provided by prior plugins
  * (typed via `TRequires`).
  *
+ * By default `env` is typed as the loose `Record<string, unknown>` shape used
+ * by the framework's generic plugin layer. Consumer apps that want precise
+ * bindings (e.g. `Cloudflare.Env` from `worker-configuration.d.ts`) can
+ * specialise the type via {@link definePluginFor} or by importing the
+ * {@link PluginContext} helper directly.
+ *
  * @typeParam TRequires - Intersection of prior plugin provides (e.g., `AuthPluginProvides`).
+ * @typeParam TEnv - Env shape (defaults to the loose record shape).
  */
-export type PluginSetupContext<TRequires> = {
+export type PluginSetupContext<
+  TRequires,
+  TEnv = Record<string, unknown>,
+> = {
   /** The incoming HTTP request for the current invocation. */
   request: Request;
   /** The validated environment bindings. */
-  env: Record<string, unknown>;
+  env: TEnv;
 } & TRequires;
+
+/**
+ * Convenience alias for consumers who want to annotate a plugin's `setup(ctx)`
+ * parameter without going through {@link definePluginFor}. Re-exported from
+ * the package entry as `PluginContext`.
+ *
+ * @example
+ * ```ts
+ * import type { PluginContext } from "@cfast/core";
+ * import type { PluginProvides } from "@cfast/core";
+ * import type { authPlugin } from "./plugins/auth";
+ *
+ * export const dbPlugin = definePlugin({
+ *   name: "db",
+ *   requires: [authPlugin],
+ *   setup(ctx: PluginContext<Cloudflare.Env, PluginProvides<typeof authPlugin>>) {
+ *     const db = ctx.env.DB; // typed as D1Database, no cast
+ *     return { client: createDb({ d1: db }) };
+ *   },
+ * });
+ * ```
+ */
+export type PluginContext<
+  TEnv = Record<string, unknown>,
+  TRequires = unknown,
+> = PluginSetupContext<TRequires, TEnv>;
 
 /**
  * A cfast plugin definition created by {@link definePlugin}.
@@ -43,12 +79,15 @@ export type PluginSetupContext<TRequires> = {
  * @typeParam TProvides - The type returned by `setup()`, accessible as `ctx[name]`.
  * @typeParam TRequires - The context shape this plugin depends on from prior plugins.
  * @typeParam TClient - Client-side values exposed via `useApp()`.
+ * @typeParam TEnv - Env shape seen by `setup()`. Defaults to the loose record
+ *   shape so non-specialised plugins do not need to parameterise this slot.
  */
 export type CfastPlugin<
   TName extends string = string,
   TProvides = unknown,
   TRequires = unknown,
   TClient = unknown,
+  TEnv = Record<string, unknown>,
 > = {
   /** Unique identifier used as the namespace key in the app context. */
   name: TName;
@@ -60,10 +99,10 @@ export type CfastPlugin<
    * time if any of these plugins have not yet been registered.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  requires?: readonly CfastPlugin<string, unknown, any, unknown>[];
+  requires?: readonly CfastPlugin<string, unknown, any, unknown, any>[];
   /** Called per-request to produce the values this plugin provides. */
   setup: (
-    ctx: PluginSetupContext<TRequires>,
+    ctx: PluginSetupContext<TRequires, TEnv>,
   ) => TProvides | Promise<TProvides>;
   /** Optional client-side React provider, composed into `app.Provider`. */
   Provider?: ComponentType<{ children: ReactNode }>;
@@ -99,7 +138,7 @@ export type UnionToIntersection<U> = (
  */
 export type RequiresFromPlugins<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  R extends readonly CfastPlugin<string, unknown, any, unknown>[],
+  R extends readonly CfastPlugin<string, unknown, any, unknown, any>[],
 > = R extends readonly []
   ? unknown
   : UnionToIntersection<
@@ -108,7 +147,9 @@ export type RequiresFromPlugins<
           infer N,
           infer P,
           unknown,
-          unknown
+          unknown,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          any
         >
           ? { [Key in N]: P }
           : never;
@@ -139,7 +180,7 @@ export type RuntimePlugin = {
    * registered, throwing `CfastConfigError` immediately if not.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  requires?: readonly CfastPlugin<string, unknown, any, unknown>[];
+  requires?: readonly CfastPlugin<string, unknown, any, unknown, any>[];
   /**
    * Setup function called per-request.
    *
@@ -164,7 +205,9 @@ export type PluginProvides<T> = T extends CfastPlugin<
   infer N,
   infer P,
   unknown,
-  unknown
+  unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any
 >
   ? { [K in N]: P }
   : never;
@@ -242,8 +285,10 @@ export type App<
     TName extends string,
     TProvides,
     TClient,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    TEnv = any,
   >(
-    plugin: CfastPlugin<TName, TProvides, TPluginContext, TClient>,
+    plugin: CfastPlugin<TName, TProvides, TPluginContext, TClient, TEnv>,
   ): App<
     TSchema,
     TPermissions,
