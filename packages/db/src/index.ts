@@ -1,5 +1,6 @@
 /** @module db */
-export { createDb } from "./create-db";
+export { createDb, createAppDb } from "./create-db";
+export type { AppDbConfig, AppDbFactory } from "./create-db";
 export { compose, composeSequential, composeSequentialCallback } from "./compose";
 export { parseCursorParams, parseOffsetParams } from "./paginate";
 export { TransactionError } from "./transaction";

@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/d1";
 import type { BatchItem } from "drizzle-orm/batch";
-import type { DrizzleTable, LookupDb } from "@cfast/permissions";
+import type { Grant, DrizzleTable, LookupDb } from "@cfast/permissions";
 import { createQueryBuilder } from "./query-builder";
 import { createInsertBuilder, createUpdateBuilder, createDeleteBuilder } from "./mutate-builder";
 import { createCacheManager, type CacheManager } from "./cache";
@@ -244,4 +244,116 @@ function buildDb(
     },
   };
   return db;
+}
+
+/**
+ * App-level db factory configuration. The "constants" — D1 binding,
+ * Drizzle schema, cache config — that don't change between requests.
+ *
+ * Returned by {@link createAppDb}, called per-request with the user's
+ * resolved grants and identity to produce a fresh permission-aware {@link Db}.
+ */
+export type AppDbConfig = {
+  /**
+   * The Cloudflare D1 database binding. Pass either the binding directly
+   * (for tests, where the mock D1 is in scope at module load) or a
+   * `() => D1Database` getter (for Workers, where `env.DB` is only
+   * available per-request -- typical pattern: `() => env.get().DB`).
+   *
+   * The lazy form lets `createAppDb()` be called once at module-load time
+   * even though the binding itself isn't materialized until the first
+   * request, so the entire app shares a single factory definition.
+   */
+  d1: D1Database | (() => D1Database);
+  /**
+   * Drizzle schema. Same shape as {@link DbConfig.schema} -- pass
+   * `import * as schema from "./schema"`.
+   */
+  schema: Record<string, unknown>;
+  /**
+   * Cache configuration shared across every per-request `Db`. Defaults to
+   * `{ backend: "cache-api" }` to match `createDb`. Pass `false` to opt out.
+   */
+  cache?: DbConfig["cache"];
+};
+
+/**
+ * The per-request factory returned by {@link createAppDb}. Closes over the
+ * app-level config and accepts the request-scoped grants + user, returning a
+ * fresh permission-aware {@link Db}.
+ *
+ * Stable type so callers (e.g. `@cfast/admin`'s `createDbForAdmin`,
+ * `@cfast/core`'s `dbPlugin`, route loaders) can pass the factory around
+ * without re-deriving its signature.
+ */
+export type AppDbFactory = (
+  grants: Grant[],
+  user: { id: string } | null,
+) => Db;
+
+/**
+ * Consolidates the three near-identical `createDb` factories that every
+ * cfast app used to define (#149):
+ *
+ * - `app/cfast.server.ts` (`dbPlugin` setup)
+ * - `app/admin.server.ts` (`createDbForAdmin`)
+ * - any route handler that built `Db` ad-hoc from `env.DB`
+ *
+ * Splits the configuration into "app constants" (D1 binding, schema, cache)
+ * and "per-request inputs" (grants, user). The returned factory captures the
+ * constants once at module load and accepts the request-scoped inputs at
+ * call time.
+ *
+ * Use this whenever the same shape of `createDb({ d1, schema, grants, user, cache })`
+ * shows up in more than one file in your app. The factory is a stable
+ * `(grants, user) => Db` callable that plugs directly into:
+ *
+ * - `@cfast/core`'s db plugin: `setup(ctx) { return { client: appDb(ctx.auth.grants, ctx.auth.user) } }`
+ * - `@cfast/admin`'s `db: createDbForAdmin` config: `db: appDb`
+ * - any route handler: `const db = appDb(ctx.grants, ctx.user)`
+ *
+ * @example
+ * ```ts
+ * // app/db/factory.ts -- defined once
+ * import { createAppDb } from "@cfast/db";
+ * import * as schema from "./schema";
+ *
+ * export const appDb = createAppDb({
+ *   d1: env.get().DB,
+ *   schema,
+ *   cache: false,
+ * });
+ *
+ * // app/cfast.server.ts -- consume from the plugin
+ * const dbPlugin = definePlugin({
+ *   name: "db",
+ *   requires: [authPlugin],
+ *   setup(ctx) {
+ *     return { client: appDb(ctx.auth.grants, ctx.auth.user) };
+ *   },
+ * });
+ *
+ * // app/admin.server.ts -- consume from admin
+ * const adminConfig = {
+ *   db: appDb,    // (grants, user) => Db -- already the right shape
+ *   ...
+ * };
+ * ```
+ */
+export function createAppDb(config: AppDbConfig): AppDbFactory {
+  const { d1, schema, cache } = config;
+  // Resolve the D1 binding lazily so callers can pass a `() => env.get().DB`
+  // getter when running on Workers (where the binding isn't available at
+  // module-load time). Direct bindings are wrapped in a no-op closure so the
+  // hot path is uniform.
+  const getD1: () => D1Database = typeof d1 === "function" ? d1 : () => d1;
+
+  return (grants, user) =>
+    createDb({
+      d1: getD1(),
+      schema,
+      grants,
+      user,
+      cache,
+    });
 }

@@ -165,7 +165,27 @@ describe("generateCfastServer", () => {
     };
     const result = generateCfastServer(config);
     expect(result).toContain("dbPlugin");
-    expect(result).toContain("createDb");
+    // The scaffold uses the consolidated createAppDb factory (#149) instead
+    // of inlining createDb in three separate places.
+    expect(result).toContain("createAppDb");
+  });
+
+  it("exports a single appDb factory shared across cfast.server / admin (#149)", () => {
+    // Regression guard for #149: the scaffold must export `appDb` from
+    // cfast.server.ts so admin.server.ts can re-use it instead of defining
+    // its own createDbForAdmin wrapper. The factory closes over a lazy
+    // env getter so the same module-level export works on Workers.
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, db: true, auth: true },
+    };
+    const result = generateCfastServer(config);
+    expect(result).toContain("export const appDb");
+    expect(result).toContain("createAppDb({");
+    expect(result).toContain("env.get().DB");
+    // Plugin setup should consume the shared factory rather than re-deriving
+    // its own createDb call.
+    expect(result).toMatch(/appDb\(\s*ctx\.auth\.grants/);
   });
 
   it("casts schema to Record<string, object> (not Record<string, unknown>)", () => {

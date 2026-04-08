@@ -1,9 +1,8 @@
 import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
 import { createAdminAuth } from "@cfast/auth";
-import { createDb } from "@cfast/db";
-import type { DbConfig } from "@cfast/db";
 import { initAuth } from "~/auth.setup.server";
 import { env } from "~/env";
+import { appDb } from "~/cfast.server";
 import * as schema from "~/db/schema";
 
 // ---------------------------------------------------------------------------
@@ -15,26 +14,20 @@ const auth = createAdminAuth(() =>
 );
 
 // ---------------------------------------------------------------------------
-// DB factory — called per-request by @cfast/admin's loader/action
+// DB factory — reused from cfast.server.ts
 // ---------------------------------------------------------------------------
-
-function createDbForAdmin(grants: unknown[], user: { id: string } | null) {
-  const e = env.get();
-  return createDb({
-    d1: e.DB,
-    schema: schema as unknown as DbConfig["schema"],
-    grants: grants as Parameters<typeof createDb>[0]["grants"],
-    user,
-    cache: false,
-  });
-}
+//
+// `appDb` is `(grants, user) => Db`, which is exactly the shape that
+// @cfast/admin's `db` field expects. Reusing the same factory means the
+// admin loader/action and the rest of the app share one `createDb`
+// definition (no more duplicated `createDbForAdmin` boilerplate -- #149).
 
 // ---------------------------------------------------------------------------
 // Admin config
 // ---------------------------------------------------------------------------
 
 const adminConfig = {
-  db: createDbForAdmin,
+  db: appDb,
   auth,
   schema: {
     users: schema.users,
