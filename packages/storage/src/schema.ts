@@ -1,6 +1,22 @@
-import type { FiletypeConfig, StorageSchema, StorageInstance, ClientStorageConfig, HandleContext } from "./types.js";
+import type {
+  FiletypeConfig,
+  StorageSchema,
+  StorageInstance,
+  ClientStorageConfig,
+  HandleContext,
+  MimeGroupsRecord,
+  MimeGroupedFiletypeOptions,
+  NormalizedMimeGroup,
+} from "./types.js";
 import { handleUpload } from "./handle.js";
-import { serveFile, getPublicUrl as getPublicUrlFn, createSignedUrl, verifySignedUrl as verifySignedUrlFn } from "./serve.js";
+import {
+  serveFile,
+  getPublicUrl as getPublicUrlFn,
+  createSignedUrl,
+  verifySignedUrl as verifySignedUrlFn,
+  createInstanceSignedUrl,
+  verifyInstanceSignedToken,
+} from "./serve.js";
 
 const SIZE_UNITS: Record<string, number> = {
   b: 1,
@@ -39,31 +55,160 @@ export function parseSize(size: string): number {
 }
 
 /**
+ * Type guard — detects the per-mime form of {@link filetype} input, which is
+ * a `Record<string, { mimes, maxSize }>` rather than a {@link FiletypeConfig}.
+ */
+function isMimeGroupsRecord(input: unknown): input is MimeGroupsRecord {
+  if (!input || typeof input !== "object") return false;
+  const asRecord = input as Record<string, unknown>;
+  // Old form has these required scalar fields.
+  if ("bucket" in asRecord || "accept" in asRecord || "maxSize" in asRecord || "key" in asRecord) {
+    return false;
+  }
+  // New form has at least one value that looks like a MimeGroup.
+  for (const value of Object.values(asRecord)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      "mimes" in (value as Record<string, unknown>) &&
+      "maxSize" in (value as Record<string, unknown>) &&
+      Array.isArray((value as { mimes: unknown }).mimes)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Normalize a {@link MimeGroupsRecord} into the internal flattened shape,
+ * computing `accept` (union of all mimes) and `maxSize` (the largest group)
+ * plus a pre-parsed list of `mimeGroups` for per-mime validation.
+ */
+function normalizeMimeGroups(record: MimeGroupsRecord): {
+  accept: readonly string[];
+  maxSize: string;
+  mimeGroups: readonly NormalizedMimeGroup[];
+} {
+  const entries = Object.values(record);
+  if (entries.length === 0) {
+    throw new Error("filetype(): mime groups record must contain at least one group");
+  }
+  const accept: string[] = [];
+  const mimeGroups: NormalizedMimeGroup[] = [];
+  let maxBytes = 0;
+  let maxSizeString = entries[0].maxSize;
+
+  for (const group of entries) {
+    if (!Array.isArray(group.mimes) || group.mimes.length === 0) {
+      throw new Error("filetype(): every mime group must declare at least one mime type");
+    }
+    const bytes = parseSize(group.maxSize);
+    mimeGroups.push({ mimes: group.mimes, maxSize: group.maxSize, maxSizeBytes: bytes });
+    for (const mime of group.mimes) {
+      if (!accept.includes(mime)) accept.push(mime);
+    }
+    if (bytes > maxBytes) {
+      maxBytes = bytes;
+      maxSizeString = group.maxSize;
+    }
+  }
+
+  return { accept, maxSize: maxSizeString, mimeGroups };
+}
+
+/**
  * Define a file type with its constraints and key generation strategy.
  *
+ * Two forms are supported:
+ *
+ * 1. **Single-limit form** — accepts one `accept` list and one `maxSize`
+ *    string. All accepted MIME types share the same size limit.
+ * 2. **Per-mime form** — accepts a record of named MIME groups, each with
+ *    its own `maxSize`, plus a second argument for bucket/key/hooks. Use
+ *    this when (for example) images must be 10 MB but PDFs may be 50 MB.
+ *
  * Applies defaults for optional fields: `uploadable` defaults to `true`,
- * `replace` to `false`, `multipartThreshold` to `"5mb"`, and `partSize` to `"10mb"`.
+ * `replace` to `false`, `multipartThreshold` to `"5mb"`, and `partSize` to
+ * `"10mb"`.
  *
  * @typeParam TInput - The shape of caller-provided input available in the `key` function and hooks.
- * @param config - The file type configuration.
  * @returns The config with defaults applied, fully resolved.
  *
- * @example
+ * @example Single-limit form
  * ```ts
- * import { filetype } from "@cfast/storage";
- *
  * const avatars = filetype({
  *   bucket: "UPLOADS",
  *   accept: ["image/jpeg", "image/png", "image/webp"],
  *   maxSize: "2mb",
  *   key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
- *   replace: true,
  * });
+ * ```
+ *
+ * @example Per-mime form (different limits per group)
+ * ```ts
+ * const assets = filetype(
+ *   {
+ *     image: { mimes: ["image/jpeg", "image/png", "image/webp"], maxSize: "10mb" },
+ *     document: { mimes: ["application/pdf"], maxSize: "50mb" },
+ *   },
+ *   {
+ *     bucket: "UPLOADS",
+ *     key: (file, ctx) => `assets/${ctx.user.id}/${file.name}`,
+ *   },
+ * );
  * ```
  */
 export function filetype<TInput = Record<string, unknown>>(
   config: FiletypeConfig<TInput>,
-): FiletypeConfig<TInput> & { uploadable: boolean; replace: boolean; multipartThreshold: string; partSize: string } {
+): FiletypeConfig<TInput> & {
+  uploadable: boolean;
+  replace: boolean;
+  multipartThreshold: string;
+  partSize: string;
+};
+export function filetype<TInput = Record<string, unknown>>(
+  groups: MimeGroupsRecord,
+  options: MimeGroupedFiletypeOptions<TInput>,
+): FiletypeConfig<TInput> & {
+  uploadable: boolean;
+  replace: boolean;
+  multipartThreshold: string;
+  partSize: string;
+};
+export function filetype<TInput = Record<string, unknown>>(
+  configOrGroups: FiletypeConfig<TInput> | MimeGroupsRecord,
+  options?: MimeGroupedFiletypeOptions<TInput>,
+): FiletypeConfig<TInput> & {
+  uploadable: boolean;
+  replace: boolean;
+  multipartThreshold: string;
+  partSize: string;
+} {
+  if (isMimeGroupsRecord(configOrGroups)) {
+    if (!options) {
+      throw new Error(
+        "filetype(): the per-mime form requires a second argument with at least `bucket` and `key`",
+      );
+    }
+    const { accept, maxSize, mimeGroups } = normalizeMimeGroups(configOrGroups);
+    return {
+      bucket: options.bucket,
+      accept,
+      maxSize,
+      key: options.key,
+      replace: options.replace ?? false,
+      uploadable: options.uploadable ?? true,
+      multipartThreshold: options.multipartThreshold ?? "5mb",
+      partSize: options.partSize ?? "10mb",
+      publicUrl: options.publicUrl,
+      hooks: options.hooks,
+      ownerCheck: options.ownerCheck,
+      mimeGroups,
+    };
+  }
+
+  const config = configOrGroups as FiletypeConfig<TInput>;
   return {
     ...config,
     uploadable: config.uploadable ?? true,
@@ -103,11 +248,11 @@ export function defineStorage<T extends StorageSchema>(schema: T): StorageInstan
   return {
     schema,
 
-    handle: async (name, request, ctx) => {
+    handle: async (name, source, ctx) => {
       const config = schema[name];
       if (!config) throw new Error(`Unknown filetype: "${String(name)}"`);
       if (config.uploadable === false) throw new Error(`Filetype "${String(name)}" is not uploadable`);
-      return handleUpload(config, request, ctx as HandleContext<unknown>);
+      return handleUpload(config, source, ctx as HandleContext<unknown>);
     },
 
     serve: async (name, key, options) => {
@@ -137,6 +282,18 @@ export function defineStorage<T extends StorageSchema>(schema: T): StorageInstan
       const secret = (options.env as Record<string, string>)["STORAGE_SECRET"];
       if (!secret) throw new Error("STORAGE_SECRET binding not found in env");
       return verifySignedUrlFn(url, secret);
+    },
+
+    signedUrl: async (key, options) => {
+      const secret = (options.env as Record<string, string>)["STORAGE_SECRET"];
+      if (!secret) throw new Error("STORAGE_SECRET binding not found in env");
+      return createInstanceSignedUrl(key, secret, options.expiresIn, options.basePath);
+    },
+
+    verifySignedToken: async (key, token, options) => {
+      const secret = (options.env as Record<string, string>)["STORAGE_SECRET"];
+      if (!secret) throw new Error("STORAGE_SECRET binding not found in env");
+      return verifyInstanceSignedToken(key, token, secret);
     },
 
     clientConfig: (): ClientStorageConfig => {

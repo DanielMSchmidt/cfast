@@ -221,10 +221,134 @@ try {
   await storage.handle("avatars", request, { env, user });
 } catch (e) {
   if (e instanceof StorageError) {
-    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED"
+    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED" | "UNAUTHORIZED" | "INVALID_TOKEN"
     e.detail;  // "File is 5.2MB but avatars allows max 2MB"
     e.status;  // 413
   }
 }
 ```
+
+## Opinionated Routes (`storageRoutes` + `createStorageRouteHandlers`)
+
+The package ships a ready-made React Router v7 route pair so you do not need to write action handlers by hand. `storageRoutes` returns a splat-route config entry you spread into `routes.ts`, and `createStorageRouteHandlers` builds the matching `loader`/`action` pair.
+
+```typescript
+// app/routes.ts
+import type { RouteConfig } from "@react-router/dev/routes";
+import { storageRoutes } from "@cfast/storage/plugin";
+
+export default [
+  ...storageRoutes({ handlerFile: "routes/uploads.$.tsx" }),
+  // ... rest of your routes
+] satisfies RouteConfig;
+```
+
+```typescript
+// app/routes/uploads.$.tsx
+import { createStorageRouteHandlers } from "@cfast/storage";
+import { storage } from "~/storage";
+import { requireUser } from "~/auth.server";
+
+const { loader, action } = createStorageRouteHandlers({
+  storage,
+  requireUser,
+});
+
+export { loader, action };
+```
+
+That single file gives you:
+
+- `POST /uploads/:filetype` -- multipart upload endpoint that calls `storage.handle(filetype, request, ctx)` and responds with `{ key, size, type, url }`.
+- `GET /uploads/*` -- streams the R2 object at `params["*"]`, optionally gated by the matching filetype's `ownerCheck` or a signed `?token=` query parameter.
+
+### Access control via `ownerCheck`
+
+Each filetype can declare an `ownerCheck` that runs before the proxy route streams a private object. The check receives the requested key, the authenticated user (from `requireUser`), and the Workers env, so you can look up the owning row in your database.
+
+```typescript
+export const storage = defineStorage({
+  productImages: filetype(
+    {
+      image: { mimes: ["image/jpeg", "image/png", "image/webp"], maxSize: "10mb" },
+      document: { mimes: ["application/pdf"], maxSize: "50mb" },
+    },
+    {
+      bucket: "UPLOADS",
+      key: (file, ctx) => `products/${ctx.input.productId}/${file.name}`,
+      ownerCheck: async (key, user, env) => {
+        const db = drizzle((env as { DB: D1Database }).DB);
+        const productId = key.split("/")[1];
+        const row = await db
+          .select({ vendorId: products.vendorId })
+          .from(products)
+          .where(eq(products.id, productId))
+          .get();
+        return row?.vendorId === user?.vendorId;
+      },
+    },
+  ),
+});
+```
+
+Unauthorized requests receive a `403 UNAUTHORIZED` JSON response instead of the object body.
+
+### Per-mime size limits
+
+The per-mime form of `filetype()` accepts a record of named MIME groups, each with its own `maxSize`. Every group is enforced independently, so images stay at 10 MB even when the same filetype also accepts 50 MB PDFs:
+
+```typescript
+filetype(
+  {
+    image: { mimes: ["image/jpeg", "image/png", "image/webp"], maxSize: "10mb" },
+    document: { mimes: ["application/pdf"], maxSize: "50mb" },
+  },
+  {
+    bucket: "UPLOADS",
+    key: (file, ctx) => `assets/${ctx.user.id}/${file.name}`,
+  },
+);
+```
+
+If a client uploads a 12 MB JPEG the pipeline rejects it with `FILE_TOO_LARGE` even though the filetype also accepts 50 MB PDFs.
+
+### Signed URLs for the proxy route
+
+`storage.signedUrl(key, { env, expiresIn })` mints a token-bearing URL pointing at the `/uploads/*` proxy route. The token is verified against `STORAGE_SECRET` before streaming, so you can share private objects without exposing your auth state:
+
+```typescript
+const url = await storage.signedUrl("products/abc/image.jpg", {
+  env: context.env,
+  expiresIn: "1h",
+});
+// → "/uploads/products/abc/image.jpg?token=1700000000.abcdef..."
+```
+
+Expired or tampered tokens are rejected with `403 INVALID_TOKEN`.
+
+### Upload with structured form fields (`handle(name, file, ctx)`)
+
+When an action needs to read the file *and* structured form fields from the same POST, parse `request.formData()` yourself and hand the resulting `File` to `storage.handle`:
+
+```typescript
+export async function action({ request, context }) {
+  const user = await auth.requireUser(request);
+  const formData = await request.formData();
+
+  const file = formData.get("photo");
+  const title = formData.get("title");
+  if (!(file instanceof File)) throw new Response("photo required", { status: 400 });
+
+  const result = await storage.handle("postImages", file, {
+    env: context.env,
+    user,
+    input: { postId: "123" },
+  });
+
+  await db.insert(posts).values({ title: String(title), imageKey: result.key }).run({});
+  return { success: true };
+}
+```
+
+Both overloads coexist: pass a `Request` when the body contains only the file, pass a `File` when the request also carries structured fields.
 

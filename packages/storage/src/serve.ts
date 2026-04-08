@@ -111,6 +111,66 @@ export async function createSignedUrl(
 }
 
 /**
+ * Mint a signed URL pointing at the opinionated `/uploads/*` proxy route.
+ *
+ * Unlike {@link createSignedUrl}, this does not embed a filetype name — the
+ * token binds only the object key and expiry, which is all the `/uploads/*`
+ * proxy route needs to authorize a download.
+ *
+ * @param key - The R2 object key.
+ * @param secret - HMAC secret (from the `STORAGE_SECRET` binding).
+ * @param expiresIn - Duration string (e.g. `"1h"`, `"30m"`, `"7d"`).
+ * @param basePath - Mount path of the proxy route (defaults to `"/uploads"`).
+ * @returns A relative URL of the form `/{basePath}/{key}?token={expires}.{sig}`.
+ */
+export async function createInstanceSignedUrl(
+  key: string,
+  secret: string,
+  expiresIn: string,
+  basePath?: string,
+): Promise<string> {
+  const durationMs = parseDuration(expiresIn);
+  const expires = Math.floor((Date.now() + durationMs) / 1000);
+
+  const payload = `${key}:${expires}`;
+  const sig = await hmacSign(payload, secret);
+  const token = `${expires}.${sig}`;
+
+  const normalizedBase = (basePath ?? "/uploads").replace(/\/+$/, "");
+  const normalizedKey = key.replace(/^\/+/, "");
+  return `${normalizedBase}/${normalizedKey}?token=${token}`;
+}
+
+/**
+ * Verify a token minted by {@link createInstanceSignedUrl} against an R2 key.
+ *
+ * @param key - The R2 object key the caller is trying to access.
+ * @param token - The raw `token` query parameter (e.g. `1700000000.abc123…`).
+ * @param secret - The HMAC secret used when the token was created.
+ * @returns `true` if the token is well-formed, unexpired, and the HMAC
+ *   matches; `false` otherwise.
+ */
+export async function verifyInstanceSignedToken(
+  key: string,
+  token: string | null,
+  secret: string,
+): Promise<boolean> {
+  if (!token) return false;
+  const dotIndex = token.indexOf(".");
+  if (dotIndex <= 0) return false;
+  const expiresStr = token.slice(0, dotIndex);
+  const sig = token.slice(dotIndex + 1);
+  if (!sig) return false;
+
+  const expires = parseInt(expiresStr, 10);
+  if (isNaN(expires)) return false;
+  if (expires < Math.floor(Date.now() / 1000)) return false;
+
+  const payload = `${key}:${expires}`;
+  return hmacVerify(payload, sig, secret);
+}
+
+/**
  * Verify that a signed URL has a valid HMAC signature and has not expired.
  *
  * @param url - The signed URL (absolute or relative path with query parameters).
