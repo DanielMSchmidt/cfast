@@ -43,7 +43,7 @@ import type {
  * });
  *
  * // All operations check permissions at .run() time
- * const posts = await db.query(postsTable).findMany().run({});
+ * const posts = await db.query(postsTable).findMany().run();
  * ```
  */
 export function createDb(config: DbConfig): Db {

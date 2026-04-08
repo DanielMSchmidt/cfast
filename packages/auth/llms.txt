@@ -389,7 +389,7 @@ export async function loader({ request, context }) {
   const { user, grants } = await auth.requireUser(request);
 
   const db = createDb({ d1: context.env.DB, schema, grants, user });
-  const posts = await db.query(postsTable).findMany().run({});
+  const posts = await db.query(postsTable).findMany().run();
   return { user, posts };
 }
 ```

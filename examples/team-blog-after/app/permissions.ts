@@ -19,7 +19,7 @@ export type AuthUser = {
 // Declarative permission definitions (source of truth)
 // ---------------------------------------------------------------------------
 // These definePermissions + grant declarations power the @cfast/db Operations
-// layer. When a route calls cfDb.insert(posts).values(...).run({}), the
+// layer. When a route calls cfDb.insert(posts).values(...).run(), the
 // permissions are checked against these grants automatically.
 // ---------------------------------------------------------------------------
 

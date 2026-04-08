@@ -102,6 +102,58 @@ describe("InsertBuilder", () => {
       builder.values({ title: "Hello" }).returning().run(),
     ).resolves.not.toThrow();
   });
+
+  it(".run() params are optional for query, mutate and returning paths (#150)", async () => {
+    // Regression guard for #150: the entire Operation.run() surface must
+    // accept zero arguments so callers aren't forced to pass an empty
+    // placeholder object when they don't use `sql.placeholder()`.
+    const insertBuilder = createInsertBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      table: posts,
+      unsafe: false,
+      ...lookupTestConfig(),
+    });
+    const updateBuilder = createUpdateBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      table: posts,
+      unsafe: false,
+      ...lookupTestConfig(),
+    });
+    const deleteBuilder = createDeleteBuilder({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "editor-1" },
+      table: posts,
+      unsafe: false,
+      ...lookupTestConfig(),
+    });
+
+    // Every mutate variant (.run() and .returning().run()) must work with
+    // zero args. Typescript will fail the build if `run()` requires params.
+    await expect(
+      insertBuilder.values({ title: "A" }).run(),
+    ).resolves.toBeUndefined();
+    await expect(
+      insertBuilder.values({ title: "B" }).returning().run(),
+    ).resolves.not.toThrow();
+    await expect(
+      updateBuilder.set({ title: "C" }).where(undefined).run(),
+    ).resolves.toBeUndefined();
+    await expect(
+      updateBuilder.set({ title: "D" }).where(undefined).returning().run(),
+    ).resolves.not.toThrow();
+    await expect(deleteBuilder.where(undefined).run()).resolves.toBeUndefined();
+    await expect(
+      deleteBuilder.where(undefined).returning().run(),
+    ).resolves.not.toThrow();
+  });
 });
 
 describe("UpdateBuilder", () => {

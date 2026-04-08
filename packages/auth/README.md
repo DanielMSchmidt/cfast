@@ -376,7 +376,7 @@ export async function loader({ request, context }) {
 
   // Operations now check permissions against this user's roles automatically
   const posts = db.query(postsTable).findMany();
-  const results = await posts.run({}); // permission filters applied based on user.roles
+  const results = await posts.run(); // permission filters applied based on user.roles
   return { user, posts: results };
 }
 ```

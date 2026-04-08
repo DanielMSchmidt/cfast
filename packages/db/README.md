@@ -26,7 +26,7 @@ The two-phase design (inspect `.permissions`, then `.run()`) exists because perm
 
 3. **Introspection** — Logging, debugging, and admin dashboards can inspect what an operation requires without executing it.
 
-The cost is one extra level of indirection (`.run({})` instead of `await db.query(...)`) and a slightly larger API surface. We think this is worth it because permission bugs are hard to detect and easy to ship.
+The cost is one extra level of indirection (`.run()` instead of `await db.query(...)`) and a slightly larger API surface. We think this is worth it because permission bugs are hard to detect and easy to ship.
 
 ### Why `Record<string, unknown>` for params instead of type-safe placeholders?
 
@@ -156,7 +156,7 @@ const allVisible = db.query(posts).findMany();
 allVisible.permissions;
 // → [{ action: "read", table: posts }]
 
-await allVisible.run({});
+await allVisible.run();
 // Anonymous user → SELECT * FROM posts WHERE published = 1
 // Editor user   → SELECT * FROM posts  (no permission filter)
 // Admin user    → SELECT * FROM posts  (manage grants have no filter)
@@ -206,7 +206,7 @@ const createPost = db.insert(posts).values({
 createPost.permissions;
 // → [{ action: "create", table: posts }]
 
-await createPost.run({});
+await createPost.run();
 // Checks: does this user's role have a "create" grant on posts?
 // If yes → INSERT INTO posts ...
 // If no  → throws ForbiddenError
@@ -219,7 +219,7 @@ const createPost = db.insert(posts)
   .values({ title: "Hello", authorId: currentUser.id })
   .returning();
 
-const inserted = await createPost.run({});
+const inserted = await createPost.run();
 // inserted: the full inserted row
 ```
 
@@ -237,7 +237,7 @@ const publishPost = db.update(posts)
 publishPost.permissions;
 // → [{ action: "update", table: posts }]
 
-await publishPost.run({});
+await publishPost.run();
 ```
 
 **Row-level permission injection for updates:** If the user's "update" grant has a `where` clause (e.g., `where: (post, user) => eq(post.authorId, user.id)`), it's AND'd with the user-supplied condition:
@@ -261,7 +261,7 @@ const updated = await db.update(posts)
   .set({ published: true })
   .where(eq(posts.id, "abc-123"))
   .returning()
-  .run({});
+  .run();
 ```
 
 ---
@@ -275,7 +275,7 @@ const removePost = db.delete(posts)
 removePost.permissions;
 // → [{ action: "delete", table: posts }]
 
-await removePost.run({});
+await removePost.run();
 ```
 
 Same row-level WHERE injection as `update()`. Same silent-no-match behavior.
@@ -292,7 +292,7 @@ const op = db.unsafe().delete(posts).where(eq(posts.id, "abc-123"));
 op.permissions;
 // → []  (empty — no permissions required)
 
-await op.run({});
+await op.run();
 // Executes immediately, no permission check, no permission WHERE injection
 ```
 
@@ -329,7 +329,7 @@ const publishWorkflow = compose(
 publishWorkflow.permissions;
 // → [{ action: "update", table: posts }, { action: "create", table: auditLogs }]
 
-await publishWorkflow.run({});
+await publishWorkflow.run();
 ```
 
 | Parameter | Type | Description |
@@ -370,7 +370,7 @@ const batchOp = db.batch([
 batchOp.permissions;
 // → [{ action: "create", table: posts }, { action: "create", table: auditLogs }]
 
-await batchOp.run({});
+await batchOp.run();
 ```
 
 **Implementation detail:** `batch()` runs operations sequentially via their individual `.run()` methods, not via D1's native batch API. See [Design Decisions](#why-does-batch-run-operations-sequentially) for why.
@@ -422,7 +422,7 @@ The hash uses a fast 32-bit string hash (djb2 variant). This is not cryptographi
 Every mutation builder receives an `onMutate` callback. After a successful insert/update/delete, it bumps the table's version counter. Any subsequent read generates a cache key with the new version, causing a cache miss.
 
 ```typescript
-await db.insert(posts).values({ title: "New" }).run({});
+await db.insert(posts).values({ title: "New" }).run();
 // → table version for "posts" incremented
 // → all cached "posts" queries will miss on next read
 ```
@@ -536,7 +536,7 @@ export async function loader({ context }) {
   });
 
   // Read — permission filter applied automatically
-  const visiblePosts = await db.query(posts).findMany().run({});
+  const visiblePosts = await db.query(posts).findMany().run();
 
   // Inspect permissions without executing
   const deleteOp = db.delete(posts).where(eq(posts.id, "abc"));
@@ -578,7 +578,7 @@ export async function action({ context, request }) {
   // → [{ action: "update", table: posts }, { action: "create", table: auditLogs }]
 
   // Execute — each sub-operation checks its own permissions
-  await publishWorkflow.run({});
+  await publishWorkflow.run();
 
   return { ok: true };
 }
@@ -677,10 +677,10 @@ Use `db.unsafe()` when inserting into system tables (like `audit_logs`) that no 
 
 ```typescript
 // Good: audit log bypasses permission checks
-await db.unsafe().insert(auditLogs).values({ ... }).run({});
+await db.unsafe().insert(auditLogs).values({ ... }).run();
 
 // Bad: requires a "create" grant on audit_logs for the current user's role
-await db.insert(auditLogs).values({ ... }).run({});
+await db.insert(auditLogs).values({ ... }).run();
 ```
 
 `git grep '.unsafe()'` finds every permission bypass in your codebase.

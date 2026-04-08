@@ -38,7 +38,7 @@ export type InferRow<TTable> = TTable extends { $inferSelect: infer R }
  * // => [{ action: "read", table: "posts" }]
  *
  * // Execute with permission checks
- * const rows = await op.run({});
+ * const rows = await op.run();
  * ```
  */
 export type Operation<TResult> = {
@@ -48,7 +48,8 @@ export type Operation<TResult> = {
    * Checks permissions, applies permission WHERE clauses, executes the query via Drizzle,
    * and returns the result. Throws `ForbiddenError` if the user's role lacks a required grant.
    *
-   * @param params - Placeholder values for `sql.placeholder()` calls. Pass `{}` when no placeholders are used.
+   * @param params - Optional placeholder values for `sql.placeholder()` calls.
+   *   Omit when your query does not use placeholders — the default is `{}`.
    */
   run: (params?: Record<string, unknown>) => Promise<TResult>;
 };
@@ -242,7 +243,7 @@ export type FindFirstOptions = Omit<FindManyOptions, "limit" | "offset">;
  * @example
  * ```ts
  * const params = parseCursorParams(request, { defaultLimit: 20 });
- * const page = await db.query(posts).paginate(params).run({});
+ * const page = await db.query(posts).paginate(params).run();
  * ```
  */
 export type CursorParams = {
@@ -263,7 +264,7 @@ export type CursorParams = {
  * @example
  * ```ts
  * const params = parseOffsetParams(request, { defaultLimit: 20 });
- * const page = await db.query(posts).paginate(params).run({});
+ * const page = await db.query(posts).paginate(params).run();
  * ```
  */
 export type OffsetParams = {
@@ -294,7 +295,7 @@ export type PaginateParams = CursorParams | OffsetParams;
  * ```ts
  * const page: CursorPage<Post> = await db.query(posts)
  *   .paginate({ type: "cursor", cursor: null, limit: 20 })
- *   .run({});
+ *   .run();
  *
  * if (page.nextCursor) {
  *   // Fetch next page with page.nextCursor
@@ -319,7 +320,7 @@ export type CursorPage<T> = {
  * ```ts
  * const page: OffsetPage<Post> = await db.query(posts)
  *   .paginate({ type: "offset", page: 1, limit: 20 })
- *   .run({});
+ *   .run();
  *
  * console.log(`Page ${page.page} of ${page.totalPages} (${page.total} total)`);
  * ```
@@ -436,13 +437,13 @@ export type Tx = {
  * @example
  * ```ts
  * // Read
- * const posts = await db.query(postsTable).findMany().run({});
+ * const posts = await db.query(postsTable).findMany().run();
  *
  * // Write
- * await db.insert(postsTable).values({ title: "Hello" }).run({});
+ * await db.insert(postsTable).values({ title: "Hello" }).run();
  *
  * // Bypass permissions for system tasks
- * await db.unsafe().delete(sessionsTable).where(expired).run({});
+ * await db.unsafe().delete(sessionsTable).where(expired).run();
  * ```
  */
 export type Db = {
@@ -545,13 +546,13 @@ export type Db = {
  * const builder = db.query(posts);
  *
  * // Fetch all visible posts
- * const all = await builder.findMany().run({});
+ * const all = await builder.findMany().run();
  *
  * // Fetch a single post
- * const post = await builder.findFirst({ where: eq(posts.id, id) }).run({});
+ * const post = await builder.findFirst({ where: eq(posts.id, id) }).run();
  *
  * // Paginate
- * const page = await builder.paginate(params, { orderBy: desc(posts.createdAt) }).run({});
+ * const page = await builder.paginate(params, { orderBy: desc(posts.createdAt) }).run();
  * ```
  */
 export type QueryBuilder<TTable extends DrizzleTable = DrizzleTable> = {
@@ -588,13 +589,13 @@ export type QueryBuilder<TTable extends DrizzleTable = DrizzleTable> = {
  * @example
  * ```ts
  * // Insert without returning
- * await db.insert(posts).values({ title: "Hello", authorId: user.id }).run({});
+ * await db.insert(posts).values({ title: "Hello", authorId: user.id }).run();
  *
  * // Insert with returning
  * const row = await db.insert(posts)
  *   .values({ title: "Hello", authorId: user.id })
  *   .returning()
- *   .run({});
+ *   .run();
  * ```
  */
 export type InsertBuilder<TTable extends DrizzleTable = DrizzleTable> = {
@@ -625,7 +626,7 @@ export type InsertReturningBuilder<TTable extends DrizzleTable = DrizzleTable> =
  * await db.update(posts)
  *   .set({ published: true })
  *   .where(eq(posts.id, "abc-123"))
- *   .run({});
+ *   .run();
  * ```
  */
 export type UpdateBuilder<TTable extends DrizzleTable = DrizzleTable> = {
@@ -663,7 +664,7 @@ export type UpdateReturningBuilder<TTable extends DrizzleTable = DrizzleTable> =
  *
  * @example
  * ```ts
- * await db.delete(posts).where(eq(posts.id, "abc-123")).run({});
+ * await db.delete(posts).where(eq(posts.id, "abc-123")).run();
  * ```
  */
 export type DeleteBuilder<TTable extends DrizzleTable = DrizzleTable> = {

@@ -194,7 +194,7 @@ export function createActions<
       const ctx = await resolveContext(args);
       const input = await parseInput(args.request) as TInput;
       const operation = operationsFn(ctx.db, input, ctx);
-      return operation.run({});
+      return operation.run();
     };
 
     const loader = <TLoaderData extends Record<string, Serializable>>(

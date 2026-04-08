@@ -113,7 +113,7 @@ const approveVendor: RowAction = {
       .update(vendors)
       .set({ status: "approved", approvedBy: ctx.user.id })
       .where(eq(vendors.id, id))
-      .run({});
+      .run();
   },
 };
 
@@ -126,7 +126,7 @@ const archiveEverywhere: RowAction = {
       .update(vendors)
       .set({ archived: true })
       .where(eq(vendors.id, id))
-      .run({});
+      .run();
   },
 };
 ```

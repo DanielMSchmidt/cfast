@@ -158,12 +158,12 @@ export default {
 // Using app.context() directly:
 export async function loader({ request, context }: Route.LoaderArgs) {
   const ctx = await app.context(request, context);
-  return ctx.db.client.query(posts).findMany().run({});
+  return ctx.db.client.query(posts).findMany().run();
 }
 
 // Using convenience wrapper:
 export const loader = app.loader(async (ctx, { params }) => {
-  return ctx.db.client.query(posts).findMany().run({});
+  return ctx.db.client.query(posts).findMany().run();
 });
 ```
 
