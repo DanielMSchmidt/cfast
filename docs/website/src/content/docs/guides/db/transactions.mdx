@@ -1,0 +1,149 @@
+---
+title: "Transactions vs Batch"
+description: "When to use db.transaction(), db.batch(), and relative-SQL updates."
+---
+
+`@cfast/db` ships three ways to atomically mutate data: `db.batch([...])`, `db.transaction(async tx => ...)`, and plain relative-SQL updates with a `WHERE` guard. They look similar, but the trade-offs are different. This guide walks through the decision table and gives you working code for the common case — an oversell-safe checkout.
+
+## Decision table
+
+| Use case | `db.batch([...])` | `db.transaction(async tx => ...)` |
+|---|---|---|
+| Static list of writes | Yes (preferred) | Works but heavier |
+| Shape of writes depends on logic | No — list must be static | Yes |
+| Read a row, decide, then write | **No** — not concurrency-safe | Yes (combine with `WHERE` guard) |
+| Conditional inserts / state machines | No | Yes |
+| Returning the inserted row | Yes (batch result array) | Resolves to `undefined` inside the callback — generate ids client-side |
+| Atomic (all-or-nothing) | Yes | Yes |
+| Concurrency safety | Guard writes with `WHERE` clauses | Guard writes with `WHERE` clauses (reads are NOT isolated) |
+
+The short version:
+
+- **Know every write ahead of time?** Use `db.batch([...])`. Lower overhead, no pending-queue bookkeeping, results come back as an array in the original order.
+- **Need to read a row, branch on it, then write?** Use `db.transaction(async tx => ...)`. The only safe way to do read-modify-write across more than one row.
+- **Just decrementing a single-row counter?** Skip both. A single `UPDATE ... WHERE stock >= ?` is one round trip and needs no transaction scope.
+
+## db.batch — static list of writes
+
+Use `db.batch` when the full set of mutations is known before you call it. Permissions for every sub-op are checked upfront; the statements are sent to D1's native `batch()` API and execute as a single transaction. If any statement fails, the entire batch rolls back.
+
+```ts
+await db
+  .batch([
+    db
+      .update(products)
+      .set({ stock: sql`stock - 1` })
+      .where(eq(products.id, id1)),
+    db
+      .update(products)
+      .set({ stock: sql`stock - 1` })
+      .where(eq(products.id, id2)),
+    db.insert(orders).values({ userId, items: [id1, id2] }),
+  ])
+  .run({});
+```
+
+**Gotcha:** reads happen before writes begin, so `db.batch` is NOT safe for read-modify-write. A read issued inside a batch cannot influence a later statement in the same batch — the whole list is submitted at once. For "read row, decide, write" logic, reach for `db.transaction`.
+
+**Compose gotcha:** operations produced by `compose()` / `composeSequential()` executors don't carry the batchable hook. Mixing them into `db.batch([...])` falls back to sequential execution and loses atomicity. For pure compose workflows that need atomicity, build the underlying ops with `db.insert` / `db.update` / `db.delete` directly and pass them straight to `db.batch`.
+
+## db.transaction — read-modify-write
+
+Use `db.transaction` whenever the set of writes depends on logic inside the callback: conditional inserts, state machines, or reads that gate later writes.
+
+Writes inside the callback (`tx.insert`, `tx.update`, `tx.delete`) are **recorded**, not executed. They're flushed together as a single atomic `db.batch([...])` when the callback returns successfully. If the callback throws, the pending writes are discarded and nothing reaches D1.
+
+```ts
+import { and, eq, gte, sql } from "drizzle-orm";
+
+// Oversell-safe checkout: atomic + guarded against concurrent decrements.
+const order = await db.transaction(async (tx) => {
+  // Reads execute eagerly against the underlying db. They see whatever is
+  // committed right now — D1 does NOT provide snapshot isolation across
+  // async code, so another request can modify the row between read and
+  // write. The WHERE guard on the update is what keeps us concurrency-safe.
+  const product = await tx
+    .query(products)
+    .findFirst({ where: eq(products.id, pid) })
+    .run({});
+
+  if (!product || product.stock < qty) {
+    throw new Error("out of stock"); // rolls back, nothing is written
+  }
+
+  // Guarded decrement: relative SQL + WHERE stock >= qty. The guard is
+  // re-evaluated by D1 at commit time, so two concurrent transactions
+  // cannot BOTH decrement past zero. Either one succeeds and the other
+  // is a no-op (0 rows matched), or the application-level check above
+  // rejects the second one first.
+  await tx
+    .update(products)
+    .set({ stock: sql`stock - ${qty}` })
+    .where(and(eq(products.id, pid), gte(products.stock, qty)))
+    .run({});
+
+  // Generate the order id client-side so we don't need .returning()
+  // inside the transaction (see "Returning inside a transaction" below).
+  const orderId = crypto.randomUUID();
+  await tx
+    .insert(orders)
+    .values({ id: orderId, productId: pid, qty })
+    .run({});
+
+  // Whatever the callback returns becomes the transaction's return value.
+  return { orderId, productId: pid, qty };
+});
+```
+
+### What `tx` can and can't do
+
+`tx` is a `Pick<Db, "query" | "insert" | "update" | "delete">` plus a `transaction` method for nesting. It intentionally does NOT expose `unsafe`, `batch`, or `cache`:
+
+- **`unsafe()`** would bypass permission checks mid-tx. Use `db.unsafe().transaction(...)` on the outer handle if you need system-level writes in a transaction.
+- **`batch()`** inside a transaction is redundant — everything in the tx already commits as one batch.
+- **`cache`** invalidation is driven by the commit at the end of the transaction, not per-sub-op.
+
+**Permissions:** every recorded write has its permissions checked **upfront** at flush time. If any op lacks a grant, the entire transaction fails before any SQL is issued.
+
+**Nested transactions** are flattened into the parent's pending queue, so `tx.transaction(async inner => ...)` still commits in the same single batch as the outer. This means helpers that always use `tx.transaction(...)` to "own" a transaction scope compose naturally — they run as-is when called inside an outer tx and start their own when called standalone.
+
+### Returning inside a transaction
+
+`tx.insert(...).returning().run()` inside a transaction callback resolves to `undefined`. The row cannot be surfaced to the caller because the batch is only flushed **after** the callback returns — awaiting a returning promise inside the callback would deadlock the flush.
+
+Work around this in one of three ways:
+
+1. **Generate ids client-side** (`crypto.randomUUID()`) and pass them into the insert. The callback already knows the id without needing `.returning()`.
+2. **Query the row after the transaction commits** with a regular `db.query(...)` outside the `db.transaction(...)` call.
+3. **Use `db.batch([...])` instead** if the read-after-write you want is actually just "grab the inserted row for logging" — batch results include every op's output in the same array.
+
+### Reads inside a transaction
+
+Reads (`tx.query(...).findFirst().run()` etc.) execute eagerly against the underlying db at the moment they're called. They see whatever is committed right now and are **not** isolated from concurrent transactions. Do not rely on a read's value alone to gate a write — combine the read with a relative SQL update and a `WHERE` guard so the guard is re-evaluated at commit time.
+
+## The relative-SQL trick — no transaction needed
+
+For a single-row counter-decrement you don't even need a transaction. Use relative SQL with a `WHERE` guard and inspect the affected-rows count — this is ~one round trip instead of two and needs no pending-queue bookkeeping:
+
+```ts
+const result = await db
+  .unsafe()
+  .d1.prepare(
+    "UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?",
+  )
+  .bind(qty, pid, qty)
+  .run();
+
+if (result.meta.changes === 0) {
+  throw new Error("out of stock");
+}
+```
+
+Use this shape whenever the decision is "did the row still satisfy this condition?" — counters, rate limits, token buckets, feature-flag rollouts. The `WHERE` clause is the lock; if it doesn't match, the update is a no-op and `meta.changes === 0` tells you to fail loudly.
+
+Use `db.transaction` when you need **multiple** writes to commit atomically, or when you need read-modify-write across more than one row.
+
+## See also
+
+- [`@cfast/db`](/cfast/guides/db/) — full package reference
+- [`@cfast/permissions`](/cfast/guides/permissions/) — grant-level permission enforcement inside batches and transactions
