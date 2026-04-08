@@ -8,6 +8,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.13.0",
     "@cloudflare/workers-types": "^4.20260305.1",
+    "@simplewebauthn/server": "^13.2.0",
     "vitest": "^4.1.0",
     "wrangler": "^4",
     "drizzle-orm": "^0.45.1",
