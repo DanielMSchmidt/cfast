@@ -32,30 +32,35 @@ const permissions = definePermissions({
 });
 ```
 
-**Curried form** for typed user in WHERE clauses:
+**Curried form with schema (RECOMMENDED)** — pass the schema as a runtime argument to resolve string subjects to the exact same Drizzle table reference your schema uses. This is the only form that lets string-form grants work with Drizzle relational `with` queries, because `@cfast/db` identifies tables by reference (not name):
+
+```typescript
+import * as schema from "./schema";
+
+const permissions = definePermissions<MyUser, typeof schema>({ schema })({
+  roles: ["member", "admin"] as const,
+  grants: (grant) => ({
+    member: [
+      grant("read", "projects"),                  // ✓ JS key
+      grant("read", "project_versions"),          // ✓ SQL name (snake_case)
+      grant("read", schema.projects),             // ✓ object form still works
+      // grant("read", "unknownTable"),           // ✗ TypeScript error + runtime throw
+    ],
+    admin: [grant("manage", "all")],
+  }),
+});
+```
+
+Both JS schema keys (e.g. `"projectVersions"`) and SQL table names (e.g. `"project_versions"`) resolve to the same table reference. Unknown strings throw `PermissionRegistrationError` at **startup** — fast, loud failure instead of silently matching nothing at query time.
+
+**Curried form without runtime schema** — legacy shape that types the `user` parameter but does not resolve strings. String subjects are stored opaquely and matched by name only; cross-table `with` relational queries will silently return empty arrays. Prefer the recommended form above:
+
 ```typescript
 const permissions = definePermissions<MyUser>()({
   roles: [...] as const,
   grants: (grant) => ({
     user: [ grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }) ],
     // ...
-  }),
-});
-```
-
-**Curried form with schema** to constrain string subjects to known table names at compile time:
-```typescript
-import * as schema from "./schema";
-
-const permissions = definePermissions<MyUser, typeof schema>()({
-  roles: ["member", "admin"] as const,
-  grants: (grant) => ({
-    member: [
-      grant("read", "projects"),                  // ✓ string form, type-checked
-      grant("read", schema.projects),             // ✓ object form still works
-      // grant("read", "unknownTable"),           // ✗ TypeScript error
-    ],
-    admin: [grant("manage", "all")],
   }),
 });
 ```
@@ -79,7 +84,7 @@ grant(action: PermissionAction, subject: DrizzleTable | string, options?: {
 - `PermissionAction`: `"read" | "create" | "update" | "delete" | "manage"`
 - `WhereClause`: `(columns, user, lookups) => DrizzleSQL | undefined`
 - `WithLookups`: `Record<string, (user, db) => Promise<unknown> | unknown>`
-- `subject` may be a Drizzle table object, a string table name (e.g. `"projects"`), or `"all"`. String and object forms are interchangeable at runtime — both are normalized to the same key by `getTableName()`. To get compile-time validation that a string subject is a known table, use the `definePermissions<User, typeof schema>()` curried form.
+- `subject` may be a Drizzle table object, a string table name (JS key **or** SQL name), or `"all"`. When called via the `grant` callback inside `definePermissions<User, typeof schema>({ schema })`, string subjects are resolved at startup to the exact same Drizzle table reference the schema uses, and unknown strings throw `PermissionRegistrationError`. When called standalone (not via the schema-aware callback), string subjects are stored opaquely and matched by name — prefer the resolved form so cross-table relational `with` queries work correctly.
 
 #### Cross-table grants via `with`
 
@@ -93,7 +98,7 @@ const { recipes, friendGrants } = schema;
 
 type AppUser = { id: string; roles: string[] };
 
-export const permissions = definePermissions<AppUser, typeof schema>()({
+export const permissions = definePermissions<AppUser, typeof schema>({ schema })({
   roles: ["user"] as const,
   grants: (g) => ({
     user: [
@@ -167,6 +172,20 @@ class ForbiddenError extends Error {
   toJSON(): { name, message, action, table, role };
 }
 ```
+
+Thrown at request time when a permission check fails (row-level denial).
+
+### `PermissionRegistrationError`
+```typescript
+import { PermissionRegistrationError } from "@cfast/permissions";
+
+class PermissionRegistrationError extends Error {
+  readonly subject: string;                 // the unresolved string
+  readonly availableTables: readonly string[]; // sorted JS keys + SQL names
+}
+```
+
+Thrown **at startup** from `definePermissions<User, typeof schema>({ schema })(...)` when a string-form grant subject does not match any table in the schema. Fast, loud failure so a typo or a removed table surfaces immediately instead of silently matching nothing at query time.
 
 ### `can(grants, action, table): boolean`
 ```typescript

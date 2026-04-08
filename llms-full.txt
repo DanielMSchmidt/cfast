@@ -179,12 +179,16 @@ Isomorphic, Drizzle-native permission system with application-level row-level se
 
 #### `definePermissions(config)`
 
-```typescript
-import { definePermissions, grant } from "@cfast/permissions";
-import { eq } from "drizzle-orm";
-import { posts, comments, users, auditLogs } from "./schema";
+The recommended form takes a `{ schema }` runtime argument so string-form grant subjects resolve to the real Drizzle table references your schema uses. This is the only form that lets string grants work with Drizzle relational `with` queries (`@cfast/db` identifies tables by reference, not name):
 
-export const permissions = definePermissions({
+```typescript
+import { definePermissions } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+import * as schema from "./schema";
+
+type AppUser = { id: string; roles: readonly string[] };
+
+export const permissions = definePermissions<AppUser, typeof schema>({ schema })({
   roles: ["anonymous", "user", "editor", "admin"] as const,
 
   hierarchy: {
@@ -193,41 +197,46 @@ export const permissions = definePermissions({
     admin: ["editor"],         // admins inherit editor grants
   },
 
-  grants: {
+  grants: (grant) => ({
     anonymous: [
-      grant("read", posts, { where: (post) => eq(post.published, true) }),
-      grant("read", comments),
+      grant("read", "posts", { where: (post) => eq(post.published, true) }),
+      grant("read", "comments"),
     ],
 
     user: [
-      grant("create", posts),
-      grant("update", posts, { where: (post, user) => eq(post.authorId, user.id) }),
-      grant("delete", posts, { where: (post, user) => eq(post.authorId, user.id) }),
-      grant("create", comments),
-      grant("delete", comments, { where: (comment, user) => eq(comment.authorId, user.id) }),
+      grant("create", "posts"),
+      grant("update", "posts", { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("delete", "posts", { where: (post, user) => eq(post.authorId, user.id) }),
+      grant("create", "comments"),
+      // SQL snake_case names resolve exactly like JS keys — both are typed:
+      grant("delete", "audit_logs", { where: (log, user) => eq(log.authorId, user.id) }),
     ],
 
     editor: [
-      grant("read", posts),      // unrestricted overrides anonymous's filtered read
-      grant("update", posts),
-      grant("create", posts),
-      grant("delete", posts),
-      grant("manage", comments),
+      grant("read", "posts"),    // unrestricted overrides anonymous's filtered read
+      grant("update", "posts"),
+      grant("create", "posts"),
+      grant("delete", "posts"),
+      grant("manage", "comments"),
     ],
 
     admin: [
       grant("manage", "all"),
     ],
-  },
+  }),
 });
 ```
+
+Both JS schema keys (e.g. `"auditLogs"`) and SQL table names (e.g. `"audit_logs"`) resolve to the same table reference. Unknown strings throw `PermissionRegistrationError` at startup.
+
+Legacy forms are still supported — `definePermissions(config)` (object subjects only) and `definePermissions<User>()(config)` (typed user only, strings stored opaquely).
 
 **Config fields:**
 
 | Field | Type | Description |
 |---|---|---|
 | `roles` | `readonly string[]` | All roles, with `as const` for type inference |
-| `grants` | `Record<Role, Grant[]>` | Map from role to `grant()` calls. Every role must be represented. |
+| `grants` | `Record<Role, Grant[]> \| ((grant) => Record<Role, Grant[]>)` | Map from role to grants, or a callback receiving a typed `grant` fn |
 | `hierarchy` | `Partial<Record<Role, Role[]>>` | Optional. Which roles inherit from which. |
 
 **Returns:** A `Permissions` object for `createDb()` and client import.
@@ -237,8 +246,9 @@ export const permissions = definePermissions({
 | Field | Type | Description |
 |---|---|---|
 | `action` | `"read" \| "create" \| "update" \| "delete" \| "manage"` | `"manage"` = all four CRUD actions |
-| `subject` | `Table \| "all"` | Drizzle table reference or `"all"` for every table |
-| `options.where` | `(columns, user) => SQL \| undefined` | Drizzle filter restricting which rows this grant applies to |
+| `subject` | `Table \| string \| "all"` | Drizzle table object, a string table name (JS key or SQL name, resolved when called via the schema-aware `grant` callback), or `"all"` |
+| `options.where` | `(columns, user, lookups) => SQL \| undefined` | Drizzle filter restricting which rows this grant applies to |
+| `options.with` | `Record<string, (user, db) => Promise<unknown>>` | Optional prerequisite lookups whose results are passed to `where` via the `lookups` parameter |
 
 **Action semantics:**
 
