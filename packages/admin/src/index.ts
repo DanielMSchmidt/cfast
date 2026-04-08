@@ -12,6 +12,8 @@ export type {
   CreateDbFn,
   TableOverrides,
   RowAction,
+  RowActionCallback,
+  RowActionContext,
   TableAction,
   UserManagementConfig,
   DashboardConfig,

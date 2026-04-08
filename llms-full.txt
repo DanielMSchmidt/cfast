@@ -1843,7 +1843,10 @@ createAdmin({
       },
       actions: {
         row: [
-          { label: "Publish", action: async (id, formData) => { /* ... */ },
+          { label: "Publish",
+            // ctx = { user, db, grants, request }. ctx.db is permission-scoped
+            // to the acting admin; use ctx.db.unsafe() for explicit overrides.
+            action: async (id, formData, ctx) => { /* ... */ },
             confirm: "Publish?", variant: "default" },
         ],
         table: [

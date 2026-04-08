@@ -115,7 +115,16 @@ createAdmin({
         row: [
           {
             label: "Publish",
-            action: async (id, formData) => { /* publish logic */ },
+            action: async (id, formData, ctx) => {
+              // ctx = { user, db, grants, request }
+              // ctx.db is permission-scoped to the acting admin.
+              // For explicit overrides, use ctx.db.unsafe().
+              await ctx.db
+                .update(posts)
+                .set({ published: true })
+                .where(eq(posts.id, id))
+                .run({});
+            },
             confirm: "Are you sure you want to publish?",
             variant: "default",
           },

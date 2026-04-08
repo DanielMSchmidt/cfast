@@ -111,17 +111,78 @@ export type CreateDbFn = (
 ) => Db;
 
 /**
+ * Context passed to every {@link RowAction} handler.
+ *
+ * Provides the authenticated admin, a permission-scoped {@link Db} instance,
+ * the resolved permission grants, and the raw {@link Request} so handlers can
+ * perform permission-aware mutations, forward cookies, or call into other
+ * services on behalf of the admin user.
+ *
+ * The `db` on this context is scoped to `grants` — it is **not** an elevated
+ * bypass database. Queries that would be rejected for the acting admin under
+ * normal permission rules are still rejected here. Use {@link Db.unsafe | `ctx.db.unsafe()`}
+ * as an explicit, greppable escape hatch when a row action genuinely needs to
+ * perform an operation outside the admin's grants (e.g. cross-tenant bookkeeping).
+ *
+ * @example
+ * ```typescript
+ * const approveVendor: RowAction = {
+ *   label: "Approve vendor",
+ *   async action(id, _formData, ctx) {
+ *     // ctx.db is scoped to ctx.user's grants — no manage-all bypass
+ *     await ctx.db
+ *       .update(vendors)
+ *       .set({ status: "approved", approvedBy: ctx.user.id })
+ *       .where(eq(vendors.id, id))
+ *       .run({});
+ *   },
+ * };
+ * ```
+ */
+export type RowActionContext = {
+  /** The authenticated admin invoking the row action. */
+  user: AdminUser;
+  /** Permission-scoped DB instance for `user` / `grants`. Use `db.unsafe()` for explicit admin overrides. */
+  db: Db;
+  /** The resolved permission grants for the acting admin. */
+  grants: Grant[];
+  /** The raw `Request` that triggered the action. Useful for forwarding cookies or reading headers. */
+  request: Request;
+};
+
+/**
+ * Async handler signature for a {@link RowAction}.
+ *
+ * Called with the record's primary key, the submitted form data, and a
+ * {@link RowActionContext} that exposes the authenticated admin, a
+ * permission-scoped {@link Db}, their grants, and the raw request.
+ *
+ * @typeParam T - The resolved result type. Defaults to `unknown`.
+ */
+export type RowActionCallback<T = unknown> = (
+  id: string,
+  formData: FormData,
+  ctx: RowActionContext,
+) => Promise<T>;
+
+/**
  * A custom action that appears on each row in a table's list view.
  *
- * Row actions are invoked with the record's primary key and the form data
- * from the admin action handler.
+ * Row actions are invoked with the record's primary key, the submitted form
+ * data, and a {@link RowActionContext} containing the authenticated admin, a
+ * permission-scoped {@link Db} instance, the admin's grants, and the raw
+ * `Request`.
  *
  * @example
  * ```typescript
  * const publishAction: RowAction = {
  *   label: "Publish",
- *   action: async (id, formData) => {
- *     await db.update(posts).set({ published: true }).where(eq(posts.id, id));
+ *   async action(id, _formData, ctx) {
+ *     await ctx.db
+ *       .update(posts)
+ *       .set({ published: true })
+ *       .where(eq(posts.id, id))
+ *       .run({});
  *   },
  *   confirm: "Are you sure you want to publish this post?",
  *   variant: "default",
@@ -131,8 +192,8 @@ export type CreateDbFn = (
 export type RowAction = {
   /** Display label for the action button. */
   label: string;
-  /** Async handler called with the record ID and the submitted form data. */
-  action: (id: string, formData: FormData) => Promise<unknown>;
+  /** Async handler called with the record ID, submitted form data, and a {@link RowActionContext}. */
+  action: RowActionCallback;
   /** Optional confirmation message. When set, the admin shows a confirm dialog before executing. */
   confirm?: string;
   /** Button styling variant. `"danger"` renders a destructive-style button. Defaults to `"default"`. */

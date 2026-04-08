@@ -1,11 +1,14 @@
 import { getTableColumns, eq } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
+import type { Grant } from "@cfast/permissions";
 import type {
   AdminActionResult,
   AdminConfig,
   AdminColumnConfig,
   AdminTableMeta,
+  AdminUser,
+  RowActionContext,
 } from "./types.js";
 
 /**
@@ -171,7 +174,12 @@ export function createAdminAction(
         return config.auth.stopImpersonation(request);
 
       case "custom":
-        return handleCustomAction(config, tableMetas, formData);
+        return handleCustomAction(tableMetas, formData, {
+          user,
+          db,
+          grants,
+          request,
+        });
 
       default:
         return { error: `Unknown action: "${action}".` };
@@ -362,11 +370,16 @@ async function handleImpersonate(
 
 /**
  * Handle custom row actions defined in table overrides.
+ *
+ * Row action handlers receive a {@link RowActionContext} built from the
+ * authenticated admin's identity, grants, and the current request. The `db`
+ * exposed on the context is the same permission-scoped instance used by the
+ * rest of the admin — handlers do not get an elevated bypass.
  */
 async function handleCustomAction(
-  _config: AdminConfig,
   tableMetas: AdminTableMeta[],
   formData: FormData,
+  ctx: { user: AdminUser; db: Db; grants: Grant[]; request: Request },
 ): Promise<AdminActionResult> {
   const tableName = formData.get("_table");
   if (typeof tableName !== "string" || !tableName) {
@@ -398,8 +411,15 @@ async function handleCustomAction(
     return { error: `Action "${actionName}" not found for table "${tableName}".` };
   }
 
+  const rowActionContext: RowActionContext = {
+    user: ctx.user,
+    db: ctx.db,
+    grants: ctx.grants,
+    request: ctx.request,
+  };
+
   try {
-    await rowAction.action(id, formData);
+    await rowAction.action(id, formData, rowActionContext);
     return { success: `Action "${actionName}" completed.` };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error during custom action.";

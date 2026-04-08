@@ -68,6 +68,80 @@ type TableOverrides = {
 };
 ```
 
+### Row actions (`RowAction`)
+
+Row actions appear as buttons on each record in a list view. Handlers receive
+the record id, the submitted `FormData`, and a `RowActionContext` built from
+the authenticated admin's identity and grants:
+
+```typescript
+type RowActionContext = {
+  user: AdminUser;      // the authenticated admin invoking the action
+  db: Db;               // permission-scoped Db (NOT manage-all)
+  grants: Grant[];      // resolved grants for the admin
+  request: Request;     // raw request, for cookie forwarding if needed
+};
+
+type RowAction = {
+  label: string;
+  action: (id: string, formData: FormData, ctx: RowActionContext) => Promise<unknown>;
+  confirm?: string;
+  variant?: "danger" | "default";
+};
+```
+
+`ctx.db` is scoped to `ctx.grants` — queries that the acting admin cannot
+perform under normal permission rules are still rejected inside a row action.
+This prevents accidental permission bypasses. For operations that genuinely
+need to escape the admin's grants (cross-tenant bookkeeping, system cleanup,
+etc.), opt in explicitly with `ctx.db.unsafe()` — a greppable escape hatch.
+
+```typescript
+// app/admin.server.ts
+import type { RowAction } from "@cfast/admin";
+import { eq } from "drizzle-orm";
+import { vendors } from "~/db/schema";
+
+const approveVendor: RowAction = {
+  label: "Approve vendor",
+  confirm: "Approve this vendor?",
+  async action(id, _formData, ctx) {
+    // Uses the admin's own grants — no bypass.
+    await ctx.db
+      .update(vendors)
+      .set({ status: "approved", approvedBy: ctx.user.id })
+      .where(eq(vendors.id, id))
+      .run({});
+  },
+};
+
+const archiveEverywhere: RowAction = {
+  label: "Archive (cross-tenant)",
+  async action(id, _formData, ctx) {
+    // Genuine admin override: explicit + greppable.
+    await ctx.db
+      .unsafe()
+      .update(vendors)
+      .set({ archived: true })
+      .where(eq(vendors.id, id))
+      .run({});
+  },
+};
+```
+
+> **Breaking (v0.3.0):** `RowAction.action` handlers now receive a third
+> `ctx` argument. Add `ctx` to your handler signature even if you don't use
+> it to avoid TS errors:
+> ```diff
+> - action: async (id, formData) => { ... }
+> + action: async (id, formData, ctx) => { ... }
+> ```
+> Previously, the acting admin and permission grants were dropped on the
+> floor, forcing apps to reach for permission bypasses (a fresh
+> `createDb({ manage: all, user: null })`) or `AsyncLocalStorage` hacks to
+> thread the admin user into the callback. The new signature replaces both
+> patterns with a pure, permission-scoped context.
+
 ### Server/client splitting
 
 For apps where server code must not leak into client bundles:
@@ -136,7 +210,7 @@ const admin = createAdmin({
       defaultSort: { column: "createdAt", direction: "desc" },
       fields: { content: { component: RichTextEditor } },
       actions: {
-        row: [{ label: "Publish", action: async (id, formData) => { /* ... */ } }],
+        row: [{ label: "Publish", action: async (id, formData, ctx) => { /* ... */ } }],
       },
     },
   },

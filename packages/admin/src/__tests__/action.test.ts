@@ -1,10 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
 import { createAdminAction } from "../action.js";
-import type { AdminConfig, AdminTableMeta } from "../types.js";
+import type {
+  AdminConfig,
+  AdminTableMeta,
+  RowActionContext,
+} from "../types.js";
+import { eq } from "drizzle-orm";
 import {
+  mockAdminUser,
   mockAuthConfig,
   mockDb,
   mockDbWithError,
+  posts,
   testTableMetas,
   formData,
   testSchema,
@@ -633,7 +640,149 @@ describe("custom action", () => {
     );
 
     expect(result).toEqual({ success: 'Action "archive" completed.' });
-    expect(handler).toHaveBeenCalledWith("post-1", expect.any(FormData));
+    expect(handler).toHaveBeenCalledWith(
+      "post-1",
+      expect.any(FormData),
+      expect.objectContaining({
+        user: expect.objectContaining({ id: "admin-1" }),
+        grants: expect.any(Array),
+        db: expect.any(Object),
+        request: expect.any(Request),
+      }),
+    );
+  });
+
+  it("passes the authenticated admin, scoped db, grants, and request on ctx", async () => {
+    // Capture the ctx that the row action was invoked with so we can assert
+    // on every field individually.
+    let captured: RowActionContext | undefined;
+    const handler = vi.fn(
+      async (_id: string, _fd: FormData, ctx: RowActionContext) => {
+        captured = ctx;
+      },
+    );
+    const { metas } = metasWithCustomAction(handler);
+
+    const adminUser = mockAdminUser({ id: "admin-42", email: "a@b.c" });
+    const grants = [{ action: "read", table: "posts" }];
+    const scopedDb = mockDb();
+    const auth = mockAuthConfig({
+      requireUser: vi
+        .fn()
+        .mockResolvedValue({ user: adminUser, grants }),
+    });
+    const dbFactory = vi.fn().mockReturnValue(scopedDb);
+    const config = makeConfig({ auth, db: dbFactory });
+
+    await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    // dbFactory is the `CreateDbFn` — called with (grants, user) per-request.
+    expect(dbFactory).toHaveBeenCalledWith(grants, adminUser);
+
+    // The ctx surfaced to the handler must be the scoped db + admin — not a bypass.
+    expect(captured).toBeDefined();
+    expect(captured!.user).toBe(adminUser);
+    expect(captured!.grants).toBe(grants);
+    expect(captured!.db).toBe(scopedDb);
+    expect(captured!.request).toBeInstanceOf(Request);
+  });
+
+  it("scoped ctx.db rejects queries outside the admin's grants", async () => {
+    // Simulate a permission-scoped db that throws when the acting user's
+    // grants don't permit the operation — the same behaviour a real
+    // `@cfast/db` instance produces when `grants` are too narrow.
+    const scopedDb = mockDbWithError(
+      "permission denied: missing grant for 'update posts'",
+    );
+    const auth = mockAuthConfig({
+      requireUser: vi.fn().mockResolvedValue({
+        user: mockAdminUser(),
+        grants: [], // intentionally no grants
+      }),
+    });
+
+    const handler = vi.fn(
+      async (id: string, _fd: FormData, ctx: RowActionContext) => {
+        // The handler tries an update the scoped db won't allow. In the
+        // mock, this chain resolves to a promise that rejects with a
+        // permission-denied error — the same shape a real `@cfast/db`
+        // instance produces when `grants` are too narrow.
+        await ctx.db
+          .update(posts)
+          .set({ published: true })
+          .where(eq(posts.id, id))
+          .run({});
+        return { id };
+      },
+    );
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig({
+      auth,
+      db: vi.fn().mockReturnValue(scopedDb),
+    });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    // The scoped db rejected the operation — no silent bypass.
+    expect(result).toEqual({
+      error: "permission denied: missing grant for 'update posts'",
+    });
+    expect(handler).toHaveBeenCalled();
+  });
+
+  it("exposes ctx.db.unsafe() as an explicit escape hatch for admin overrides", async () => {
+    // When a row action genuinely needs to bypass grants (e.g. cross-tenant
+    // bookkeeping), the handler must opt in via `ctx.db.unsafe()` — a
+    // greppable, intention-revealing API — rather than receiving an
+    // elevated db by default.
+    const scopedDb = mockDb();
+    const unsafeSpy = vi.spyOn(scopedDb, "unsafe");
+
+    const handler = vi.fn(
+      async (id: string, _fd: FormData, ctx: RowActionContext) => {
+        const escape = ctx.db.unsafe();
+        // Using the escape hatch should not throw.
+        await escape
+          .update(posts)
+          .set({ published: true })
+          .where(eq(posts.id, id))
+          .run({});
+      },
+    );
+    const { metas } = metasWithCustomAction(handler);
+    const config = makeConfig({ db: vi.fn().mockReturnValue(scopedDb) });
+
+    const result = await callAction(
+      config,
+      formData({
+        _action: "custom",
+        _table: "posts",
+        _actionName: "archive",
+        _id: "post-1",
+      }),
+      metas,
+    );
+
+    expect(result).toEqual({ success: 'Action "archive" completed.' });
+    expect(unsafeSpy).toHaveBeenCalled();
   });
 
   it("returns error when action name not found", async () => {
