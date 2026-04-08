@@ -159,9 +159,22 @@ pnpm build                  # Production build
 pnpm db:generate            # Generate migrations from schema changes
 pnpm db:migrate:local       # Apply migrations locally
 pnpm db:migrate:remote      # Apply migrations to remote D1
+pnpm db:seed:local          # Seed the local D1 DB using scripts/seed.ts
 pnpm deploy:staging         # Deploy to staging
 pnpm deploy:production      # Deploy to production
 ```
+
+### Seeding local data
+
+`scripts/seed.ts` uses `defineSeed({ entries })` from `@cfast/db`. Row shapes
+are inferred from the Drizzle schema, so column typos fail at `tsc` time.
+Put parent tables (users, orgs) before child tables (posts, memberships) in
+the entries array so foreign keys resolve. Entries with empty `rows` arrays
+are skipped, which lets you keep placeholders while you build out the
+schema.
+
+Do NOT hand-roll inserts or reach into raw Drizzle from `scripts/seed.ts` —
+`defineSeed` exists specifically to replace those patterns (see closes #190).
 
 ## Keeping LLM Documentation Updated
 

@@ -13,3 +13,4 @@ export {
   generateItemsServer,
   generateItemsRoute,
 } from "./items-example";
+export { generateSeedScript } from "./seed-script";
