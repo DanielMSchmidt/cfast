@@ -11,6 +11,8 @@ export type {
   InputParser,
   InferInput,
 } from "./input-schema.js";
+export { forwardRequest } from "./forward-request.js";
+export type { ForwardRequestInit } from "./forward-request.js";
 export type {
   Serializable,
   ActionContext,

@@ -29,6 +29,14 @@ function createActions<TUser>(config: ActionsConfig<TUser>): {
 
 function checkPermissionStatus(grants: Grant[], descriptors: PermissionDescriptor[]): ActionPermissionStatus;
 
+function forwardRequest(original: Request, init?: ForwardRequestInit): Request;
+type ForwardRequestInit = {
+  body?: BodyInit | null;          // override body (FormData / JSON / null)
+  method?: string;                  // override HTTP method
+  url?: string;                     // override URL
+  headers?: HeadersInit;            // merged on top of original headers
+};
+
 type ActionsConfig<TUser> = {
   getContext: (args: RequestArgs) => Promise<ActionContext<TUser>>;
 };
@@ -145,7 +153,41 @@ export const loader = composed.loader(async ({ params }) => {
 });
 ```
 
-### 4. Use on the client
+### 4. Dispatch sub-actions with `forwardRequest`
+
+When an action handler builds a sub-request to call another action, the
+sub-action's `getContext()` will see a `null` user unless the sub-request
+carries the original cookies. `forwardRequest()` clones the original request
+with new body / method / URL while preserving cookies, auth headers, and
+other middleware state:
+
+```typescript
+import { forwardRequest } from "@cfast/actions";
+import { createRow } from "~/actions/rows";
+
+export const importCsv = createAction(async (db, input, ctx) => ({
+  permissions: createRow.buildOperation(db, {} as never, ctx).permissions,
+  async run() {
+    for (const row of input.rows) {
+      const subFormData = new FormData();
+      subFormData.set("_action", "createRow");
+      subFormData.set("title", row.title);
+
+      // Cookies, Authorization, X-CSRF-Token, etc. are all preserved.
+      const subRequest = forwardRequest(ctx.request, { body: subFormData });
+      await createRow.action({ request: subRequest, params: {}, context: undefined });
+    }
+    return { ok: true };
+  },
+}));
+```
+
+`forwardRequest` strips the original `Content-Type` automatically when the
+new body is `FormData` or `URLSearchParams`, so the platform can attach the
+correct multipart boundary. Pass an explicit `headers: { "content-type": ... }`
+to override.
+
+### 5. Use on the client
 ```typescript
 import { useActions } from "@cfast/actions/client";
 
