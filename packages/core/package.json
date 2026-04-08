@@ -43,19 +43,25 @@
     "lint": "eslint src/",
     "test": "vitest run --passWithNoTests"
   },
-  "dependencies": {
-    "@cfast/env": "workspace:*",
-    "@cfast/permissions": "workspace:*"
-  },
   "peerDependencies": {
+    "@cfast/env": ">=0.1.0 <0.3.0",
+    "@cfast/permissions": ">=0.3.0 <0.5.0",
     "react": ">=18"
   },
   "peerDependenciesMeta": {
+    "@cfast/env": {
+      "optional": false
+    },
+    "@cfast/permissions": {
+      "optional": false
+    },
     "react": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@cfast/env": "workspace:*",
+    "@cfast/permissions": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "react": "^19.1.0",

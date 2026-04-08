@@ -44,19 +44,43 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@cfast/actions": ">=0.1.0 <0.3.0",
+    "@cfast/auth": ">=0.3.0 <0.5.0",
+    "@cfast/db": ">=0.3.0 <0.5.0",
+    "@cfast/pagination": ">=0.2.0 <0.4.0",
+    "@cfast/permissions": ">=0.3.0 <0.5.0",
+    "@cfast/storage": ">=0.1.0 <0.3.0",
     "react": ">=19",
     "react-dom": ">=19",
     "react-router": ">=7"
   },
-  "dependencies": {
+  "peerDependenciesMeta": {
+    "@cfast/actions": {
+      "optional": false
+    },
+    "@cfast/auth": {
+      "optional": false
+    },
+    "@cfast/db": {
+      "optional": false
+    },
+    "@cfast/pagination": {
+      "optional": false
+    },
+    "@cfast/permissions": {
+      "optional": false
+    },
+    "@cfast/storage": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
     "@cfast/actions": "workspace:*",
     "@cfast/auth": "workspace:*",
     "@cfast/db": "workspace:*",
     "@cfast/pagination": "workspace:*",
     "@cfast/permissions": "workspace:*",
-    "@cfast/storage": "workspace:*"
-  },
-  "devDependencies": {
+    "@cfast/storage": "workspace:*",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",

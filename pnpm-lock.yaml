@@ -828,14 +828,13 @@ importers:
         version: 4.72.0(@cloudflare/workers-types@4.20260312.1)
 
   packages/actions:
-    dependencies:
+    devDependencies:
       '@cfast/db':
         specifier: workspace:*
         version: link:../db
       '@cfast/permissions':
         specifier: workspace:*
         version: link:../permissions
-    devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20260305.1
         version: 4.20260305.1
@@ -859,7 +858,7 @@ importers:
         version: 4.1.0(@types/node@24.12.0)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/admin:
-    dependencies:
+    devDependencies:
       '@cfast/db':
         specifier: workspace:*
         version: link:../db
@@ -875,7 +874,6 @@ importers:
       '@cfast/ui':
         specifier: workspace:*
         version: link:../ui
-    devDependencies:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
@@ -918,10 +916,10 @@ importers:
       '@better-auth/passkey':
         specifier: '>=1'
         version: 1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260305.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(better-auth@1.5.3(@better-auth/drizzle-adapter@1.5.3(@better-auth/core@1.5.3(@better-auth/utils@0.3.1)(@better-fetch/fetch@1.1.21)(@cloudflare/workers-types@4.20260305.1)(better-call@1.3.2(zod@4.3.6))(jose@6.2.0)(kysely@0.28.11)(nanostores@1.1.1))(@better-auth/utils@0.3.1)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260305.1)(kysely@0.28.11)))(@cloudflare/workers-types@4.20260305.1)(drizzle-kit@0.31.9)(drizzle-orm@0.45.1(@cloudflare/workers-types@4.20260305.1)(kysely@0.28.11))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))))(better-call@1.3.2(zod@4.3.6))(nanostores@1.1.1)
+    devDependencies:
       '@cfast/permissions':
         specifier: workspace:*
         version: link:../permissions
-    devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20260305.1
         version: 4.20260305.1
@@ -954,14 +952,13 @@ importers:
         version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/core:
-    dependencies:
+    devDependencies:
       '@cfast/env':
         specifier: workspace:*
         version: link:../env
       '@cfast/permissions':
         specifier: workspace:*
         version: link:../permissions
-    devDependencies:
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -1013,11 +1010,10 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/db:
-    dependencies:
+    devDependencies:
       '@cfast/permissions':
         specifier: workspace:*
         version: link:../permissions
-    devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20260305.1
         version: 4.20260305.1
@@ -1130,15 +1126,6 @@ importers:
 
   packages/joy:
     dependencies:
-      '@cfast/actions':
-        specifier: workspace:*
-        version: link:../actions
-      '@cfast/auth':
-        specifier: workspace:*
-        version: link:../auth
-      '@cfast/ui':
-        specifier: workspace:*
-        version: link:../ui
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.14)(react@19.2.4)
@@ -1155,6 +1142,15 @@ importers:
         specifier: ^2.0.3
         version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
     devDependencies:
+      '@cfast/actions':
+        specifier: workspace:*
+        version: link:../actions
+      '@cfast/auth':
+        specifier: workspace:*
+        version: link:../auth
+      '@cfast/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@storybook/react':
         specifier: ^8.6.14
         version: 8.6.18(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(storybook@8.6.18(prettier@3.8.1))(typescript@5.9.3)
@@ -1270,7 +1266,7 @@ importers:
         version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/ui:
-    dependencies:
+    devDependencies:
       '@cfast/actions':
         specifier: workspace:*
         version: link:../actions
@@ -1289,7 +1285,6 @@ importers:
       '@cfast/storage':
         specifier: workspace:*
         version: link:../storage
-    devDependencies:
       '@testing-library/react':
         specifier: ^16.3.0
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

@@ -41,17 +41,19 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@cfast/permissions": ">=0.3.0 <0.5.0",
     "drizzle-orm": ">=0.35"
   },
-  "dependencies": {
-    "@cfast/permissions": "workspace:*"
-  },
   "peerDependenciesMeta": {
+    "@cfast/permissions": {
+      "optional": false
+    },
     "@cloudflare/workers-types": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@cfast/permissions": "workspace:*",
     "@cloudflare/workers-types": "^4.20260305.1",
     "drizzle-orm": "^0.45.1",
     "tsup": "^8",
