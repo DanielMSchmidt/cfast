@@ -522,3 +522,65 @@ describe("createAuth", () => {
     ).toThrow("passkeys.rpId is a function but initAuth() was called without a request");
   });
 });
+
+describe("AuthConfig.defaultRoles typing", () => {
+  // These tests exercise the `RoleNameOf<P>` narrowing added for #154.
+  // The runtime assertions are trivial (we just verify the strings round-
+  // trip through `defaultRoles`); the real value lives in the compile-
+  // time @ts-expect-error checks below. They're part of the test file so
+  // `tsc --noEmit` against the auth package verifies the constraint.
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetSession.mockResolvedValue(null);
+  });
+
+  it("accepts role names declared in definePermissions", () => {
+    const typed = definePermissions({
+      roles: ["admin", "editor", "reader"] as const,
+      grants: {
+        admin: [grant("read", "all"), grant("create", "all")],
+        editor: [grant("read", "all"), grant("create", "all")],
+        reader: [grant("read", "all")],
+      },
+    });
+
+    // Known roles compile fine.
+    const initAuth = createAuth({
+      permissions: typed,
+      defaultRoles: ["editor"],
+      anonymousRoles: ["reader"],
+    });
+    expect(initAuth).toBeDefined();
+  });
+
+  it("rejects unknown role names at the type level", () => {
+    const typed = definePermissions({
+      roles: ["admin", "editor"] as const,
+      grants: {
+        admin: [grant("read", "all")],
+        editor: [grant("read", "all")],
+      },
+    });
+
+    createAuth({
+      permissions: typed,
+      // @ts-expect-error — "viewer" was not declared in the permissions roles tuple
+      defaultRoles: ["viewer"],
+    });
+
+    createAuth({
+      permissions: typed,
+      // @ts-expect-error — "guest" was not declared in the permissions roles tuple
+      anonymousRoles: ["guest"],
+    });
+
+    // Verify passes at runtime when we DO use a known role so the test
+    // doesn't fail purely on the ts-expect-error above being "wasted"
+    // when type-checking is disabled by a consumer.
+    const ok = createAuth({
+      permissions: typed,
+      defaultRoles: ["editor"],
+    });
+    expect(ok).toBeDefined();
+  });
+});

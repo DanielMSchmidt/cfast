@@ -27,13 +27,20 @@ export const initAuth = createAuth({
   passkeys?: { rpName: string; rpId: string },
   session?: { expiresIn?: string },    // e.g. "30d"
   redirects?: { afterLogin?: string; loginPath?: string },
-  anonymousRoles?: string[],
-  defaultRoles?: string[],             // default: ["reader"]
+  anonymousRoles?: RoleName[],         // constrained to the roles declared in permissions
+  defaultRoles?: RoleName[],           // default: ["reader"] — TS error if the role is not in permissions
   roleGrants?: Record<string, string[]>,  // who can assign which roles
   impersonation?: { allowedRoles?: string[] },
   templates?: { magicLink?: (props: { url: string; email: string }) => string },
 });
 ```
+
+> **Typed `defaultRoles` / `anonymousRoles` (v0.4.0)** — both fields are now
+> narrowed to the role union declared inside `definePermissions({ roles: [...] as const })`.
+> Passing a role that is not in that tuple is a compile-time error, so
+> `defaultRoles: ["memberr"]` fails `tsc` instead of silently defaulting
+> to `"reader"` at runtime. No code changes are needed when your roles
+> already line up.
 
 ### initAuth(env) => AuthInstance
 

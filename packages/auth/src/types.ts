@@ -1,6 +1,27 @@
 import type { Grant, Permissions } from "@cfast/permissions";
 
 /**
+ * Extracts the role string-literal union from a {@link Permissions} object.
+ *
+ * `definePermissions({ roles: ["admin", "user"] as const, ... })` produces a
+ * `Permissions<readonly ["admin", "user"]>`. Feeding that into this helper
+ * yields the union `"admin" | "user"`, which is what we use to type
+ * `AuthConfig.defaultRoles` / `AuthConfig.anonymousRoles` so passing an
+ * unknown role becomes a TS error instead of a runtime surprise.
+ *
+ * When the caller passes a loosely-typed `Permissions<readonly string[]>`
+ * (e.g. imported from a dynamic module), this resolves to `string` and the
+ * existing lenient behavior is preserved.
+ */
+export type RoleNameOf<P> = P extends Permissions<infer R>
+  ? R extends readonly (infer X)[]
+    ? X extends string
+      ? X
+      : string
+    : string
+  : string;
+
+/**
  * The authenticated user object available throughout the application.
  *
  * Contains identity fields, assigned roles, and optional impersonation state.
@@ -57,10 +78,20 @@ export type AuthenticatedContext = {
  *
  * Defines authentication methods, session behavior, role management rules,
  * and integration with `@cfast/permissions`.
+ *
+ * The generic parameter `P` captures the concrete {@link Permissions} object
+ * passed to `createAuth`, which lets TypeScript narrow `anonymousRoles` and
+ * `defaultRoles` to the exact role union declared in the permissions config
+ * (e.g. `"admin" | "editor" | "reader"`). Passing an unknown role is then a
+ * compile-time error instead of a silent runtime surprise. Callers that
+ * supply a loosely-typed `Permissions<readonly string[]>` fall back to the
+ * historical `string[]` shape, so this is a non-breaking refinement.
  */
-export type AuthConfig = {
+export type AuthConfig<
+  P extends Permissions<readonly string[]> = Permissions<readonly string[]>,
+> = {
   /** The permissions config from `definePermissions()`. Roles are inferred from this. */
-  permissions: Permissions;
+  permissions: P;
   /** Optional Drizzle schema override for the Better Auth database adapter. */
   schema?: Record<string, unknown>;
   /** WebAuthn passkey configuration. Required to enable passkey authentication. */
@@ -110,10 +141,21 @@ export type AuthConfig = {
     /** Where to send unauthenticated users. Defaults to `"/login"`. */
     loginPath?: string;
   };
-  /** Roles assigned to unauthenticated (anonymous) requests for permission resolution. */
-  anonymousRoles?: string[];
-  /** Default roles assigned to authenticated users who have no explicit role assignments. Defaults to `["reader"]`. */
-  defaultRoles?: string[];
+  /**
+   * Roles assigned to unauthenticated (anonymous) requests for permission resolution.
+   *
+   * Constrained to the role union from {@link AuthConfig.permissions} — passing
+   * a role that was not declared in `definePermissions()` is a TS error.
+   */
+  anonymousRoles?: RoleNameOf<P>[];
+  /**
+   * Default roles assigned to authenticated users who have no explicit role assignments.
+   * Defaults to `["reader"]`.
+   *
+   * Constrained to the role union from {@link AuthConfig.permissions} — passing
+   * a role that was not declared in `definePermissions()` is a TS error.
+   */
+  defaultRoles?: RoleNameOf<P>[];
   /** Custom table name for storing role assignments. Defaults to `"roles"`. */
   roleTableName?: string;
   /** Maps each role to the set of roles it is allowed to assign. Controls who can promote whom. */
