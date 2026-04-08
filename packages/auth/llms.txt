@@ -280,6 +280,7 @@ await auth.removeRole(userId, "editor");
 ## Common Mistakes
 
 - **Calling `createAuth()` per-request** -- `createAuth()` is called once at module level. Only `initAuth()` is called per-request with the D1 binding.
+- **Calling `initAuth()` multiple times in one request** -- `initAuth()` instantiates Better Auth, the Drizzle adapter, the role manager, and the impersonation manager from scratch. If a loader calls `getUser` then `requireUser` then `getAuthContext`, each reaching for `initAuth()`, you're paying that cost 3x. The scaffolded `app/auth.helpers.server.ts` template now memoizes via `WeakMap<Request, AuthInstance>` so all helpers share one instance per request — match that pattern in hand-rolled helpers. See cfast issue #151.
 - **Forgetting to add auth routes** -- The magic link callback and passkey endpoints need `authRoutes()` in your `routes.ts`.
 - **Using `unsafe()` instead of roles for admin** -- Admins should have a proper role with grants, not bypass permissions entirely.
 - **Not wrapping the app with `AuthClientProvider`** -- `useAuth()` and `LoginPage` require the provider at the app root.

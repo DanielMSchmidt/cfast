@@ -326,3 +326,38 @@ describe("base template package.json", () => {
     expect(basePkg.scripts.typecheck).toContain("tsc -b");
   });
 });
+
+// Regression guard for the `auth.helpers.server.ts` template (#151).
+// The scaffold-build tests already prove this file type-checks and
+// builds end-to-end; this test pins the specific shape we care about
+// so an accidental revert is caught immediately without waiting for
+// the 5-minute e2e pass.
+describe("auth overlay template: auth.helpers.server.ts (#151)", () => {
+  const helpersPath = path.join(
+    getTemplatesDir(),
+    "auth",
+    "app",
+    "auth.helpers.server.ts",
+  );
+  const source = fs.readFileSync(helpersPath, "utf-8");
+
+  it("caches the auth instance per Request via a WeakMap", () => {
+    // The whole point of the fix: subsequent helper calls during one
+    // request must reuse a single `AuthInstance` instead of re-running
+    // `initAuth()`. A WeakMap<Request, AuthInstance> is the shape we
+    // settled on so entries drop automatically with the request.
+    expect(source).toMatch(/WeakMap<Request,\s*AuthInstance>/);
+  });
+
+  it("exposes `getAuth(request)` and every helper threads the request through", () => {
+    expect(source).toMatch(/export function getAuth\(request: Request\)/);
+    // None of the downstream helpers should re-run `initAuth()` — they
+    // should all go through the cached `getAuth(request)` indirection.
+    const bodies = source.slice(source.indexOf("export async function getAuthContext"));
+    expect(bodies).toContain("getAuth(request).createContext(request)");
+    expect(bodies).toContain("getAuth(request).requireUser(request)");
+    // `initAuth` is only called inside the WeakMap cache miss branch.
+    const initCallSites = bodies.match(/initAuth\(/g);
+    expect(initCallSites).toBeNull();
+  });
+});
