@@ -274,7 +274,28 @@ Here's what each piece does:
 - **`useActions`** reads the permission metadata from the loader and returns action handles.
 - **`ActionButton`** is a permission-aware button from `@cfast/ui`. It handles submission, loading state, and confirmation dialogs. The `whenForbidden="hide"` prop tells it to hide entirely when the user lacks permission — when the current user isn't the task's assignee, the delete button disappears automatically.
 
-### 5. Add to the Admin Panel
+### 5. Register the Route
+
+React Router v7 does NOT auto-discover files in `app/routes/`. Every route file you create must be explicitly added to `app/routes.ts`:
+
+```ts
+// app/routes.ts
+import { type RouteConfig, index, route } from "@react-router/dev/routes";
+
+export default [
+  index("routes/_index.tsx"),
+  route("login", "routes/login.tsx"),
+  route("api/auth/*", "routes/auth.$.tsx"),
+  route("admin", "routes/admin.tsx"),
+  route("tasks", "routes/tasks.tsx"),  // ← add this
+] satisfies RouteConfig;
+```
+
+Without this entry, the file compiles fine but the URL returns 404. If you run `pnpm dev`, cfast's Vite plugin will warn about unregistered route files.
+
+This is the single most common scaffolding mistake — every new route file you create needs a matching entry here.
+
+### 6. Add to the Admin Panel
 
 Open `app/admin.server.ts` and add `tasks` to the existing `adminConfig` object. Add it to the `schema` property so the admin panel can discover it, and optionally add dashboard widgets:
 
