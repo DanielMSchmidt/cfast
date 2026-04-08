@@ -6,7 +6,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "preview": "pnpm run build && vite preview",
-    "typecheck": "react-router typegen && tsc -b",
+    "typecheck": "wrangler types && react-router typegen && tsc -b",
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "deploy:staging": "pnpm run build && wrangler deploy --env staging",
     "deploy:production": "pnpm run build && wrangler deploy --env production"

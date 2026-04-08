@@ -1,8 +1,10 @@
-import { describe, it, afterAll } from "vitest";
+import { describe, it, afterAll, expect } from "vitest";
 import fs from "node:fs";
+import path from "node:path";
 import type { Features } from "../types";
 import {
   packagesBuilt,
+  runInDir,
   scaffoldAndBuild as scaffoldAndBuildBase,
 } from "./scaffold-test-helpers";
 
@@ -57,4 +59,25 @@ describe.skipIf(!packagesBuilt)("scaffold build", () => {
       "all",
     );
   }, 120_000);
+
+  // Regression for #174: fresh clone has no `worker-configuration.d.ts`
+  // (it's gitignored) but tsconfig.cloudflare.json includes it. `pnpm
+  // typecheck` must regenerate it automatically via `wrangler types`.
+  it("typecheck regenerates worker-configuration.d.ts on fresh checkout", async () => {
+    const wsRoot = await scaffoldAndBuild({}, "typecheck-regen");
+    const projectDir = path.join(wsRoot, "app");
+    const workerTypesPath = path.join(projectDir, "worker-configuration.d.ts");
+
+    // Simulate a fresh clone: delete the generated types file if it exists
+    // (wrangler may have created it during the build run above).
+    if (fs.existsSync(workerTypesPath)) {
+      fs.rmSync(workerTypesPath);
+    }
+    expect(fs.existsSync(workerTypesPath)).toBe(false);
+
+    // Typecheck should self-heal by running `wrangler types` first.
+    await runInDir("pnpm typecheck", projectDir, { timeout: 180_000 });
+
+    expect(fs.existsSync(workerTypesPath)).toBe(true);
+  }, 240_000);
 });

@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import { mergePackageJsons, type PkgFragment } from "../generators/package-json";
 import { generateWranglerToml } from "../generators/wrangler-toml";
 import { generateEnv } from "../generators/env";
@@ -7,6 +9,7 @@ import { generateViteConfig } from "../generators/vite-config";
 import { generateRootTsx } from "../generators/root-tsx";
 import { generateRoutesTs } from "../generators/routes-ts";
 import { generateAuthSetup } from "../generators/auth-setup";
+import { getTemplatesDir } from "../utils";
 import type { Config } from "../types";
 
 describe("mergePackageJsons", () => {
@@ -300,5 +303,26 @@ describe("generateAuthSetup", () => {
     };
     const result = generateAuthSetup(config);
     expect(result).toContain("Sign in to my-app");
+  });
+});
+
+describe("base template package.json", () => {
+  const basePkgPath = path.join(getTemplatesDir(), "base", "package.json");
+  const basePkg = JSON.parse(fs.readFileSync(basePkgPath, "utf-8")) as {
+    scripts: Record<string, string>;
+  };
+
+  // Regression guard for #174: `worker-configuration.d.ts` is gitignored
+  // but referenced in tsconfig.cloudflare.json's `include`. A fresh clone
+  // therefore fails `tsc -b` until wrangler types are regenerated. Prepend
+  // `wrangler types` to the typecheck script so it is idempotent and
+  // self-healing on fresh checkouts.
+  it("prepends `wrangler types` to typecheck so fresh checkouts self-heal", () => {
+    expect(basePkg.scripts.typecheck).toMatch(/^wrangler types &&/);
+  });
+
+  it("still runs react-router typegen and tsc -b after wrangler types", () => {
+    expect(basePkg.scripts.typecheck).toContain("react-router typegen");
+    expect(basePkg.scripts.typecheck).toContain("tsc -b");
   });
 });
