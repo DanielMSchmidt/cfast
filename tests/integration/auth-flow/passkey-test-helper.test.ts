@@ -19,6 +19,11 @@ import {
   generateTestPasskey,
   type PasskeySeedRow,
 } from "@cfast/auth/test-helpers/passkey";
+// Statically import the SimpleWebAuthn helpers so the (slow) module load
+// happens once during test-file evaluation rather than inside the 5s budget
+// of any individual `it(...)`. The previous lazy `await import(...)` was the
+// dominant contributor to a flaky timeout in the COSE-decode test on CI.
+import { isoCBOR } from "@simplewebauthn/server/helpers";
 import { applyAuthMigrations, resetAuthTables } from "../helpers/auth-tables";
 
 describe("passkey-test-helper (integration)", () => {
@@ -109,7 +114,10 @@ describe("passkey-test-helper (integration)", () => {
     expect(row!.transports).toBe("internal");
   });
 
-  it("stored public_key decodes to the COSE ES256 key the generator produced", async () => {
+  // Workerd cold-starts + WebCrypto P-256 key generation are noticeably
+  // slower than the rest of this file (~2s locally, more on CI runners),
+  // so give this single test a wider budget than vitest's 5s default.
+  it("stored public_key decodes to the COSE ES256 key the generator produced", { timeout: 15_000 }, async () => {
     await env.DB.prepare(
       "INSERT INTO users (id, email, name, email_verified) VALUES (?, ?, ?, 1)",
     )
@@ -136,7 +144,6 @@ describe("passkey-test-helper (integration)", () => {
     expect(row).not.toBeNull();
 
     const coseBytes = base64Decode(row!.public_key);
-    const { isoCBOR } = await import("@simplewebauthn/server/helpers");
     const cose = isoCBOR.decodeFirst<Map<number, unknown>>(coseBytes);
 
     // kty: EC2 (2), alg: ES256 (-7), crv: P-256 (1)
