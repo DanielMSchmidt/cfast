@@ -2,7 +2,7 @@ import { getTableColumns } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import { asDrizzleColumnMeta } from "./drizzle-internals";
 import type { FieldDefinition, InputType, ValidationRules } from "./types";
-import { getValidationRules } from "./validate";
+import { getUploadMetadata, getValidationRules } from "./validate";
 
 function columnNameToLabel(name: string): string {
   return name
@@ -58,6 +58,7 @@ export function introspectTable(table: SQLiteTable): FieldDefinition[] {
 
   for (const [key, column] of Object.entries(columns)) {
     const customRules = getValidationRules(column) ?? {};
+    const uploadMeta = getUploadMetadata(column);
     // Access Drizzle column internals via the typed boundary helper.
     // See drizzle-internals.ts for documentation on why this is needed.
     const col = asDrizzleColumnMeta(column);
@@ -69,15 +70,22 @@ export function introspectTable(table: SQLiteTable): FieldDefinition[] {
       validation.maxLength = col.config.length;
     }
 
+    // Upload columns get promoted to a dedicated input type so the AutoForm
+    // renderer can pick the registered upload component instead of the
+    // default text input. The underlying Drizzle column stays a `text`,
+    // which is what we want — the database stores R2 keys as strings.
+    const inputType: InputType = uploadMeta ? "upload" : resolveInputType(col);
+
     fields.push({
       name: key,
-      inputType: resolveInputType(col),
+      inputType,
       label: columnNameToLabel(column.name),
       required: col.notNull,
       hasDefault: col.hasDefault,
       isPrimaryKey: col.primary,
       enumValues: col.enumValues ? [...col.enumValues] : undefined,
       validation,
+      upload: uploadMeta,
     });
   }
 

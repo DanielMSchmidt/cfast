@@ -42,7 +42,35 @@ export type ValidationRules = {
  *
  * Used by {@link FieldDefinition} to determine which UI component to render.
  */
-export type InputType = "text" | "number" | "checkbox" | "select";
+export type InputType = "text" | "number" | "checkbox" | "select" | "upload";
+
+/**
+ * Metadata describing how a column should render as a file upload field.
+ *
+ * Attached to a Drizzle column via the `upload()` helper. The metadata is
+ * read back during {@link introspectTable} so the AutoForm renderer can
+ * pick the upload component (and pass through the storage filetype +
+ * basePath + multiplicity hints).
+ *
+ * The Drizzle column itself stays a plain `text` (or `text[]` for `multiple`)
+ * — `@cfast/forms` does not invent a new column type, it just stores the
+ * upload metadata as a Symbol-keyed entry on the column config so the rest
+ * of the framework keeps working unchanged.
+ */
+export type UploadFieldMetadata = {
+  /** Storage filetype name registered in `defineStorage`. */
+  filetype: string;
+  /** Mount path of the storage routes. Defaults to `"/uploads"`. */
+  basePath?: string;
+  /** Whether the column accepts multiple file keys. Defaults to `false`. */
+  multiple?: boolean;
+  /** Maximum number of files (only relevant when `multiple` is `true`). */
+  maxFiles?: number;
+  /** Comma-separated MIME accept string forwarded to the file picker. */
+  accept?: string;
+  /** Optional client-side max byte size hint. */
+  maxSize?: number;
+};
 
 /**
  * A field definition produced by {@link introspectTable}, describing a single form field.
@@ -68,6 +96,12 @@ export type FieldDefinition = {
   enumValues?: string[];
   /** Merged validation rules from schema introspection and {@link v} annotations. */
   validation: ValidationRules;
+  /**
+   * Upload metadata if the column was decorated with the `upload()` helper.
+   * When present, the form renderer should pick the registered `upload`
+   * component and forward this config through.
+   */
+  upload?: UploadFieldMetadata;
 };
 
 /**
@@ -381,6 +415,19 @@ export type FieldComponentProps = {
   enumValues?: string[];
   /** The react-hook-form `register` function for binding the input to form state. */
   register: UseFormRegister<FieldValues>;
+  /**
+   * Upload field metadata, only set when the resolved field is an upload
+   * column. The plugin's `upload` component reads `filetype`, `multiple`,
+   * `maxFiles`, etc. from this object instead of from `register`.
+   */
+  upload?: UploadFieldMetadata;
+  /**
+   * Underlying react-hook-form instance, exposed so non-`register`
+   * components (like the upload field, which is controlled by `value` /
+   * `onChange`) can call `setValue` and `getValues` directly. Optional so
+   * existing field components — which only need `register` — keep working.
+   */
+  form?: UseFormReturn<FieldValues>;
 };
 
 /**
@@ -420,6 +467,13 @@ export type FormPluginComponents = {
    * is used so existing plugins keep working unchanged.
    */
   childTable?: React.ComponentType<ChildTableComponentProps>;
+  /**
+   * Component for rendering file upload columns. Required for any plugin
+   * that wants to render fields decorated with the `upload()` helper —
+   * plugins that don't ship one fall back to the plain text input so the
+   * form still renders.
+   */
+  upload?: React.ComponentType<FieldComponentProps>;
 };
 
 /**

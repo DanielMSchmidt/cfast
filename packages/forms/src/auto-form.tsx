@@ -100,6 +100,11 @@ function getComponentForField(plugin: FormPlugin, field: FieldDefinition) {
       return plugin.components.checkbox;
     case "select":
       return plugin.components.select;
+    case "upload":
+      // Fall back to the text input if a plugin doesn't ship an upload
+      // component — that way existing plugins keep working and the form
+      // still renders something for the column instead of crashing.
+      return plugin.components.upload ?? plugin.components.textInput;
     default:
       return plugin.components.textInput;
   }
@@ -573,6 +578,8 @@ export function createAutoForm(plugin: FormPlugin) {
               error={error}
               enumValues={field.enumValues}
               register={form.register}
+              upload={field.upload}
+              form={form}
             />
           );
         })}

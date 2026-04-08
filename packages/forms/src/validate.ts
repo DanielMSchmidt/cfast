@@ -1,7 +1,7 @@
 import type { Column } from "drizzle-orm";
 import type { ColumnBuilderBase } from "drizzle-orm/column-builder";
 import { asBuilderInternal, asColumnInternal } from "./drizzle-internals";
-import type { ValidationRules } from "./types";
+import type { UploadFieldMetadata, ValidationRules } from "./types";
 
 /**
  * Symbol key used to store {@link ValidationRules} on Drizzle column builder configs.
@@ -9,6 +9,15 @@ import type { ValidationRules } from "./types";
  * @internal
  */
 export const VALIDATE_SYMBOL = Symbol.for("cfast:validate");
+
+/**
+ * Symbol key used to store {@link UploadFieldMetadata} on Drizzle column builder
+ * configs. Mirrors {@link VALIDATE_SYMBOL} but for the upload field path so
+ * the two helpers can coexist on the same column without colliding.
+ *
+ * @internal
+ */
+export const UPLOAD_SYMBOL = Symbol.for("cfast:upload");
 
 /**
  * Attach validation rules to a Drizzle column builder.
@@ -63,4 +72,57 @@ export function getValidationRules(
     return undefined;
   }
   return value as ValidationRules;
+}
+
+/**
+ * Mark a Drizzle text column as an upload key, capturing the storage filetype
+ * and per-field upload settings.
+ *
+ * The metadata is stored on the same protected `config` object that
+ * {@link v} writes to, so the two helpers can be combined on a single
+ * column without conflict. {@link introspectTable} reads it back and
+ * promotes the column's `inputType` to `"upload"`.
+ *
+ * @typeParam T - The Drizzle column builder type, preserved for chaining.
+ * @param builder - A Drizzle column builder (e.g., `text("image_key")`).
+ * @param metadata - The upload field configuration (filetype + options).
+ * @returns The same builder instance for inline chaining.
+ *
+ * @example
+ * ```ts
+ * import { upload } from "@cfast/forms";
+ * import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+ *
+ * export const products = sqliteTable("products", {
+ *   imageKey: upload(text("image_key"), {
+ *     filetype: "productImages",
+ *     accept: "image/*",
+ *     maxSize: 5 * 1024 * 1024,
+ *   }),
+ * });
+ * ```
+ */
+export function upload<T extends ColumnBuilderBase>(
+  builder: T,
+  metadata: UploadFieldMetadata,
+): T {
+  asBuilderInternal(builder).config[UPLOAD_SYMBOL] = metadata;
+  return builder;
+}
+
+/**
+ * Read upload metadata previously attached via {@link upload} from a built
+ * Column instance. Returns `undefined` if the column was not decorated.
+ *
+ * @param column - A built Drizzle Column.
+ * @returns The {@link UploadFieldMetadata} if present, or `undefined`.
+ */
+export function getUploadMetadata(
+  column: Column,
+): UploadFieldMetadata | undefined {
+  const value = asColumnInternal(column).config[UPLOAD_SYMBOL];
+  if (value === undefined) {
+    return undefined;
+  }
+  return value as UploadFieldMetadata;
 }

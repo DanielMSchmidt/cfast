@@ -4,7 +4,7 @@ export { createResolver } from "./resolver";
 export { createFormPlugin } from "./plugin";
 export { createAutoForm } from "./auto-form";
 export { DefaultChildTable } from "./child-table";
-export { v } from "./validate";
+export { v, upload, getUploadMetadata } from "./validate";
 
 export type {
   ValidationRules,
@@ -23,4 +23,5 @@ export type {
   InferTableRow,
   InferNestedValues,
   NestedKey,
+  UploadFieldMetadata,
 } from "./types";
