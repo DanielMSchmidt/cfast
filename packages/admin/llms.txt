@@ -204,17 +204,43 @@ createAdmin({
 
 ### Server/client splitting
 
-For apps where server code must not leak into client bundles:
+For apps where server code must not leak into client bundles, import the
+loader, action, and schema introspection helpers from the dedicated server
+entry. The server entry never references `@cfast/ui` or `@mui/joy`, so it
+keeps cold-import time small and avoids the React 19 `useContext null`
+warnings that appear when context-bearing modules end up in both bundles.
 
 ```typescript
-import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
-import { createAdminComponent } from "@cfast/admin";
+// app/admin.server.ts — server-only file
+import {
+  createAdminLoader,
+  createAdminAction,
+  introspectSchema,
+} from "@cfast/admin/server";
+import type { AdminAuthConfig, AdminUser } from "@cfast/admin/server";
+import * as schema from "~/db/schema";
 
-const tableMetas = introspectSchema(schema, tableOverrides?);
-const loader = createAdminLoader(config, tableMetas);
-const action = createAdminAction(config, tableMetas);
-const Component = createAdminComponent(tableMetas);
+const tableMetas = introspectSchema({ items: schema.items });
+export const adminLoader = createAdminLoader(config, tableMetas);
+export const adminAction = createAdminAction(config, tableMetas);
 ```
+
+```tsx
+// app/routes/admin.tsx — route file (RR splits server/client exports)
+import { createAdminComponent, introspectSchema } from "@cfast/admin";
+import { adminLoader, adminAction } from "~/admin.server";
+import * as schema from "~/db/schema";
+
+const Component = createAdminComponent(introspectSchema({ items: schema.items }));
+export const loader = adminLoader;
+export const action = adminAction;
+export default Component;
+```
+
+The root `@cfast/admin` entry continues to re-export everything (loader,
+action, component, types) for backward compatibility, but importing the
+React component from a server-only file will pull `@mui/joy` and the UI
+React contexts into the server bundle.
 
 ### Schema introspection
 

@@ -1,5 +1,5 @@
-import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
-import type { AdminAuthConfig, AdminUser } from "@cfast/admin";
+import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin/server";
+import type { AdminAuthConfig, AdminUser } from "@cfast/admin/server";
 import type { AuthInstance } from "@cfast/auth";
 import { requireAuthContext, hasRole } from "~/auth.helpers.server";
 import { initAuth } from "~/auth.setup.server";
