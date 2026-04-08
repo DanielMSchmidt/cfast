@@ -1,0 +1,263 @@
+---
+title: "Pattern: Drag and Drop"
+description: "HTML5 drag-and-drop with @cfast/actions, useFetcher, and optimistic UI."
+---
+
+Drag and drop is a common UI pattern for kanban boards, sortable lists, and file organizers. This guide shows how to wire HTML5 native drag-and-drop to a cfast action using React Router's `useFetcher`, with optimistic updates that keep the UI in sync while the action runs.
+
+The example is a simple kanban board with three columns (`todo`, `in_progress`, `done`) and cards you can drag between them. The same pattern applies to any reordering scenario — use it for file trees, nav builders, or prioritized lists.
+
+## Schema
+
+```ts
+// app/db/schema.ts
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const cards = sqliteTable("cards", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  column: text("column", { enum: ["todo", "in_progress", "done"] })
+    .notNull()
+    .default("todo"),
+  position: integer("position").notNull().default(0),
+});
+```
+
+## The move action
+
+`moveCard` takes a card id and a target column. It's a single `db.update` — permissions are checked automatically by `@cfast/db`.
+
+```ts
+// app/actions/cards.ts
+import { eq } from "drizzle-orm";
+import { compose } from "@cfast/db";
+import { createAction } from "~/actions.server";
+import { cards } from "~/db/schema";
+
+type MoveCardInput = {
+  cardId: number;
+  column: "todo" | "in_progress" | "done";
+};
+
+export const moveCard = createAction<MoveCardInput, { ok: true }>(
+  (db, input) =>
+    compose(
+      [
+        db
+          .update(cards)
+          .set({ column: input.column })
+          .where(eq(cards.id, input.cardId)),
+      ],
+      async (runUpdate) => {
+        await runUpdate({});
+        return { ok: true as const };
+      },
+    ),
+);
+```
+
+## The route
+
+This route file wires the columns, cards, drag handlers, and a `useFetcher` per card. Each card submits to the same route's `action` — `composeActions` routes by the `_action` discriminator.
+
+```tsx
+// app/routes/board.tsx
+import { useState } from "react";
+import { useFetcher } from "react-router";
+import { composeActions } from "~/actions.server";
+import { app } from "~/cfast.server";
+import { cards } from "~/db/schema";
+import { moveCard } from "~/actions/cards";
+import type { Route } from "./+types/board";
+
+const composed = composeActions({ moveCard });
+
+export const action = composed.action;
+
+export const loader = composed.loader(async ({ request, context }) => {
+  const ctx = await app.context(request, context);
+  const allCards = await ctx.db.client.query(cards).findMany({}).run({});
+  return { cards: allCards };
+});
+
+type Column = "todo" | "in_progress" | "done";
+const COLUMNS: Column[] = ["todo", "in_progress", "done"];
+const LABELS: Record<Column, string> = {
+  todo: "To Do",
+  in_progress: "In Progress",
+  done: "Done",
+};
+
+export default function Board({ loaderData }: Route.ComponentProps) {
+  return (
+    <div style={{ display: "flex", gap: "1rem", padding: "2rem" }}>
+      {COLUMNS.map((column) => (
+        <BoardColumn
+          key={column}
+          column={column}
+          cards={loaderData.cards.filter((c) => c.column === column)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function BoardColumn({
+  column,
+  cards,
+}: {
+  column: Column;
+  cards: { id: number; title: string; column: Column }[];
+}) {
+  const [isOver, setIsOver] = useState(false);
+
+  return (
+    <div
+      onDragOver={(e) => {
+        e.preventDefault(); // required to allow a drop
+        setIsOver(true);
+      }}
+      onDragLeave={() => setIsOver(false)}
+      onDrop={() => setIsOver(false)}
+      aria-label={`${LABELS[column]} column`}
+      style={{
+        flex: 1,
+        minHeight: 400,
+        padding: "1rem",
+        borderRadius: 8,
+        backgroundColor: isOver ? "#eef4ff" : "#f4f4f5",
+      }}
+    >
+      <h2 style={{ marginTop: 0 }}>{LABELS[column]}</h2>
+      {cards.map((card) => (
+        <Card key={card.id} card={card} targetColumn={column} />
+      ))}
+    </div>
+  );
+}
+
+function Card({
+  card,
+  targetColumn,
+}: {
+  card: { id: number; title: string; column: Column };
+  targetColumn: Column;
+}) {
+  const fetcher = useFetcher<{ ok: true }>();
+
+  // Optimistic column: if a move is pending, trust the submitted form data
+  // and render the card in its destination column immediately.
+  const pendingColumn =
+    fetcher.state !== "idle" && fetcher.formData
+      ? (fetcher.formData.get("column") as Column | null)
+      : null;
+  const effectiveColumn = pendingColumn ?? card.column;
+
+  // Hide the card from any column it is not (optimistically) in.
+  if (effectiveColumn !== targetColumn) return null;
+
+  return (
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", String(card.id));
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation(); // beat the column's onDrop
+      }}
+      aria-grabbed={fetcher.state !== "idle"}
+      style={{
+        padding: "0.75rem",
+        marginBottom: "0.5rem",
+        borderRadius: 6,
+        backgroundColor: "white",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+        cursor: "grab",
+        opacity: fetcher.state !== "idle" ? 0.6 : 1,
+      }}
+    >
+      {card.title}
+    </div>
+  );
+}
+```
+
+## The column drop handler
+
+The column-level `onDrop` is what actually dispatches the action. It reads the dragged card id from the DataTransfer object and submits via `fetcher.submit()`:
+
+```tsx
+function BoardColumn({
+  column,
+  cards,
+}: {
+  column: Column;
+  cards: { id: number; title: string; column: Column }[];
+}) {
+  const fetcher = useFetcher();
+
+  return (
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        const cardId = Number(e.dataTransfer.getData("text/plain"));
+        if (!Number.isFinite(cardId)) return;
+
+        fetcher.submit(
+          {
+            _action: "moveCard",
+            cardId: String(cardId),
+            column,
+          },
+          { method: "post" },
+        );
+      }}
+    >
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+Note: use one `useFetcher` per card (not per column) when you want each card's pending state to be independent — e.g. to grey out only the card being moved. Use one fetcher per column if you want column-level loading states.
+
+## Optimistic UI
+
+React Router exposes the in-flight form data on `fetcher.formData` while `fetcher.state` is `"submitting"` or `"loading"`. Reading it lets the UI render the destination state before the server responds:
+
+```tsx
+const pendingColumn =
+  fetcher.state !== "idle" && fetcher.formData
+    ? (fetcher.formData.get("column") as Column | null)
+    : null;
+const effectiveColumn = pendingColumn ?? card.column;
+```
+
+When the action resolves, React Router revalidates the loader, `pendingColumn` becomes `null`, and `card.column` reflects the new truth. If the action fails, the revalidation returns the old value and the card snaps back — no manual rollback code.
+
+## Why not `composed.client` + `actions.moveCard`?
+
+For a single action invoked with a dynamic payload, `useFetcher` is the simpler choice. `useActions(composed.client)` returns handles that bake in the input at hook time — useful for permission gating on a static row, awkward when the payload depends on a drop event.
+
+Permission gating still works: because the route calls `composed.action`, the server runs each submission through the same permission check as any other `moveCard` invocation. If the user lacks the `update` grant on `cards`, the action returns a 403 and `fetcher.data` contains the error.
+
+## Accessibility notes
+
+HTML5 drag-and-drop has well-known accessibility gaps:
+
+- Keyboard users cannot trigger `dragstart`/`drop` events. There's no built-in keyboard equivalent.
+- Screen readers announce `aria-grabbed`/`aria-dropeffect` inconsistently — these attributes are deprecated in ARIA 1.1.
+- Touch devices do not fire HTML5 drag events at all; you need pointer events or a polyfill.
+
+For accessible reordering, pair the visual drag-and-drop above with a keyboard alternative — for example, "Move up" / "Move down" buttons on each card that submit the same `moveCard` action. That way every keyboard and screen-reader user has a path to the same mutation, and your action layer stays unchanged.
+
+For full a11y including keyboard nav and touch support, use a library like [`@dnd-kit/core`](https://dndkit.com/) or [`react-aria`'s drag-and-drop primitives](https://react-spectrum.adobe.com/react-aria/dnd.html). Both dispatch to the same cfast action — swap the drag handlers, keep `moveCard` as-is.
+
+## See also
+
+- [`@cfast/actions`](/cfast/guides/actions/) — action composition and client hooks
+- [`@cfast/db`](/cfast/guides/db/) — permission-aware update operations
+- [React Router `useFetcher`](https://reactrouter.com/api/hooks/useFetcher) — pending state and optimistic UI
