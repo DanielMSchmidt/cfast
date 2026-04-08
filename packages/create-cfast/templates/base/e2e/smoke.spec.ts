@@ -16,14 +16,23 @@ import { fileURLToPath } from "node:url";
 // ESM-safe __dirname (scaffolded projects are `"type": "module"`).
 const HERE = dirname(fileURLToPath(import.meta.url));
 
+function stripComments(src: string): string {
+  // Remove block and line comments so JSDoc examples like
+  // `route("foo", "routes/foo.tsx")` are NOT mistaken for real routes.
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
 function discoverRoutes(): string[] {
-  const file = readFileSync(join(HERE, "..", "app", "routes.ts"), "utf-8");
+  const raw = readFileSync(join(HERE, "..", "app", "routes.ts"), "utf-8");
+  const file = stripComments(raw);
   // Match index("routes/_index.tsx") -> "/"
   // Match route("foo", "routes/foo.tsx") -> "/foo"
   // Skip dynamic routes (":id", "*") that we can't resolve for a smoke test
   const routes: string[] = [];
-  if (/index\(/.test(file)) routes.push("/");
-  const routeMatches = file.matchAll(/route\(\s*["']([^"']+)["']/g);
+  if (/\bindex\s*\(/.test(file)) routes.push("/");
+  const routeMatches = file.matchAll(/\broute\s*\(\s*["']([^"']+)["']/g);
   for (const m of routeMatches) {
     const path = m[1];
     if (path.includes(":") || path.includes("*")) continue;
@@ -45,13 +54,21 @@ for (const path of ROUTES) {
     expect(OK(status), `${path} returned ${status}`).toBe(true);
 
     // Wait for the page to settle. In vite dev mode the first visit may
-    // trigger a dependency optimization reload — reading `page.content()`
-    // mid-navigation throws. `networkidle` is overkill for most production
-    // deploys but is the simplest thing that's reliable in dev.
-    await page.waitForLoadState("networkidle");
+    // trigger a dependency-optimization reload mid-navigation, which makes
+    // `page.content()` throw "page is navigating". Retry once after a second
+    // wait to let the reload finish.
+    const readBody = async (): Promise<string> => {
+      await page.waitForLoadState("networkidle");
+      try {
+        return await page.content();
+      } catch {
+        await page.waitForLoadState("networkidle");
+        return await page.content();
+      }
+    };
+    const body = await readBody();
 
     // Catch placeholder pages even if status is 200
-    const body = await page.content();
     expect(body, `${path} contains scaffold placeholder`).not.toContain(
       "Get started by editing",
     );
