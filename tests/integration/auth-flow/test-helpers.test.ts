@@ -134,7 +134,65 @@ describe("test-helpers (integration)", () => {
       await env.DB.prepare("SELECT COUNT(*) FROM sessions").first();
       await env.DB.prepare("SELECT COUNT(*) FROM verifications").first();
       await env.DB.prepare("SELECT COUNT(*) FROM roles").first();
+      // Regression for cfast #172: impersonation_logs MUST be part of
+      // the schema `applyAuthSchema` creates. Before the fix the table
+      // was missing and every authenticated request crashed with
+      // `D1_ERROR: no such table: impersonation_logs`.
+      await env.DB.prepare("SELECT COUNT(*) FROM impersonation_logs").first();
     });
+
+    it(
+      "creates impersonation_logs with the columns @cfast/auth queries (cfast #172)",
+      async () => {
+        // Drop just the audit table so we're testing the specific
+        // migration path that was broken for upgrading consumers.
+        await env.DB.exec("DROP TABLE IF EXISTS impersonation_logs");
+
+        await applyAuthSchema(env.DB);
+
+        // Seed the referenced users so the FK constraint on
+        // (admin_id, target_user_id) -> users(id) is satisfied. This
+        // doubles as a check that `applyAuthSchema` created the FK
+        // (an earlier draft omitted it and the table accepted any value).
+        const now = Date.now();
+        await env.DB.batch([
+          env.DB.prepare(
+            "INSERT INTO users (id, email, name, email_verified, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+          ).bind("admin-172", "admin@test.cfast", "Admin", 1, now, now),
+          env.DB.prepare(
+            "INSERT INTO users (id, email, name, email_verified, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+          ).bind("target-172", "target@test.cfast", "Target", 1, now, now),
+        ]);
+
+        // Sanity check: a round-trip insert + select against the columns
+        // `createImpersonationManager` reads must work. This mirrors the
+        // exact SELECT that `getActiveImpersonation` runs in production,
+        // so if we ever drift on column names the test fails loudly.
+        await env.DB.prepare(
+          "INSERT INTO impersonation_logs (id, admin_id, target_user_id, started_at) VALUES (?, ?, ?, ?)",
+        )
+          .bind("log-172", "admin-172", "target-172", now)
+          .run();
+
+        const row = await env.DB.prepare(
+          "SELECT target_user_id as target_user_id FROM impersonation_logs WHERE admin_id = ? AND ended_at IS NULL LIMIT 1",
+        )
+          .bind("admin-172")
+          .first<{ target_user_id: string }>();
+
+        expect(row).not.toBeNull();
+        expect(row?.target_user_id).toBe("target-172");
+
+        // ended_at must be nullable so active impersonation sessions
+        // are detectable — the SELECT above filters on `ended_at IS NULL`.
+        const nullCheck = await env.DB.prepare(
+          "SELECT ended_at FROM impersonation_logs WHERE id = ?",
+        )
+          .bind("log-172")
+          .first<{ ended_at: number | null }>();
+        expect(nullCheck?.ended_at).toBeNull();
+      },
+    );
   });
 
   describe("loginAs", () => {

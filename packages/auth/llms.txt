@@ -159,7 +159,32 @@ export default [...authRoutes({ handlerFile: "routes/auth.$.tsx" }), ...otherRou
 
 ### Schema (`@cfast/auth/schema`)
 
-Drizzle tables: `user`, `session`, `passkey`, `role`, `impersonation_log`.
+Drizzle tables exported from `@cfast/auth/schema`:
+`users`, `sessions`, `accounts`, `verifications`, `passkeys`, `roles`, `impersonationLogs`.
+
+Spread these into your app's `db/schema.ts` so Drizzle Kit generates the
+matching D1 migrations:
+
+```typescript
+// app/db/schema.ts
+export {
+  users,
+  sessions,
+  accounts,
+  verifications,
+  passkeys,
+  roles,
+  impersonationLogs,
+} from "@cfast/auth/schema";
+```
+
+**Upgrading from 0.2.x to 0.3.x?** 0.3.0 introduced the `impersonation_logs`
+audit table. If you see `D1_ERROR: no such table: impersonation_logs` on the
+first authenticated request after upgrading, add `impersonationLogs` to your
+Drizzle schema and run `pnpm db:generate && pnpm db:migrate:local`. As of
+0.3.1 `getActiveImpersonation()` returns `null` (with a one-time console
+warning) when the table is missing so requests stay up while you migrate.
+See cfast issue #172.
 
 ### Test helpers (`@cfast/auth/test-helpers`)
 
