@@ -85,6 +85,20 @@ await db.delete(cards).where(eq(cards.id, id)).run();
 
 ### compose(operations, executor): Operation<TResult>
 
+> ⚠️ **Footgun warning (#182):** the `executor` callback receives one `run`
+> function per entry in `operations`, **in array order**. TypeScript cannot
+> enforce that the parameter names line up, so a callback like
+> `(runUpdate, runVersion) => ...` that gets reordered or shadowed by an
+> outer-scope variable will silently invoke the wrong sub-operation. Prefer
+> `composeSequentialCallback(db, async tx => ...)` for any workflow with data
+> dependencies — it binds by name via the normal db builders. Use `compose()`
+> only when you genuinely need to interleave non-db logic between sub-ops.
+>
+> As a runtime safety net, `compose()` throws at construction time when the
+> executor's parameter count doesn't match the operations array length (so
+> `compose([a, b], (runA) => ...)` fails loudly instead of silently dropping
+> `runB`). Use `(...runs) => ...` or `() => ...` to opt out of the check.
+
 ```typescript
 import { compose } from "@cfast/db";
 

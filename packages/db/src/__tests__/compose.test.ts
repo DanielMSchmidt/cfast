@@ -102,6 +102,71 @@ describe("compose", () => {
     const composed = compose([], () => "done");
     expect(composed.permissions).toEqual([]);
   });
+
+  describe("positional callback footgun (#182)", () => {
+    // Regression guards for the #182 wiki bug, where a `runVersion` parameter
+    // was shadowed by an outer-scope variable and never invoked. TypeScript
+    // cannot enforce that the executor declares one parameter per operation,
+    // so compose() does a runtime check at construction time.
+
+    it("throws when the executor declares fewer parameters than operations", () => {
+      const op1 = mockOp([{ action: "update", table: posts }], "a");
+      const op2 = mockOp([{ action: "create", table: auditLogs }], "b");
+      // Two operations, but the executor only declares one parameter.
+      // This is the exact wiki bug shape: `runVersion` would be missing.
+      expect(() =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        compose([op1, op2], (async (runA: any) => {
+          await runA();
+          // runB never called -- this is the bug.
+        }) as any),
+      ).toThrow(/2 operation/);
+    });
+
+    it("throws when the executor declares more parameters than operations", () => {
+      const op = mockOp([{ action: "update", table: posts }], "a");
+      // Less common but equally suspicious -- caller probably forgot to add
+      // an operation, or copy-pasted a callback from a longer compose call.
+      expect(() =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        compose([op], ((runA: any, runB: any) => {
+          void runA;
+          void runB;
+        }) as any),
+      ).toThrow(/1 operation/);
+    });
+
+    it("does not throw for matching arity", () => {
+      const op1 = mockOp([], "a");
+      const op2 = mockOp([], "b");
+      expect(() =>
+        compose([op1, op2], (runA, runB) => {
+          void runA;
+          void runB;
+        }),
+      ).not.toThrow();
+    });
+
+    it("does not throw for () => ... executors that drive ops by side effect", () => {
+      // Some callers pass `() => doSomething()` because the operations are
+      // referenced via closures rather than the run-function arguments.
+      // executor.length === 0 is the explicit "I know what I'm doing" signal.
+      const op = mockOp([], "a");
+      expect(() => compose([op], () => "done")).not.toThrow();
+    });
+
+    it("does not throw for variadic (...runs) => ... executors", () => {
+      // Same exemption: a rest-spread parameter list has length 0, so the
+      // guard skips. Useful when the executor iterates `runs` programmatically.
+      const op1 = mockOp([], "a");
+      const op2 = mockOp([], "b");
+      expect(() =>
+        compose([op1, op2], async (...runs) => {
+          for (const r of runs) await r();
+        }),
+      ).not.toThrow();
+    });
+  });
 });
 
 describe("composeSequential", () => {
