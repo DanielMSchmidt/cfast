@@ -159,6 +159,16 @@ function buildDb(
         async run(params?: Record<string, unknown>) {
           const p = params ?? {};
 
+          // Empty-batch fast path. D1's native `batch()` API rejects an empty
+          // tuple at the type level, and some driver builds throw at runtime
+          // when called with a zero-length array. Short-circuit here so
+          // callers that derive their batch list dynamically (e.g. "batch all
+          // the pending writes for this request") can pass the empty list
+          // without special-casing it themselves.
+          if (operations.length === 0) {
+            return [];
+          }
+
           // Up-front permission check across every sub-operation. We refuse to
           // run any of the SQL if the user can't perform every action in the
           // batch -- this matches the user-visible "atomic" semantic.
@@ -171,8 +181,7 @@ function buildDb(
           // arbitrary user-supplied operations (e.g. from compose() executors)
           // fall through to the sequential path.
           const batchables = operations.map((op) => getBatchable(op));
-          const everyOpBatchable =
-            operations.length > 0 && batchables.every((b) => b !== undefined);
+          const everyOpBatchable = batchables.every((b) => b !== undefined);
 
           if (everyOpBatchable) {
             const sharedDb = drizzle(config.d1, { schema: config.schema });

@@ -128,6 +128,44 @@ describe("createDb", () => {
     expect(batchOp.permissions).toHaveLength(1);
   });
 
+  it("db.batch([]) is a no-op that resolves to an empty array", async () => {
+    const d1 = createMockD1();
+    const db = createDb({
+      d1,
+      schema,
+      grants: grantsForRole("editor"),
+      user: { id: "user-1" },
+      cache: false,
+    });
+
+    const batchOp = db.batch([]);
+    // Empty batch has no permission requirements.
+    expect(batchOp.permissions).toEqual([]);
+
+    // `.run()` and `.run({})` both resolve cleanly without touching D1.
+    await expect(batchOp.run()).resolves.toEqual([]);
+    await expect(batchOp.run({})).resolves.toEqual([]);
+
+    // No SQL and no native batch call were issued.
+    expect(d1._calls).toHaveLength(0);
+    expect(d1._batches).toHaveLength(0);
+  });
+
+  it("db.batch([]) is a no-op even without any grants", async () => {
+    // Regression guard: the empty-batch fast path must run BEFORE the
+    // permission check, otherwise callers have to hand-check `ops.length`
+    // even though they had no work to do.
+    const db = createDb({
+      d1: createMockD1(),
+      schema,
+      grants: grantsForRole("anonymous"),
+      user: null,
+      cache: false,
+    });
+
+    await expect(db.batch([]).run()).resolves.toEqual([]);
+  });
+
   it("accepts cache: false to disable caching", () => {
     const db = createDb({
       d1: createMockD1(),
