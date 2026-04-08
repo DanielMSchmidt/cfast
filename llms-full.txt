@@ -1236,10 +1236,12 @@ function MyForm() {
 
 ### Parent-Child Tables (Dynamic Field Arrays)
 
-Use the `children` prop to declare child tables that render as dynamic field
-arrays. Each child entry is introspected from its Drizzle table, rendered with
+Use the `nested` prop to declare child tables that render as dynamic field
+arrays. Each entry is introspected from its Drizzle table, rendered with
 add / remove / reorder controls, and submitted as a typed array under the
-configured key.
+configured key. The form value type is inferred from `table` + each
+`nested[].table`, so `onSubmit` receives a fully-typed object with no manual
+`useForm` generic and no casts.
 
 ```typescript
 import { AutoForm } from "@cfast/forms/joy";
@@ -1247,28 +1249,39 @@ import { recipes, ingredients } from "./schema";
 
 <AutoForm
   table={recipes}
-  mode="create"
   exclude={["id"]}
-  children={{
-    ingredients: {
+  nested={[
+    {
       table: ingredients,
-      foreignKey: "recipe_id",  // excluded from the child row UI
-      minRows: 1,
-      maxRows: 50,
+      foreignKey: "recipeId",  // TS column key, excluded from the nested row UI
+      min: 1,
+      max: 50,
       reorderable: true,
       fields: { name: { placeholder: "Flour" } },
     },
-  }}
+  ]}
   onSubmit={async (values) => {
-    // values.ingredients is Array<{ name, amount, unit, ... }>
+    // values is fully typed:
+    //   values.title: string
+    //   values.servings: number
+    //   values.ingredients: Array<InferRow<typeof ingredients>>
   }}
 />;
 ```
 
-`minRows` and `maxRows` are enforced by the resolver and by disabling the
-add/remove buttons. The child primary key and the foreign-key column are
-automatically excluded from the row UI (the action layer stamps the parent
-id after creating the parent).
+`min` and `max` are enforced by the resolver and by disabling the add/remove
+buttons. The nested primary key and the foreign-key column are automatically
+excluded from the row UI (the action layer stamps the parent id after
+creating the parent).
+
+The form key a nested array appears under defaults to the table's runtime
+name (e.g. `sqliteTable("ingredients", …)` → `values.ingredients`). Override
+with `as` when the default collides or you want a different payload key.
+
+> The deprecated `children: Record<string, ChildTableConfig>` prop is still
+> accepted and normalizes to the new shape internally. It logs a one-time
+> deprecation warning in development and will be removed in the next major
+> release. See `packages/forms/llms.txt` → "Migration: `children` → `nested`".
 
 ### Computed Fields
 
@@ -1279,27 +1292,23 @@ computed totals.
 ```typescript
 <AutoForm
   table={recipes}
-  mode="create"
-  children={{
-    ingredients: {
+  nested={[
+    {
       table: ingredients,
-      foreignKey: "recipe_id",
-      minRows: 1,
+      foreignKey: "recipeId",
+      min: 1,
     },
-  }}
+  ]}
   fields={{
     totalCalories: {
       readOnly: true,
-      computed: (values) => {
-        const rows = (values.ingredients as Array<{
-          calories: number;
-          amount: number;
-        }>) ?? [];
-        return rows.reduce(
+      computed: (values) =>
+        // `values.ingredients` is typed as Array<InferRow<typeof ingredients>>
+        // — no cast needed.
+        values.ingredients.reduce(
           (sum, ing) => sum + (ing.calories * ing.amount) / 100,
           0,
-        );
-      },
+        ),
     },
   }}
   onSubmit={handleSubmit}
