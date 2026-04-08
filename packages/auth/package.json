@@ -38,6 +38,10 @@
     "./test-helpers": {
       "import": "./dist/test-helpers/index.js",
       "types": "./dist/test-helpers/index.d.ts"
+    },
+    "./test-helpers/passkey": {
+      "import": "./dist/test-helpers/passkey.js",
+      "types": "./dist/test-helpers/passkey.d.ts"
     }
   },
   "files": [
@@ -49,8 +53,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts src/test-helpers/index.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts src/test-helpers/index.ts --format esm --dts --watch",
+    "build": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts src/test-helpers/index.ts src/test-helpers/passkey.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/client.ts src/plugin.ts src/schema.ts src/test-helpers/index.ts src/test-helpers/passkey.ts --format esm --dts --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/"
@@ -70,6 +74,7 @@
   "devDependencies": {
     "@cfast/permissions": "workspace:*",
     "@cloudflare/workers-types": "^4.20260305.1",
+    "@simplewebauthn/server": "^13.2.0",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.0.0",
     "better-auth": "^1.2.0",

@@ -230,6 +230,103 @@ await createTestSession(app, { email: "bob@test.com", roles: ["admin"] });
 
 `createTestApp` also exposes `capturedMagicLinks` and `waitForMagicLink(email?)` so tests can assert on the URLs Better Auth generates. Use `applyAuthSchema(d1)` to set up the tables if you want to manage lifecycle yourself and pass `applyMigrations: false`.
 
+### Passkey test helper (`@cfast/auth/test-helpers/passkey`)
+
+For end-to-end tests that need a logged-in user in a real browser without
+email delivery or magic-link capture, use the passkey test helper. It drives
+Chrome's Web Platform Virtual Authenticator via CDP so your app's **real**
+Better Auth passkey endpoints run against a pre-seeded credential — zero
+dev-only routes, zero bypass code paths.
+
+**How it works.** The helper generates a real ES256 keypair in Node's
+`crypto.subtle`, COSE-encodes the public key exactly the way Better Auth's
+passkey plugin writes one during real registration, and returns both the
+keypair and a ready-to-insert `passkeys` row. At test time you hand the
+private key to Chrome's virtual authenticator via Playwright's CDP session,
+and any subsequent `navigator.credentials.get()` from the page is signed by
+Chrome against the virtual credential. Better Auth's `/passkey/verify-authentication`
+endpoint verifies that signature against the COSE public key in the DB —
+the only thing the helper bootstrapped is the row itself.
+
+**Step 1: seed the credential** (run once, e.g. in a setup script or
+`test:seed` step):
+
+```typescript
+import { generateTestPasskey } from "@cfast/auth/test-helpers/passkey";
+import { drizzle } from "drizzle-orm/d1";
+import { users, passkeys } from "@cfast/auth/schema";
+import fs from "node:fs/promises";
+
+const alice = await generateTestPasskey({
+  userId: "user-alice",
+  rpId: "localhost", // must match createAuth({ passkeys: { rpId } })
+});
+
+const db = drizzle(env.DB);
+await db.insert(users).values({
+  id: "user-alice",
+  email: "alice@test.com",
+  name: "Alice",
+  emailVerified: true,
+});
+await db.insert(passkeys).values(alice.seedRow);
+
+// Persist the bits the Playwright test needs. These are not production
+// credentials — they only work against the seeded row — but keep them
+// under tests/fixtures/ rather than committing them at the repo root.
+await fs.writeFile(
+  "tests/fixtures/alice-passkey.json",
+  JSON.stringify({
+    credentialId: alice.credentialId,
+    privateKey: alice.privateKey,
+    rpId: "localhost",
+    userHandle: "user-alice",
+  }),
+);
+```
+
+**Step 2: use in a Playwright test:**
+
+```typescript
+import { test, expect } from "@playwright/test";
+import { addPasskeyCredential } from "@cfast/auth/test-helpers/passkey";
+import alicePasskey from "../fixtures/alice-passkey.json";
+
+test("alice can sign in with a passkey", async ({ page }) => {
+  // Attach a virtual authenticator to this page and register the
+  // pre-generated credential. Subsequent WebAuthn calls from the page
+  // will resolve against it.
+  const { cleanup } = await addPasskeyCredential(page, alicePasskey);
+
+  await page.goto("/login");
+  await page.getByRole("button", { name: /sign in with passkey/i }).click();
+
+  await expect(page).toHaveURL("/workspaces");
+
+  // Optional — cleanup runs automatically when the context closes,
+  // but you can call it explicitly if the test removes and re-adds
+  // authenticators mid-run.
+  await cleanup();
+});
+```
+
+**Requirements:**
+
+- The app must have the passkey plugin configured via `createAuth({ passkeys: { rpName, rpId } })`.
+- The login page must expose a "Sign in with passkey" button (the default Better Auth `signIn.passkey()` call from `authClient`).
+- Tests must run in Chromium — the virtual authenticator is a Chrome DevTools Protocol feature, not standard WebDriver.
+
+**What this does NOT bypass:**
+
+- The `/passkey/verify-authentication` endpoint runs the real `@simplewebauthn/server` verifier.
+- The real session cookie is set by Better Auth.
+- The real `auth.requireUser()` path runs on the subsequent navigation.
+- The ONLY bootstrap is the pre-generated `passkeys` row, which is byte-for-byte identical to what real registration would insert.
+
+For tests that need to verify "unregistered user is redirected to sign up",
+call `cleanupTestAuthenticator(page, authenticatorId)` (or the `cleanup()`
+function returned from `addPasskeyCredential`) between navigations.
+
 ## Usage Examples
 
 ### Protect a layout route
