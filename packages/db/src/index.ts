@@ -2,6 +2,7 @@
 export { createDb } from "./create-db";
 export { compose, composeSequential, composeSequentialCallback } from "./compose";
 export { parseCursorParams, parseOffsetParams } from "./paginate";
+export { TransactionError } from "./transaction";
 export type {
   Operation,
   Db,
@@ -26,4 +27,5 @@ export type {
   DeleteBuilder,
   DeleteReturningBuilder,
   InferRow,
+  Tx,
 } from "./types";

@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { getTableName } from "drizzle-orm";
-import type { Db } from "@cfast/db";
+import type { Db, Tx } from "@cfast/db";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DrizzleTable = Record<string | symbol, any>;
@@ -195,6 +195,11 @@ export function mockDb(
         ),
       };
     },
+    async transaction<T>(callback: (tx: Tx) => Promise<T>): Promise<T> {
+      // Forward to the same mock db — the admin test suite only cares about
+      // the call surface, not true atomic semantics.
+      return callback(db as unknown as Tx);
+    },
     cache: {
       invalidate: vi.fn().mockResolvedValue(undefined),
     },
@@ -281,6 +286,9 @@ export function mockDbWithError(errorMessage: string): Db {
         permissions: [],
         run: vi.fn().mockRejectedValue(new Error(errorMessage)),
       };
+    },
+    async transaction<T>(_callback: (tx: Tx) => Promise<T>): Promise<T> {
+      throw new Error(errorMessage);
     },
     cache: {
       invalidate: vi.fn().mockResolvedValue(undefined),

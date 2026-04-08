@@ -373,6 +373,57 @@ export type PaginateOptions = {
   cache?: QueryCacheOptions;
 };
 
+// --- Transaction handle ---
+
+/**
+ * The transaction handle passed to the `db.transaction()` callback.
+ *
+ * Exposes the read/write builder surface of {@link Db} but intentionally omits
+ * `unsafe`, `batch`, `transaction`, and `cache`. Those are off-limits inside a
+ * transaction:
+ *
+ * - `unsafe()` would let you bypass permissions mid-tx — if you need system
+ *   access, use `db.unsafe().transaction(...)` on the outer handle instead.
+ * - `batch()` / nested `transaction()` calls are flattened into the parent's
+ *   pending queue automatically, so the plain mutate methods are all you need.
+ * - `cache` invalidation is driven by the single commit at the end of the
+ *   transaction, not per-sub-op.
+ *
+ * Writes (`tx.insert` / `tx.update` / `tx.delete`) are recorded and flushed as
+ * an atomic batch when the callback returns. Reads (`tx.query`) execute
+ * eagerly so the caller can branch on their results.
+ */
+export type Tx = {
+  /** Same as {@link Db.query}: reads execute eagerly against the underlying db. */
+  query: <TTable extends DrizzleTable>(table: TTable) => QueryBuilder<TTable>;
+  /**
+   * Same as {@link Db.insert}: the returned Operation's `.run()` records the
+   * insert into the transaction's pending queue. `.returning().run()` records
+   * the insert and returns a promise that resolves AFTER the batch flushes.
+   */
+  insert: <TTable extends DrizzleTable>(table: TTable) => InsertBuilder<TTable>;
+  /**
+   * Same as {@link Db.update}: the returned Operation's `.run()` records the
+   * update into the transaction's pending queue. Use relative SQL with a
+   * WHERE guard (e.g. `set({ stock: sql\`stock - ${qty}\` }).where(gte(...))`)
+   * for concurrency-safe read-modify-write.
+   */
+  update: <TTable extends DrizzleTable>(table: TTable) => UpdateBuilder<TTable>;
+  /** Same as {@link Db.delete}: records the delete into the transaction's pending queue. */
+  delete: <TTable extends DrizzleTable>(table: TTable) => DeleteBuilder<TTable>;
+  /**
+   * Nested transaction. Flattens into the parent's pending queue so every
+   * write still commits in a single atomic batch. The nested callback's
+   * return value is propagated as usual; any error thrown aborts the
+   * entire outer transaction.
+   *
+   * Use this when a helper function wants to "own" its own tx scope but
+   * the caller already started a transaction — the helper can call
+   * `tx.transaction(...)` unconditionally and Just Work.
+   */
+  transaction: <T>(callback: (tx: Tx) => Promise<T>) => Promise<T>;
+};
+
 // --- Db type ---
 
 /**
@@ -433,6 +484,44 @@ export type Db = {
    * compositions but loses the atomicity guarantee.
    */
   batch: (operations: Operation<unknown>[]) => Operation<unknown[]>;
+  /**
+   * Runs a callback inside a transaction with atomic commit-or-rollback semantics.
+   *
+   * All writes (`tx.insert`/`tx.update`/`tx.delete`) recorded inside the callback
+   * are deferred and flushed together as a single atomic `db.batch([...])` when
+   * the callback returns successfully. If the callback throws, pending writes are
+   * discarded and the error is re-thrown — nothing reaches D1.
+   *
+   * Reads (`tx.query(...)`) execute eagerly so the caller can branch on their
+   * results. **D1 does not provide snapshot isolation across async code**, so
+   * reads inside a transaction can see concurrent writes. For concurrency-safe
+   * read-modify-write (e.g. stock decrement), combine the transaction with a
+   * relative SQL update and a WHERE guard:
+   *
+   * ```ts
+   * await db.transaction(async (tx) => {
+   *   // The WHERE guard ensures the decrement only applies when stock is
+   *   // still >= qty at commit time. Two concurrent transactions cannot
+   *   // both oversell because D1's atomic batch re-evaluates the WHERE.
+   *   await tx.update(products)
+   *     .set({ stock: sql`stock - ${qty}` })
+   *     .where(and(eq(products.id, pid), gte(products.stock, qty)))
+   *     .run();
+   *   return tx.insert(orders).values({ productId: pid, qty }).returning().run();
+   * });
+   * ```
+   *
+   * Nested `db.transaction()` calls inside the callback are flattened into the
+   * parent's pending queue so everything still commits atomically.
+   *
+   * @typeParam T - The return type of the callback.
+   * @param callback - The transaction body. Receives a `tx` handle with
+   *   `query`/`insert`/`update`/`delete` methods (no `unsafe`, `batch`, or
+   *   `cache` — those are intentionally off-limits inside a transaction).
+   * @returns The value returned by the callback, or rejects with whatever the
+   *   callback threw (after rolling back pending writes).
+   */
+  transaction: <T>(callback: (tx: Tx) => Promise<T>) => Promise<T>;
   /** Cache control methods for manual invalidation. */
   cache: {
     /** Invalidate cached queries by tag names and/or table names. */
