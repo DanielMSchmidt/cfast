@@ -35,14 +35,25 @@
     "build-storybook": "storybook build"
   },
   "peerDependencies": {
+    "@cfast/actions": ">=0.1.0 <0.3.0",
+    "@cfast/auth": ">=0.3.0 <0.5.0",
+    "@cfast/ui": ">=0.2.0 <0.4.0",
     "react": ">=19",
     "react-dom": ">=19",
     "react-router": ">=7"
   },
+  "peerDependenciesMeta": {
+    "@cfast/actions": {
+      "optional": false
+    },
+    "@cfast/auth": {
+      "optional": false
+    },
+    "@cfast/ui": {
+      "optional": false
+    }
+  },
   "dependencies": {
-    "@cfast/actions": "workspace:*",
-    "@cfast/auth": "workspace:*",
-    "@cfast/ui": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/joy": "^5.0.0-beta.52",
@@ -50,6 +61,9 @@
     "sonner": "^2.0.3"
   },
   "devDependencies": {
+    "@cfast/actions": "workspace:*",
+    "@cfast/auth": "workspace:*",
+    "@cfast/ui": "workspace:*",
     "@storybook/react": "^8.6.14",
     "@storybook/react-vite": "^8.6.14",
     "@testing-library/react": "^16.3.0",

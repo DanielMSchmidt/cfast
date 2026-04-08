@@ -45,14 +45,22 @@
     "test": "vitest run"
   },
   "peerDependencies": {
+    "@cfast/db": ">=0.3.0 <0.5.0",
+    "@cfast/permissions": ">=0.3.0 <0.5.0",
     "react": "^19.0.0",
     "react-router": "^7.0.0"
   },
-  "dependencies": {
-    "@cfast/db": "workspace:*",
-    "@cfast/permissions": "workspace:*"
+  "peerDependenciesMeta": {
+    "@cfast/db": {
+      "optional": false
+    },
+    "@cfast/permissions": {
+      "optional": false
+    }
   },
   "devDependencies": {
+    "@cfast/db": "workspace:*",
+    "@cfast/permissions": "workspace:*",
     "@cloudflare/workers-types": "^4.20260305.1",
     "@types/react": "^19.0.0",
     "react": "^19.0.0",

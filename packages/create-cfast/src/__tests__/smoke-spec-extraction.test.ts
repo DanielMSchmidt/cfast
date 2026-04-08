@@ -14,10 +14,17 @@ import type { Config } from "../types";
  * available, so we duplicate the function here and assert the regex behaviour
  * end-to-end. If you change the smoke spec's discovery, change this in lockstep.
  */
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
 function extractRoutes(routesFile: string): string[] {
+  const stripped = stripComments(routesFile);
   const routes: string[] = [];
-  if (/index\(/.test(routesFile)) routes.push("/");
-  const matches = routesFile.matchAll(/route\(\s*["']([^"']+)["']/g);
+  if (/\bindex\s*\(/.test(stripped)) routes.push("/");
+  const matches = stripped.matchAll(/\broute\s*\(\s*["']([^"']+)["']/g);
   for (const m of matches) {
     const p = m[1];
     if (p.includes(":") || p.includes("*")) continue;
@@ -67,6 +74,33 @@ describe("route extraction", () => {
 
   it("returns empty when no routes are present", () => {
     expect(extractRoutes(`export default [] satisfies RouteConfig;`)).toEqual([]);
+  });
+
+  it("ignores route() examples in JSDoc comments", () => {
+    const file = `
+      /**
+       * Patterns:
+       *   index("routes/_index.tsx")               → renders at "/"
+       *   route("foo", "routes/foo.tsx")           → renders at "/foo"
+       *   route("foo/:id", "routes/foo.$id.tsx")   → dynamic segment
+       */
+      import { type RouteConfig, index, route } from "@react-router/dev/routes";
+
+      export default [
+        index("routes/_index.tsx"),
+      ] satisfies RouteConfig;
+    `;
+    expect(extractRoutes(file)).toEqual(["/"]);
+  });
+
+  it("ignores // line-commented routes", () => {
+    const file = `
+      export default [
+        index("routes/_index.tsx"),
+        // route("disabled", "routes/disabled.tsx"),
+      ] satisfies RouteConfig;
+    `;
+    expect(extractRoutes(file)).toEqual(["/"]);
   });
 });
 
