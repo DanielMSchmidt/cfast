@@ -385,6 +385,35 @@ cache: {
 Per-query: `db.query(t).findMany({ cache: false })` or `{ cache: { ttl: "5m", tags: ["posts"] } }`.
 Manual invalidation: `await db.cache.invalidate({ tags: ["posts"], tables: ["posts"] })`.
 
+### defineSeed
+
+`defineSeed({ entries })` is the canonical way to seed a local D1 database.
+Accepts an ordered list of `{ table, rows }` entries — put parent tables
+before child tables to respect FK ordering. `seed.run(db)` hops through
+`db.unsafe()` internally so seeds never need their own grants. Empty `rows`
+arrays are skipped, so placeholder entries are safe.
+
+```typescript
+import { createDb, defineSeed } from "@cfast/db";
+import * as schema from "~/db/schema";
+
+const seed = defineSeed({
+  entries: [
+    { table: schema.users, rows: [{ id: "u-1", email: "ada@example.com", name: "Ada" }] },
+    { table: schema.posts, rows: [{ id: "p-1", title: "Hello", authorId: "u-1" }] },
+  ],
+});
+
+const db = createDb({ d1, schema, grants: [], user: null });
+await seed.run(db);
+```
+
+Multi-row entries are flushed via `db.batch([...])` (atomic per table);
+single-row entries skip the batch path so Drizzle's non-empty tuple
+invariant holds. Use this from `scripts/seed.ts` and run it via
+`pnpm db:seed:local` (the scaffolded `create-cfast` package ships this
+script and command out of the box).
+
 ## Usage Examples
 
 ### Standard loader pattern

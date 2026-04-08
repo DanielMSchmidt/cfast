@@ -13,6 +13,11 @@ import {
   generateRoutesTs,
   generateDevVars,
   generateAuthSetup,
+  generatePermissions,
+  shouldEmitItemsExample,
+  generateItemsServer,
+  generateItemsRoute,
+  generateSeedScript,
 } from "./generators/index";
 
 export function scaffold(config: Config): void {
@@ -56,9 +61,27 @@ export function scaffold(config: Config): void {
   writeFile(path.join(targetDir, "vite.config.ts"), generateViteConfig(config));
   writeFile(path.join(targetDir, "app", "root.tsx"), generateRootTsx(config));
   writeFile(path.join(targetDir, "app", "routes.ts"), generateRoutesTs(config));
+  // Overwrites the static `templates/base/app/permissions.ts` copy with
+  // a feature-aware version so the worked composeActions example (#153)
+  // gets the items grants it needs without leaking schema imports when
+  // db is off.
+  writeFile(path.join(targetDir, "app", "permissions.ts"), generatePermissions(config));
 
   if (config.features.auth) {
     writeFile(path.join(targetDir, "app", "auth.setup.server.ts"), generateAuthSetup(config));
+  }
+
+  // Worked composeActions example (#153) — db + ui + auth combos only.
+  if (shouldEmitItemsExample(config)) {
+    writeFile(path.join(targetDir, "app", "items.server.ts"), generateItemsServer(config));
+    writeFile(path.join(targetDir, "app", "routes", "items.tsx"), generateItemsRoute(config));
+  }
+
+  // Canonical seed script (#190) — db only. Uses defineSeed() from
+  // @cfast/db so demo apps stop hand-rolling db.mutate("table") (a
+  // method that never existed) or reaching into raw Drizzle.
+  if (config.features.db) {
+    writeFile(path.join(targetDir, "scripts", "seed.ts"), generateSeedScript(config));
   }
 
   const devVars = generateDevVars(config);

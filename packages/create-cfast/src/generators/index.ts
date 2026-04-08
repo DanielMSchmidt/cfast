@@ -7,3 +7,10 @@ export { generateRootTsx } from "./root-tsx";
 export { generateRoutesTs } from "./routes-ts";
 export { generateDevVars } from "./dev-vars";
 export { generateAuthSetup } from "./auth-setup";
+export { generatePermissions } from "./permissions";
+export {
+  shouldEmitItemsExample,
+  generateItemsServer,
+  generateItemsRoute,
+} from "./items-example";
+export { generateSeedScript } from "./seed-script";

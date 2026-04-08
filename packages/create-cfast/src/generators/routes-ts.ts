@@ -11,6 +11,19 @@ export function generateRoutesTs(config: Config): string {
     routes.push(`  route("api/auth/*", "routes/auth.$.tsx"),`);
   }
 
+  // Worked composeActions example — emitted only when db + ui + auth are
+  // all enabled so the route's imports (`~/items.server`, `~/db/schema`,
+  // `~/auth.helpers.server`, `@cfast/actions/client`) actually resolve.
+  // MUST stay in sync with `shouldEmitItemsExample()` in
+  // `./items-example.ts`. See #153.
+  if (
+    config.features.db &&
+    config.features.ui &&
+    config.features.auth
+  ) {
+    routes.push(`  route("items", "routes/items.tsx"),`);
+  }
+
   if (config.features.admin) {
     routes.push(`  route("admin", "routes/admin.tsx"),`);
   }
