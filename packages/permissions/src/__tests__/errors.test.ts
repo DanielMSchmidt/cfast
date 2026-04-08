@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ForbiddenError } from "../errors";
+import { ForbiddenError, PermissionRegistrationError } from "../errors";
 import type { DrizzleTable } from "../types";
 
 const posts: DrizzleTable = { [Symbol.for("drizzle:Name")]: "posts" };
@@ -78,5 +78,55 @@ describe("ForbiddenError", () => {
     expect(json.table).toBe("posts");
     expect(json.role).toBe("user");
     expect(json.message).toBe("Role 'user' cannot delete on 'posts'");
+  });
+});
+
+describe("PermissionRegistrationError", () => {
+  it("is an instance of Error", () => {
+    const err = new PermissionRegistrationError("unknown", ["posts"]);
+    expect(err).toBeInstanceOf(Error);
+    expect(err).toBeInstanceOf(PermissionRegistrationError);
+  });
+
+  it("has a PermissionRegistrationError name", () => {
+    const err = new PermissionRegistrationError("unknown", ["posts"]);
+    expect(err.name).toBe("PermissionRegistrationError");
+  });
+
+  it("exposes the unresolved subject", () => {
+    const err = new PermissionRegistrationError("projets", ["projects"]);
+    expect(err.subject).toBe("projets");
+  });
+
+  it("exposes the available tables sorted", () => {
+    const err = new PermissionRegistrationError("unknown", [
+      "posts",
+      "comments",
+      "users",
+    ]);
+    expect(err.availableTables).toEqual(["comments", "posts", "users"]);
+  });
+
+  it("message lists the available tables", () => {
+    const err = new PermissionRegistrationError("projets", [
+      "projects",
+      "project_versions",
+    ]);
+    expect(err.message).toContain('"projets"');
+    expect(err.message).toContain('"project_versions"');
+    expect(err.message).toContain('"projects"');
+  });
+
+  it("message suggests adding the schema generic", () => {
+    const err = new PermissionRegistrationError("unknown", ["posts"]);
+    expect(err.message).toContain(
+      "definePermissions<User, typeof schema>()",
+    );
+  });
+
+  it("handles an empty schema gracefully", () => {
+    const err = new PermissionRegistrationError("anything", []);
+    expect(err.message).toContain("<empty schema>");
+    expect(err.availableTables).toEqual([]);
   });
 });

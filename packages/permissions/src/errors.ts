@@ -63,3 +63,43 @@ export class ForbiddenError extends Error {
     };
   }
 }
+
+/**
+ * Error thrown at **permission-definition time** when a string-form subject
+ * passed to the `grant` callback inside
+ * `definePermissions<User, typeof schema>()` cannot be resolved to a real
+ * Drizzle table reference from the schema map.
+ *
+ * This is the runtime sibling of the compile-time constraint on
+ * {@link TableName} — it catches cases where the schema generic was skipped,
+ * the string was typed wrong (typo, wrong case), or the table was removed
+ * from the schema without updating the grant.
+ *
+ * Unlike {@link ForbiddenError} (thrown per-request on a permission check),
+ * `PermissionRegistrationError` is thrown **once at startup** from
+ * `definePermissions()` — so a misconfigured grant fails fast and loud
+ * instead of silently matching nothing at query time.
+ */
+export class PermissionRegistrationError extends Error {
+  /** The unresolved subject string that was passed to `grant()`. */
+  readonly subject: string;
+  /** The available table names (both JS keys and SQL names) from the schema. */
+  readonly availableTables: readonly string[];
+
+  constructor(subject: string, availableTables: readonly string[]) {
+    const sorted = [...availableTables].sort();
+    const list =
+      sorted.length === 0
+        ? "<empty schema>"
+        : sorted.map((n) => `"${n}"`).join(", ");
+    super(
+      `grant() subject "${subject}" does not match any table in the schema. ` +
+        `Available tables (by JS key and SQL name): ${list}. ` +
+        `Did you forget to pass the schema as the second generic to ` +
+        `definePermissions<User, typeof schema>()?`,
+    );
+    this.name = "PermissionRegistrationError";
+    this.subject = subject;
+    this.availableTables = sorted;
+  }
+}

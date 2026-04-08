@@ -34,7 +34,7 @@ cfast is a monorepo of packages that share three core philosophies:
 
 ### Core Infrastructure
 - [`@cfast/env`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/env): Type-safe Cloudflare bindings with runtime validation at startup. `defineEnv()` -> `env.init(rawEnv)` -> `env.get()`.
-- [`@cfast/permissions`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/permissions): Isomorphic permission system. `definePermissions({ roles, grants, hierarchy })` + `grant(action, subject, { where })`. Compiles to Drizzle WHERE clauses. `can(grants, action, table)` for quick grant-level boolean checks.
+- [`@cfast/permissions`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/permissions): Isomorphic permission system. `definePermissions<User, typeof schema>({ schema })(...)` + `grant(action, subject, { where })`. Accepts both string subjects (JS key or SQL name — both resolved at startup) and table objects; compiles to Drizzle WHERE clauses. `can(grants, action, table)` for quick grant-level boolean checks.
 - [`@cfast/db`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/db): Permission-aware Drizzle queries. `createDb({ d1, schema, grants, user })` returns lazy `Operation` objects with `.permissions` and `.run()` (params optional, defaults to `{}`). `composeSequential(ops)` shorthand for running operations in order.
 - [`@cfast/auth`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/auth): Authentication via Better Auth. Magic email + passkeys. Role management, impersonation. `createAuth({ permissions })`. `createAdminAuth(getAuth)` builds admin auth adapter from auth instance factory.
 - [`@cfast/storage`](https://github.com/DanielMSchmidt/cfast/tree/main/packages/storage): Schema-driven R2 file uploads. `defineStorage()` + `filetype()`. Multipart, validation, client `useUpload()` hook.
@@ -54,21 +54,24 @@ cfast is a monorepo of packages that share three core philosophies:
 ## End-to-End Example
 
 ```typescript
-// 1. Define permissions (isomorphic)
-import { definePermissions, grant } from "@cfast/permissions";
+// 1. Define permissions (isomorphic) — recommended form uses the schema
+//    so string subjects resolve to real table references at startup.
+import { definePermissions } from "@cfast/permissions";
 import { eq } from "drizzle-orm";
-import { posts } from "./schema";
+import * as schema from "./schema";
 
-export const permissions = definePermissions({
+type AppUser = { id: string; roles: readonly string[] };
+
+export const permissions = definePermissions<AppUser, typeof schema>({ schema })({
   roles: ["anonymous", "user", "admin"] as const,
-  grants: {
-    anonymous: [grant("read", posts, { where: (p) => eq(p.published, true) })],
+  grants: (grant) => ({
+    anonymous: [grant("read", "posts", { where: (p) => eq(p.published, true) })],
     user: [
-      grant("create", posts),
-      grant("update", posts, { where: (p, u) => eq(p.authorId, u.id) }),
+      grant("create", "posts"),
+      grant("update", "posts", { where: (p, u) => eq(p.authorId, u.id) }),
     ],
     admin: [grant("manage", "all")],
-  },
+  }),
 });
 
 // 2. Query with automatic permission enforcement (server)
@@ -109,7 +112,7 @@ function PostActions({ postId }) {
 - **Don't share a `Db` instance across requests.** It captures the user at creation. Create one per request.
 - **Don't use `db.unsafe()` for admin endpoints.** Use a role with `grant("manage", "all")` so actions remain auditable.
 - **Don't import tables from different paths.** Drizzle uses reference equality. Always import from the same module you pass as `schema`.
-- **Don't use `with` (relational queries) for permission-sensitive joins.** Permission filters only apply to the root table. Query relations separately.
+- **Permission filters on `with` (relational queries) only apply to the root table.** Nested relations are **not** filtered — query permission-sensitive relations separately if the nested table needs its own grants. String-form grants resolve to the schema's table references at startup (via `definePermissions<User, typeof schema>({ schema })`), so root-table filters apply correctly on relational queries.
 - **Don't forget `as const` on the roles array.** TypeScript needs the literal types for inference.
 
 ## Quick Start

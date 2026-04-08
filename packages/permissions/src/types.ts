@@ -17,29 +17,67 @@ export type DrizzleTable = object;
 export type DrizzleSQL = { getSQL(): unknown };
 
 /**
- * A schema map: an object mapping table names to Drizzle table references.
+ * A schema map: an object mapping JS schema keys to Drizzle table references.
  *
  * Typically the result of `import * as schema from "./schema"`. Used as the
  * `TTables` generic parameter for {@link definePermissions}, {@link can}, and
  * the curried {@link grant} callback so that string subjects (e.g.
- * `"projects"`) are constrained to known table names at compile time.
+ * `"projects"` or `"project_versions"`) are constrained to known table names
+ * at compile time.
  */
 export type SchemaMap = Record<string, DrizzleTable>;
 
 /**
- * Extracts the string-literal union of valid table names from a {@link SchemaMap}.
+ * Structural shape of a Drizzle table's static metadata used purely for
+ * type-level SQL-name extraction.
  *
- * Given `typeof schema` (where `schema` exports tables as named bindings),
- * `TableName<typeof schema>` is the union of all exported table-key strings.
+ * Drizzle tables expose their SQL name on a readonly `_.name` field (see
+ * `drizzle-orm/table` `Table._.name`). By narrowing against this shape we can
+ * extract `"project_versions"` from `typeof projectVersions` even though the
+ * runtime value lives on a `Symbol.for("drizzle:Name")` key.
  */
-export type TableName<TTables extends SchemaMap> = Extract<keyof TTables, string>;
+type TableWithSqlName = { _: { name: string } };
+
+/**
+ * Extracts the SQL table name literal from a Drizzle table reference, or
+ * `never` when the argument is not a Drizzle table with a `_.name` field.
+ *
+ * @example
+ * ```ts
+ * const postVersions = sqliteTable("post_versions", { ... });
+ * type N = SqlNameOf<typeof postVersions>; // "post_versions"
+ * ```
+ */
+export type SqlNameOf<T> = T extends TableWithSqlName
+  ? T["_"]["name"] extends string
+    ? T["_"]["name"]
+    : never
+  : never;
+
+/**
+ * Extracts the string-literal union of valid subject keys from a
+ * {@link SchemaMap}, including **both** the JS schema keys (e.g.
+ * `"postVersions"`) and the SQL table names (e.g. `"post_versions"`).
+ *
+ * The runtime side of `definePermissions<User, Schema>()` builds a
+ * matching lookup table keyed by both forms, so the two string forms are
+ * fully interchangeable — whichever matches your mental model.
+ *
+ * Without this, string subjects were accidentally constrained to JS keys
+ * only (#177), causing confusion when a schema's JS key differs from its
+ * SQL table name (e.g. `documentVersions` vs `document_versions`).
+ */
+export type TableName<TTables extends SchemaMap> =
+  | Extract<keyof TTables, string>
+  | SqlNameOf<TTables[keyof TTables]>;
 
 /**
  * The set of acceptable subject inputs for a grant or `can()` check.
  *
  * - A {@link DrizzleTable} object reference (the original form, always allowed).
- * - A string-literal table name from {@link TableName}, constrained to the
- *   provided `TTables` schema map at compile time when one is supplied.
+ * - A string-literal table name from {@link TableName} — either the JS schema
+ *   key (`"postVersions"`) or the SQL table name (`"post_versions"`) — both
+ *   resolve to the same underlying table at runtime.
  * - The literal `"all"` for grants that apply to every table.
  */
 export type SubjectInput<TTables extends SchemaMap = SchemaMap> =

@@ -1,10 +1,25 @@
 import { describe, it, expect } from "vitest";
 import { definePermissions } from "../define-permissions";
 import { grant } from "../grant";
+import { PermissionRegistrationError } from "../errors";
 import type { DrizzleTable } from "../types";
 
-const posts: DrizzleTable = { _: { name: "posts" } };
-const _comments: DrizzleTable = { _: { name: "comments" } };
+// Drizzle tables expose the SQL name via a `Symbol.for("drizzle:Name")` key
+// at runtime and via the structural `_.name` field at the type level.
+// These helpers build fakes that satisfy **both** so the unit tests exercise
+// exactly the same resolution logic the real sqliteTable objects do.
+const DRIZZLE_NAME = Symbol.for("drizzle:Name");
+function mockTable<TName extends string>(
+  name: TName,
+): { readonly _: { readonly name: TName } } {
+  return {
+    _: { name },
+    [DRIZZLE_NAME]: name,
+  } as { readonly _: { readonly name: TName } };
+}
+
+const posts: DrizzleTable = mockTable("posts");
+const _comments: DrizzleTable = mockTable("comments");
 
 describe("definePermissions", () => {
   describe("basic (no hierarchy)", () => {
@@ -230,6 +245,207 @@ describe("definePermissions", () => {
         }),
       });
       expect(perms.grants.member).toHaveLength(1);
+    });
+  });
+
+  // Issues #146, #175, #177: runtime resolution of string subjects against
+  // the schema. String-form subjects must resolve to the **exact same**
+  // Drizzle table reference the schema uses, not a shadow object — Drizzle
+  // identifies tables by reference, so any mismatch breaks cross-table
+  // relational `with` queries.
+  describe("with runtime-resolved schema ({ schema } option)", () => {
+    type AuthUser = { id: string };
+    // `documentVersions` intentionally uses camelCase JS key with a
+    // snake_case SQL name so we exercise the dual-key lookup for #177.
+    const documents = mockTable("documents");
+    const documentVersions = mockTable("document_versions");
+    const schema = { documents, documentVersions };
+    type Schema = typeof schema;
+
+    it("resolves string subjects via the JS schema key", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [g("read", "documents")],
+        }),
+      });
+      // The grant's subject must be the **exact same reference** as the
+      // schema table (not a shadow object), or Drizzle's relational query
+      // builder will silently fail on cross-table `with` lookups.
+      expect(perms.grants.member[0].subject).toBe(documents);
+    });
+
+    it("resolves string subjects via the SQL table name (issue #177)", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [g("read", "document_versions")],
+        }),
+      });
+      // `"document_versions"` is the SQL name — it must resolve to the
+      // `documentVersions` schema binding's table reference.
+      expect(perms.grants.member[0].subject).toBe(documentVersions);
+    });
+
+    it("resolves JS key and SQL name to the same reference", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [
+            g("read", "documentVersions"),
+            g("read", "document_versions"),
+          ],
+        }),
+      });
+      expect(perms.grants.member[0].subject).toBe(documentVersions);
+      expect(perms.grants.member[1].subject).toBe(documentVersions);
+      expect(perms.grants.member[0].subject).toBe(
+        perms.grants.member[1].subject,
+      );
+    });
+
+    it("still accepts object-form subjects unchanged", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [g("read", documents), g("read", "document_versions")],
+        }),
+      });
+      expect(perms.grants.member[0].subject).toBe(documents);
+      expect(perms.grants.member[1].subject).toBe(documentVersions);
+    });
+
+    it("still accepts the 'all' literal unchanged", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["admin"] as const,
+        grants: (g) => ({
+          admin: [g("manage", "all")],
+        }),
+      });
+      expect(perms.grants.admin[0].subject).toBe("all");
+    });
+
+    it("threads the typed user through where clauses after resolution", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [
+            g("update", "documents", {
+              where: (_cols, user) => {
+                void user.id;
+                return undefined;
+              },
+            }),
+          ],
+        }),
+      });
+      expect(perms.grants.member[0].subject).toBe(documents);
+      expect(perms.grants.member[0].where).toBeDefined();
+    });
+
+    it("throws PermissionRegistrationError for an unknown string subject", () => {
+      expect(() =>
+        definePermissions<AuthUser, Schema>({ schema })({
+          roles: ["member"] as const,
+          grants: (g) => ({
+            // Cast to any to bypass the compile-time constraint — we need
+            // to exercise the runtime throw path here.
+            member: [g("read", "unknownTable" as never)],
+          }),
+        }),
+      ).toThrow(PermissionRegistrationError);
+    });
+
+    it("PermissionRegistrationError lists the known subjects (both JS key and SQL name)", () => {
+      let caught: PermissionRegistrationError | undefined;
+      try {
+        definePermissions<AuthUser, Schema>({ schema })({
+          roles: ["member"] as const,
+          grants: (g) => ({
+            member: [g("read", "nope" as never)],
+          }),
+        });
+      } catch (e) {
+        caught = e as PermissionRegistrationError;
+      }
+      expect(caught).toBeInstanceOf(PermissionRegistrationError);
+      expect(caught!.subject).toBe("nope");
+      expect(caught!.availableTables).toContain("documents");
+      expect(caught!.availableTables).toContain("documentVersions");
+      expect(caught!.availableTables).toContain("document_versions");
+    });
+
+    it("rejects unknown strings at compile time (sanity)", () => {
+      // Pure type-level check: the body below is never executed — we only
+      // want TypeScript to flag "ghost" as not assignable to the schema's
+      // subject union. `@ts-expect-error` fails the build if the error
+      // disappears (i.e. the constraint is lost).
+      function _typeOnly() {
+        definePermissions<AuthUser, Schema>({ schema })({
+          roles: ["member"] as const,
+          grants: (g) => ({
+            // @ts-expect-error - "ghost" is not a JS key or SQL name on Schema
+            member: [g("read", "ghost")],
+          }),
+        });
+      }
+      // Reference the function so linters don't flag it as unused.
+      expect(typeof _typeOnly).toBe("function");
+    });
+
+    it("accepts SQL names at compile time for camelCase-keyed tables", () => {
+      // Regression for #177: prior to the fix, TypeScript only accepted
+      // JS keys ("documentVersions"), rejecting the SQL name
+      // "document_versions". Both should compile cleanly now.
+      definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [
+            g("read", "documentVersions"),
+            g("read", "document_versions"),
+          ],
+        }),
+      });
+    });
+
+    it("resolved grants retain the real table reference through hierarchy expansion", () => {
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["viewer", "member"] as const,
+        hierarchy: {
+          member: ["viewer"],
+        },
+        grants: (g) => ({
+          viewer: [g("read", "documents")],
+          member: [g("create", "document_versions")],
+        }),
+      });
+      expect(perms.resolvedGrants.member).toHaveLength(2);
+      const resolved = perms.resolvedGrants.member.map((g) => g.subject);
+      expect(resolved).toContain(documents);
+      expect(resolved).toContain(documentVersions);
+    });
+
+    it("string subjects resolve to the SAME reference as object-form grants (resolveGrants merging)", async () => {
+      // Previously, a string-form grant and an object-form grant on the
+      // same table were grouped under different keys in resolve-grants
+      // (s:foo vs o:<id>), so their where clauses did not OR-merge. After
+      // runtime resolution strips the string, both grants share the same
+      // DrizzleTable reference and merge correctly.
+      const { resolveGrants } = await import("../resolve-grants");
+      const perms = definePermissions<AuthUser, Schema>({ schema })({
+        roles: ["member"] as const,
+        grants: (g) => ({
+          member: [
+            g("read", "documents"),
+            g("read", documents), // object form on the same table
+          ],
+        }),
+      });
+      const merged = resolveGrants(perms, ["member"]);
+      // Both grants are unrestricted (no where), so they must collapse to
+      // exactly one merged grant on `documents`.
+      expect(merged).toHaveLength(1);
+      expect(merged[0].subject).toBe(documents);
     });
   });
 });

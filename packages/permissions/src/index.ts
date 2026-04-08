@@ -5,7 +5,7 @@ export { can } from "./can";
 export { checkPermissions } from "./check";
 export { resolveGrants } from "./resolve-grants";
 export type { UserWithRoles } from "./resolve-grants";
-export { ForbiddenError } from "./errors";
+export { ForbiddenError, PermissionRegistrationError } from "./errors";
 export { CRUD_ACTIONS, getTableName } from "./types";
 export type {
   PermissionAction,
@@ -16,6 +16,7 @@ export type {
   LookupDb,
   LookupFn,
   SchemaMap,
+  SqlNameOf,
   SubjectInput,
   TableName,
   WhereClause,
