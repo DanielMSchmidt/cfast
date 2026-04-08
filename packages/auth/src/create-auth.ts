@@ -249,9 +249,21 @@ export function createAuth<
     const allowedImpersonationRoles =
       config.impersonation?.allowedRoles ?? ["admin"];
 
+    // Grouped roles namespace. Shares the SAME `roleManager` instance
+    // that backs the legacy top-level aliases below — there is a single
+    // `createRoleManager` call per `initAuth(env)`, so the grouped API is
+    // purely an ergonomic surface, not a second client instantiation.
+    const roles: AuthInstance["roles"] = {
+      get: roleManager.getRoles,
+      set: roleManager.setRole,
+      setAll: roleManager.setRoles,
+      remove: roleManager.removeRole,
+    };
+
     return {
       createContext,
       requireUser,
+      roles,
       getRoles: roleManager.getRoles,
       setRole: roleManager.setRole,
       setRoles: roleManager.setRoles,

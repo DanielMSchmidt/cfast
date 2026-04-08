@@ -185,6 +185,54 @@ export type AuthEnvConfig = {
 };
 
 /**
+ * Grouped role-management API exposed on {@link AuthInstance.roles}.
+ *
+ * Every method on this namespace reuses the same underlying D1 role manager
+ * and role-grant rules as the single-request `AuthInstance` it belongs to.
+ * Prefer this grouped form over the top-level `getRoles` / `setRole` /
+ * `setRoles` / `removeRole` aliases — those stay for backwards compatibility
+ * but the grouped namespace scales better when new role operations are
+ * added (e.g. `list`, `has`, `audit`), and it reads more like a real API
+ * on top of an already-initialized auth instance.
+ *
+ * Obtain one by calling `auth.roles`, where `auth` is the value returned
+ * from `initAuth(env)` — no separate factory, no second role-manager
+ * instantiation.
+ *
+ * @example
+ * ```ts
+ * const auth = initAuth({ d1: env.DB, appUrl: env.APP_URL });
+ * const roles = await auth.roles.get(userId);
+ * await auth.roles.set(userId, "editor", { callerRoles: ["admin"] });
+ * await auth.roles.remove(userId, "editor");
+ * ```
+ */
+export type AuthRolesApi = {
+  /** Retrieves all roles assigned to a user. */
+  get: (userId: string) => Promise<string[]>;
+  /**
+   * Assigns a single role to a user (additive, does not remove existing roles).
+   * When `caller.callerRoles` is provided, validates against `roleGrants` rules.
+   */
+  set: (
+    userId: string,
+    role: string,
+    caller?: { callerRoles?: string[] },
+  ) => Promise<void>;
+  /**
+   * Replaces all of a user's roles with the given set.
+   * When `caller.callerRoles` is provided, validates each role against `roleGrants` rules.
+   */
+  setAll: (
+    userId: string,
+    roles: string[],
+    caller?: { callerRoles?: string[] },
+  ) => Promise<void>;
+  /** Removes a single role from a user. */
+  remove: (userId: string, role: string) => Promise<void>;
+};
+
+/**
  * The initialized auth instance with methods for session management, role assignment,
  * impersonation, and request handling.
  *
@@ -205,11 +253,21 @@ export type AuthInstance = {
    * @throws {Response} A 302 redirect response when the user is not authenticated.
    */
   requireUser: (request: Request) => Promise<AuthenticatedContext>;
-  /** Retrieves all roles assigned to a user. */
+  /**
+   * Grouped role-management API. Prefer `auth.roles.get/set/setAll/remove`
+   * over the legacy top-level aliases when writing new code — see
+   * {@link AuthRolesApi}.
+   */
+  roles: AuthRolesApi;
+  /**
+   * Retrieves all roles assigned to a user.
+   * @deprecated Use {@link AuthInstance.roles}`.get()` instead.
+   */
   getRoles: (userId: string) => Promise<string[]>;
   /**
    * Assigns a single role to a user (additive, does not remove existing roles).
    * When `caller.callerRoles` is provided, validates against `roleGrants` rules.
+   * @deprecated Use {@link AuthInstance.roles}`.set()` instead.
    */
   setRole: (
     userId: string,
@@ -219,13 +277,17 @@ export type AuthInstance = {
   /**
    * Replaces all of a user's roles with the given set.
    * When `caller.callerRoles` is provided, validates each role against `roleGrants` rules.
+   * @deprecated Use {@link AuthInstance.roles}`.setAll()` instead.
    */
   setRoles: (
     userId: string,
     roles: string[],
     caller?: { callerRoles?: string[] },
   ) => Promise<void>;
-  /** Removes a single role from a user. */
+  /**
+   * Removes a single role from a user.
+   * @deprecated Use {@link AuthInstance.roles}`.remove()` instead.
+   */
   removeRole: (userId: string, role: string) => Promise<void>;
   /**
    * Starts an impersonation session where the admin acts as the target user.
