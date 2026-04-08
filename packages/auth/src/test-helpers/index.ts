@@ -203,6 +203,47 @@ export type CreateTestSessionOptions = {
 };
 
 /**
+ * Options for {@link createTestUser}.
+ */
+export type CreateTestUserOptions = {
+  /** The email address for the new user. Must not already exist in the `users` table. */
+  email: string;
+  /** Display name. Defaults to the local part of the email address. */
+  name?: string;
+  /**
+   * Whether to mark the user as email-verified. Most seed/test flows want
+   * `true` because the user is implicitly verified by going through the
+   * magic-link code path; defaults to `true` accordingly.
+   */
+  emailVerified?: boolean;
+  /**
+   * Roles to assign after the user is created. Each role is applied via the
+   * real `auth.roles.set()` API, which is the same code path admin tooling
+   * uses, so the resulting `roles` rows are byte-for-byte identical.
+   */
+  roles?: string[];
+};
+
+/**
+ * The user row created by {@link createTestUser}.
+ *
+ * Fields mirror the columns of the `users` table written by Better Auth
+ * during the magic-link signup flow.
+ */
+export type TestUser = {
+  /** The Better Auth user id. */
+  id: string;
+  /** Email address. */
+  email: string;
+  /** Display name. */
+  name: string;
+  /** Whether the email is marked as verified in the `users` row. */
+  emailVerified: boolean;
+  /** Roles assigned after creation (exactly what was passed in `options.roles`). */
+  roles: string[];
+};
+
+/**
  * Applies the `@cfast/auth` schema migrations to a D1 database.
  *
  * Creates the `users`, `sessions`, `accounts`, `verifications`, `passkeys`,
@@ -476,6 +517,95 @@ export async function createTestSession(
 
   const link = await waitForCapturedLink(app, options.email, beforeCount);
   return verifyMagicLinkAndAssignRoles(app, link, options);
+}
+
+/**
+ * Creates a user end-to-end through the **real** Better Auth signup
+ * pipeline, bypassing the manual UI flow and the magic-link email.
+ *
+ * Use this helper in seed scripts and test fixtures instead of inserting
+ * directly into the `users` / `accounts` / `passkeys` tables. A user
+ * minted this way is byte-for-byte identical to one that signed up
+ * through the production magic-link flow because both go through the
+ * same `signInMagicLink` → verify endpoint → `internalAdapter.createUser`
+ * call chain.
+ *
+ * Under the hood this is a thin wrapper around
+ * {@link createTestSession}: the verify endpoint creates the user row
+ * for us (because the magic link auto-creates users). We then drop the
+ * session the helper created so seeds can hand the caller a "just the
+ * user, please" result. We still mark the row `email_verified = true`
+ * by default because the magic-link code path implies verification.
+ *
+ * @returns A {@link TestUser} containing the created user's id, email,
+ *   name, verified state, and the exact roles passed in `options.roles`.
+ *
+ * @example Seed script
+ * ```ts
+ * import { createTestApp, createTestUser } from "@cfast/auth/test-helpers";
+ * import { permissions } from "~/permissions";
+ *
+ * const app = await createTestApp({ d1: env.DB, auth: { permissions } });
+ *
+ * const alice = await createTestUser(app, {
+ *   email: "alice@example.com",
+ *   name: "Alice",
+ *   roles: ["admin"],
+ * });
+ *
+ * const bob = await createTestUser(app, {
+ *   email: "bob@example.com",
+ *   roles: ["editor"],
+ * });
+ * ```
+ */
+export async function createTestUser(
+  app: TestApp,
+  options: CreateTestUserOptions,
+): Promise<TestUser> {
+  const name = options.name ?? options.email.split("@")[0] ?? options.email;
+  const emailVerified = options.emailVerified ?? true;
+
+  // Drive the real signup by creating a session. This writes a `users`
+  // row, a `sessions` row, and any `accounts`/`verifications` rows that
+  // Better Auth's internal adapter produces during magic-link verify.
+  const session = await createTestSession(app, {
+    email: options.email,
+    name,
+    roles: options.roles,
+  });
+
+  // Drop the session we just minted so the caller gets a "just the
+  // user" result. Tests that want a logged-in user should call
+  // `createTestSession` or `loginAs` directly.
+  await app.d1
+    .prepare("DELETE FROM sessions WHERE id = ?")
+    .bind(session.session.id)
+    .run();
+
+  // Align the `email_verified` column with the caller's intent. Default
+  // is `true` because going through the magic-link path implies the
+  // email is verified; callers that want an unverified user (e.g. tests
+  // that exercise the "please verify your email" flow) can opt out.
+  if (emailVerified === false) {
+    await app.d1
+      .prepare("UPDATE users SET email_verified = 0 WHERE id = ?")
+      .bind(session.user.id)
+      .run();
+  } else {
+    await app.d1
+      .prepare("UPDATE users SET email_verified = 1 WHERE id = ?")
+      .bind(session.user.id)
+      .run();
+  }
+
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    emailVerified,
+    roles: options.roles ?? [],
+  };
 }
 
 // ---------------------------------------------------------------------

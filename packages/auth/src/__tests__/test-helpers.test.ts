@@ -55,8 +55,13 @@ vi.mock("drizzle-orm/d1", () => ({
 }));
 
 // Import after mocks are set up.
-const { createTestApp, loginAs, createTestSession, applyAuthSchema } =
-  await import("../test-helpers");
+const {
+  createTestApp,
+  loginAs,
+  createTestSession,
+  createTestUser,
+  applyAuthSchema,
+} = await import("../test-helpers");
 
 const permissions = definePermissions({
   roles: ["reader", "editor"] as const,
@@ -619,5 +624,225 @@ describe("createTestSession", () => {
       body: { email: "alice@test.com", callbackURL: "/" },
       headers: expect.any(Headers),
     });
+  });
+});
+
+describe("createTestUser", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  /**
+   * Shared driver for createTestUser tests: stubs Better Auth's
+   * signInMagicLink so the wrapped sender fires with a realistic URL,
+   * stubs the verify handler, and seeds a matching session row. All of
+   * these are the same moving parts createTestSession tests already
+   * verify — createTestUser is built on top of createTestSession, so
+   * its own tests only need to assert the delta: the DELETE + UPDATE
+   * plumbing and the return shape.
+   */
+  function wireSignupFlow(
+    d1: ReturnType<typeof createMockD1>,
+    opts: { userId: string; email: string; name: string; sessionId: string },
+  ) {
+    mockSignInMagicLink.mockImplementation(
+      async (apiOpts: { body: { email: string; name?: string } }) => {
+        const config = mockBetterAuth.mock.calls[0]![0] as {
+          plugins: Array<{
+            id: string;
+            sendMagicLink: (p: {
+              email: string;
+              url: string;
+              token: string;
+            }) => Promise<void>;
+          }>;
+        };
+        const plugin = config.plugins.find((p) => p.id === "magic-link")!;
+        await plugin.sendMagicLink({
+          email: apiOpts.body.email,
+          url: "http://localhost:8787/api/auth/magic-link/verify?token=signup",
+          token: "signup",
+        });
+      },
+    );
+    stubVerifyHandler(
+      ["better-auth.session_token=signup-token; HttpOnly"],
+      {
+        token: "signup-token",
+        user: { id: opts.userId, email: opts.email, name: opts.name },
+      },
+    );
+    seedSessionRow(d1, {
+      id: opts.sessionId,
+      user_id: opts.userId,
+      token: "signup-token",
+      expires_at: 1_900_000_000,
+      email: opts.email,
+      name: opts.name,
+    });
+  }
+
+  it("drives signup through the real magic-link pipeline and returns the user", async () => {
+    const d1 = createMockD1();
+    wireSignupFlow(d1, {
+      userId: "seed-1",
+      email: "seed@test.com",
+      name: "Seed",
+      sessionId: "s-seed",
+    });
+
+    const app = await createTestApp({
+      d1,
+      auth: { permissions, magicLink: { sendMagicLink: vi.fn() } },
+    });
+
+    const user = await createTestUser(app, {
+      email: "seed@test.com",
+      name: "Seed",
+    });
+
+    // signInMagicLink was called through the real API surface, the same
+    // code path production signup uses.
+    expect(mockSignInMagicLink).toHaveBeenCalledTimes(1);
+    expect(mockSignInMagicLink).toHaveBeenCalledWith({
+      body: { email: "seed@test.com", name: "Seed", callbackURL: "/" },
+      headers: expect.any(Headers),
+    });
+
+    expect(user).toEqual({
+      id: "seed-1",
+      email: "seed@test.com",
+      name: "Seed",
+      emailVerified: true,
+      roles: [],
+    });
+  });
+
+  it("defaults name to the local part of the email when omitted", async () => {
+    const d1 = createMockD1();
+    wireSignupFlow(d1, {
+      userId: "u-2",
+      email: "noname@test.com",
+      name: "noname",
+      sessionId: "s-noname",
+    });
+
+    const app = await createTestApp({
+      d1,
+      auth: { permissions, magicLink: { sendMagicLink: vi.fn() } },
+    });
+
+    await createTestUser(app, { email: "noname@test.com" });
+
+    expect(mockSignInMagicLink).toHaveBeenCalledWith({
+      body: { email: "noname@test.com", name: "noname", callbackURL: "/" },
+      headers: expect.any(Headers),
+    });
+  });
+
+  it("deletes the intermediate session row (tests get 'just the user')", async () => {
+    const d1 = createMockD1();
+    wireSignupFlow(d1, {
+      userId: "u-3",
+      email: "del@test.com",
+      name: "Del",
+      sessionId: "s-to-delete",
+    });
+
+    const app = await createTestApp({
+      d1,
+      auth: { permissions, magicLink: { sendMagicLink: vi.fn() } },
+    });
+
+    await createTestUser(app, { email: "del@test.com" });
+
+    // Find the DELETE on sessions keyed by the session id we minted.
+    const deletions = (d1 as unknown as { _calls: Array<{ sql: string; params: unknown[] }> })
+      ._calls.filter(
+        (c) =>
+          c.sql.includes("DELETE FROM sessions") &&
+          c.params.includes("s-to-delete"),
+      );
+    expect(deletions).toHaveLength(1);
+  });
+
+  it("marks email_verified = 1 by default", async () => {
+    const d1 = createMockD1();
+    wireSignupFlow(d1, {
+      userId: "u-4",
+      email: "verified@test.com",
+      name: "Verified",
+      sessionId: "s-v",
+    });
+
+    const app = await createTestApp({
+      d1,
+      auth: { permissions, magicLink: { sendMagicLink: vi.fn() } },
+    });
+
+    const user = await createTestUser(app, { email: "verified@test.com" });
+    expect(user.emailVerified).toBe(true);
+
+    const updates = (d1 as unknown as { _calls: Array<{ sql: string; params: unknown[] }> })
+      ._calls.filter(
+        (c) =>
+          c.sql.includes("UPDATE users SET email_verified = 1") &&
+          c.params.includes("u-4"),
+      );
+    expect(updates).toHaveLength(1);
+  });
+
+  it("honors emailVerified: false", async () => {
+    const d1 = createMockD1();
+    wireSignupFlow(d1, {
+      userId: "u-5",
+      email: "unverified@test.com",
+      name: "Unverified",
+      sessionId: "s-u",
+    });
+
+    const app = await createTestApp({
+      d1,
+      auth: { permissions, magicLink: { sendMagicLink: vi.fn() } },
+    });
+
+    const user = await createTestUser(app, {
+      email: "unverified@test.com",
+      emailVerified: false,
+    });
+    expect(user.emailVerified).toBe(false);
+
+    const updates = (d1 as unknown as { _calls: Array<{ sql: string; params: unknown[] }> })
+      ._calls.filter(
+        (c) =>
+          c.sql.includes("UPDATE users SET email_verified = 0") &&
+          c.params.includes("u-5"),
+      );
+    expect(updates).toHaveLength(1);
+  });
+
+  it("assigns roles through the real setRole path", async () => {
+    const d1 = createMockD1();
+    wireSignupFlow(d1, {
+      userId: "u-6",
+      email: "roled@test.com",
+      name: "Roled",
+      sessionId: "s-r",
+    });
+
+    const app = await createTestApp({
+      d1,
+      auth: { permissions, magicLink: { sendMagicLink: vi.fn() } },
+    });
+    const setRoleSpy = vi.spyOn(app.auth, "setRole");
+
+    const user = await createTestUser(app, {
+      email: "roled@test.com",
+      roles: ["editor"],
+    });
+
+    expect(setRoleSpy).toHaveBeenCalledTimes(1);
+    expect(setRoleSpy).toHaveBeenCalledWith("u-6", "editor");
+    expect(user.roles).toEqual(["editor"]);
   });
 });

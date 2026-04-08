@@ -214,6 +214,7 @@ import {
   createTestApp,
   loginAs,
   createTestSession,
+  createTestUser,
   applyAuthSchema,
 } from "@cfast/auth/test-helpers";
 
@@ -245,6 +246,20 @@ const response = await loader({
 // auth.api.signInMagicLink directly. Same end result (real session row,
 // real cookie), just less surface area exercised.
 await createTestSession(app, { email: "bob@test.com", roles: ["admin"] });
+
+// Seed helper: create a user (no active session) through the real
+// Better Auth signup pipeline. Use this in seeds and test fixtures
+// instead of inserting into `users`/`accounts`/`passkeys` directly —
+// the row you get is byte-for-byte identical to one a production
+// magic-link signup would produce, but the helper drops the session
+// it used to mint the user so you're left with "just the user".
+const alice = await createTestUser(app, {
+  email: "alice@example.com",
+  name: "Alice",          // optional — defaults to the local part of the email
+  emailVerified: true,    // optional — defaults to true
+  roles: ["admin"],       // optional — assigned via the real auth.setRole() API
+});
+// alice: { id, email, name, emailVerified, roles }
 ```
 
 `createTestApp` also exposes `capturedMagicLinks` and `waitForMagicLink(email?)` so tests can assert on the URLs Better Auth generates. Use `applyAuthSchema(d1)` to set up the tables if you want to manage lifecycle yourself and pass `applyMigrations: false`.
