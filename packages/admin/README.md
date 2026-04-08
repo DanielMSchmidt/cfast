@@ -164,8 +164,15 @@ createAdmin({
         row: [
           {
             label: "Publish",
-            action: async (id: string, formData: FormData) => {
-              // Custom logic — called with the record ID and form data
+            action: async (id, formData, ctx) => {
+              // ctx.db is scoped to the invoking admin's grants — use it to
+              // perform permission-aware mutations on behalf of the admin.
+              // For genuine overrides, opt in explicitly with ctx.db.unsafe().
+              await ctx.db
+                .update(posts)
+                .set({ published: true, publishedBy: ctx.user.id })
+                .where(eq(posts.id, id))
+                .run({});
             },
             confirm: "Are you sure you want to publish?", // Optional confirmation dialog
             variant: "default", // "default" | "danger" — controls button styling
