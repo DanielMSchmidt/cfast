@@ -10,7 +10,7 @@ Use this package when you have a Drizzle SQLite table and want a working form wi
 - **Progressive customization**: Start with `<AutoForm table={posts} mode="create" />`. Override individual fields incrementally -- labels, components, visibility, validation -- without rewriting the form.
 - **Headless core + UI plugins**: The core (`introspectTable`, `createResolver`, `createAutoForm`) is UI-agnostic. Rendering is delegated to a plugin. Ships with MUI Joy UI (`@cfast/forms/joy`).
 - **Validation via `v()`**: Attach validation rules directly to Drizzle column builders. The rules are stored as metadata and read back during introspection.
-- **Parent-child forms**: Declare child tables via the `children` prop — each becomes a `useFieldArray` with add / remove / reorder controls, full schema-derived validation, and `minRows` / `maxRows` constraints. See the "Parent-child tables" section below.
+- **Parent-child forms**: Declare nested child tables via the `nested` prop — each becomes a `useFieldArray` with add / remove / reorder controls, full schema-derived validation, and `min` / `max` constraints. The values type is inferred from `table` + each `nested[].table`, so `onSubmit` is fully typed without manual generics. See the "Parent-child tables" section below. (The old `children: Record<string, ChildTableConfig>` prop is deprecated — see "Migration".)
 - **Computed fields**: Declare derived fields via `fields[name].computed` — they auto-recalculate when any dependency (including child row values) changes. Typically paired with `readOnly: true`.
 
 ## API Reference
@@ -70,16 +70,32 @@ type FieldConfig = {
   computed?: (values: Record<string, unknown>) => unknown;
 };
 
-type ChildTableConfig = {
+type NestedTableConfig = {
   table: SQLiteTable;              // Drizzle table for each row
-  foreignKey: string;              // parent-pointing column, excluded from the child UI
-  minRows?: number;                // default 0; enforced on submit
-  maxRows?: number;                // default unlimited; enforced on submit
+  foreignKey: string;              // parent-pointing column (TS key, not DB column), excluded from the nested UI
+  as?: string;                     // override the key the nested array appears under (default: the table name)
+  min?: number;                    // default 0; enforced on submit
+  max?: number;                    // default unlimited; enforced on submit
   reorderable?: boolean;           // show move-up / move-down buttons
   fields?: Partial<Record<string, FieldConfig>>;  // per-column overrides
   exclude?: string[];              // extra columns to omit from the row UI
   label?: string;                  // heading override
   addLabel?: string;               // "Add row" button override
+};
+
+// Deprecated. Still accepted for backwards compatibility — shimmed to
+// `NestedTableConfig` internally, and logs a one-time deprecation warning.
+// Scheduled for removal in the next major.
+type ChildTableConfig = {
+  table: SQLiteTable;
+  foreignKey: string;
+  minRows?: number;                // renamed to `min` in NestedTableConfig
+  maxRows?: number;                // renamed to `max` in NestedTableConfig
+  reorderable?: boolean;
+  fields?: Partial<Record<string, FieldConfig>>;
+  exclude?: string[];
+  label?: string;
+  addLabel?: string;
 };
 
 type FieldComponentProps = {
@@ -110,16 +126,28 @@ type InputType = "text" | "number" | "checkbox" | "select";
 ### AutoForm Props
 
 ```typescript
-type AutoFormProps = {
-  table: SQLiteTable;                              // Drizzle table to generate from
-  mode: "create" | "edit";                         // create = empty, edit = pre-filled
-  data?: Record<string, unknown>;                  // existing data for edit mode
-  onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
+type AutoFormProps<
+  TTable extends Table = SQLiteTable,
+  TNested extends readonly NestedTableConfig[] | undefined = undefined,
+> = {
+  table: TTable;                                   // Drizzle table to generate from
+  mode?: "create" | "edit";                        // default "create"; edit = pre-filled
+  data?: Partial<InferAutoFormValues<TTable, TNested>> & Record<string, unknown>;
+  onSubmit: (
+    values: InferAutoFormValues<TTable, TNested>,  // FULLY TYPED — no casts
+  ) => void | Promise<void>;
   fields?: Partial<Record<string, FieldConfig>>;   // per-field overrides
-  children?: Record<string, ChildTableConfig>;     // parent-child dynamic field arrays
+  nested?: TNested;                                // parent-child dynamic field arrays
+  children?: Record<string, ChildTableConfig>;     // DEPRECATED — use `nested`
   exclude?: string[];                              // columns to omit
   form?: UseFormReturn<Record<string, unknown>>;   // external RHF instance
 };
+
+// InferAutoFormValues<TTable, TNested> resolves to:
+//   InferRow<TTable> & { [nestedKey]: Array<InferRow<NestedTable>> }
+// where each `nestedKey` is either the config's `as` override or the nested
+// table's runtime name. No manual generics needed on `useForm`; no casts
+// needed inside `onSubmit`.
 ```
 
 ### Joy UI Plugin (`@cfast/forms/joy`)
@@ -177,23 +205,26 @@ import { recipes, ingredients } from "./schema";
 
 <AutoForm
   table={recipes}
-  mode="create"
   exclude={["id"]}
-  children={{
-    ingredients: {
+  nested={[
+    {
       table: ingredients,
-      foreignKey: "recipe_id",  // column on ingredients pointing at recipes.id
-      minRows: 1,
-      maxRows: 50,
+      foreignKey: "recipeId",  // TS column key on ingredients pointing at recipes.id
+      min: 1,
+      max: 50,
       reorderable: true,
       fields: {
         name: { placeholder: "Flour" },
         amount: { placeholder: "g" },
       },
     },
-  }}
+  ]}
   onSubmit={async (values) => {
-    // values.ingredients is the array of typed ingredient rows.
+    // values is FULLY TYPED — no casts.
+    //   values.title: string
+    //   values.servings: number
+    //   values.ingredients: Array<InferRow<typeof ingredients>>
+    //
     // The foreign-key column is automatically excluded from the rendered
     // rows — the action layer stamps the parent id after creating the
     // parent row.
@@ -201,37 +232,51 @@ import { recipes, ingredients } from "./schema";
 />;
 ```
 
-Each child entry is introspected like the parent: column types drive inputs,
+Each nested entry is introspected like the parent: column types drive inputs,
 NOT NULL drives `required`, enums become selects, and `v()` rules flow through.
-The default child table renders add / remove / reorder buttons; plugins can
+The default nested table renders add / remove / reorder buttons; plugins can
 ship their own `childTable` component to match their design system
 (`@cfast/forms/joy` includes one).
+
+**The form key** a nested array appears under in submitted values defaults to
+the nested table's runtime name (e.g. `sqliteTable("ingredients", …)` →
+`values.ingredients`). Override with `as` when the table name doesn't match
+what you want on the payload, or when two nested tables would otherwise
+collide:
+
+```typescript
+nested={[
+  {
+    table: orderLines,
+    foreignKey: "orderId",
+    as: "lines",  // → values.lines instead of values.order_lines
+  },
+]}
+```
+
+Two nested entries resolving to the same key throw at render time with a
+message prompting you to pass an explicit `as`.
 
 ### Computed fields
 ```typescript
 <AutoForm
   table={recipes}
-  mode="create"
-  children={{
-    ingredients: {
+  nested={[
+    {
       table: ingredients,
-      foreignKey: "recipe_id",
-      minRows: 1,
+      foreignKey: "recipeId",
+      min: 1,
     },
-  }}
+  ]}
   fields={{
     totalCalories: {
       readOnly: true,
-      computed: (values) => {
-        const rows = (values.ingredients as Array<{
-          calories: number;
-          amount: number;
-        }>) ?? [];
-        return rows.reduce(
+      computed: (values) =>
+        // `values` is typed as the parent row + nested arrays, so no cast.
+        values.ingredients.reduce(
           (sum, ing) => sum + (ing.calories * ing.amount) / 100,
           0,
-        );
-      },
+        ),
     },
   }}
   onSubmit={handleSubmit}
@@ -243,6 +288,59 @@ child rows), and the result is written back to the field via `setValue`.
 Computed fields are skipped by the validation resolver — they are derived
 from other inputs rather than user-provided. Pair with `readOnly: true` to
 prevent the user from typing into the computed cell.
+
+### Migration: `children` → `nested`
+
+The old `children: Record<string, ChildTableConfig>` prop is deprecated because
+it (a) collides with React's reserved `children` attribute and (b) forces
+callers into `useForm<Record<string, unknown>>() + as RecipeFormData` casts
+since the form value type cannot be inferred from a generic JSX attribute.
+
+```typescript
+// Before (deprecated — still works, logs a one-time warning)
+<AutoForm
+  table={recipes}
+  children={{
+    ingredients: {
+      table: ingredients,
+      foreignKey: "recipeId",
+      minRows: 1,
+      maxRows: 50,
+    },
+  }}
+  onSubmit={(values) => {
+    // values is `Record<string, unknown>`
+    const rows = values.ingredients as Array<Ingredient>;  // cast required
+  }}
+/>
+
+// After
+<AutoForm
+  table={recipes}
+  nested={[
+    {
+      table: ingredients,
+      foreignKey: "recipeId",
+      min: 1,   // minRows → min
+      max: 50,  // maxRows → max
+    },
+  ]}
+  onSubmit={(values) => {
+    values.ingredients;  // Array<InferRow<typeof ingredients>> — inferred
+  }}
+/>
+```
+
+Mapping:
+- `children[key]` → `nested[n]` with `as: key` if the key differs from the table name
+- `minRows` → `min`
+- `maxRows` → `max`
+- `foreignKey` stays the same (TS column key, not the DB column name)
+- Everything else (`reorderable`, `fields`, `exclude`, `label`, `addLabel`) is unchanged
+
+The shim forwards the old shape to the new one internally, so you can migrate
+one form at a time. Both props can even coexist in a single `<AutoForm>` —
+the shim logs a deprecation warning once per process.
 
 ### Custom UI plugin
 ```typescript
@@ -279,6 +377,8 @@ export const AutoForm = createAutoForm(myPlugin);
 - Forgetting `mode="edit"` when passing `data` -- in create mode, `data` is ignored.
 - Passing a `fields.validate` function that returns `undefined` on error instead of an error string. Return a string to indicate failure, `undefined` to pass.
 - Excluding a required field without providing a default -- the form will fail validation since the field is NOT NULL but has no input.
-- Forgetting to `exclude` the parent primary key when the child table points at it: the parent primary key is often auto-generated server-side, so add it to `exclude` on the parent form.
+- Forgetting to `exclude` the parent primary key when a nested table points at it: the parent primary key is often auto-generated server-side, so add it to `exclude` on the parent form.
 - Declaring a `computed` field without `readOnly: true`: the user will be able to type into it but their input will be immediately overwritten the next time a dependency changes. Almost always a bug — set `readOnly: true`.
 - Throwing from a `computed` function: thrown errors are swallowed (so transient mid-edit invalid states don't crash), but the field value will not update until the next successful run.
+- Using the deprecated `children` prop in new code: it still works via a shim but loses type inference on `onSubmit`. Use `nested` instead.
+- Passing the DB column name (snake_case) as `foreignKey` when your Drizzle TS key is camelCase: `foreignKey` takes the TypeScript column key, not the database column name. `recipeId` not `recipe_id` (unless you declared the TS key as `recipe_id`).

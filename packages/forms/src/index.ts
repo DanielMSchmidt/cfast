@@ -18,4 +18,9 @@ export type {
   InputType,
   ChildTableConfig,
   ChildTableComponentProps,
+  NestedTableConfig,
+  InferAutoFormValues,
+  InferTableRow,
+  InferNestedValues,
+  NestedKey,
 } from "./types";

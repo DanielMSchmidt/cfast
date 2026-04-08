@@ -5,6 +5,7 @@ import type {
   UseFormReturn,
 } from "react-hook-form";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
+import type { Table } from "drizzle-orm";
 
 /**
  * Validation rules that can be attached to a Drizzle column via the {@link v} helper.
@@ -186,6 +187,136 @@ export type ChildTableConfig = {
   /** Override the "Add row" button label. */
   addLabel?: string;
 };
+
+/**
+ * Configuration for a nested child table rendered as a dynamic field array
+ * under an {@link AutoForm}.
+ *
+ * This is the successor to the deprecated {@link ChildTableConfig} record
+ * shape. Pass an array of these via the {@link AutoForm} `nested` prop:
+ *
+ * ```tsx
+ * <AutoForm
+ *   table={recipes}
+ *   nested={[
+ *     {
+ *       table: ingredients,
+ *       foreignKey: "recipeId",
+ *       min: 1,
+ *       max: 50,
+ *       reorderable: true,
+ *       fields: { name: { placeholder: "Flour" } },
+ *     },
+ *   ]}
+ *   onSubmit={async (values) => {
+ *     // values.ingredients is fully typed — no casts needed.
+ *   }}
+ * />
+ * ```
+ *
+ * The array shape (as opposed to `Record<string, ChildTableConfig>`) avoids
+ * the JSX-reserved `children` attribute collision and enables the whole form
+ * value type to be inferred via {@link InferAutoFormValues}.
+ *
+ * The key the nested array appears under in the submitted values is either:
+ * - `as` (explicit override), or
+ * - the table's runtime name from `getTableName(table)` (e.g.
+ *   `sqliteTable("ingredients", ...)` → `ingredients`).
+ */
+export type NestedTableConfig<
+  TTable extends Table = SQLiteTable,
+  TAs extends string | undefined = string | undefined,
+> = {
+  /** The Drizzle SQLite table that backs each row of the array. */
+  table: TTable;
+  /**
+   * Foreign key column on the nested table that points back at the parent.
+   * The column is automatically excluded from the rendered nested fields and
+   * stamped onto each row at submit time.
+   */
+  foreignKey: keyof InferTableRow<TTable> & string;
+  /**
+   * Override the key the nested array appears under in submitted form values.
+   *
+   * Defaults to the table's runtime name (e.g. `sqliteTable("ingredients", …)`
+   * → `"ingredients"`). Pass `as` when two nested tables would otherwise
+   * collide, or when you want the form key to differ from the table name.
+   */
+  as?: TAs;
+  /** Minimum number of rows the user must provide. Defaults to 0. */
+  min?: number;
+  /** Maximum number of rows the user is allowed to add. Defaults to unlimited. */
+  max?: number;
+  /** Show reorder controls (move up / move down). Defaults to false. */
+  reorderable?: boolean;
+  /** Per-column overrides for the nested table fields, identical in shape to the parent {@link FieldConfig}. */
+  fields?: Partial<Record<keyof InferTableRow<TTable> & string, FieldConfig>>;
+  /** Additional column names to omit from the rendered nested rows. */
+  exclude?: Array<keyof InferTableRow<TTable> & string>;
+  /** Override the heading rendered above the nested table (defaults to a humanised key). */
+  label?: string;
+  /** Override the "Add row" button label. */
+  addLabel?: string;
+};
+
+// --- Type inference helpers for the `nested` API ----------------------------
+
+/**
+ * Extract the row type from a Drizzle table type.
+ *
+ * Mirrors `InferRow` from `@cfast/db`, duplicated here to avoid a cross-package
+ * dependency (forms depends only on `drizzle-orm`, not on `@cfast/db`). If the
+ * table exposes `$inferSelect` (every Drizzle v0.30+ table does), its row type
+ * is extracted; otherwise we fall back to `Record<string, unknown>`.
+ *
+ * @internal
+ */
+export type InferTableRow<TTable> = TTable extends { $inferSelect: infer R }
+  ? R
+  : Record<string, unknown>;
+
+/**
+ * Derive the form key for a nested entry.
+ *
+ * Precedence:
+ * 1. Explicit `as` on the {@link NestedTableConfig}.
+ * 2. The table's runtime name (`T['_']['name']` in Drizzle's internal type).
+ * 3. `string` as a last-ditch fallback for opaque tables.
+ *
+ * @internal
+ */
+export type NestedKey<TConfig> = TConfig extends { as: infer A extends string }
+  ? A
+  : TConfig extends { table: infer T }
+    ? T extends { _: { name: infer N extends string } }
+      ? N
+      : string
+    : string;
+
+/**
+ * Merge a tuple of {@link NestedTableConfig} entries into a `{ [key]: Row[] }`
+ * object, using {@link NestedKey} as the key for each entry.
+ *
+ * @internal
+ */
+export type InferNestedValues<TNested extends readonly NestedTableConfig[]> = {
+  [K in TNested[number] as NestedKey<K>]: Array<InferTableRow<K["table"]>>;
+};
+
+/**
+ * The fully inferred form value shape for an {@link AutoForm} given a parent
+ * table and a tuple of nested configs.
+ *
+ * `InferAutoFormValues<typeof recipes, [{ table: typeof ingredients; foreignKey: "recipeId" }]>`
+ * resolves to
+ * `InferTableRow<typeof recipes> & { ingredients: Array<InferTableRow<typeof ingredients>> }`.
+ */
+export type InferAutoFormValues<
+  TTable extends Table,
+  TNested extends readonly NestedTableConfig[] | undefined,
+> = TNested extends readonly NestedTableConfig[]
+  ? InferTableRow<TTable> & InferNestedValues<TNested>
+  : InferTableRow<TTable>;
 
 /**
  * Props for the {@link FormPluginComponents.childTable} component.
