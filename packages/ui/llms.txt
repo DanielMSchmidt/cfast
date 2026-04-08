@@ -74,9 +74,41 @@ useColumnInference(table: Record<string, unknown> | undefined, columns?: string[
 ```typescript
 DateField, BooleanField, NumberField, TextField,
 EmailField, UrlField, ImageField, FileField,
-RelationField, JsonField
+RelationField, JsonField, UploadField
 fieldForColumn(columnMeta): ComponentType  // maps Drizzle column type to field
 fieldsForTable(table): Record<string, ComponentType>  // field map for whole table
+```
+
+### UploadField (headless)
+
+Controlled multi-file upload field built on `@cfast/storage`'s `POST
+/uploads/:filetype` route. Unlike `DropZone` (which wraps a single
+`useUpload` call), `UploadField` is form-friendly: it owns its own upload
+state, enforces `maxFiles`, and reports successful uploads through the
+controlled `value` / `onChange` pair.
+
+```tsx
+import { UploadField } from "@cfast/ui";
+
+<UploadField
+  filetype="productImages"       // matches defineStorage key
+  basePath="/uploads"             // matches storageRoutes() mount path
+  multiple                        // allow multiple files
+  maxFiles={10}                   // hard cap (default 1 when !multiple)
+  accept="image/*"                // forwarded to <input accept>
+  maxSize={5 * 1024 * 1024}       // optional client-side byte cap
+  value={keys}                    // string[] of R2 keys (controlled)
+  onChange={setKeys}              // fires with updated keys
+  onError={(file) => ...}          // per-file upload error callback
+/>
+```
+
+Tests mock the POST endpoint by passing a custom `uploader` prop instead
+of stubbing `XMLHttpRequest` globally. The `uploader` signature is:
+
+```ts
+(file: File, opts: { url: string; onProgress: (pct: number) => void }) =>
+  Promise<{ key: string; size: number; type: string; url?: string }>
 ```
 
 ### Plugin API

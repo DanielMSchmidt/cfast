@@ -1075,6 +1075,12 @@ importers:
 
   packages/forms:
     devDependencies:
+      '@cfast/joy':
+        specifier: workspace:*
+        version: link:../joy
+      '@cfast/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@emotion/react':
         specifier: ^11
         version: 11.14.0(@types/react@19.2.14)(react@19.2.4)

@@ -24,6 +24,7 @@ export { BulkActionBar } from "./bulk-action-bar.js";
 export { DropZone } from "./drop-zone.js";
 export { ImagePreview } from "./image-preview.js";
 export { FileList } from "./file-list.js";
+export { UploadField } from "./upload-field.js";
 
 // Composite views
 export { ListView } from "./list-view.js";

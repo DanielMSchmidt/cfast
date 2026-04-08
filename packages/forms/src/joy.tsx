@@ -8,6 +8,8 @@ import Box from "@mui/joy/Box";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
+import { useWatch } from "react-hook-form";
+import { UploadField as JoyUploadField } from "@cfast/joy";
 import { createFormPlugin } from "./plugin";
 import { createAutoForm } from "./auto-form";
 import type {
@@ -76,6 +78,77 @@ function JoyCheckbox({ name, label, readOnly, error, register }: FieldComponentP
   return (
     <FormControl error={!!error}>
       <Checkbox id={name} label={label} {...register(name)} disabled={readOnly} />
+      {error && <FormHelperText>{error}</FormHelperText>}
+    </FormControl>
+  );
+}
+
+/**
+ * Form-aware Joy upload field. The headless `UploadField` component is
+ * controlled (`value` / `onChange`), so we bridge it into `react-hook-form`
+ * by subscribing to the form value via `useWatch` and writing back through
+ * `setValue`. The metadata blob produced by `introspect.ts` (filetype,
+ * basePath, multiple, etc.) is forwarded so the rendered field knows
+ * which storage filetype to POST to.
+ *
+ * Single-value upload columns are stored as a string in the form payload
+ * (matching the underlying `text("image_key")` Drizzle column), while
+ * multi-value columns flow through as `string[]`. The bridge converts
+ * between the two so the upstream form schema stays unchanged.
+ *
+ * @internal
+ */
+function JoyUpload({
+  name,
+  label,
+  required,
+  readOnly,
+  error,
+  upload,
+  form,
+}: FieldComponentProps) {
+  // `useWatch` must be called unconditionally to satisfy rules-of-hooks —
+  // we pass `control: undefined` when the form is missing so the hook is
+  // a no-op but still runs on every render.
+  const raw = useWatch({ control: form?.control, name });
+  if (!upload || !form) {
+    return (
+      <FormControl error={!!error}>
+        <FormLabel>{label}</FormLabel>
+        <Typography level={"body-sm" as const} color={"danger" as const}>
+          Upload field is missing storage metadata
+        </Typography>
+      </FormControl>
+    );
+  }
+  const value: string[] = Array.isArray(raw)
+    ? (raw as string[])
+    : raw == null || raw === ""
+      ? []
+      : [String(raw)];
+  return (
+    <FormControl error={!!error} required={required}>
+      <FormLabel>{label}</FormLabel>
+      <JoyUploadField
+        filetype={upload.filetype}
+        basePath={upload.basePath}
+        multiple={upload.multiple}
+        maxFiles={upload.maxFiles}
+        accept={upload.accept}
+        maxSize={upload.maxSize}
+        disabled={readOnly}
+        value={value}
+        onChange={(next) => {
+          // Single-file columns flatten back to a string (or empty string)
+          // so the saved Drizzle column stays a `text`. Multi-file columns
+          // pass through unchanged.
+          form.setValue(name, upload.multiple ? next : (next[0] ?? ""), {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true,
+          });
+        }}
+      />
       {error && <FormHelperText>{error}</FormHelperText>}
     </FormControl>
   );
@@ -242,6 +315,7 @@ const joyPlugin = createFormPlugin({
     numberInput: JoyNumberInput,
     select: JoySelect,
     checkbox: JoyCheckbox,
+    upload: JoyUpload,
     form: JoyFormWrapper,
     submitButton: JoySubmitButton,
     childTable: JoyChildTable,

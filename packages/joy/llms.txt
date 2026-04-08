@@ -32,6 +32,7 @@ Use `@cfast/joy` when you want MUI Joy UI styled implementations of `@cfast/ui` 
 - `DropZone` -- drag-and-drop upload. Integrates with `@cfast/storage`'s `useUpload()`.
 - `ImagePreview` -- displays image from storage with signed URL handling.
 - `FileList` -- list of uploaded files with download/delete.
+- `UploadField` -- controlled multi-file upload field. Joy-styled variant of `@cfast/ui`'s `UploadField` with dashed drop zone, per-file `<LinearProgress>`, and inline image previews. Reports the set of uploaded R2 keys through `value` / `onChange` so it drops straight into `react-hook-form` — or is picked up automatically by `@cfast/forms/joy` when a Drizzle column uses the `upload()` helper.
 
 ### Composite views
 - `ListView` -- full page: title + filters + data table + pagination + empty state + bulk actions.

@@ -12,6 +12,7 @@ Use this package when you have a Drizzle SQLite table and want a working form wi
 - **Validation via `v()`**: Attach validation rules directly to Drizzle column builders. The rules are stored as metadata and read back during introspection.
 - **Parent-child forms**: Declare nested child tables via the `nested` prop — each becomes a `useFieldArray` with add / remove / reorder controls, full schema-derived validation, and `min` / `max` constraints. The values type is inferred from `table` + each `nested[].table`, so `onSubmit` is fully typed without manual generics. See the "Parent-child tables" section below. (The old `children: Record<string, ChildTableConfig>` prop is deprecated — see "Migration".)
 - **Computed fields**: Declare derived fields via `fields[name].computed` — they auto-recalculate when any dependency (including child row values) changes. Typically paired with `readOnly: true`.
+- **Upload columns**: Decorate a `text` column with `upload(column, { filetype, ... })` and AutoForm renders it as an `UploadField` bound to `@cfast/storage`'s `POST /uploads/:filetype` route. Single-value columns flatten to a string on submit, multi-value columns submit a `string[]` of R2 keys.
 
 ## API Reference
 
@@ -30,6 +31,23 @@ function createResolver(
 // Attach validation rules to a Drizzle column builder
 function v<T extends ColumnBuilderBase>(builder: T, rules: ValidationRules): T;
 
+// Mark a text column as an upload-key column. The metadata is read back
+// during introspection so AutoForm picks the plugin's `upload` component
+// instead of a plain text input.
+function upload<T extends ColumnBuilderBase>(
+  builder: T,
+  metadata: UploadFieldMetadata,
+): T;
+
+type UploadFieldMetadata = {
+  filetype: string;     // name registered in defineStorage
+  basePath?: string;    // defaults to "/uploads"
+  multiple?: boolean;   // defaults to false
+  maxFiles?: number;    // hard cap when multiple
+  accept?: string;      // <input accept> string
+  maxSize?: number;     // client-side byte cap
+};
+
 // Register UI components as a plugin
 function createFormPlugin(config: { components: FormPluginComponents }): FormPlugin;
 
@@ -38,13 +56,14 @@ function createAutoForm(plugin: FormPlugin): React.ComponentType<AutoFormProps>;
 
 type FieldDefinition = {
   name: string;           // column key
-  inputType: InputType;   // "text" | "number" | "checkbox" | "select"
+  inputType: InputType;   // "text" | "number" | "checkbox" | "select" | "upload"
   label: string;          // auto-generated from column name
   required: boolean;      // from NOT NULL
   hasDefault: boolean;
   isPrimaryKey: boolean;
   enumValues?: string[];
   validation: ValidationRules;
+  upload?: UploadFieldMetadata;  // set when column was decorated with upload()
 };
 
 type ValidationRules = {
@@ -107,6 +126,13 @@ type FieldComponentProps = {
   error?: string;
   enumValues?: string[];
   register: UseFormRegister<FieldValues>;
+  // Set when the field is an upload column — the plugin's `upload`
+  // component uses this to forward filetype/basePath/multiple to the
+  // rendered UploadField.
+  upload?: UploadFieldMetadata;
+  // Full RHF instance for components that need `setValue` / `useWatch`
+  // (e.g. the controlled upload field).
+  form?: UseFormReturn<FieldValues>;
 };
 
 type FormPluginComponents = {
@@ -118,9 +144,13 @@ type FormPluginComponents = {
   submitButton: React.ComponentType<SubmitButtonProps>;
   // Optional. If omitted, `DefaultChildTable` is used.
   childTable?: React.ComponentType<ChildTableComponentProps>;
+  // Optional. If omitted, upload columns fall back to the plain text input.
+  // `@cfast/forms/joy` ships a Joy-styled implementation that wraps
+  // `@cfast/joy`'s `UploadField`.
+  upload?: React.ComponentType<FieldComponentProps>;
 };
 
-type InputType = "text" | "number" | "checkbox" | "select";
+type InputType = "text" | "number" | "checkbox" | "select" | "upload";
 ```
 
 ### AutoForm Props
@@ -256,6 +286,49 @@ nested={[
 
 Two nested entries resolving to the same key throw at render time with a
 message prompting you to pass an explicit `as`.
+
+### File uploads
+
+Decorate a text column with `upload()` and AutoForm renders it as an
+`UploadField` wired to `@cfast/storage`'s `POST /uploads/:filetype` route:
+
+```typescript
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { upload } from "@cfast/forms";
+import { AutoForm } from "@cfast/forms/joy";
+
+export const products = sqliteTable("products", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  imageKey: upload(text("image_key"), {
+    filetype: "productImages",  // matches defineStorage key
+    basePath: "/uploads",
+    accept: "image/*",
+    maxSize: 5 * 1024 * 1024,
+  }),
+  // or multi-file column storing a JSON-encoded string[]:
+  gallery: upload(text("gallery"), {
+    filetype: "productImages",
+    multiple: true,
+    maxFiles: 10,
+    accept: "image/*",
+  }),
+});
+
+// That's it — AutoForm auto-detects the upload metadata and renders a
+// Joy-styled UploadField inside the form.
+<AutoForm table={products} mode="create" onSubmit={handleSubmit} />;
+```
+
+Single-value upload columns store (and submit) the R2 key as a plain
+string, so your Drizzle column stays `text("image_key")`. Multi-value
+columns submit a `string[]` of keys — typically you'd store that as
+`text("gallery", { mode: "json" })`.
+
+The built-in `@cfast/forms/joy` plugin ships an upload component that
+bridges the controlled `UploadField` API to `react-hook-form` via
+`useWatch` + `setValue`. Custom plugins should provide their own
+`components.upload` slot or let it fall back to a plain text input.
 
 ### Computed fields
 ```typescript
