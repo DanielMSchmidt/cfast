@@ -222,6 +222,28 @@ describe("generateViteConfig", () => {
     expect(result).toContain(`from "./vite-plugin-cfast-routes"`);
     expect(result).toContain("cfastRoutesCheckPlugin()");
   });
+
+  it("dedupes react and react-dom by default", () => {
+    const result = generateViteConfig(baseConfig);
+    expect(result).toMatch(/dedupe:\s*\[[^\]]*"react"/);
+    expect(result).toMatch(/dedupe:\s*\[[^\]]*"react-dom"/);
+  });
+
+  it("dedupes @emotion/react when joy ui is enabled (issue #187)", () => {
+    const config = {
+      ...baseConfig,
+      features: { ...baseConfig.features, ui: true },
+      uiLibrary: "joy" as const,
+    };
+    const result = generateViteConfig(config);
+    expect(result).toMatch(/dedupe:\s*\[[^\]]*"@emotion\/react"/);
+    expect(result).toMatch(/dedupe:\s*\[[^\]]*"@emotion\/styled"/);
+  });
+
+  it("does NOT dedupe @emotion/react when joy ui is disabled", () => {
+    const result = generateViteConfig(baseConfig);
+    expect(result).not.toContain("@emotion/react");
+  });
 });
 
 describe("generateRootTsx", () => {

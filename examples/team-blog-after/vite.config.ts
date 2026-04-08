@@ -5,6 +5,13 @@ import { defineConfig } from "vite";
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
+    // Force a single instance of @emotion/react across SSR and client
+    // bundles so MUI Joy + React Router HMR don't end up with two emotion
+    // caches (which manifests as a "Cannot read properties of null
+    // (reading 'useContext')" error from JoyButton component={Link} after
+    // navigation, plus an emotion warning about "multiple builds of the
+    // same version").
+    dedupe: ["@emotion/react", "@emotion/styled", "react", "react-dom"],
   },
   optimizeDeps: {
     // Pre-bundle workspace packages used by routes loaded via client-side
