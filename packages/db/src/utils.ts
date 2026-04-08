@@ -1,15 +1,11 @@
 // `node:async_hooks` is provided by the Workers runtime under the
-// `nodejs_compat` flag and by Node.js natively. We avoid depending on
-// `@types/node` here (which would drag Node's full global shape into a
-// Workers-targeted package) and instead declare the narrow symbol we need.
-// @ts-expect-error -- `node:async_hooks` has no types without @types/node,
-//  but the runtime is guaranteed under the nodejs_compat flag.
-import { AsyncLocalStorage as AsyncLocalStorageImpl } from "node:async_hooks";
-type AsyncLocalStorageCtor = new <T>() => {
-  getStore(): T | undefined;
-  run<R>(store: T, fn: () => R): R;
-};
-const AsyncLocalStorage: AsyncLocalStorageCtor = AsyncLocalStorageImpl as unknown as AsyncLocalStorageCtor;
+// `nodejs_compat` flag and by Node.js natively. The narrow ambient
+// declaration in `node-async-hooks.d.ts` keeps us from pulling in
+// `@types/node` (which would drag Node's full global shape into a
+// Workers-targeted package) while staying compatible with environments
+// that DO already have `@types/node` available (e.g. the docs build via
+// starlight-typedoc).
+import { AsyncLocalStorage } from "node:async_hooks";
 import { and, or } from "drizzle-orm";
 import type { SQL, SQLWrapper } from "drizzle-orm";
 import type {
