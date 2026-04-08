@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/ui-v0.2.1...@cfast/ui-v0.3.0) (2026-04-08)
+
+
+### Features
+
+* UploadField component for @cfast/ui + @cfast/joy + AutoForm ([#204](https://github.com/DanielMSchmidt/cfast/issues/204)) ([d4e3ca3](https://github.com/DanielMSchmidt/cfast/commit/d4e3ca38fc993feda15fdc4e0e7c89e26ad6b4c9))
+
+
+### Bug Fixes
+
+* convert cross-package @cfast/* deps to peerDependencies (closes [#173](https://github.com/DanielMSchmidt/cfast/issues/173)) ([#200](https://github.com/DanielMSchmidt/cfast/issues/200)) ([bee1d01](https://github.com/DanielMSchmidt/cfast/commit/bee1d01554647281670f270af0b1a92a892b6f08))
+
 ## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/ui-v0.2.0...@cfast/ui-v0.2.1) (2026-04-07)
 
 

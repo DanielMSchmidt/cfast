@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.3.0...@cfast/permissions-v0.4.0) (2026-04-08)
+
+
+### Features
+
+* **permissions:** dual string/object subjects with runtime resolution (closes [#146](https://github.com/DanielMSchmidt/cfast/issues/146) [#175](https://github.com/DanielMSchmidt/cfast/issues/175) [#177](https://github.com/DanielMSchmidt/cfast/issues/177)) ([#198](https://github.com/DanielMSchmidt/cfast/issues/198)) ([bf204a0](https://github.com/DanielMSchmidt/cfast/commit/bf204a07b91b774da49902009804a28f0977ad47))
+
 ## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.2.0...@cfast/permissions-v0.3.0) (2026-04-07)
 
 

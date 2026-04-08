@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.3.0...@cfast/auth-v0.4.0) (2026-04-08)
+
+
+### Features
+
+* **auth:** passkey test helper via Playwright virtual authenticator (closes [#178](https://github.com/DanielMSchmidt/cfast/issues/178)) ([#206](https://github.com/DanielMSchmidt/cfast/issues/206)) ([e77c542](https://github.com/DanielMSchmidt/cfast/commit/e77c542749db9202a95e4f22ce8357c0323d53a2))
+
+
+### Bug Fixes
+
+* **auth,email,admin:** six papercut fixes ([#151](https://github.com/DanielMSchmidt/cfast/issues/151) [#154](https://github.com/DanielMSchmidt/cfast/issues/154) [#155](https://github.com/DanielMSchmidt/cfast/issues/155) [#156](https://github.com/DanielMSchmidt/cfast/issues/156) [#160](https://github.com/DanielMSchmidt/cfast/issues/160) [#161](https://github.com/DanielMSchmidt/cfast/issues/161)) ([#207](https://github.com/DanielMSchmidt/cfast/issues/207)) ([b0b67fa](https://github.com/DanielMSchmidt/cfast/commit/b0b67fa3d144a5a1f57e4fb03c7ca329cf33d9eb))
+* **auth:** ship impersonation_logs schema + graceful fallback when table missing (closes [#172](https://github.com/DanielMSchmidt/cfast/issues/172)) ([#203](https://github.com/DanielMSchmidt/cfast/issues/203)) ([5d968a3](https://github.com/DanielMSchmidt/cfast/commit/5d968a3f5adf2afbd1817402c5716e09bdbbd4a0))
+* convert cross-package @cfast/* deps to peerDependencies (closes [#173](https://github.com/DanielMSchmidt/cfast/issues/173)) ([#200](https://github.com/DanielMSchmidt/cfast/issues/200)) ([bee1d01](https://github.com/DanielMSchmidt/cfast/commit/bee1d01554647281670f270af0b1a92a892b6f08))
+
 ## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.2.2...@cfast/auth-v0.3.0) (2026-04-07)
 
 

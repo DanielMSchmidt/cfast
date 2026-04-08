@@ -1,6 +1,6 @@
 {
   "name": "@cfast/email",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Plugin-based email for Cloudflare Workers with react-email rendering",
   "keywords": [
     "cfast",

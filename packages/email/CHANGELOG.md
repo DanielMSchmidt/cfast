@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/email-v0.1.1...@cfast/email-v0.1.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **auth,email,admin:** six papercut fixes ([#151](https://github.com/DanielMSchmidt/cfast/issues/151) [#154](https://github.com/DanielMSchmidt/cfast/issues/154) [#155](https://github.com/DanielMSchmidt/cfast/issues/155) [#156](https://github.com/DanielMSchmidt/cfast/issues/156) [#160](https://github.com/DanielMSchmidt/cfast/issues/160) [#161](https://github.com/DanielMSchmidt/cfast/issues/161)) ([#207](https://github.com/DanielMSchmidt/cfast/issues/207)) ([b0b67fa](https://github.com/DanielMSchmidt/cfast/commit/b0b67fa3d144a5a1f57e4fb03c7ca329cf33d9eb))
+
 ## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/email-v0.1.0...@cfast/email-v0.1.1) (2026-03-22)
 
 

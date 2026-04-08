@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.2.3...@cfast/admin-v0.3.0) (2026-04-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* **admin:** `RowAction.action` handlers now require a third `ctx` parameter. Add `ctx` to your handler signature even if you don't use it to avoid TS errors:
+
+### Features
+
+* **admin:** row action callbacks receive auth context ([#197](https://github.com/DanielMSchmidt/cfast/issues/197)) ([3d1561c](https://github.com/DanielMSchmidt/cfast/commit/3d1561c8279665f870571949192a23a2aeac3e1e)), closes [#152](https://github.com/DanielMSchmidt/cfast/issues/152) [#179](https://github.com/DanielMSchmidt/cfast/issues/179)
+* **db:** ship db.transaction() with callback API (closes [#144](https://github.com/DanielMSchmidt/cfast/issues/144)) ([#199](https://github.com/DanielMSchmidt/cfast/issues/199)) ([b0e1273](https://github.com/DanielMSchmidt/cfast/commit/b0e1273eecfdbf1f2c9fa64219b7e4e0aedff86f))
+
+
+### Bug Fixes
+
+* **auth,email,admin:** six papercut fixes ([#151](https://github.com/DanielMSchmidt/cfast/issues/151) [#154](https://github.com/DanielMSchmidt/cfast/issues/154) [#155](https://github.com/DanielMSchmidt/cfast/issues/155) [#156](https://github.com/DanielMSchmidt/cfast/issues/156) [#160](https://github.com/DanielMSchmidt/cfast/issues/160) [#161](https://github.com/DanielMSchmidt/cfast/issues/161)) ([#207](https://github.com/DanielMSchmidt/cfast/issues/207)) ([b0b67fa](https://github.com/DanielMSchmidt/cfast/commit/b0b67fa3d144a5a1f57e4fb03c7ca329cf33d9eb))
+* convert cross-package @cfast/* deps to peerDependencies (closes [#173](https://github.com/DanielMSchmidt/cfast/issues/173)) ([#200](https://github.com/DanielMSchmidt/cfast/issues/200)) ([bee1d01](https://github.com/DanielMSchmidt/cfast/commit/bee1d01554647281670f270af0b1a92a892b6f08))
+* framework debt cleanup bundle ([#211](https://github.com/DanielMSchmidt/cfast/issues/211)) ([d1a8e78](https://github.com/DanielMSchmidt/cfast/commit/d1a8e785ed3b1b317cef43c6dd136fe81c2f2339))
+
 ## [0.2.3](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.2.2...@cfast/admin-v0.2.3) (2026-04-07)
 
 

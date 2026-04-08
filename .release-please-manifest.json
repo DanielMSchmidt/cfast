@@ -1,16 +1,16 @@
 {
-  "packages/actions": "0.1.1",
-  "packages/admin": "0.2.3",
-  "packages/auth": "0.3.0",
-  "packages/core": "0.1.2",
-  "packages/create-cfast": "0.2.2",
-  "packages/db": "0.3.0",
-  "packages/email": "0.1.1",
+  "packages/actions": "0.1.2",
+  "packages/admin": "0.3.0",
+  "packages/auth": "0.4.0",
+  "packages/core": "0.1.3",
+  "packages/create-cfast": "0.3.0",
+  "packages/db": "0.4.0",
+  "packages/email": "0.1.2",
   "packages/env": "0.1.1",
-  "packages/forms": "0.2.0",
-  "packages/joy": "0.1.1",
+  "packages/forms": "0.3.0",
+  "packages/joy": "0.2.0",
   "packages/pagination": "0.2.0",
-  "packages/permissions": "0.3.0",
-  "packages/storage": "0.1.0",
-  "packages/ui": "0.2.1"
+  "packages/permissions": "0.4.0",
+  "packages/storage": "0.2.0",
+  "packages/ui": "0.3.0"
 }

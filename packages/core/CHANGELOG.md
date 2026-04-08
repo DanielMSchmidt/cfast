@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.2...@cfast/core-v0.1.3) (2026-04-08)
+
+
+### Bug Fixes
+
+* convert cross-package @cfast/* deps to peerDependencies (closes [#173](https://github.com/DanielMSchmidt/cfast/issues/173)) ([#200](https://github.com/DanielMSchmidt/cfast/issues/200)) ([bee1d01](https://github.com/DanielMSchmidt/cfast/commit/bee1d01554647281670f270af0b1a92a892b6f08))
+* framework debt cleanup bundle ([#211](https://github.com/DanielMSchmidt/cfast/issues/211)) ([d1a8e78](https://github.com/DanielMSchmidt/cfast/commit/d1a8e785ed3b1b317cef43c6dd136fe81c2f2339))
+
 ## [0.1.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.1...@cfast/core-v0.1.2) (2026-04-07)
 
 
