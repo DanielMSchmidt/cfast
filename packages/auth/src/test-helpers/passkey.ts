@@ -473,15 +473,22 @@ export async function addPasskeyCredential(
   })) as { authenticatorId: string };
   const authenticatorId = addAuthResult.authenticatorId;
 
-  // Register the credential against the authenticator. The CDP protocol
-  // expects the userHandle as base64, so we encode the plain userId
-  // string here. Chrome will later present this handle back to the
-  // WebAuthn JS API during `get()`, and Better Auth picks it up for the
-  // user lookup.
+  // Register the credential against the authenticator. Chrome's CDP
+  // `WebAuthn.addCredential` expects ALL byte fields (`credentialId`,
+  // `privateKey`, `userHandle`) as **standard base64 with padding**, not
+  // base64url. `generateTestPasskey()` emits the credentialId as base64url
+  // (because that's the format WebAuthn JS / Better Auth round-trips), so
+  // we normalize it back to standard base64 here. The privateKey is
+  // already standard base64. The userHandle is a plain string we
+  // base64-encode in place.
+  //
+  // Originally landed in @cfast/auth 0.4.0 with the credentialId passed
+  // through unchanged, which made the CDP call fail with `Invalid
+  // parameters` on Chromium ≥ 131. Tracked at #210.
   await session.send("WebAuthn.addCredential", {
     authenticatorId,
     credential: {
-      credentialId: options.credentialId,
+      credentialId: base64UrlToBase64(options.credentialId),
       isResidentCredential: options.isResidentCredential ?? true,
       rpId: options.rpId,
       privateKey: options.privateKey,
@@ -648,6 +655,23 @@ function base64UrlEncode(bytes: Uint8Array): string {
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
+}
+
+/**
+ * Re-pad and re-alphabet a base64url string back to standard base64. The
+ * Chrome DevTools Protocol's `WebAuthn.addCredential` API rejects the
+ * URL-safe variant with `Invalid parameters`, so we normalize on the way
+ * into CDP.
+ *
+ * Idempotent on already-standard base64 input — `+/` are passed through
+ * unchanged and existing padding is preserved.
+ *
+ * @internal
+ */
+function base64UrlToBase64(value: string): string {
+  const replaced = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padLen = (4 - (replaced.length % 4)) % 4;
+  return replaced + "=".repeat(padLen);
 }
 
 /**

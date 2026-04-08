@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   generateTestPasskey,
+  addPasskeyCredential,
   type PasskeySeedRow,
 } from "../test-helpers/passkey";
 
@@ -189,6 +190,95 @@ describe("generateTestPasskey", () => {
       challenge,
     );
     expect(ok).toBe(true);
+  });
+});
+
+describe("addPasskeyCredential", () => {
+  it("normalizes the base64url credentialId to standard base64 before sending it to CDP", async () => {
+    // Regression test for cfast issue #210: Chromium's CDP
+    // `WebAuthn.addCredential` rejects the URL-safe base64 alphabet with
+    // `Invalid parameters`. The helper must therefore convert
+    // `-` → `+`, `_` → `/`, and re-pad to a multiple of 4 before passing
+    // the credentialId through.
+    //
+    // We pin a credentialId that uses BOTH url-safe characters AND a
+    // length that requires padding so a regression on either rule fails
+    // this test.
+    const credentialId = "abc-def_ghij"; // 12 chars → needs no padding, but exercises -/_
+    const sent: Array<{ method: string; params?: Record<string, unknown> }> =
+      [];
+    const session = {
+      send: vi.fn(async (method: string, params?: Record<string, unknown>) => {
+        sent.push({ method, params });
+        if (method === "WebAuthn.addVirtualAuthenticator") {
+          return { authenticatorId: "test-auth-id" };
+        }
+        return {};
+      }),
+    };
+    const fakePage = {
+      context() {
+        return {
+          newCDPSession: async () => session,
+        };
+      },
+    };
+
+    await addPasskeyCredential(fakePage, {
+      credentialId,
+      privateKey: "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg+++",
+      rpId: "localhost",
+      userHandle: "user-x",
+    });
+
+    const addCredentialCall = sent.find(
+      (c) => c.method === "WebAuthn.addCredential",
+    );
+    expect(addCredentialCall, "addCredential call missing").toBeTruthy();
+    const credential = (addCredentialCall!.params as {
+      credential: { credentialId: string; userHandle: string };
+    }).credential;
+
+    // Standard base64 alphabet only — no `-` or `_`.
+    expect(credential.credentialId).not.toMatch(/[-_]/);
+    expect(credential.credentialId).toBe("abc+def/ghij");
+    // userHandle is also base64-encoded (not the raw "user-x" string).
+    expect(credential.userHandle).not.toBe("user-x");
+    expect(credential.userHandle).toMatch(/^[A-Za-z0-9+/=]+$/);
+  });
+
+  it("padding is added when the base64url length is not a multiple of 4", async () => {
+    // 22 chars → 22 % 4 == 2 → needs `==` of padding to round up to 24.
+    const session = {
+      send: vi.fn(async (method: string) => {
+        if (method === "WebAuthn.addVirtualAuthenticator") {
+          return { authenticatorId: "id" };
+        }
+        return {};
+      }),
+    };
+    const fakePage = {
+      context() {
+        return { newCDPSession: async () => session };
+      },
+    };
+    await addPasskeyCredential(fakePage, {
+      credentialId: "AAAAAAAAAAAAAAAAAAAAAA", // 22 chars, all zero-byte
+      privateKey: "ignored",
+      rpId: "localhost",
+      userHandle: "user-y",
+    });
+
+    const calls = session.send.mock.calls;
+    const addCredentialCall = calls.find(
+      ([method]) => method === "WebAuthn.addCredential",
+    ) as [string, Record<string, unknown>] | undefined;
+    expect(addCredentialCall).toBeTruthy();
+    const credentialId = (
+      (addCredentialCall![1] as { credential: { credentialId: string } })
+        .credential
+    ).credentialId;
+    expect(credentialId).toBe("AAAAAAAAAAAAAAAAAAAAAA==");
   });
 });
 
