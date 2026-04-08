@@ -169,11 +169,45 @@ const myProvider: EmailProvider = {
 };
 ```
 
+### Test helpers (`@cfast/email/test-helpers`)
+
+```typescript
+function renderEmail<Props>(template: ComponentType<Props>, props: Props): Promise<{ html: string; text: string }>;
+function renderEmail(element: ReactElement): Promise<{ html: string; text: string }>;
+
+type RenderedEmail = { html: string; text: string };
+```
+
+Render a react-email template to HTML + plain text **without sending**. Uses
+the exact `@react-email/render` path `createEmailClient` uses in production,
+so assertions on the helper output match what ships over the wire — and the
+test runs in CI without Mailgun credentials or network access.
+
+```typescript
+import { renderEmail } from "@cfast/email/test-helpers";
+import { MagicLinkEmail } from "~/email/templates/magic-link";
+
+test("magic link email contains the verify URL", async () => {
+  const { html, text } = await renderEmail(MagicLinkEmail, {
+    url: "https://example.com/verify?token=abc",
+  });
+  expect(html).toContain("https://example.com/verify?token=abc");
+  expect(text).toMatch(/sign in/i);
+});
+
+// Element form — useful when your template reads closure data
+const token = "closure-123";
+const { html } = await renderEmail(
+  <MagicLinkEmail url={`https://example.com/verify?token=${token}`} />
+);
+```
+
 ## Package exports
 ```
-@cfast/email         -> createEmailClient, EmailDeliveryError, types
-@cfast/email/mailgun -> mailgun
-@cfast/email/console -> console
+@cfast/email               -> createEmailClient, EmailDeliveryError, types
+@cfast/email/mailgun       -> mailgun
+@cfast/email/console       -> console
+@cfast/email/test-helpers  -> renderEmail
 ```
 
 ## Integration
