@@ -11,7 +11,7 @@ Use `@cfast/db` whenever you need to read or write a D1 database in a cfast app.
 - **Operations are lazy.** Every `db.query/insert/update/delete` call returns an `Operation<TResult>` with `.permissions` (inspectable immediately) and `.run(params)` (executes with permission checks). Nothing touches D1 until you call `.run()`.
 - **Permission checks are structural.** `.run()` always checks the user's grants before executing SQL. Row-level WHERE clauses from grants are injected automatically.
 - **Cross-table grants run prerequisite lookups.** When a grant declares a `with` map (see `@cfast/permissions`), `@cfast/db` resolves those lookups against an unsafe-mode handle **before** running the main query, caches the results for the lifetime of the per-request `Db`, and threads them into the `where` clause as its third argument. A single lookup runs at most once per request even across many queries.
-- **One Db per request.** `createDb()` captures the user at creation time. Never share a `Db` across requests. The per-request grant lookup cache lives on the `Db` instance, so creating a fresh one each request gives every request a fresh cache.
+- **One Db per request.** `createDb()` captures the user at creation time. Never share a `Db` across requests. The per-request grant lookup cache defaults to a cache owned by the `Db` instance, so creating a fresh one each request gives every request a fresh cache. If you must reuse a single `Db` across logical requests (typically tests or long-lived workers) wrap each request in `runWithLookupCache()` to get a fresh ALS-scoped cache per logical request.
 - **`db.unsafe()` is the only escape hatch.** Returns a `Db` that skips all permission checks. Greppable via `git grep '.unsafe()'`. The unsafe sibling shares the per-request lookup cache so lookups dispatched through it (the `LookupDb` passed to grant `with` functions) never duplicate work.
 
 ## API Reference
@@ -498,6 +498,39 @@ export async function loader({ context, request }) {
   return { myRecipes, popular };
 }
 ```
+
+### Reusing a Db across logical requests (tests, long-lived workers)
+
+`createDb()` always works and you should keep the "one Db per request" default. If
+you need to reuse a single `Db` across multiple logical requests (commonly in
+tests that insert new grants mid-run and expect subsequent queries to see them)
+wrap each logical request in `runWithLookupCache()`:
+
+```typescript
+import { createDb, runWithLookupCache } from "@cfast/db";
+
+// Shared Db reused across the whole test file.
+const db = createDb({ d1, schema, grants, user, cache: false });
+
+test("new grants become visible to subsequent queries", async () => {
+  await runWithLookupCache(async () => {
+    await db.insert(friendGrants).values({ grantee: "u1", target: "u2" }).run();
+    // The next query starts in the same scope, so it sees a *fresh* cache
+    // and re-runs the `with` lookup with the updated grant row.
+  });
+
+  await runWithLookupCache(async () => {
+    const visible = await db.query(recipes).findMany().run();
+    expect(visible).toContainEqual(expect.objectContaining({ authorId: "u2" }));
+  });
+});
+```
+
+`runWithLookupCache(fn, cache?)` establishes an `AsyncLocalStorage` scope;
+every `@cfast/db` operation inside `fn` (and any promises it starts) will
+prefer the scoped cache over the `Db`-owned fallback. Pass an explicit
+`LookupCache` instance as the second argument if you want to share a cache
+across multiple sibling `runWithLookupCache` calls.
 
 ## Integration
 
