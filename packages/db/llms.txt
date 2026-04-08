@@ -558,6 +558,58 @@ export const folders = sqliteTable("folders", {
 
 Use `AnyPgColumn` / `AnyMySqlColumn` for other dialects. The same pattern applies to any self-reference (comment threads, org charts, category trees).
 
+## Testing
+
+### `node:sqlite` with vitest 4 + Node 22+
+
+Vitest 4 auto-externalises modules from Node's `builtinModules` list, but
+`node:sqlite` is still flagged as experimental and is **not** included in that
+list. The first time a test imports it (directly, or transitively via a local
+in-memory D1 stand-in), Vite tries to bundle it and crashes with:
+
+```
+Cannot bundle Node.js built-in 'node:sqlite'
+```
+
+Explicitly externalise the module in your `vitest.config.ts`:
+
+```ts
+// vitest.config.ts
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    environment: "node",
+    // Prevent vitest from trying to bundle experimental Node builtins.
+    server: {
+      deps: {
+        external: [/^node:sqlite$/],
+      },
+    },
+  },
+});
+```
+
+If you need more than one experimental builtin (e.g. `node:test` helpers),
+add each as a separate regex in the `external` array.
+
+### Long cold-import times
+
+When a test suite uses `@cfast/admin`, vitest's first import of
+`~/admin.server` can take several seconds even with the server-only entry
+(`@cfast/admin/server`), because drizzle-orm's SQLite core is large. If the
+default 5s test timeout trips during initial discovery, bump it explicitly
+for admin-using suites:
+
+```ts
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    testTimeout: 30000,
+  },
+});
+```
+
 ## Common Mistakes
 
 - **Forgetting `.run()`** -- Operations are lazy. `db.query(t).findMany()` returns an Operation, not results. You must call `.run()`.
