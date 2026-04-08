@@ -855,6 +855,130 @@ export type JsonFieldProps = BaseFieldProps & {
   collapsed?: boolean;
 };
 
+/**
+ * Per-file upload state tracked internally by {@link UploadFieldProps}.
+ *
+ * Each entry corresponds to a file the user selected (or dropped) into the
+ * field. Once a file finishes uploading successfully its `key` is appended
+ * to the controlled `value` array and the entry can be removed from this
+ * tracker. Failed uploads stay in the tracker so the user can see (and
+ * dismiss) the error inline without losing previously uploaded files.
+ */
+export type UploadFieldFile = {
+  /** Stable id for React keying / tracking across renders. */
+  id: string;
+  /** Display name (taken from `File.name`). */
+  name: string;
+  /** File size in bytes. */
+  size: number;
+  /** MIME type as reported by the browser. */
+  type: string;
+  /** Current upload progress as a 0-100 percentage. */
+  progress: number;
+  /** Lifecycle status. */
+  status: "pending" | "uploading" | "success" | "error";
+  /** Server-side R2 key, only set after a successful upload. */
+  key?: string;
+  /** Inline error message if `status === "error"`. */
+  error?: string;
+};
+
+/**
+ * Props for the headless {@link UploadField} component.
+ *
+ * `UploadField` is a controlled, multi-file upload widget built on the
+ * opinionated `POST /uploads/:filetype` route exposed by `@cfast/storage`.
+ * Unlike {@link DropZoneProps} (which only wraps a single `useUpload`
+ * result), `UploadField` is the form-friendly variant: it owns its own
+ * upload state, integrates with `react-hook-form` via the controlled
+ * `value`/`onChange` pair, enforces `maxFiles`, and surfaces per-file
+ * progress + per-file error reporting.
+ *
+ * The field reports its current value as `string[]` of R2 keys — exactly
+ * the shape you would store on a Drizzle column like `text("image_key")`.
+ *
+ * @see {@link DropZoneProps} for the lower-level single-upload primitive.
+ * @see {@link UploadFieldFile} for the per-file tracker entries.
+ */
+export type UploadFieldProps = BaseFieldProps & {
+  /**
+   * The filetype name registered in `defineStorage`. Used as the last
+   * segment of the upload POST URL — `${basePath}/${filetype}`.
+   */
+  filetype: string;
+  /**
+   * Mount path of the storage routes from `@cfast/storage/plugin`.
+   * Defaults to `"/uploads"`. Must match the `basePath` used in
+   * `storageRoutes()` / `createStorageRouteHandlers`.
+   */
+  basePath?: string;
+  /**
+   * Whether the field accepts multiple files. When `false` (default), the
+   * controlled value still flows through as `string[]` but only ever
+   * contains zero or one entries.
+   */
+  multiple?: boolean;
+  /**
+   * Hard cap on the number of files the user is allowed to upload through
+   * this field. Files dropped or selected past the cap are rejected with
+   * an inline error and never start uploading. Defaults to `1` when
+   * `multiple` is `false`, otherwise unlimited.
+   */
+  maxFiles?: number;
+  /**
+   * The HTML `accept` string passed to the underlying `<input type="file">`
+   * (e.g. `"image/*"` or `"image/png,image/webp"`). This should match the
+   * MIME types declared on the corresponding storage filetype so the
+   * browser-side picker can pre-filter selections.
+   */
+  accept?: string;
+  /**
+   * Optional client-side max size in bytes. Files larger than this are
+   * rejected before any bytes are sent. Server-side validation is still
+   * the source of truth — this is only a hint to the user.
+   */
+  maxSize?: number;
+  /**
+   * Controlled array of R2 keys. When `multiple` is `false`, treat this
+   * as a single-element array (the first entry is the active value).
+   */
+  value?: string[];
+  /**
+   * Called with the new array of keys whenever the set of successfully
+   * uploaded files changes — after a successful upload, after a removal,
+   * etc. Wire this to your `react-hook-form` `setValue` callback or to
+   * a controlled component's local state.
+   */
+  onChange?: (keys: string[]) => void;
+  /**
+   * Called whenever a per-file upload fails (network error, validation
+   * error, server-side rejection). Receives the file tracker entry — the
+   * `error` field on the entry is the rendered message.
+   */
+  onError?: (file: UploadFieldFile) => void;
+  /**
+   * Whether the field is disabled. Disabled fields render their existing
+   * value but don't accept new files and don't render the drop zone in
+   * an interactive state.
+   */
+  disabled?: boolean;
+  /**
+   * Custom uploader implementation. Defaults to a built-in `XMLHttpRequest`
+   * uploader that hits `${basePath}/${filetype}`. Override this in tests
+   * (or in apps that wrap the upload in extra logic) — both `@cfast/ui`'s
+   * own tests and the Joy variant's tests pass a mock through this prop
+   * instead of stubbing `XMLHttpRequest` globally.
+   */
+  uploader?: (
+    file: File,
+    options: {
+      url: string;
+      onProgress: (percent: number) => void;
+      signal?: AbortSignal;
+    },
+  ) => Promise<{ key: string; size: number; type: string; url?: string }>;
+};
+
 // --- Toast ---
 
 /**

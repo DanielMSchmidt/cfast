@@ -18,7 +18,8 @@ export { AvatarWithInitials, getInitials } from "./components/avatar-with-initia
 export {
   DateField, BooleanField, NumberField, TextField,
   EmailField, UrlField, ImageField, FileField,
-  RelationField, JsonField, fieldForColumn, fieldsForTable,
+  RelationField, JsonField, UploadField,
+  fieldForColumn, fieldsForTable,
 } from "./fields/index.js";
 export { RoleBadge } from "./components/role-badge.js";
 export { ImpersonationBanner } from "./components/impersonation-banner.js";
@@ -88,6 +89,8 @@ export type {
   FileFieldProps,
   RelationFieldProps,
   JsonFieldProps,
+  UploadFieldProps,
+  UploadFieldFile,
   ToastType,
   ToastOptions,
   ToastApi,

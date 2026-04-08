@@ -21,4 +21,5 @@ export { ImageField } from "./image-field.js";
 export { FileField } from "./file-field.js";
 export { RelationField } from "./relation-field.js";
 export { JsonField } from "./json-field.js";
+export { UploadField } from "./upload-field.js";
 export { fieldForColumn, fieldsForTable } from "./field-for-column.js";
