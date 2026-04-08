@@ -1,16 +1,19 @@
 # @cfast/storage
 
-> Type-safe file uploads to Cloudflare R2. Define file schemas like database schemas.
+> Type-safe file uploads to Cloudflare R2. Define file schemas like database schemas, then drop in opinionated routes for upload + proxy + signed URLs.
 
 ## When to use
 
-Use `@cfast/storage` when your cfast app needs file uploads, downloads, or signed URLs with R2. It handles multipart parsing, MIME/size validation, and automatic multipart uploads for large files.
+Use `@cfast/storage` when your cfast app needs file uploads, downloads, or signed URLs with R2. It handles multipart parsing, MIME/size validation, automatic multipart uploads for large files, and ships ready-made React Router routes (`GET /uploads/*` proxy, `POST /uploads/:filetype` upload) so you do not need to hand-roll any action handlers.
 
 ## Key concepts
 
 - **Schema-driven.** Declare file types with `filetype()`, group them with `defineStorage()`. Each file type has accepted MIME types, max size, bucket, and key generation function.
+- **Per-mime size limits.** The per-mime form of `filetype()` accepts a record of named MIME groups, each with its own `maxSize`, so images and PDFs can live under one filetype with different ceilings.
 - **Validated before upload.** Content-Type and Content-Length headers are checked before reading the body. Magic bytes verify the real MIME type. Byte count is verified during streaming.
 - **Multipart automatic.** Files above `multipartThreshold` (default 5MB) use R2 multipart upload. Small files use direct PUT. The caller does not choose.
+- **Opinionated routes.** `storageRoutes()` + `createStorageRouteHandlers()` mount a splat route that proxies GETs (with optional `ownerCheck` or signed-token gating) and handles POST uploads in one file.
+- **File overload.** `storage.handle(name, file, ctx)` accepts a pre-extracted `File`, so an action that needs to read both a file and structured form fields can parse `request.formData()` exactly once.
 - **Client-side validation mirrors server.** `useUpload` validates MIME type and file size from the same schema before sending any bytes.
 
 ## API Reference
@@ -42,11 +45,41 @@ Applies defaults (`uploadable: true`, `replace: false`, `multipartThreshold: "5m
 
 Key function signature: `(file: { name, extension }, ctx: { user, input }) => string`
 
+**Single-limit form** — one `accept` list + one `maxSize`:
+
+```typescript
+filetype({
+  bucket: "UPLOADS",
+  accept: ["image/jpeg", "image/png"],
+  maxSize: "2mb",
+  key: (file, ctx) => `avatars/${ctx.user.id}/${file.name}`,
+});
+```
+
+**Per-mime form** — named MIME groups, each with its own `maxSize`:
+
+```typescript
+filetype(
+  {
+    image: { mimes: ["image/jpeg", "image/png", "image/webp"], maxSize: "10mb" },
+    document: { mimes: ["application/pdf"], maxSize: "50mb" },
+  },
+  {
+    bucket: "UPLOADS",
+    key: (file, ctx) => `assets/${ctx.user.id}/${file.name}`,
+    ownerCheck: async (key, user) => key.startsWith(`assets/${user?.id}/`),
+  },
+);
+```
+
+Each group's `maxSize` is enforced independently at upload time — images cannot grow to the PDF limit, and vice versa.
+
 ### StorageInstance methods
 
 ```typescript
-// Upload: parse request, validate, upload to R2
+// Upload: parse request OR accept a pre-extracted File, validate, upload to R2
 storage.handle(name, request, ctx): Promise<UploadResult>
+storage.handle(name, file, ctx): Promise<UploadResult>    // pre-extracted File overload
 // ctx: { env, user: { id }, input? }
 // returns: { key: string, size: number, type: string }
 
@@ -55,12 +88,52 @@ storage.serve(name, key, { env, headers? }): Promise<Response>
 
 // URLs
 storage.getPublicUrl(name, key): string                              // requires publicUrl in config
-storage.getSignedUrl(name, key, { env, expiresIn }): Promise<string> // requires STORAGE_SECRET in env
+storage.getSignedUrl(name, key, { env, expiresIn }): Promise<string> // filetype-scoped, requires STORAGE_SECRET
 storage.verifySignedUrl(url, { env }): Promise<boolean>
+
+// Short signed URL for the /uploads/* proxy route — no filetype scoping
+storage.signedUrl(key, { env, expiresIn, basePath? }): Promise<string>
+// → "/uploads/<key>?token=<expires>.<sig>"
+storage.verifySignedToken(key, token, { env }): Promise<boolean>
 
 // Client config (strips server-only fields)
 storage.clientConfig(): ClientStorageConfig
 ```
+
+### Opinionated routes (`@cfast/storage/plugin` + `@cfast/storage`)
+
+Mount a splat route in `routes.ts` and hand the loader/action pair to a splat route module:
+
+```typescript
+// app/routes.ts
+import type { RouteConfig } from "@react-router/dev/routes";
+import { storageRoutes } from "@cfast/storage/plugin";
+
+export default [
+  ...storageRoutes({ handlerFile: "routes/uploads.$.tsx" }),
+  // ... other routes
+] satisfies RouteConfig;
+```
+
+```typescript
+// app/routes/uploads.$.tsx
+import { createStorageRouteHandlers } from "@cfast/storage";
+import { storage } from "~/storage";
+import { requireUser } from "~/auth.server";
+
+const { loader, action } = createStorageRouteHandlers({
+  storage,
+  requireUser,
+});
+export { loader, action };
+```
+
+This mounts:
+
+- `GET /uploads/*` — streams the R2 object at `params["*"]`. If a filetype declares `ownerCheck`, it runs before streaming. If the URL carries `?token=...`, the token is verified against `STORAGE_SECRET` instead (so signed URLs can bypass `requireUser`).
+- `POST /uploads/:filetype` — runs `storage.handle(filetype, request, ctx)` and returns `{ key, size, type, url }` as JSON.
+
+`createStorageRoutes` is exported as an alias of `storageRoutes` — both names work.
 
 ### StorageError
 
@@ -71,9 +144,9 @@ try {
   await storage.handle("avatars", request, { env, user });
 } catch (e) {
   if (e instanceof StorageError) {
-    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED"
+    e.code;    // "FILE_TOO_LARGE" | "INVALID_MIME_TYPE" | "UPLOAD_FAILED" | "UNAUTHORIZED" | "INVALID_TOKEN"
     e.detail;  // "File is 5.2MB but max allowed is 2.0MB"
-    e.status;  // 413 | 415 | 500
+    e.status;  // 413 | 415 | 500 | 403
   }
 }
 ```
