@@ -3,6 +3,7 @@ import type { Grant, PermissionDescriptor } from "@cfast/permissions";
 import { getTableName } from "@cfast/permissions";
 
 import { extractActionName, parseInput } from "./parse-input.js";
+import type { InputParser } from "./input-schema.js";
 import type {
   ActionContext,
   ActionDefinition,
@@ -186,15 +187,43 @@ export function createActions<
    * ```
    */
   function createAction<TInput, TResult>(
-    operationsFn: OperationsFn<TInput, TResult, TUser>,
+    config:
+      | OperationsFn<TInput, TResult, TUser>
+      | {
+          /**
+           * Optional typed input parser, e.g. produced by `defineInput({ ... })`.
+           *
+           * When set, the parser runs over the request's raw input before the
+           * handler is invoked. Validation failures throw {@link InvalidInputError}
+           * with field-keyed messages -- the call this fix exists for is
+           * `Number(formData.get("position"))` silently producing NaN, which
+           * `z.number()` / `z.integer()` rejects upfront.
+           */
+          input?: InputParser<TInput>;
+          /** The operation builder. Same shape as the legacy positional form. */
+          handler: OperationsFn<TInput, TResult, TUser>;
+        },
   ): ActionDefinition<TInput, TResult, TUser> {
     const actionId = `action_${++counter}`;
 
+    // Both call shapes (positional `operationsFn` and the object form) reduce
+    // to the same internal pair: a parser (defaulting to identity) and a
+    // handler. Keeping the legacy positional shape working is the whole
+    // reason for the union -- existing call sites should not have to migrate.
+    const handler: OperationsFn<TInput, TResult, TUser> =
+      typeof config === "function" ? config : config.handler;
+    const parser: InputParser<TInput> | undefined =
+      typeof config === "function" ? undefined : config.input;
+
     const action = async (args: RequestArgs): Promise<TResult> => {
       const ctx = await resolveContext(args);
-      const input = await parseInput(args.request) as TInput;
-      const operation = operationsFn(ctx.db, input, ctx);
-      return operation.run({});
+      const rawInput = await parseInput(args.request);
+      // The parser runs BEFORE permission checks: garbage input shouldn't
+      // even reach the database, regardless of whether the user is allowed
+      // to perform the underlying operation.
+      const input = (parser ? parser(rawInput) : rawInput) as TInput;
+      const operation = handler(ctx.db, input, ctx);
+      return operation.run();
     };
 
     const loader = <TLoaderData extends Record<string, Serializable>>(
@@ -209,7 +238,7 @@ export function createActions<
         ]);
 
         // Build a dummy input to extract permission descriptors
-        const operation = operationsFn(ctx.db, {} as TInput, ctx);
+        const operation = handler(ctx.db, {} as TInput, ctx);
         const status = checkPermissionStatus(ctx.grants, operation.permissions);
 
         const permissions: ActionPermissionsMap = {
@@ -234,7 +263,7 @@ export function createActions<
       input: TInput,
       ctx: ActionContext<TUser>,
     ): Operation<TResult> => {
-      return operationsFn(db, input, ctx);
+      return handler(db, input, ctx);
     };
 
     return { action, loader, client, buildOperation };

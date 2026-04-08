@@ -36,8 +36,26 @@ const authPlugin = definePlugin({
   }
 
   if (config.features.db) {
-    imports.push(`import { createDb } from "@cfast/db";`);
+    // Single source of truth for the per-request permission-aware Db.
+    // `createAppDb()` consolidates the three near-identical `createDb`
+    // factories older templates duplicated across cfast.server.ts,
+    // admin.server.ts, and ad-hoc route handlers (#149). The exported
+    // `appDb` is reused by admin.server.ts -- the admin's `db` config field
+    // is structurally `(grants, user) => Db`, which is exactly what
+    // createAppDb() returns.
+    imports.push(`import { createAppDb } from "@cfast/db";`);
+    imports.push(`import { env } from "./env";`);
     imports.push(`import * as schema from "./db/schema";`);
+
+    pluginDefs.push(`
+// Lazy D1 binding: env.DB isn't materialized at module load on Workers, so
+// the factory reads it via env.get() per request. Defined once here and
+// reused by admin.server.ts and any route handler that needs an ad-hoc Db.
+export const appDb = createAppDb({
+  d1: () => env.get().DB,
+  schema: schema as unknown as Record<string, object>,
+  cache: false,
+});`);
 
     if (config.features.auth) {
       pluginDefs.push(`
@@ -45,29 +63,20 @@ const dbPlugin = definePlugin({
   name: "db",
   requires: [authPlugin],
   setup(ctx) {
-    const client = createDb({
-      d1: ctx.env.DB as D1Database,
-      schema: schema as unknown as Record<string, object>,
-      grants: ctx.auth.grants,
-      user: ctx.auth.user ? { id: ctx.auth.user.id } : null,
-      cache: false,
-    });
-    return { client };
+    return {
+      client: appDb(
+        ctx.auth.grants,
+        ctx.auth.user ? { id: ctx.auth.user.id } : null,
+      ),
+    };
   },
 });`);
     } else {
       pluginDefs.push(`
 const dbPlugin = definePlugin({
   name: "db",
-  setup(ctx) {
-    const client = createDb({
-      d1: ctx.env.DB as D1Database,
-      schema: schema as unknown as Record<string, object>,
-      grants: [],
-      user: null,
-      cache: false,
-    });
-    return { client };
+  setup(_ctx) {
+    return { client: appDb([], null) };
   },
 });`);
     }

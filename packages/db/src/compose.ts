@@ -18,10 +18,51 @@ type RunFn = (params?: Record<string, unknown>) => Promise<unknown>;
  * `.run()` still performs its own permission check when the executor calls it. This enables
  * data dependencies between operations (e.g., using an insert result's ID in an audit log).
  *
+ * ### ⚠️ Positional callback footgun
+ *
+ * The `executor` callback receives one `run` function per entry in `operations`,
+ * **in array order**. TypeScript cannot enforce that the parameter names line
+ * up with the operations they correspond to, so a callback that swaps
+ * `(runUpdate, runVersion)` for `(runVersion, runUpdate)` -- or that simply
+ * forgets a parameter -- silently invokes the wrong sub-operation. The wiki
+ * tracking issue (#182) was a real bug of this shape: a `runVersion` parameter
+ * shadowed an outer-scope variable and was never invoked.
+ *
+ * **Prefer {@link composeSequentialCallback} for any workflow with data
+ * dependencies.** It accepts an `async (db) => ...` callback that uses the
+ * normal db builders by reference, so the binding is by name (not by
+ * position) and there is no way to wire the wrong op to the wrong handler:
+ *
+ * ```ts
+ * // ✗ Footgun: parameter order must match array order, not type-checked.
+ * const op = compose(
+ *   [updatePost, bumpVersion],
+ *   async (runUpdate, runVersion) => {
+ *     await runUpdate(); // What if `runVersion` was renamed and never called?
+ *     await runVersion();
+ *   },
+ * );
+ *
+ * // ✓ Preferred: by-name binding via composeSequentialCallback.
+ * const op = composeSequentialCallback(db, async (tx) => {
+ *   await tx.update(posts).set({ ... }).where(...).run();
+ *   await tx.update(postVersions).set({ ... }).where(...).run();
+ * });
+ * ```
+ *
+ * Use `compose()` only when you genuinely need to interleave non-db logic
+ * between sub-operations and you have a small, fixed number of ops where the
+ * footgun is easy to read around. For everything else, reach for
+ * {@link composeSequential} (no callback at all) or
+ * {@link composeSequentialCallback} (by-name binding).
+ *
  * @typeParam TResult - The return type of the executor function.
  * @param operations - The operations to compose. Their permissions are merged and deduplicated.
  * @param executor - A function that receives a `run` function for each operation (in order).
  *   You control execution order, data flow between operations, and the return value.
+ *   **Must declare exactly one parameter per operation** -- TypeScript cannot enforce this,
+ *   but a regression test in this package asserts that swapping the count surfaces undefined
+ *   `run` calls at runtime.
  * @returns A single {@link Operation} with combined permissions.
  *
  * @example
@@ -31,8 +72,8 @@ type RunFn = (params?: Record<string, unknown>) => Promise<unknown>;
  * const publishWorkflow = compose(
  *   [updatePost, insertAuditLog],
  *   async (doUpdate, doAudit) => {
- *     const updated = await doUpdate({});
- *     await doAudit({});
+ *     const updated = await doUpdate();
+ *     await doAudit();
  *     return { published: true };
  *   },
  * );
@@ -42,13 +83,31 @@ type RunFn = (params?: Record<string, unknown>) => Promise<unknown>;
  * // => [{ action: "update", table: "posts" }, { action: "create", table: "audit_logs" }]
  *
  * // Execute all sub-operations
- * await publishWorkflow.run({});
+ * await publishWorkflow.run();
  * ```
  */
 export function compose<TResult>(
   operations: Operation<unknown>[],
   executor: (...runs: RunFn[]) => TResult | Promise<TResult>,
 ): Operation<TResult> {
+  // Footgun guard for #182: when the executor declares a fixed parameter
+  // list (i.e. does NOT use a rest spread), make sure the count matches the
+  // number of operations. This catches the most common shape of the bug --
+  // `compose([a, b], (runA) => ...)` -- which would otherwise silently fail
+  // to invoke `runB` (or, worse, invoke the wrong sub-op for its name).
+  //
+  // Functions written as `(...runs) => ...` or `() => doSomething()` have
+  // `length === 0` and are intentionally exempt: they're either iterating
+  // every run themselves or driving the executor purely by side effect.
+  if (executor.length > 0 && executor.length !== operations.length) {
+    throw new Error(
+      `compose(): executor declares ${executor.length} parameter(s) but ` +
+        `${operations.length} operation(s) were passed. Each operation must have a ` +
+        `corresponding run-function parameter (in array order), otherwise sub-operations ` +
+        `will silently go uninvoked. Prefer composeSequentialCallback() for by-name binding.`,
+    );
+  }
+
   const allPermissions = deduplicateDescriptors(
     operations.flatMap((op) => op.permissions),
   );

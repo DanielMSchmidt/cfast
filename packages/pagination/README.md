@@ -58,7 +58,7 @@ export async function loader({ request }) {
       orderBy: desc(posts.createdAt),
       cursorColumns: [posts.createdAt, posts.id],
     })
-    .run({});
+    .run();
 
   return result; // { items, nextCursor }
 }
@@ -119,7 +119,7 @@ export async function loader({ request }) {
     .paginate(page, {
       orderBy: desc(posts.createdAt),
     })
-    .run({});
+    .run();
 
   return result; // { items, total, page, totalPages }
 }

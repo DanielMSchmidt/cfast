@@ -169,7 +169,7 @@ export async function loader({ request }) {
   const page = parseCursorParams(request, { defaultLimit: 20, maxLimit: 100 });
   return await db.query(posts)
     .paginate(page, { orderBy: desc(posts.createdAt), cursorColumns: [posts.createdAt, posts.id] })
-    .run({});
+    .run();
 }
 ```
 The two server helpers use the same opaque cursor format and the same client hook.
@@ -199,7 +199,7 @@ export async function loader({ request }) {
   const page = parseOffsetParams(request, { defaultLimit: 20 });
   return await db.query(posts)
     .paginate(page, { orderBy: desc(posts.createdAt) })
-    .run({});
+    .run();
 }
 
 // Component

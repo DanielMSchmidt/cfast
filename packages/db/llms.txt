@@ -47,13 +47,44 @@ type Operation<TResult> = {
 ### Reads
 
 ```typescript
-db.query(table).findMany(options?): Operation<unknown[]>
-db.query(table).findFirst(options?): Operation<unknown | undefined>
-db.query(table).paginate(params, options?): Operation<CursorPage | OffsetPage>
+db.query(table).findMany(options?): Operation<Row[]>
+db.query(table).findFirst(options?): Operation<Row | undefined>
+db.query(table).paginate(params, options?): Operation<CursorPage<Row> | OffsetPage<Row>>
 ```
+
+`Row` is inferred from the table via `InferRow<typeof table>` -- callers get
+IntelliSense on `(row) => row.title` without any cast.
 
 FindManyOptions: `{ columns?, where?, orderBy?, limit?, offset?, with?, cache? }`
 FindFirstOptions: same without `limit`/`offset`.
+
+#### Relations escape hatch (#158)
+
+When you pass `with: { relation: true }`, Drizzle's relational query builder
+embeds the joined rows into the result. `@cfast/db` cannot statically infer
+that shape from the `Record<string, unknown>` schema we accept on `createDb`,
+so the default row type does not include the relation. Override the row type
+via the `findMany`/`findFirst`/`paginate` generic to claim the shape you know
+the query will produce, instead of `as any`-casting the result downstream:
+
+```typescript
+type RecipeWithIngredients = Recipe & { ingredients: Ingredient[] };
+
+const recipes = await db
+  .query(recipesTable)
+  .findMany<RecipeWithIngredients>({ with: { ingredients: true } })
+  .run();
+// recipes is RecipeWithIngredients[], no cast needed.
+
+const recipe = await db
+  .query(recipesTable)
+  .findFirst<RecipeWithIngredients>({
+    where: eq(recipesTable.id, id),
+    with: { ingredients: true },
+  })
+  .run();
+// recipe is RecipeWithIngredients | undefined.
+```
 
 ### Writes
 
@@ -84,6 +115,20 @@ await db.delete(cards).where(eq(cards.id, id)).run();
 `.run()` arguments are optional -- only pass `params` when your query uses `sql.placeholder()`.
 
 ### compose(operations, executor): Operation<TResult>
+
+> ⚠️ **Footgun warning (#182):** the `executor` callback receives one `run`
+> function per entry in `operations`, **in array order**. TypeScript cannot
+> enforce that the parameter names line up, so a callback like
+> `(runUpdate, runVersion) => ...` that gets reordered or shadowed by an
+> outer-scope variable will silently invoke the wrong sub-operation. Prefer
+> `composeSequentialCallback(db, async tx => ...)` for any workflow with data
+> dependencies — it binds by name via the normal db builders. Use `compose()`
+> only when you genuinely need to interleave non-db logic between sub-ops.
+>
+> As a runtime safety net, `compose()` throws at construction time when the
+> executor's parameter count doesn't match the operations array length (so
+> `compose([a, b], (runA) => ...)` fails loudly instead of silently dropping
+> `runB`). Use `(...runs) => ...` or `() => ...` to opt out of the check.
 
 ```typescript
 import { compose } from "@cfast/db";

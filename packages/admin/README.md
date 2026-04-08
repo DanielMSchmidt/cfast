@@ -172,7 +172,7 @@ createAdmin({
                 .update(posts)
                 .set({ published: true, publishedBy: ctx.user.id })
                 .where(eq(posts.id, id))
-                .run({});
+                .run();
             },
             confirm: "Are you sure you want to publish?", // Optional confirmation dialog
             variant: "default", // "default" | "danger" — controls button styling

@@ -130,7 +130,7 @@ import { app } from '~/cfast';
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const ctx = await app.context(request, context);
-  return ctx.db.client.query(posts).findMany().run({});
+  return ctx.db.client.query(posts).findMany().run();
 }
 ```
 
@@ -165,7 +165,7 @@ Optional convenience wrappers that call `app.context()` and pass the result as t
 
 ```typescript
 export const loader = app.loader(async (ctx, { params }) => {
-  return ctx.db.client.query(posts).findMany().run({});
+  return ctx.db.client.query(posts).findMany().run();
 });
 ```
 
@@ -443,7 +443,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
   await ctx['rate-limit'].consume();
 
-  return ctx.db.client.query(posts).findMany().run({});
+  return ctx.db.client.query(posts).findMany().run();
 }
 ```
 
