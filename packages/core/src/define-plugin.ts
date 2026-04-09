@@ -68,14 +68,29 @@ import type {
  *     return { client: createDb({}) };
  *   },
  * });
+ *
+ * // Env-typed plugin — pass the env type as the single explicit generic
+ * // to type ctx.env precisely (no casts needed):
+ * const storagePlugin = definePlugin<Cloudflare.Env>({
+ *   name: 'storage',
+ *   setup(ctx) {
+ *     ctx.env.BUCKET; // typed as R2Bucket, not unknown
+ *     return { upload: (file: File) => ctx.env.BUCKET.put(file.name, file) };
+ *   },
+ * });
  * ```
  */
 
 // Inferred form: optional `requires` array of plugin references; setup ctx is
 // derived from their provides. Works for leaf plugins too (omit `requires`).
+//
+// `TEnv` can be passed as a single explicit generic to type `ctx.env` precisely
+// (e.g. `definePlugin<Cloudflare.Env>({ ... })`). When omitted it defaults to
+// `Record<string, unknown>` for backward compatibility.
 export function definePlugin<
-  TName extends string,
-  TProvides,
+  TEnv = Record<string, unknown>,
+  TName extends string = string,
+  TProvides = unknown,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const TRequires extends readonly CfastPlugin<string, unknown, any, unknown, any>[] = [],
   TClient = unknown,
@@ -83,7 +98,7 @@ export function definePlugin<
   name: TName;
   requires?: TRequires;
   setup: (
-    ctx: PluginSetupContext<RequiresFromPlugins<TRequires>>,
+    ctx: PluginSetupContext<RequiresFromPlugins<TRequires>, TEnv>,
   ) => TProvides | Promise<TProvides>;
   Provider?: ComponentType<{ children: ReactNode }>;
   client?: TClient;
@@ -91,22 +106,24 @@ export function definePlugin<
   TName,
   Awaited<TProvides>,
   RequiresFromPlugins<TRequires>,
-  TClient
+  TClient,
+  TEnv
 >;
 
 // Curried form (legacy): specify TRequires explicitly via a type token.
-export function definePlugin<TRequires>(): <
+// Optionally pass TEnv as the second type parameter to type `ctx.env`.
+export function definePlugin<TRequires, TEnv = Record<string, unknown>>(): <
   TName extends string,
   TProvides,
   TClient = unknown,
 >(config: {
   name: TName;
   setup: (
-    ctx: PluginSetupContext<TRequires>,
+    ctx: PluginSetupContext<TRequires, TEnv>,
   ) => TProvides | Promise<TProvides>;
   Provider?: ComponentType<{ children: ReactNode }>;
   client?: TClient;
-}) => CfastPlugin<TName, Awaited<TProvides>, TRequires, TClient>;
+}) => CfastPlugin<TName, Awaited<TProvides>, TRequires, TClient, TEnv>;
 
 export function definePlugin(config?: unknown): unknown {
   if (config === undefined) {

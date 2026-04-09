@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, expectTypeOf } from "vitest";
 import { definePlugin, definePluginFor } from "../define-plugin";
 
 describe("definePlugin", () => {
@@ -202,6 +202,118 @@ describe("definePlugin", () => {
       // slots into existing `use()` signatures.
       expect(plugin.name).toBe("scoped");
       expect(typeof plugin.setup).toBe("function");
+    });
+  });
+
+  describe("definePlugin<TEnv> direct generic (issue #184)", () => {
+    // Mimics the scaffolded `Cloudflare.Env` from `worker-configuration.d.ts`.
+    type AppEnv = {
+      DB: { query: (sql: string) => Promise<unknown> };
+      BUCKET: { put: (key: string, value: unknown) => Promise<void> };
+      API_KEY: string;
+    };
+
+    it("types ctx.env precisely when TEnv is passed as an explicit generic", async () => {
+      const dbPlugin = definePlugin<AppEnv>({
+        name: "db",
+        setup: (ctx) => {
+          // Compile-time assertion: ctx.env.DB is typed, not unknown.
+          return { db: ctx.env.DB };
+        },
+      });
+
+      const fakeDb = { query: async () => ({ rows: [] }) };
+      const result = await dbPlugin.setup({
+        request: new Request("http://localhost"),
+        env: {
+          DB: fakeDb,
+          BUCKET: { put: async () => {} },
+          API_KEY: "sk_test",
+        },
+      });
+      expect((result as { db: typeof fakeDb }).db).toBe(fakeDb);
+    });
+
+    it("composes env generic with inferred requires via definePluginFor", async () => {
+      // When combining typed env with `requires`, use definePluginFor which
+      // keeps TEnv out of the generic param list so `requires` inference works.
+      const typedDefinePlugin = definePluginFor<AppEnv>();
+
+      const authPlugin = typedDefinePlugin({
+        name: "auth",
+        setup: (ctx) => ({ user: { id: "u1" }, apiKey: ctx.env.API_KEY }),
+      });
+
+      const dbPlugin = typedDefinePlugin({
+        name: "db",
+        requires: [authPlugin],
+        setup: (ctx) => ({
+          userDb: `${ctx.auth.user.id}:${ctx.env.DB.query.name}`,
+        }),
+      });
+
+      const result = await dbPlugin.setup({
+        request: new Request("http://localhost"),
+        env: {
+          DB: { query: async function named() { return {}; } },
+          BUCKET: { put: async () => {} },
+          API_KEY: "sk_test",
+        },
+        auth: { user: { id: "u1" }, apiKey: "sk_test" },
+      });
+      expect(result).toEqual({ userDb: "u1:named" });
+    });
+
+    it("ctx.env.DB has the precise type, not unknown (expectTypeOf)", () => {
+      const plugin = definePlugin<AppEnv>({
+        name: "typed",
+        setup: (ctx) => {
+          // Type-level assertion: ctx.env.DB is typed as the DB binding.
+          expectTypeOf(ctx.env.DB).toEqualTypeOf<{
+            query: (sql: string) => Promise<unknown>;
+          }>();
+          expectTypeOf(ctx.env.API_KEY).toBeString();
+          return {};
+        },
+      });
+
+      expect(plugin.name).toBe("typed");
+    });
+
+    it("still works without explicit TEnv (backward compat)", () => {
+      const plugin = definePlugin({
+        name: "compat",
+        setup: (ctx) => {
+          // ctx.env is Record<string, unknown> when no TEnv is specified.
+          expectTypeOf(ctx.env).toEqualTypeOf<Record<string, unknown>>();
+          return { ok: true };
+        },
+      });
+      expect(plugin.name).toBe("compat");
+    });
+
+    it("curried form supports TEnv as second type parameter", async () => {
+      type AuthProvides = { auth: { user: { id: string } } };
+      const dbPlugin = definePlugin<AuthProvides, AppEnv>()({
+        name: "db",
+        setup: (ctx) => {
+          expectTypeOf(ctx.env.DB).toEqualTypeOf<{
+            query: (sql: string) => Promise<unknown>;
+          }>();
+          return { userId: ctx.auth.user.id, hasDb: ctx.env.DB !== undefined };
+        },
+      });
+      expect(dbPlugin.name).toBe("db");
+      const result = await dbPlugin.setup({
+        request: new Request("http://localhost"),
+        env: {
+          DB: { query: async () => ({}) },
+          BUCKET: { put: async () => {} },
+          API_KEY: "sk_test",
+        },
+        auth: { user: { id: "u1" } },
+      });
+      expect(result).toEqual({ userId: "u1", hasDb: true });
     });
   });
 });
