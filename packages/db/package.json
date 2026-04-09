@@ -41,7 +41,7 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@cfast/permissions": ">=0.3.0 <0.5.0",
+    "@cfast/permissions": ">=0.3.0 <0.6.0",
     "drizzle-orm": ">=0.35"
   },
   "peerDependenciesMeta": {
