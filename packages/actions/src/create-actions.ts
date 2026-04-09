@@ -13,6 +13,7 @@ import type {
   ActionsConfig,
   ClientDescriptor,
   ComposedActions,
+  DispatchArgs,
   OperationsFn,
   RequestArgs,
   Serializable,
@@ -266,7 +267,13 @@ export function createActions<
       return handler(db, input, ctx);
     };
 
-    return { action, loader, client, buildOperation };
+    const dispatch = async (args: DispatchArgs<TInput, TUser>): Promise<TResult> => {
+      const { ctx, input } = args;
+      const operation = handler(ctx.db, input, ctx);
+      return operation.run();
+    };
+
+    return { action, dispatch, loader, client, buildOperation };
   }
 
   /**
