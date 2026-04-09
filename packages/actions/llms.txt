@@ -187,7 +187,37 @@ new body is `FormData` or `URLSearchParams`, so the platform can attach the
 correct multipart boundary. Pass an explicit `headers: { "content-type": ... }`
 to override.
 
-### 5. Use on the client
+### 5. Dispatch sub-actions with `action.dispatch()` (preferred)
+
+`action.dispatch({ ctx, input })` calls an action's operation directly,
+bypassing Request construction entirely. No cookie forwarding, no FormData
+serialisation, no `forwardRequest()` boilerplate -- just pass the context
+and input you already have:
+
+```typescript
+import { createRow } from "~/actions/rows";
+
+export const importCsv = createAction(async (db, input, ctx) => ({
+  permissions: createRow.buildOperation(db, {} as never, ctx).permissions,
+  async run() {
+    for (const row of input.rows) {
+      await createRow.dispatch({
+        ctx: { db, user: ctx.user, grants: ctx.grants, services: {} },
+        input: { title: row.title },
+      });
+    }
+    return { ok: true };
+  },
+}));
+```
+
+`dispatch()` reuses the caller's `db`, `user`, and `grants` directly, so
+permission checks still run on the sub-action's operation. Use `dispatch()`
+for all server-to-server sub-action calls. `forwardRequest()` still works
+but is only needed when you must go through the full HTTP action handler
+(e.g., calling an action in a different Worker).
+
+### 6. Use on the client
 ```typescript
 import { useActions } from "@cfast/actions/client";
 

@@ -113,6 +113,13 @@ export type Env = ReturnType<typeof env.get>;
 | `secret` | `string` | Non-empty string. No defaults allowed. |
 | `var` | `string` | String (empty allowed). Supports `default` and `validate`. |
 
+Any binding type can be marked optional with `optional: true`. Missing optional bindings resolve to `undefined` (typed as `T | undefined`) instead of causing an `EnvError`:
+
+```typescript
+NUTRITIONIX_API_KEY: { type: "secret", optional: true }
+// typeof env.get().NUTRITIONIX_API_KEY → string | undefined
+```
+
 ### Environment-Aware Defaults
 
 ```typescript
@@ -576,6 +583,10 @@ await db.cache.invalidate({ tables: ["posts"] });
 ```
 
 **Backend tradeoffs:** Cache API = ~0ms latency, per-edge, free. KV = 10-50ms, global, eventually consistent.
+
+### `db.clearLookupCache(): void`
+
+Clears the per-instance cross-table `with` lookup cache. Use in tests that reuse a `Db` across grant inserts -- call after modifying grants so subsequent queries re-run `with` lookups. Prefer `runWithLookupCache()` in production; use `clearLookupCache()` for quick manual resets in tests.
 
 ### Known Limitations
 
@@ -1139,6 +1150,19 @@ type ActionFormProps = Omit<ComponentProps<typeof Form>, "children" | "action"> 
 Each entry in `action` becomes `<input type="hidden" name={key} value={String(value)} />`. `null` and `undefined` values are omitted.
 
 **When to use:** Declarative form submissions where you have all input values up front. For programmatic submissions (e.g., on button click), prefer `useActions()`.
+
+### `action.dispatch({ ctx, input })`
+
+Calls an action's operation directly, bypassing Request construction. Preferred over `forwardRequest()` for server-to-server sub-action calls:
+
+```typescript
+await createRow.dispatch({
+  ctx: { db, user, grants, services: {} },
+  input: { title: "New" },
+});
+```
+
+Permission checks still run on the sub-action's operation. Use `forwardRequest()` only when you must go through the full HTTP handler (e.g., cross-Worker calls).
 
 ### Exports
 
