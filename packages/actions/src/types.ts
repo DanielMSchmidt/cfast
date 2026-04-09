@@ -90,6 +90,38 @@ export type RequestArgs = {
 };
 
 /**
+ * Arguments for {@link ActionDefinition.dispatch}, which lets a parent action
+ * invoke a sub-action **without** constructing a new `Request`.
+ *
+ * The parent passes its already-resolved {@link ActionContext} and the typed
+ * input directly. This avoids re-running `getContext()` (and thus the
+ * cookie-based session lookup) for the sub-action, which is both faster and
+ * eliminates the class of bugs described in issue #185 where a manually-built
+ * `Request` forgets to forward the `Cookie` header.
+ *
+ * @typeParam TInput - The expected input shape for the target action.
+ * @typeParam TUser - The shape of the authenticated user object.
+ *
+ * @example
+ * ```ts
+ * const parent = createAction((db, input, ctx) => ({
+ *   permissions: [],
+ *   async run() {
+ *     // No Request needed — ctx is reused directly.
+ *     const result = await child.dispatch({ ctx, input: { title: "Hello" } });
+ *     return result;
+ *   },
+ * }));
+ * ```
+ */
+export type DispatchArgs<TInput, TUser> = {
+  /** The parent action's already-resolved context, reused as-is. */
+  ctx: ActionContext<TUser>;
+  /** Typed input for the sub-action. */
+  input: TInput;
+};
+
+/**
  * Configuration for the {@link createActions} factory.
  *
  * Provides a `getContext` callback that resolves the per-request
@@ -248,6 +280,30 @@ export type ClientDescriptor = {
 export type ActionDefinition<TInput, TResult, TUser> = {
   /** React Router action handler. Parses input, resolves context, and runs the operation. */
   action: (args: RequestArgs) => Promise<TResult>;
+  /**
+   * Dispatches the action using an already-resolved {@link ActionContext},
+   * bypassing `getContext()` entirely.
+   *
+   * Use this when a parent action handler needs to invoke a sub-action.
+   * Because the parent's `ctx` is reused directly, cookies, user session,
+   * and grants are inherited without constructing a new `Request` — which
+   * eliminates the cookie-forwarding bug described in issue #185.
+   *
+   * @param args - The {@link DispatchArgs} containing the parent's `ctx`
+   *   and the typed input for this action.
+   * @returns The action's result, same as calling `.action()`.
+   *
+   * @example
+   * ```ts
+   * const parent = createAction((db, input, ctx) => ({
+   *   permissions: [],
+   *   async run() {
+   *     return child.dispatch({ ctx, input: { title: "Hello" } });
+   *   },
+   * }));
+   * ```
+   */
+  dispatch: (args: DispatchArgs<TInput, TUser>) => Promise<TResult>;
   /**
    * Wraps a loader function to inject {@link ActionPermissionsMap} into its return value.
    *

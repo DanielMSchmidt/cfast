@@ -37,6 +37,7 @@ describe("createActions", () => {
     }));
 
     expect(typeof def.action).toBe("function");
+    expect(typeof def.dispatch).toBe("function");
     expect(typeof def.loader).toBe("function");
     expect(def.client).toBeDefined();
     expect(typeof def.buildOperation).toBe("function");
@@ -651,5 +652,151 @@ describe("service injection via createActions({ services })", () => {
 
     expect(seenApi).toBe(overrideApi);
     expect(seenApi).not.toBe(defaultApi);
+  });
+});
+
+
+describe("dispatch() — context-passing sub-action calls (issue #185)", () => {
+  it("runs the sub-action handler with the parent ctx without calling getContext", async () => {
+    const getContext = vi.fn(makeGetContext());
+    const { createAction } = createActions({ getContext });
+
+    const child = createAction(
+      (_db: Db, input: { title: string }, _ctx: ActionContext<{ id: string }>) =>
+        createMockOperation({ created: input.title }),
+    );
+
+    const parentCtx: ActionContext<{ id: string }> = {
+      db: {} as Db,
+      user: { id: "user-1" },
+      grants: [],
+      services: {},
+    };
+
+    const result = await child.dispatch({
+      ctx: parentCtx,
+      input: { title: "Hello from dispatch" },
+    });
+
+    expect(result).toEqual({ created: "Hello from dispatch" });
+    expect(getContext).not.toHaveBeenCalled();
+  });
+
+  it("inherits the parent user without re-running cookie-based session lookup", async () => {
+    let childSawUser: unknown = null;
+
+    const { createAction } = createActions({
+      getContext: async () => ({
+        db: {} as Db,
+        user: { id: "parent-user" },
+        grants: [],
+      }),
+    });
+
+    const child = createAction(
+      (_db: Db, _input: Record<string, never>, ctx: ActionContext<{ id: string }>) => ({
+        permissions: [],
+        run: async () => {
+          childSawUser = ctx.user;
+          return null;
+        },
+      }),
+    );
+
+    await child.dispatch({
+      ctx: {
+        db: {} as Db,
+        user: { id: "parent-user" },
+        grants: [{ action: "manage", subject: "all" }],
+        services: {},
+      },
+      input: {},
+    });
+
+    expect(childSawUser).toEqual({ id: "parent-user" });
+  });
+
+  it("inherits parent grants so permission checks pass", async () => {
+    const { createAction } = createActions({
+      getContext: makeGetContext(),
+    });
+
+    const child = createAction(
+      (_db: Db, input: { postId: string }, _ctx: ActionContext<{ id: string }>) => ({
+        permissions: [{ action: "delete" as const, table: mockTable }],
+        run: async () => ({ deleted: input.postId }),
+      }),
+    );
+
+    const parentCtx: ActionContext<{ id: string }> = {
+      db: {} as Db,
+      user: { id: "admin" },
+      grants: [{ action: "manage", subject: "all" }],
+      services: {},
+    };
+
+    const result = await child.dispatch({
+      ctx: parentCtx,
+      input: { postId: "post-42" },
+    });
+
+    expect(result).toEqual({ deleted: "post-42" });
+  });
+
+  it("works with composed actions — parent dispatches to named child", async () => {
+    const { createAction, composeActions } = createActions({
+      getContext: makeGetContext(),
+    });
+
+    const rename = createAction(
+      (_db: Db, input: { title: string }, _ctx: ActionContext<{ id: string }>) =>
+        createMockOperation({ renamed: input.title }),
+    );
+
+    const archive = createAction(
+      (_db: Db, input: { id: string }, _ctx: ActionContext<{ id: string }>) =>
+        createMockOperation({ archived: input.id }),
+    );
+
+    const composed = composeActions({ rename, archive });
+
+    const parentCtx: ActionContext<{ id: string }> = {
+      db: {} as Db,
+      user: { id: "user-1" },
+      grants: [],
+      services: {},
+    };
+
+    const result = await composed.actions.rename.dispatch({
+      ctx: parentCtx,
+      input: { title: "New Title" },
+    });
+
+    expect(result).toEqual({ renamed: "New Title" });
+  });
+
+  it("does not consume a Request body — no Request is involved", async () => {
+    const { createAction } = createActions({
+      getContext: makeGetContext(),
+    });
+
+    const child = createAction(
+      (_db: Db, input: { value: number }, _ctx: ActionContext<{ id: string }>) =>
+        createMockOperation({ doubled: input.value * 2 }),
+    );
+
+    const parentCtx: ActionContext<{ id: string }> = {
+      db: {} as Db,
+      user: { id: "u1" },
+      grants: [],
+      services: {},
+    };
+
+    const result = await child.dispatch({
+      ctx: parentCtx,
+      input: { value: 21 },
+    });
+
+    expect(result).toEqual({ doubled: 42 });
   });
 });

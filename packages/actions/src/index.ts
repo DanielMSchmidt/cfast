@@ -18,6 +18,7 @@ export type {
   ActionContext,
   ActionServices,
   RequestArgs,
+  DispatchArgs,
   ActionsConfig,
   OperationsFn,
   ActionPermissionStatus,
