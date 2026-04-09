@@ -1,6 +1,6 @@
 {
   "name": "@cfast/core",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "App composition layer with plugin system for @cfast/* packages",
   "keywords": [
     "cfast",

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.3.1...@cfast/admin-v0.3.2) (2026-04-09)
+
+
+### Bug Fixes
+
+* **admin:** lazy-load drizzle-orm to fix vitest cold-import timeout ([#233](https://github.com/DanielMSchmidt/cfast/issues/233)) ([4dc5aa2](https://github.com/DanielMSchmidt/cfast/commit/4dc5aa2ab771de3e30bc43bdcdda4382eebb0cc4))
+* **admin:** use top-level @mui/joy import for CssVarsProvider ([#229](https://github.com/DanielMSchmidt/cfast/issues/229)) ([0920da1](https://github.com/DanielMSchmidt/cfast/commit/0920da1421af4814b21ba508fa9a6fc08aa43ffa))
+
 ## [0.3.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.3.0...@cfast/admin-v0.3.1) (2026-04-09)
 
 

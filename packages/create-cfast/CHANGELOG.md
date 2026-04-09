@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.3.1...create-cfast-v0.3.2) (2026-04-09)
+
+
+### Bug Fixes
+
+* **admin:** lazy-load drizzle-orm to fix vitest cold-import timeout ([#233](https://github.com/DanielMSchmidt/cfast/issues/233)) ([4dc5aa2](https://github.com/DanielMSchmidt/cfast/commit/4dc5aa2ab771de3e30bc43bdcdda4382eebb0cc4))
+
 ## [0.3.1](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.3.0...create-cfast-v0.3.1) (2026-04-09)
 
 

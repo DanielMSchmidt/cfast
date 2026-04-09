@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.4...@cfast/core-v0.2.0) (2026-04-09)
+
+
+### Features
+
+* **core:** thread env type through definePlugin generic ([#231](https://github.com/DanielMSchmidt/cfast/issues/231)) ([82c8666](https://github.com/DanielMSchmidt/cfast/commit/82c866647086c1e1cb3bb904abb931425b8ec864))
+
 ## [0.1.4](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.3...@cfast/core-v0.1.4) (2026-04-09)
 
 
