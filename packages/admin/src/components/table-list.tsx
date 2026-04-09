@@ -1,3 +1,5 @@
+"use client";
+
 import { type ReactElement, useState } from "react";
 import { Link, useSubmit, useNavigate } from "react-router";
 import Box from "@mui/joy/Box";
