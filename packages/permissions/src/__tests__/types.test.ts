@@ -1,8 +1,10 @@
 import { describe, it, expect, expectTypeOf } from "vitest";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { getTableName } from "../types";
 import type {
   PermissionAction,
   CrudAction,
+  ColumnsOf,
   Grant,
   PermissionDescriptor,
   PermissionCheckResult,
@@ -35,6 +37,43 @@ describe("types", () => {
     expectTypeOf<PermissionCheckResult>().toHaveProperty("permitted");
     expectTypeOf<PermissionCheckResult>().toHaveProperty("denied");
     expectTypeOf<PermissionCheckResult>().toHaveProperty("reasons");
+  });
+});
+
+
+// ColumnsOf type-level tests
+const _testPosts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  authorId: text("author_id").notNull(),
+  published: integer("published", { mode: "boolean" }).notNull().default(false),
+});
+type TestSchema = { posts: typeof _testPosts };
+
+describe("ColumnsOf", () => {
+  it("extracts columns from a Drizzle table object", () => {
+    type Cols = ColumnsOf<typeof _testPosts>;
+    expectTypeOf<Cols>().toHaveProperty("id");
+    expectTypeOf<Cols>().toHaveProperty("title");
+    expectTypeOf<Cols>().toHaveProperty("authorId");
+    expectTypeOf<Cols>().toHaveProperty("published");
+  });
+
+  it("extracts columns from a JS-key string via schema map lookup", () => {
+    type Cols = ColumnsOf<"posts", TestSchema>;
+    expectTypeOf<Cols>().toHaveProperty("id");
+    expectTypeOf<Cols>().toHaveProperty("title");
+    expectTypeOf<Cols>().toHaveProperty("authorId");
+  });
+
+  it("falls back to Record<string, unknown> for all", () => {
+    type Cols = ColumnsOf<"all", TestSchema>;
+    expectTypeOf<Cols>().toEqualTypeOf<Record<string, unknown>>();
+  });
+
+  it("falls back to Record<string, unknown> for unknown strings", () => {
+    type Cols = ColumnsOf<string, TestSchema>;
+    expectTypeOf<Cols>().toEqualTypeOf<Record<string, unknown>>();
   });
 });
 
