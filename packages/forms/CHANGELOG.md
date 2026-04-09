@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.3.0...@cfast/forms-v0.3.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* **forms:** pass form instance to child table field components ([#216](https://github.com/DanielMSchmidt/cfast/issues/216)) ([9985197](https://github.com/DanielMSchmidt/cfast/commit/99851973c0b3c0ec07057608a8b2cf91797f81e2))
+
 ## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/forms-v0.2.0...@cfast/forms-v0.3.0) (2026-04-08)
 
 

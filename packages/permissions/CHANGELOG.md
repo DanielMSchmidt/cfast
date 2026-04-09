@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.4.0...@cfast/permissions-v0.5.0) (2026-04-09)
+
+
+### Features
+
+* **permissions:** type-safe cols in where callbacks via ColumnsOf ([#215](https://github.com/DanielMSchmidt/cfast/issues/215)) ([b207d28](https://github.com/DanielMSchmidt/cfast/commit/b207d28f44570487340abe74f94717e9605291a1))
+
 ## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.3.0...@cfast/permissions-v0.4.0) (2026-04-08)
 
 
