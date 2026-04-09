@@ -92,7 +92,7 @@ const adminConfig = {
   requiredRole: "admin",
 };
 
-const tableMetas = introspectSchema(adminConfig.schema);
+const tableMetas = await introspectSchema(adminConfig.schema);
 
 export const adminLoader = createAdminLoader(adminConfig, tableMetas);
 export const adminAction = createAdminAction(adminConfig, tableMetas);

@@ -114,8 +114,8 @@ describe("columnNameToLabel", () => {
 });
 
 describe("introspectSchema", () => {
-  it("returns table metadata for each non-excluded table", () => {
-    const result = introspectSchema({ users, posts });
+  it("returns table metadata for each non-excluded table", async () => {
+    const result = await introspectSchema({ users, posts });
 
     expect(result).toHaveLength(2);
     const names = result.map((t) => t.name);
@@ -123,7 +123,7 @@ describe("introspectSchema", () => {
     expect(names).toContain("posts");
   });
 
-  it("auto-excludes session, account, verification, passkey tables", () => {
+  it("auto-excludes session, account, verification, passkey tables", async () => {
     const schema = {
       users,
       posts,
@@ -132,7 +132,7 @@ describe("introspectSchema", () => {
       verification,
       passkey,
     };
-    const result = introspectSchema(schema);
+    const result = await introspectSchema(schema);
 
     const names = result.map((t) => t.name);
     expect(names).not.toContain("session");
@@ -143,9 +143,9 @@ describe("introspectSchema", () => {
     expect(names).toContain("posts");
   });
 
-  it("includes auto-excluded tables when overrides are provided", () => {
+  it("includes auto-excluded tables when overrides are provided", async () => {
     const schema = { session };
-    const result = introspectSchema(schema, {
+    const result = await introspectSchema(schema, {
       session: { label: "Active Sessions" },
     });
 
@@ -154,8 +154,8 @@ describe("introspectSchema", () => {
     expect(result[0].label).toBe("Active Sessions");
   });
 
-  it("excludes tables with exclude: true override", () => {
-    const result = introspectSchema(
+  it("excludes tables with exclude: true override", async () => {
+    const result = await introspectSchema(
       { users, posts },
       { posts: { exclude: true } },
     );
@@ -165,8 +165,8 @@ describe("introspectSchema", () => {
     expect(names).not.toContain("posts");
   });
 
-  it("generates labels from table names", () => {
-    const result = introspectSchema({ users, posts });
+  it("generates labels from table names", async () => {
+    const result = await introspectSchema({ users, posts });
 
     const usersTable = result.find((t) => t.name === "users");
     const postsTable = result.find((t) => t.name === "posts");
@@ -174,8 +174,8 @@ describe("introspectSchema", () => {
     expect(postsTable?.label).toBe("Posts");
   });
 
-  it("uses override labels when provided", () => {
-    const result = introspectSchema(
+  it("uses override labels when provided", async () => {
+    const result = await introspectSchema(
       { posts },
       { posts: { label: "Blog Posts" } },
     );
@@ -183,15 +183,15 @@ describe("introspectSchema", () => {
     expect(result[0].label).toBe("Blog Posts");
   });
 
-  it("detects primary key column", () => {
-    const result = introspectSchema({ users });
+  it("detects primary key column", async () => {
+    const result = await introspectSchema({ users });
     const usersTable = result.find((t) => t.name === "users");
 
     expect(usersTable?.primaryKey).toBe("id");
   });
 
-  it("detects column metadata correctly", () => {
-    const result = introspectSchema({ users });
+  it("detects column metadata correctly", async () => {
+    const result = await introspectSchema({ users });
     const usersTable = result.find((t) => t.name === "users");
     const columns = usersTable?.columns ?? [];
 
@@ -209,8 +209,8 @@ describe("introspectSchema", () => {
     expect(avatarCol?.required).toBe(false);
   });
 
-  it("detects foreign key references", () => {
-    const result = introspectSchema({ users, posts });
+  it("detects foreign key references", async () => {
+    const result = await introspectSchema({ users, posts });
     const postsTable = result.find((t) => t.name === "posts");
     const authorCol = postsTable?.columns.find(
       (c) => c.name === "author_id",
@@ -220,16 +220,16 @@ describe("introspectSchema", () => {
     expect(authorCol?.referencesColumn).toBe("id");
   });
 
-  it("detects enum values", () => {
-    const result = introspectSchema({ roles });
+  it("detects enum values", async () => {
+    const result = await introspectSchema({ roles });
     const rolesTable = result.find((t) => t.name === "roles");
     const roleCol = rolesTable?.columns.find((c) => c.name === "role");
 
     expect(roleCol?.enumValues).toEqual(["admin", "editor", "author"]);
   });
 
-  it("defaults listColumns to all non-PK columns", () => {
-    const result = introspectSchema({ users });
+  it("defaults listColumns to all non-PK columns", async () => {
+    const result = await introspectSchema({ users });
     const usersTable = result.find((t) => t.name === "users");
 
     expect(usersTable?.listColumns).not.toContain("id");
@@ -239,8 +239,8 @@ describe("introspectSchema", () => {
     expect(usersTable?.listColumns).toContain("created_at");
   });
 
-  it("uses override listColumns when provided", () => {
-    const result = introspectSchema(
+  it("uses override listColumns when provided", async () => {
+    const result = await introspectSchema(
       { posts },
       { posts: { listColumns: ["title", "published"] } },
     );
@@ -248,16 +248,16 @@ describe("introspectSchema", () => {
     expect(result[0].listColumns).toEqual(["title", "published"]);
   });
 
-  it("defaults searchable to first text column", () => {
-    const result = introspectSchema({ posts });
+  it("defaults searchable to first text column", async () => {
+    const result = await introspectSchema({ posts });
     const postsTable = result.find((t) => t.name === "posts");
 
     // First text column in posts is "id" (string type)
     expect(postsTable?.searchableColumns).toEqual(["id"]);
   });
 
-  it("uses override searchable columns", () => {
-    const result = introspectSchema(
+  it("uses override searchable columns", async () => {
+    const result = await introspectSchema(
       { posts },
       { posts: { searchable: ["title", "content"] } },
     );
@@ -265,8 +265,8 @@ describe("introspectSchema", () => {
     expect(result[0].searchableColumns).toEqual(["title", "content"]);
   });
 
-  it("defaults sort to primary key descending", () => {
-    const result = introspectSchema({ users });
+  it("defaults sort to primary key descending", async () => {
+    const result = await introspectSchema({ users });
     const usersTable = result.find((t) => t.name === "users");
 
     expect(usersTable?.defaultSort).toEqual({
@@ -275,8 +275,8 @@ describe("introspectSchema", () => {
     });
   });
 
-  it("uses override sort when provided", () => {
-    const result = introspectSchema(
+  it("uses override sort when provided", async () => {
+    const result = await introspectSchema(
       { posts },
       { posts: { defaultSort: { column: "created_at", direction: "asc" } } },
     );
@@ -287,34 +287,34 @@ describe("introspectSchema", () => {
     });
   });
 
-  it("returns tables sorted alphabetically", () => {
+  it("returns tables sorted alphabetically", async () => {
     const schema = { posts, users, roles };
-    const result = introspectSchema(schema);
+    const result = await introspectSchema(schema);
 
     expect(result.map((t) => t.name)).toEqual(["posts", "roles", "users"]);
   });
 
-  it("returns empty array for empty schema", () => {
-    const result = introspectSchema({});
+  it("returns empty array for empty schema", async () => {
+    const result = await introspectSchema({});
     expect(result).toEqual([]);
   });
 
-  it("stores the original drizzle table reference", () => {
-    const result = introspectSchema({ users });
+  it("stores the original drizzle table reference", async () => {
+    const result = await introspectSchema({ users });
     expect(result[0].drizzleTable).toBe(users);
   });
 
-  it("stores overrides on the table meta", () => {
+  it("stores overrides on the table meta", async () => {
     const overrides = {
       label: "Blog Posts",
       listColumns: ["title"],
     };
-    const result = introspectSchema({ posts }, { posts: overrides });
+    const result = await introspectSchema({ posts }, { posts: overrides });
 
     expect(result[0].overrides).toBe(overrides);
   });
 
-  it("skips Relations exports without throwing", () => {
+  it("skips Relations exports without throwing", async () => {
     const usersRelations = relations(users, ({ many }) => ({
       posts: many(posts),
     }));
@@ -325,7 +325,7 @@ describe("introspectSchema", () => {
       usersRelations,
     };
 
-    const result = introspectSchema(schema);
+    const result = await introspectSchema(schema);
     const names = result.map((t) => t.name);
     expect(names).toContain("users");
     expect(names).toContain("posts");
@@ -333,7 +333,7 @@ describe("introspectSchema", () => {
     expect(result).toHaveLength(2);
   });
 
-  it("skips non-table values like strings, functions, and plain objects", () => {
+  it("skips non-table values like strings, functions, and plain objects", async () => {
     const schema = {
       users,
       helperFn: () => "not a table",
@@ -341,7 +341,7 @@ describe("introspectSchema", () => {
       someObject: { foo: "bar" },
     };
 
-    const result = introspectSchema(schema as Record<string, unknown>);
+    const result = await introspectSchema(schema as Record<string, unknown>);
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("users");
   });

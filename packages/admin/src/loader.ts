@@ -1,4 +1,3 @@
-import { getTableColumns, getTableName, eq, like, or, asc, desc, isTable } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
@@ -11,6 +10,19 @@ import type {
   DashboardStat,
   RecentItem,
 } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Lazy-loaded drizzle-orm helpers (issue #188).
+//
+// Deferring the import keeps `@cfast/admin/server` module evaluation instant
+// so vitest tests no longer bust the default 5 s timeout on cold import.
+// ---------------------------------------------------------------------------
+
+let _drizzle: typeof import("drizzle-orm") | undefined;
+
+async function loadDrizzle() {
+  return (_drizzle ??= await import("drizzle-orm"));
+}
 
 const PAGE_SIZE = 20;
 
@@ -86,7 +98,8 @@ function findTableMeta(
  * Get a drizzle column reference by column name from a SQLiteTable.
  * Returns the column object that can be used with eq(), like(), etc.
  */
-function getColumn(drizzleTable: SQLiteTable, columnName: string) {
+async function getColumn(drizzleTable: SQLiteTable, columnName: string) {
+  const { getTableColumns } = await loadDrizzle();
   const columns = getTableColumns(drizzleTable);
   return columns[columnName];
 }
@@ -94,7 +107,8 @@ function getColumn(drizzleTable: SQLiteTable, columnName: string) {
 /**
  * Find the users table in the schema by looking for a table named "user" or "users".
  */
-function findUsersTable(schema: Record<string, unknown>): SQLiteTable | undefined {
+async function findUsersTable(schema: Record<string, unknown>): Promise<SQLiteTable | undefined> {
+  const { isTable, getTableName } = await loadDrizzle();
   for (const value of Object.values(schema)) {
     if (!isTable(value)) continue;
     const name = getTableName(value);
@@ -108,23 +122,24 @@ function findUsersTable(schema: Record<string, unknown>): SQLiteTable | undefine
 /**
  * Build a search WHERE clause for LIKE matching on searchable columns.
  */
-function buildSearchWhere(
+async function buildSearchWhere(
   drizzleTable: SQLiteTable,
   searchableColumns: string[],
   search: string,
-): SQL | undefined {
+): Promise<SQL | undefined> {
   if (!search || searchableColumns.length === 0) {
     return undefined;
   }
 
+  const { like, or } = await loadDrizzle();
+
   const pattern = `%${search}%`;
-  const conditions = searchableColumns
-    .map((colName) => {
-      const col = getColumn(drizzleTable, colName);
-      if (!col) return undefined;
-      return like(col, pattern);
-    })
-    .filter((c): c is NonNullable<typeof c> => c != null);
+  const conditions: SQL[] = [];
+  for (const colName of searchableColumns) {
+    const col = await getColumn(drizzleTable, colName);
+    if (!col) continue;
+    conditions.push(like(col, pattern));
+  }
 
   if (conditions.length === 0) return undefined;
   if (conditions.length === 1) return conditions[0];
@@ -134,13 +149,14 @@ function buildSearchWhere(
 /**
  * Build an orderBy clause from sort column name and direction.
  */
-function buildOrderBy(
+async function buildOrderBy(
   drizzleTable: SQLiteTable,
   sortColumn: string,
   direction: "asc" | "desc",
-): SQL | undefined {
-  const col = getColumn(drizzleTable, sortColumn);
+): Promise<SQL | undefined> {
+  const col = await getColumn(drizzleTable, sortColumn);
   if (!col) return undefined;
+  const { asc, desc } = await loadDrizzle();
   return direction === "asc" ? asc(col) : desc(col);
 }
 
@@ -175,7 +191,7 @@ async function loadDashboard(
           .query(meta.drizzleTable)
           .findMany({
             limit,
-            orderBy: buildOrderBy(
+            orderBy: await buildOrderBy(
               meta.drizzleTable,
               meta.primaryKey,
               "desc",
@@ -206,7 +222,7 @@ async function loadDashboard(
         .query(firstMeta.drizzleTable)
         .findMany({
           limit: 5,
-          orderBy: buildOrderBy(
+          orderBy: await buildOrderBy(
             firstMeta.drizzleTable,
             firstMeta.primaryKey,
             "desc",
@@ -259,12 +275,12 @@ async function loadList(
   const sortColumn = sort ?? meta.defaultSort.column;
   const sortDirection = sort ? direction : meta.defaultSort.direction;
 
-  const where = buildSearchWhere(
+  const where = await buildSearchWhere(
     meta.drizzleTable,
     meta.searchableColumns,
     search,
   );
-  const orderBy = buildOrderBy(meta.drizzleTable, sortColumn, sortDirection);
+  const orderBy = await buildOrderBy(meta.drizzleTable, sortColumn, sortDirection);
 
   // Fetch total count (using empty columns projection and array length)
   const allRows = await db
@@ -326,7 +342,7 @@ async function loadDetail(
     };
   }
 
-  const pkCol = getColumn(meta.drizzleTable, meta.primaryKey);
+  const pkCol = await getColumn(meta.drizzleTable, meta.primaryKey);
   if (!pkCol) {
     return {
       view: "error",
@@ -336,6 +352,7 @@ async function loadDetail(
     };
   }
 
+  const { eq } = await loadDrizzle();
   const item = asRecord(await db
     .query(meta.drizzleTable)
     .findFirst({ where: eq(pkCol, id) })
@@ -413,7 +430,7 @@ async function loadEdit(
     };
   }
 
-  const pkCol = getColumn(meta.drizzleTable, meta.primaryKey);
+  const pkCol = await getColumn(meta.drizzleTable, meta.primaryKey);
   if (!pkCol) {
     return {
       view: "error",
@@ -423,6 +440,7 @@ async function loadEdit(
     };
   }
 
+  const { eq } = await loadDrizzle();
   const item = asRecord(await db
     .query(meta.drizzleTable)
     .findFirst({ where: eq(pkCol, id) })
@@ -460,7 +478,7 @@ async function loadUserList(
   search: string,
 ): Promise<AdminLoaderData> {
   const tables = tableList(tableMetas);
-  const usersTable = findUsersTable(config.schema);
+  const usersTable = await findUsersTable(config.schema);
 
   if (!usersTable) {
     return {
@@ -472,11 +490,12 @@ async function loadUserList(
   }
 
   const unsafeDb = db.unsafe();
+  const { getTableColumns } = await loadDrizzle();
   const columns = getTableColumns(usersTable);
 
   // Build search where for users (search by name or email)
   const searchableUserCols = ["name", "email"].filter((c) => columns[c] != null);
-  const where = buildSearchWhere(usersTable, searchableUserCols, search);
+  const where = await buildSearchWhere(usersTable, searchableUserCols, search);
 
   // Get total count
   const allRows = await unsafeDb
@@ -538,7 +557,7 @@ async function loadUserDetail(
   targetId: string,
 ): Promise<AdminLoaderData> {
   const tables = tableList(tableMetas);
-  const usersTable = findUsersTable(config.schema);
+  const usersTable = await findUsersTable(config.schema);
 
   if (!usersTable) {
     return {
@@ -550,7 +569,7 @@ async function loadUserDetail(
   }
 
   const unsafeDb = db.unsafe();
-  const pkCol = getColumn(usersTable, "id");
+  const pkCol = await getColumn(usersTable, "id");
   if (!pkCol) {
     return {
       view: "error",
@@ -560,6 +579,7 @@ async function loadUserDetail(
     };
   }
 
+  const { eq } = await loadDrizzle();
   const raw = asRecord(await unsafeDb
     .query(usersTable)
     .findFirst({ where: eq(pkCol, targetId) })
@@ -616,7 +636,7 @@ async function loadUserDetail(
  * import { createAdminLoader, introspectSchema } from "@cfast/admin";
  * import * as schema from "~/schema";
  *
- * const tableMetas = introspectSchema(schema);
+ * const tableMetas = await introspectSchema(schema);
  * export const adminLoader = createAdminLoader(config, tableMetas);
  * ```
  */

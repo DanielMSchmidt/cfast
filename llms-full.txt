@@ -791,7 +791,7 @@ import { createAdminAuth } from "@cfast/auth";
 
 const adminAuth = createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL }));
 
-const admin = createAdmin({
+const admin = await createAdmin({
   db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
   auth: adminAuth,  // AdminAuthBridge satisfies AdminAuthConfig
   schema,
@@ -1824,7 +1824,7 @@ Complete admin panel generated from Drizzle schema. One route = full admin.
 ```typescript
 import { createAdmin } from "@cfast/admin";
 
-const admin = createAdmin({
+const admin = await createAdmin({
   db,                     // DB factory: (grants, user) => Db
   auth,                   // AdminAuthConfig (see below)
   schema,                 // Drizzle schema
@@ -1866,14 +1866,14 @@ const auth = createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL })
 // app/admin.server.ts
 import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
 
-const tableMetas = introspectSchema(schema);
+const tableMetas = await introspectSchema(schema);
 export const adminLoader = createAdminLoader(config, tableMetas);
 export const adminAction = createAdminAction(config, tableMetas);
 
 // app/routes/admin.tsx
 import { createAdminComponent, introspectSchema } from "@cfast/admin";
 
-const tableMetas = introspectSchema(schema);
+const tableMetas = await introspectSchema(schema);
 const AdminComponent = createAdminComponent(tableMetas);
 
 export const loader = adminLoader;
@@ -2468,7 +2468,7 @@ import { createAdmin } from "@cfast/admin";
 import { createAdminAuth } from "@cfast/auth";
 import * as schema from "~/schema";
 
-const admin = createAdmin({
+const admin = await createAdmin({
   db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
   auth: createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL })),
   schema,

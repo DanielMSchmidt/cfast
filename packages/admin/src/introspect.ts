@@ -1,12 +1,29 @@
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
-import { getTableConfig } from "drizzle-orm/sqlite-core";
-import { getTableColumns, getTableName } from "drizzle-orm";
-import { isTable } from "drizzle-orm";
 import type {
   AdminColumnConfig,
   AdminTableMeta,
   TableOverrides,
 } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Lazy-loaded drizzle-orm helpers.
+//
+// Importing drizzle-orm and drizzle-orm/sqlite-core at module scope pulls in
+// the full adapter/introspection machinery (~5-8 s cold-start).  By deferring
+// the imports to the first call of `introspectSchema` we keep the module
+// evaluation instant, which fixes vitest default-timeout busts (issue #188).
+// ---------------------------------------------------------------------------
+
+let _drizzle: typeof import("drizzle-orm") | undefined;
+let _sqliteCore: typeof import("drizzle-orm/sqlite-core") | undefined;
+
+async function loadDrizzle() {
+  return (_drizzle ??= await import("drizzle-orm"));
+}
+
+async function loadSqliteCore() {
+  return (_sqliteCore ??= await import("drizzle-orm/sqlite-core"));
+}
 
 /**
  * Auth-related tables that are auto-excluded from the admin UI.
@@ -111,24 +128,29 @@ export function columnNameToLabel(name: string): string {
  * Use this directly when you need server/client code splitting (the result is
  * JSON-serializable minus the `drizzleTable` references, which stay on the server).
  *
+ * Heavy drizzle-orm imports are loaded lazily on first call so that merely
+ * importing `@cfast/admin/server` does not pull in the full adapter tree.
+ *
  * @param schema - Your Drizzle schema object (e.g., `import * as schema from "~/schema"`).
  * @param tableOverrides - Optional per-table display and behavior overrides, keyed by table name.
- * @returns An array of {@link AdminTableMeta} sorted alphabetically by table name.
+ * @returns A promise resolving to an array of {@link AdminTableMeta} sorted alphabetically by table name.
  *
  * @example
  * ```typescript
  * import { introspectSchema } from "@cfast/admin";
  * import * as schema from "~/schema";
  *
- * const tableMetas = introspectSchema(schema, {
+ * const tableMetas = await introspectSchema(schema, {
  *   posts: { label: "Blog Posts", listColumns: ["title", "createdAt"] },
  * });
  * ```
  */
-export function introspectSchema(
+export async function introspectSchema(
   schema: Record<string, unknown>,
   tableOverrides?: Record<string, TableOverrides>,
-): AdminTableMeta[] {
+): Promise<AdminTableMeta[]> {
+  const { isTable, getTableName } = await loadDrizzle();
+
   const result: AdminTableMeta[] = [];
 
   for (const [_key, value] of Object.entries(schema)) {
@@ -150,7 +172,7 @@ export function introspectSchema(
       continue;
     }
 
-    const columns = introspectColumns(table);
+    const columns = await introspectColumns(table);
     if (columns.length === 0) continue;
 
     const primaryKey =
@@ -197,7 +219,10 @@ export function introspectSchema(
 /**
  * Extract column metadata from a Drizzle SQLiteTable.
  */
-function introspectColumns(table: SQLiteTable): AdminColumnConfig[] {
+async function introspectColumns(table: SQLiteTable): Promise<AdminColumnConfig[]> {
+  const { getTableColumns, getTableName } = await loadDrizzle();
+  const { getTableConfig } = await loadSqliteCore();
+
   const drizzleColumns = getTableColumns(table);
   const tableConfig = getTableConfig(table);
   const foreignKeys = tableConfig.foreignKeys;

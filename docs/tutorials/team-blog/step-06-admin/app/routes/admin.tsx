@@ -4,7 +4,7 @@ import { createAdminComponent, introspectSchema } from "@cfast/admin";
 import * as schema from "~/db/schema";
 
 // Client-safe: Component built from schema introspection only
-const tableMetas = introspectSchema({
+const tableMetas = await introspectSchema({
   users: schema.users,
   posts: schema.posts,
   roles: schema.roles,

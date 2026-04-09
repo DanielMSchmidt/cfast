@@ -304,9 +304,9 @@ export function mockDbWithError(errorMessage: string): Db {
 // 6. testTableMetas
 // ---------------------------------------------------------------------------
 
-export function testTableMetas(
+export async function testTableMetas(
   overrides?: Record<string, TableOverrides>,
-): AdminTableMeta[] {
+): Promise<AdminTableMeta[]> {
   return introspectSchema(testSchema, overrides);
 }
 

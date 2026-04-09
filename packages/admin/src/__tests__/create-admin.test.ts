@@ -22,8 +22,8 @@ function makeConfig(overrides?: Partial<AdminConfig>): AdminConfig {
 }
 
 describe("createAdmin", () => {
-  it("returns loader, action, and Component", () => {
-    const admin = createAdmin(makeConfig());
+  it("returns loader, action, and Component", async () => {
+    const admin = await createAdmin(makeConfig());
 
     expect(admin).toHaveProperty("loader");
     expect(admin).toHaveProperty("action");
@@ -34,7 +34,7 @@ describe("createAdmin", () => {
   });
 
   it("filters auto-excluded auth tables from introspection", async () => {
-    const admin = createAdmin(makeConfig());
+    const admin = await createAdmin(makeConfig());
     // session is in testSchema but auto-excluded — should not appear in sidebar
     const request = new Request("http://localhost/admin");
     const data = await admin.loader(request);
@@ -44,7 +44,7 @@ describe("createAdmin", () => {
   });
 
   it("applies table overrides during introspection", async () => {
-    const admin = createAdmin(
+    const admin = await createAdmin(
       makeConfig({ tables: { posts: { label: "Articles" } } }),
     );
     const request = new Request("http://localhost/admin?view=posts");
@@ -55,7 +55,7 @@ describe("createAdmin", () => {
 
   it("loader and action share the same auth config", async () => {
     const auth = mockAuthConfig();
-    const admin = createAdmin(makeConfig({ auth }));
+    const admin = await createAdmin(makeConfig({ auth }));
 
     await admin.loader(new Request("http://localhost/admin"));
     await admin.action(
