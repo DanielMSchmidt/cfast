@@ -563,4 +563,47 @@ describe("AutoForm — child tables (issue #102)", () => {
       screen.getByRole("group", { name: /recipe steps/i }),
     ).toBeInTheDocument();
   });
+
+  it("passes the form instance to child row field components", () => {
+    const formSpy = vi.fn();
+
+    // Custom field component that captures the `form` prop
+    function SpyInput({ name, label, form: formInstance, register }: FieldComponentProps) {
+      if (formInstance) formSpy(formInstance);
+      return (
+        <div>
+          <label htmlFor={name}>{label}</label>
+          <input id={name} {...register(name)} />
+        </div>
+      );
+    }
+
+    render(
+      <AutoForm
+        table={recipes}
+        mode="create"
+        children={{
+          ingredients: {
+            table: ingredients,
+            foreignKey: "recipe_id",
+            minRows: 1,
+            fields: {
+              name: { component: SpyInput },
+            },
+          },
+        }}
+        exclude={["id"]}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    // The spy should have been called at least once (for the single row's name field)
+    expect(formSpy).toHaveBeenCalled();
+    // The form instance should have standard react-hook-form methods
+    const receivedForm = formSpy.mock.calls[0]![0];
+    expect(receivedForm).toHaveProperty("register");
+    expect(receivedForm).toHaveProperty("setValue");
+    expect(receivedForm).toHaveProperty("getValues");
+    expect(receivedForm).toHaveProperty("formState");
+  });
 });

@@ -132,6 +132,7 @@ export function DefaultChildTable({
                 error={typeof message === "string" ? message : undefined}
                 enumValues={field.enumValues}
                 register={form.register}
+                form={form}
               />
             );
           })}
