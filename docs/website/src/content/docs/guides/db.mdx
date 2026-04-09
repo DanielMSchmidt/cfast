@@ -202,3 +202,18 @@ await op.run({}); // executes without any permission check
 
 `unsafe()` returns a scoped `Db` instance -- it does not affect the original. Use `git grep '.unsafe()'` to audit every permission bypass in your codebase.
 
+### Clearing the Lookup Cache
+
+When you use `with` (relation lookups) on queries, `@cfast/db` caches the resolved lookup metadata per `Db` instance. In tests that reuse a single `Db` across multiple grant configurations or schema changes, stale cache entries can cause unexpected results.
+
+Call `db.clearLookupCache()` to reset it:
+
+```typescript
+db.clearLookupCache(); // clears the per-instance `with` lookup cache
+
+// Now the next query with `with` will re-resolve lookups
+const posts = await db.query(postsTable).findMany({ with: { comments: true } }).run({});
+```
+
+This is primarily useful in test suites. In production, each request creates a fresh `Db` instance, so the cache stays scoped to a single request lifecycle.
+

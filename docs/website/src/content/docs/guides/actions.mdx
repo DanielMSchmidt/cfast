@@ -144,6 +144,28 @@ Actions accept input from both FormData and JSON. The `_action` discriminator is
 
 This lets you use standard forms or programmatic `fetch` calls interchangeably.
 
+### Server-Side Sub-Action Calls with `dispatch()`
+
+When one action needs to call another action on the server, use `dispatch()` instead of constructing a `Request`. It bypasses HTTP entirely -- no cookie forwarding or URL construction needed:
+
+```typescript
+import { parentAction, childAction } from "~/actions/posts";
+
+const parent = createAction((db, input, ctx) =>
+  compose(
+    [parentAction.buildOperation(db, input, ctx)],
+    async (runParent) => {
+      await runParent({});
+      // Call child action directly on the server
+      await childAction.dispatch({ ctx, input: { postId: input.postId } });
+      return redirect("/posts");
+    },
+  ),
+);
+```
+
+`dispatch()` runs the action's operation function directly with the provided context, skipping request parsing and cookie handling. Use it whenever server code needs to trigger another action programmatically.
+
 ### Integrating with @cfast/ui
 
 `@cfast/actions` pairs naturally with `@cfast/ui` components. `ActionButton` and `PermissionGate` consume action descriptors directly, so you get permission-aware rendering without manual checks:
