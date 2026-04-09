@@ -37,7 +37,7 @@ async function callAction(
   fd: FormData,
   tableMetas?: AdminTableMeta[],
 ) {
-  const metas = tableMetas ?? testTableMetas();
+  const metas = tableMetas ?? await testTableMetas();
   const action = createAdminAction(config, metas);
   const request = new Request("http://localhost/admin", {
     method: "POST",
@@ -555,10 +555,10 @@ describe("stopImpersonation action", () => {
 // ---------------------------------------------------------------------------
 
 describe("custom action", () => {
-  function metasWithCustomAction(
+  async function metasWithCustomAction(
     handler = vi.fn().mockResolvedValue(undefined),
-  ): { metas: AdminTableMeta[]; handler: ReturnType<typeof vi.fn> } {
-    const metas = testTableMetas({
+  ): Promise<{ metas: AdminTableMeta[]; handler: ReturnType<typeof vi.fn> }> {
+    const metas = await testTableMetas({
       posts: {
         actions: {
           row: [{ label: "archive", action: handler }],
@@ -570,7 +570,7 @@ describe("custom action", () => {
 
   it("returns error when _table missing", async () => {
     const config = makeConfig();
-    const { metas } = metasWithCustomAction();
+    const { metas } = await metasWithCustomAction();
     const result = await callAction(
       config,
       formData({ _action: "custom", _actionName: "archive", _id: "1" }),
@@ -581,7 +581,7 @@ describe("custom action", () => {
 
   it("returns error when _actionName missing", async () => {
     const config = makeConfig();
-    const { metas } = metasWithCustomAction();
+    const { metas } = await metasWithCustomAction();
     const result = await callAction(
       config,
       formData({ _action: "custom", _table: "posts", _id: "1" }),
@@ -592,7 +592,7 @@ describe("custom action", () => {
 
   it("returns error when _id missing", async () => {
     const config = makeConfig();
-    const { metas } = metasWithCustomAction();
+    const { metas } = await metasWithCustomAction();
     const result = await callAction(
       config,
       formData({
@@ -607,7 +607,7 @@ describe("custom action", () => {
 
   it("returns error when table has no custom actions", async () => {
     const config = makeConfig();
-    const metas = testTableMetas(); // no custom actions
+    const metas = await testTableMetas(); // no custom actions
     const result = await callAction(
       config,
       formData({
@@ -625,7 +625,7 @@ describe("custom action", () => {
 
   it("executes custom row action handler and returns success", async () => {
     const handler = vi.fn().mockResolvedValue(undefined);
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig();
 
     const result = await callAction(
@@ -661,7 +661,7 @@ describe("custom action", () => {
         captured = ctx;
       },
     );
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
 
     const adminUser = mockAdminUser({ id: "admin-42", email: "a@b.c" });
     const grants = [{ action: "read", table: "posts" }];
@@ -724,7 +724,7 @@ describe("custom action", () => {
         return { id };
       },
     );
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig({
       auth,
       db: vi.fn().mockReturnValue(scopedDb),
@@ -767,7 +767,7 @@ describe("custom action", () => {
           .run({});
       },
     );
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig({ db: vi.fn().mockReturnValue(scopedDb) });
 
     const result = await callAction(
@@ -786,7 +786,7 @@ describe("custom action", () => {
   });
 
   it("returns error when action name not found", async () => {
-    const { metas } = metasWithCustomAction();
+    const { metas } = await metasWithCustomAction();
     const config = makeConfig();
 
     const result = await callAction(
@@ -807,7 +807,7 @@ describe("custom action", () => {
 
   it("returns error when custom action throws", async () => {
     const handler = vi.fn().mockRejectedValue(new Error("action exploded"));
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig();
 
     const result = await callAction(
@@ -844,7 +844,7 @@ describe("custom action", () => {
     const handler = vi.fn(async (_id, _fd, ctx: RowActionContext) => {
       captured = ctx;
     });
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig(); // no email field
 
     await callAction(
@@ -870,7 +870,7 @@ describe("custom action", () => {
     const handler = vi.fn(async (_id, _fd, ctx: RowActionContext) => {
       captured = ctx;
     });
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig({ email: emailClient });
 
     await callAction(
@@ -901,7 +901,7 @@ describe("custom action", () => {
     const handler = vi.fn(async (_id, _fd, ctx: RowActionContext) => {
       captured = ctx;
     });
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig({ email: getter });
 
     // First dispatch.
@@ -948,7 +948,7 @@ describe("custom action", () => {
       });
       return { id };
     });
-    const { metas } = metasWithCustomAction(handler);
+    const { metas } = await metasWithCustomAction(handler);
     const config = makeConfig({ email: emailClient });
 
     const result = await callAction(

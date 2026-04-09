@@ -17,7 +17,7 @@ import { createAdminComponent } from "./components/admin-root.js";
  * instead.
  *
  * @param config - The admin configuration including DB factory, auth adapter, and schema.
- * @returns An object with `loader`, `action`, and `Component` to mount on a React Router route.
+ * @returns A promise resolving to an object with `loader`, `action`, and `Component` to mount on a React Router route.
  *
  * @example
  * ```typescript
@@ -25,7 +25,7 @@ import { createAdminComponent } from "./components/admin-root.js";
  * import { createAdmin } from "@cfast/admin";
  * import * as schema from "~/schema";
  *
- * const admin = createAdmin({
+ * const admin = await createAdmin({
  *   db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
  *   auth,
  *   schema,
@@ -37,8 +37,8 @@ import { createAdminComponent } from "./components/admin-root.js";
  * export default admin.Component;
  * ```
  */
-export function createAdmin(config: AdminConfig) {
-  const tableMetas = introspectSchema(config.schema, config.tables);
+export async function createAdmin(config: AdminConfig) {
+  const tableMetas = await introspectSchema(config.schema, config.tables);
   const loader = createAdminLoader(config, tableMetas);
   const action = createAdminAction(config, tableMetas);
   const Component = createAdminComponent(tableMetas);

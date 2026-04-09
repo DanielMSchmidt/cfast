@@ -3,7 +3,7 @@ import { createAdminComponent, introspectSchema } from "@cfast/admin";
 import { adminLoader, adminAction } from "~/admin.server";
 import * as schema from "~/db/schema";
 
-const tableMetas = introspectSchema(schema);
+const tableMetas = await introspectSchema(schema);
 const AdminComponent = createAdminComponent(tableMetas);
 
 export async function loader(args: LoaderFunctionArgs) {

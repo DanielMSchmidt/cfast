@@ -29,7 +29,7 @@ async function callLoader(
   config: AdminConfig,
   urlPath: string,
 ): Promise<AdminLoaderData> {
-  const tableMetas = testTableMetas();
+  const tableMetas = await testTableMetas();
   const loader = createAdminLoader(config, tableMetas);
   const request = new Request(new URL(urlPath, "http://localhost"));
   return loader(request);
@@ -509,7 +509,7 @@ describe("user list view", () => {
       title: text("title").notNull(),
     });
     const schemaWithoutUsers = { articles };
-    const metas = (await import("../introspect.js")).introspectSchema(
+    const metas = await (await import("../introspect.js")).introspectSchema(
       schemaWithoutUsers,
     );
     const config: AdminConfig = {
@@ -574,7 +574,7 @@ describe("user detail view", () => {
       title: text("title").notNull(),
     });
     const schemaWithoutUsers = { articles };
-    const metas = (await import("../introspect.js")).introspectSchema(
+    const metas = await (await import("../introspect.js")).introspectSchema(
       schemaWithoutUsers,
     );
     const config: AdminConfig = {

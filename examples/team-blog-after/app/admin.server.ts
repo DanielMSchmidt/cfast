@@ -54,7 +54,7 @@ const adminConfig = {
 // Introspect schema (shared between server and client)
 // ---------------------------------------------------------------------------
 
-const tableMetas = introspectSchema(adminConfig.schema);
+const tableMetas = await introspectSchema(adminConfig.schema);
 
 // ---------------------------------------------------------------------------
 // Server-only loader and action

@@ -7,7 +7,7 @@ import * as schema from "~/db/schema";
 // Client-safe: Component built from schema introspection only (no server deps)
 // ---------------------------------------------------------------------------
 
-const tableMetas = introspectSchema({
+const tableMetas = await introspectSchema({
   users: schema.users,
   posts: schema.posts,
   comments: schema.comments,

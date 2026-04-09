@@ -8,7 +8,7 @@ Use `@cfast/admin` when you need an admin panel for a cfast app. It reads your D
 
 ## Key concepts
 
-- **Schema introspection**: `introspectSchema()` reads Drizzle tables, infers column types/labels/relations, and produces `AdminTableMeta[]` config.
+- **Schema introspection**: `introspectSchema()` reads Drizzle tables, infers column types/labels/relations, and produces `AdminTableMeta[]` config. Returns a `Promise` — use `await`.
 - **Thin layer**: Admin generates configuration. Rendering is delegated to `@cfast/ui` components (`ListView`, `DetailView`, `DataTable`, etc.) and `@cfast/forms` (`AutoForm`).
 - **Permission-aware**: All CRUD operations go through `@cfast/db` with the user's grants. The admin UI respects your permission system -- an editor sees what editors see.
 - **Auth adapter pattern**: Admin does not depend on `@cfast/auth` directly. You provide an `AdminAuthConfig` with callbacks for authentication, role management, and impersonation.
@@ -20,7 +20,7 @@ Use `@cfast/admin` when you need an admin panel for a cfast app. It reads your D
 ```typescript
 import { createAdmin } from "@cfast/admin";
 
-createAdmin(config: AdminConfig): { loader, action, Component }
+createAdmin(config: AdminConfig): Promise<{ loader, action, Component }>
 ```
 
 Returns a `{ loader, action, Component }` triple to mount on a React Router route.
@@ -178,7 +178,7 @@ const approveVendor: RowAction = {
   },
 };
 
-createAdmin({
+await createAdmin({
   db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
   auth,
   schema,
@@ -220,7 +220,7 @@ import {
 import type { AdminAuthConfig, AdminUser } from "@cfast/admin/server";
 import * as schema from "~/db/schema";
 
-const tableMetas = introspectSchema({ items: schema.items });
+const tableMetas = await introspectSchema({ items: schema.items });
 export const adminLoader = createAdminLoader(config, tableMetas);
 export const adminAction = createAdminAction(config, tableMetas);
 ```
@@ -231,7 +231,7 @@ import { createAdminComponent, introspectSchema } from "@cfast/admin";
 import { adminLoader, adminAction } from "~/admin.server";
 import * as schema from "~/db/schema";
 
-const Component = createAdminComponent(introspectSchema({ items: schema.items }));
+const Component = createAdminComponent(await introspectSchema({ items: schema.items }));
 export const loader = adminLoader;
 export const action = adminAction;
 export default Component;
@@ -248,7 +248,7 @@ React contexts into the server bundle.
 introspectSchema(
   schema: Record<string, SQLiteTable>,
   tableOverrides?: Record<string, TableOverrides>,
-): AdminTableMeta[]
+): Promise<AdminTableMeta[]>
 ```
 
 Auto-excludes auth-internal tables (`session`, `account`, `verification`, `passkey`) unless explicitly configured.
@@ -262,7 +262,7 @@ Auto-excludes auth-internal tables (`session`, `account`, `verification`, `passk
 import { createAdmin } from "@cfast/admin";
 import * as schema from "~/schema";
 
-const admin = createAdmin({
+const admin = await createAdmin({
   db: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
   auth: {
     requireUser: async (request) => {
@@ -286,7 +286,7 @@ export default admin.Component;
 ### With table overrides and dashboard
 
 ```typescript
-const admin = createAdmin({
+const admin = await createAdmin({
   db, auth, schema,
   tables: {
     posts: {

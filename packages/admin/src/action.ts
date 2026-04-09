@@ -1,4 +1,3 @@
-import { getTableColumns, eq } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Db } from "@cfast/db";
 import type { Grant } from "@cfast/permissions";
@@ -11,6 +10,19 @@ import type {
   RowActionContext,
   RowActionEmailClient,
 } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Lazy-loaded drizzle-orm helpers (issue #188).
+//
+// Deferring the import keeps `@cfast/admin/server` module evaluation instant
+// so vitest tests no longer bust the default 5 s timeout on cold import.
+// ---------------------------------------------------------------------------
+
+let _drizzle: typeof import("drizzle-orm") | undefined;
+
+async function loadDrizzle() {
+  return (_drizzle ??= await import("drizzle-orm"));
+}
 
 /**
  * Resolve the optional email client from an {@link AdminConfig}.
@@ -41,7 +53,8 @@ const INTERNAL_FIELDS = new Set([
 /**
  * Get a drizzle column reference by column name from a SQLiteTable.
  */
-function getColumn(drizzleTable: SQLiteTable, columnName: string) {
+async function getColumn(drizzleTable: SQLiteTable, columnName: string) {
+  const { getTableColumns } = await loadDrizzle();
   const columns = getTableColumns(drizzleTable);
   return columns[columnName];
 }
@@ -257,7 +270,7 @@ async function handleUpdate(
     return { error: `Table "${tableName}" not found.` };
   }
 
-  const pkCol = getColumn(meta.drizzleTable, meta.primaryKey);
+  const pkCol = await getColumn(meta.drizzleTable, meta.primaryKey);
   if (!pkCol) {
     return { error: `Primary key column "${meta.primaryKey}" not found.` };
   }
@@ -265,6 +278,7 @@ async function handleUpdate(
   const values = extractFormValues(formData, meta.columns);
 
   try {
+    const { eq } = await loadDrizzle();
     await db
       .update(meta.drizzleTable)
       .set(values)
@@ -300,12 +314,13 @@ async function handleDelete(
     return { error: `Table "${tableName}" not found.` };
   }
 
-  const pkCol = getColumn(meta.drizzleTable, meta.primaryKey);
+  const pkCol = await getColumn(meta.drizzleTable, meta.primaryKey);
   if (!pkCol) {
     return { error: `Primary key column "${meta.primaryKey}" not found.` };
   }
 
   try {
+    const { eq } = await loadDrizzle();
     await db
       .delete(meta.drizzleTable)
       .where(eq(pkCol, id))
