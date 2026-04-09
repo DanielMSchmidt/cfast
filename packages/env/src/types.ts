@@ -88,6 +88,8 @@ export type VarBindingDef = {
   default?: string | EnvironmentDefaults;
   /** Optional validation callback. Return `true` to accept, `false` to reject. */
   validate?: (value: string) => boolean;
+  /** When `true`, a missing binding produces `undefined` instead of a validation error. */
+  optional?: boolean;
 };
 
 /**
@@ -108,6 +110,8 @@ export type VarBindingDef = {
 export type ObjectBindingDef = {
   /** The Cloudflare binding type: `"d1"`, `"kv"`, `"r2"`, `"queue"`, `"durable-object"`, or `"service"`. */
   type: Exclude<BindingType, "var" | "secret">;
+  /** When `true`, a missing binding produces `undefined` instead of a validation error. */
+  optional?: boolean;
 };
 
 /**
@@ -125,6 +129,8 @@ export type ObjectBindingDef = {
 export type SecretBindingDef = {
   /** Must be `"secret"` to identify this as a secret string binding. */
   type: "secret";
+  /** When `true`, a missing binding produces `undefined` instead of a validation error. */
+  optional?: boolean;
 };
 
 /**
@@ -182,6 +188,14 @@ export type EnvValidationError = {
  * // { DB: D1Database; API_KEY: string }
  * ```
  */
+/**
+ * Resolves a single binding definition to its output type.
+ * If the binding has `optional: true`, the type includes `undefined`.
+ */
+type ResolveBinding<D extends BindingDef> = D extends { optional: true }
+  ? BindingTypeMap[D["type"]] | undefined
+  : BindingTypeMap[D["type"]];
+
 export type ParsedEnv<S extends Schema> = {
-  [K in keyof S]: BindingTypeMap[S[K]["type"]];
+  [K in keyof S]: ResolveBinding<S[K]>;
 };

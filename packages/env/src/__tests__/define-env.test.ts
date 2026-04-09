@@ -170,6 +170,48 @@ describe("defineEnv", () => {
     });
   });
 
+  describe("optional bindings", () => {
+    it("optional var + missing → result is undefined, no error", () => {
+      const env = defineEnv({
+        LOG_LEVEL: { type: "var", optional: true },
+      });
+      env.init({});
+      expect(env.get().LOG_LEVEL).toBeUndefined();
+    });
+
+    it("optional var + present → result is the value", () => {
+      const env = defineEnv({
+        LOG_LEVEL: { type: "var", optional: true },
+      });
+      env.init({ LOG_LEVEL: "debug" });
+      expect(env.get().LOG_LEVEL).toBe("debug");
+    });
+
+    it("optional secret + missing → result is undefined, no error", () => {
+      const env = defineEnv({
+        API_KEY: { type: "secret", optional: true },
+      });
+      env.init({});
+      expect(env.get().API_KEY).toBeUndefined();
+    });
+
+    it("optional d1 + missing → result is undefined, no error", () => {
+      const env = defineEnv({
+        DB: { type: "d1", optional: true },
+      });
+      env.init({});
+      expect(env.get().DB).toBeUndefined();
+    });
+
+    it("optional var with default + missing → uses default (not undefined)", () => {
+      const env = defineEnv({
+        LOG_LEVEL: { type: "var", optional: true, default: "info" },
+      });
+      env.init({});
+      expect(env.get().LOG_LEVEL).toBe("info");
+    });
+  });
+
   describe("multiple bindings", () => {
     it("validates and returns all bindings", () => {
       const env = defineEnv({

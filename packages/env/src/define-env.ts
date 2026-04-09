@@ -1,4 +1,10 @@
-import type { Schema, ParsedEnv, BindingDef, EnvironmentName, EnvValidationError } from "./types";
+import type {
+  Schema,
+  ParsedEnv,
+  BindingDef,
+  EnvironmentName,
+  EnvValidationError,
+} from "./types";
 import { EnvError } from "./errors";
 import { validateBinding } from "./validators";
 
@@ -99,6 +105,12 @@ export function defineEnv<S extends Schema>(schema: S): Env<S> {
             });
             continue;
           }
+        }
+
+        // When a binding is missing and marked optional, set undefined and skip validation
+        if (value == null && def.optional === true) {
+          result[key] = undefined;
+          continue;
         }
 
         const error = validateBinding(key, def, value);
