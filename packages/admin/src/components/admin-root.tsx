@@ -2,7 +2,7 @@
 
 import { type ReactElement, type ReactNode, useContext } from "react";
 import { useLoaderData, useActionData, useSubmit } from "react-router";
-import { CssVarsProvider } from "@mui/joy/styles";
+import { CssVarsProvider } from "@mui/joy";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Typography from "@mui/joy/Typography";
