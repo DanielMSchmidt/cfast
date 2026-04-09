@@ -15,8 +15,9 @@ import ListItem from "@mui/joy/ListItem";
 import ListItemContent from "@mui/joy/ListItemContent";
 import { useAuth } from "@cfast/auth/client";
 import { nanoid } from "nanoid";
+import { can } from "@cfast/permissions";
 import { app } from "~/cfast.server";
-import { users, passkeys } from "~/db/schema";
+import { users, passkeys, posts } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { Header } from "~/components/Header";
 import { getInitials } from "~/utils";
@@ -42,7 +43,13 @@ export const loader = app.loader(async (ctx) => {
     .from(passkeys)
     .where(eq(passkeys.userId, user.id));
 
-  return { user: { ...user, ...freshUser }, passkeys: userPasskeys };
+  const grants = ctx.auth.grants;
+  return {
+    user: { ...user, ...freshUser },
+    passkeys: userPasskeys,
+    canCreatePost: can(grants, "create", posts),
+    canAdmin: can(grants, "manage", "all"),
+  };
 });
 
 export const action = app.action(async (ctx, { request }) => {
@@ -114,7 +121,7 @@ export const action = app.action(async (ctx, { request }) => {
 });
 
 export default function Profile() {
-  const { user, passkeys: userPasskeys } = useLoaderData<typeof loader>();
+  const { user, passkeys: userPasskeys, canCreatePost, canAdmin } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { registerPasskey, deletePasskey } = useAuth();
   const [name, setName] = useState(user.name);
@@ -156,7 +163,7 @@ export default function Profile() {
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} canCreatePost={canCreatePost} canAdmin={canAdmin} />
       <Container maxWidth="sm" sx={{ py: 4 }}>
         <Typography level="h2" sx={{ mb: 3 }}>
           Profile

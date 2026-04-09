@@ -38,7 +38,13 @@ export const loader = app.loader(async (ctx, { params }) => {
     throw new Response("Forbidden", { status: 403 });
   }
 
-  return { post, user };
+  const grants = ctx.auth.grants;
+  return {
+    post,
+    user,
+    canCreatePost: can(grants, "create", posts),
+    canAdmin: can(grants, "manage", "all"),
+  };
 });
 
 export const action = app.action(async (ctx, { params, request }) => {
@@ -135,7 +141,7 @@ export const action = app.action(async (ctx, { params, request }) => {
 });
 
 export default function EditPost() {
-  const { post, user } = useLoaderData<typeof loader>();
+  const { post, user, canCreatePost, canAdmin } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [title, setTitle] = useState(post.title);
   const [excerpt, setExcerpt] = useState(post.excerpt ?? "");
@@ -143,7 +149,7 @@ export default function EditPost() {
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} canCreatePost={canCreatePost} canAdmin={canAdmin} />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Typography level="h2" sx={{ mb: 3 }}>
           Edit Post

@@ -57,19 +57,4 @@ export const permissions = definePermissions<AuthUser>()({
   }),
 });
 
-// ---------------------------------------------------------------------------
-// Role helpers for UI logic
-// ---------------------------------------------------------------------------
-// Used in loaders/components to show/hide UI elements (e.g. "New Post" button)
-// and for page-level access guards (e.g. admin layout redirect).
-// These do NOT enforce data-level permissions — that's @cfast/db's job.
-// ---------------------------------------------------------------------------
 
-export function hasRole(user: AuthUser, role: UserRole): boolean {
-  if (user.roles.includes("admin")) return true;
-  return user.roles.includes(role);
-}
-
-export function hasAnyRole(user: AuthUser, checkRoles: UserRole[]): boolean {
-  return checkRoles.some((role) => hasRole(user, role));
-}
