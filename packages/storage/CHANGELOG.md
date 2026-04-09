@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/storage-v0.2.0...@cfast/storage-v0.2.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* externalise node:sqlite in all vitest configs ([#222](https://github.com/DanielMSchmidt/cfast/issues/222)) ([f7e17bd](https://github.com/DanielMSchmidt/cfast/commit/f7e17bdde09a65d16b9416220b4dd5d9d27559a7))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/storage-v0.1.0...@cfast/storage-v0.2.0) (2026-04-08)
 
 

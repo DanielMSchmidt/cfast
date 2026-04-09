@@ -1,6 +1,6 @@
 {
   "name": "@cfast/forms",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Auto-generated forms from Drizzle schema with progressive customization",
   "keywords": [
     "cfast",
