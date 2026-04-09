@@ -1,11 +1,11 @@
 ---
 title: CFast
-description: Composable TypeScript libraries for Cloudflare Workers + React Router + Drizzle ORM.
+description: Ship full-stack Cloudflare apps with auth, permissions, and admin — in minutes, not months.
 template: splash
 hero:
   image:
     file: ../../assets/cfast-logo.png
-  tagline: Composable libraries for building full-stack apps on Cloudflare Workers — with React Router, Drizzle ORM, and Better Auth already wired together.
+  tagline: Ship full-stack Cloudflare apps with auth, permissions, and admin — in minutes, not months.
   actions:
     - text: Get Started
       link: getting-started/
@@ -18,15 +18,98 @@ hero:
 
 import { LinkCard, CardGrid } from "@astrojs/starlight/components";
 
-## Built on tools you already know
+## The problem
 
-CFast doesn't reinvent the wheel. It connects **React Router v7** for SSR and routing, **Drizzle ORM** for type-safe queries on **Cloudflare D1**, **Better Auth** for authentication (magic links, passkeys), and **Joy UI** for components — then adds the glue you'd otherwise write yourself: permissions, storage, admin panels, forms, and pagination.
+Building on Cloudflare Workers means wiring together auth, database, permissions, file storage, and email yourself. Every project starts with the same 2,000 lines of glue code before you write a single feature. **cfast does that wiring for you.** Define your Drizzle schema and permissions once — get auto-generated forms, an admin panel, and permission-enforced queries with zero duplication.
+
+## Define your schema. Get an app.
+
+```ts
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { definePermissions } from "@cfast/permissions";
+import { eq } from "drizzle-orm";
+
+// 1. Define your table
+const posts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  authorId: text("author_id").notNull(),
+  published: integer("published", { mode: "boolean" }).notNull().default(false),
+});
+
+// 2. Define permissions
+const permissions = definePermissions<User>()({
+  roles: ["reader", "author", "admin"],
+  grants: (grant) => ({
+    reader: [
+      grant("read", posts, { where: () => eq(posts.published, true) }),
+    ],
+    author: [
+      grant("create", posts),
+      grant("update", posts, { where: (_cols, user) => eq(posts.authorId, user.id) }),
+    ],
+    admin: [grant("manage", "all")],
+  }),
+});
+
+// 3. That's it. You get:
+// - Permission-enforced queries (cfDb.query(posts).findMany() respects grants)
+// - Auto-generated forms from your Drizzle schema
+// - Admin panel with role management
+// - Row-level access control that flows from DB to UI
+```
+
+## What you get
+
+### Auth that works
+
+Magic links, passkeys, role management, and admin impersonation — pre-configured and ready to go. No auth middleware to write, no session handling to debug. Just call `requireUser()` in your loader.
+
+*[`@cfast/auth`](guides/auth/)*
+
+### Permissions that flow
+
+Define permissions once with `definePermissions()`. They're enforced automatically in every database query via `@cfast/db` and reflected in the UI via `@cfast/actions` and `@cfast/ui`. No manual checks scattered across route handlers.
+
+*[`@cfast/permissions`](guides/permissions/) + [`@cfast/db`](guides/db/)*
+
+### Schema-driven UI
+
+Your Drizzle tables are the single source of truth. Forms are generated from columns. The admin panel is generated from tables. File upload fields are derived from your storage schema. Change the schema, the UI follows.
+
+*[`@cfast/forms`](guides/forms/) + [`@cfast/admin`](guides/admin/) + [`@cfast/storage`](guides/storage/)*
+
+### The glue you'd write anyway
+
+Multi-action routes with permission checks, cursor and offset pagination with hooks and server helpers, transactional email with react-email templates. Common patterns solved once, correctly.
+
+*[`@cfast/actions`](guides/actions/) + [`@cfast/pagination`](guides/pagination/) + [`@cfast/email`](guides/email/)*
+
+## Ready in 60 seconds
 
 ```bash
 npm create cfast@latest my-app
 ```
 
-## Server
+You get a working Cloudflare Workers app with React Router, Drizzle ORM, Better Auth, and the full cfast stack — deployed locally with one command.
+
+## Philosophy
+
+1. **Express more, write less.** Your code should be business logic — not auth wiring, permission plumbing, or form boilerplate. cfast handles the infrastructure so every line you write is about *your app*.
+2. **Opinionated where it doesn't matter.** Auth flow, admin panel, file uploads, pagination — these have right answers. cfast picks them so you don't debate them. Your energy goes to the decisions that make your app unique.
+3. **Standard tools, not a walled garden.** cfast connects React Router, Drizzle, and Better Auth — it doesn't replace them. `db.query()` is Drizzle. Routes are React Router. When you outgrow a cfast helper, drop down to the tool underneath.
+4. **Fast inside the rails, free outside them.** The happy path is one-liner fast: define a table, get forms + admin + permissions. When you need something custom, `db.unsafe()`, raw Drizzle, and standard React are always one import away.
+
+## Built on
+
+cfast stands on proven foundations — not reinventing, just connecting.
+
+**Cloudflare Workers** for edge-first compute · **React Router v7** for SSR and routing · **Drizzle ORM** for type-safe SQL · **Cloudflare D1** for SQLite at the edge · **Better Auth** for authentication · **MUI Joy UI** for accessible components
+
+## All packages
+
+### Server
 
 <CardGrid>
   <LinkCard title="@cfast/core" description="Plugin system that wires React Router, Drizzle, and Better Auth together." href="guides/core/" />
@@ -38,7 +121,7 @@ npm create cfast@latest my-app
   <LinkCard title="@cfast/email" description="Transactional email with react-email templates." href="guides/email/" />
 </CardGrid>
 
-## UI
+### UI
 
 <CardGrid>
   <LinkCard title="@cfast/ui" description="Joy UI components that respect your permission model (ActionButton, PermissionGate)." href="guides/ui/" />
@@ -47,10 +130,3 @@ npm create cfast@latest my-app
   <LinkCard title="@cfast/pagination" description="Cursor, offset, and infinite scroll — hooks and server helpers." href="guides/pagination/" />
   <LinkCard title="@cfast/admin" description="Auto-generated admin panel from your Drizzle schema." href="guides/admin/" />
 </CardGrid>
-
-## Philosophy
-
-1. **Permissions are first-class.** Define them once in your Drizzle schema. Enforce on the server. Reflect in the UI. No duplication.
-2. **The schema drives the app.** Drizzle tables generate forms, admin panels, and permission-aware queries automatically.
-3. **Solved once, correctly.** Auth flows, multi-action routes, infinite scroll, file uploads — common patterns you shouldn't rewrite per project.
-4. **Isomorphic by design.** Permission checks, validation, and types work identically on client and server.
