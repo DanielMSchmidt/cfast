@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/env-v0.1.1...@cfast/env-v0.2.0) (2026-04-09)
+
+
+### Features
+
+* **env:** add optional binding support ([#217](https://github.com/DanielMSchmidt/cfast/issues/217)) ([7c7f8d2](https://github.com/DanielMSchmidt/cfast/commit/7c7f8d21d561e312e3eb346952cd99ed675c58aa))
+
 ## [0.1.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/env-v0.1.0...@cfast/env-v0.1.1) (2026-04-07)
 
 
