@@ -666,6 +666,7 @@ describe("dispatch() — context-passing sub-action calls (issue #185)", () => {
         createMockOperation({ created: input.title }),
     );
 
+    // Simulate what a parent action does: it already has a resolved ctx.
     const parentCtx: ActionContext<{ id: string }> = {
       db: {} as Db,
       user: { id: "user-1" },
@@ -679,10 +680,13 @@ describe("dispatch() — context-passing sub-action calls (issue #185)", () => {
     });
 
     expect(result).toEqual({ created: "Hello from dispatch" });
+    // getContext should NOT have been called — dispatch bypasses it entirely.
     expect(getContext).not.toHaveBeenCalled();
   });
 
   it("inherits the parent user without re-running cookie-based session lookup", async () => {
+    // This is the core fix for #185: the child action sees the same user
+    // as the parent without needing a Cookie header on a sub-request.
     let childSawUser: unknown = null;
 
     const { createAction } = createActions({
@@ -767,6 +771,7 @@ describe("dispatch() — context-passing sub-action calls (issue #185)", () => {
       services: {},
     };
 
+    // Dispatch directly to the rename sub-action via the actions map.
     const result = await composed.actions.rename.dispatch({
       ctx: parentCtx,
       input: { title: "New Title" },
@@ -792,6 +797,7 @@ describe("dispatch() — context-passing sub-action calls (issue #185)", () => {
       services: {},
     };
 
+    // dispatch takes typed input directly — no FormData, no Request.
     const result = await child.dispatch({
       ctx: parentCtx,
       input: { value: 21 },
