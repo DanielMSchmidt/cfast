@@ -533,6 +533,29 @@ export type Db = {
       tables?: string[];
     }) => Promise<void>;
   };
+  /**
+   * Clears the per-instance `with` lookup cache so that the next query
+   * re-runs every grant lookup function.
+   *
+   * In production this is rarely needed because each request gets a fresh
+   * `Db` via `createDb()`. In tests that reuse a single `Db` across grant
+   * mutations (e.g. inserting a new friendship and then querying recipes),
+   * call this after the mutation to avoid stale lookup results.
+   *
+   * For finer-grained control, wrap each logical request in
+   * {@link runWithLookupCache} instead -- that scopes the cache via
+   * `AsyncLocalStorage` so it is automatically discarded at scope exit.
+   *
+   * @example
+   * ```ts
+   * const db = createDb({ ... });
+   * await db.query(recipes).findMany().run(); // populates lookup cache
+   * await db.insert(friendGrants).values({ ... }).run(); // adds new grant
+   * db.clearLookupCache(); // drop stale lookups
+   * await db.query(recipes).findMany().run(); // sees new grant
+   * ```
+   */
+  clearLookupCache: () => void;
 };
 
 /**

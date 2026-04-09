@@ -277,6 +277,7 @@ function createTrackingDb(real: Db, perms: PermissionDescriptor[]): Db {
       return createSentinel() as T;
     },
     cache: real.cache,
+    clearLookupCache: () => real.clearLookupCache(),
   };
   return trackingDb;
 }

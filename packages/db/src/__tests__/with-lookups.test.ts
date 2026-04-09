@@ -580,6 +580,92 @@ describe("with-lookups (cross-table grants, issue #105)", () => {
     });
   });
 
+  describe("clearLookupCache (issue #176)", () => {
+    it("returns stale lookup results when cache is not cleared after a grant insert", async () => {
+      let callCount = 0;
+      const lookup = vi.fn(async (_user: AppUser, _db: LookupDb) => {
+        callCount++;
+        if (callCount === 1) return ["friend-1"];
+        return ["friend-1", "friend-2"];
+      });
+      const permissions = buildPermissions({ friendIdsLookup: lookup });
+      const grants = resolveGrants(permissions, ["user"]);
+
+      const db = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+
+      await db.query(recipes).findMany().run();
+      expect(lookup).toHaveBeenCalledTimes(1);
+
+      // Without clearing, the second query still uses the cached lookup.
+      await db.query(recipes).findMany().run();
+      expect(lookup).toHaveBeenCalledTimes(1); // stale
+    });
+
+    it("returns fresh lookup results after clearLookupCache()", async () => {
+      let callCount = 0;
+      const lookup = vi.fn(async (_user: AppUser, _db: LookupDb) => {
+        callCount++;
+        if (callCount === 1) return ["friend-1"];
+        return ["friend-1", "friend-2"];
+      });
+      const permissions = buildPermissions({ friendIdsLookup: lookup });
+      const grants = resolveGrants(permissions, ["user"]);
+
+      const db = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+
+      await db.query(recipes).findMany().run();
+      expect(lookup).toHaveBeenCalledTimes(1);
+
+      db.clearLookupCache();
+
+      await db.query(recipes).findMany().run();
+      expect(lookup).toHaveBeenCalledTimes(2);
+    });
+
+    it("clearLookupCache only affects the specific Db instance, not siblings", async () => {
+      const lookup = makeFriendGrantsLookup([{ target: "friend-1" }]);
+      const permissions = buildPermissions({ friendIdsLookup: lookup });
+      const grants = resolveGrants(permissions, ["user"]);
+
+      const db1 = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+      const db2 = createDb({
+        d1: createMockD1(),
+        schema,
+        grants,
+        user: { id: "u1" },
+        cache: false,
+      });
+
+      await db1.query(recipes).findMany().run();
+      await db2.query(recipes).findMany().run();
+      expect(lookup).toHaveBeenCalledTimes(2);
+
+      db1.clearLookupCache();
+
+      await db1.query(recipes).findMany().run();
+      await db2.query(recipes).findMany().run();
+      expect(lookup).toHaveBeenCalledTimes(3);
+    });
+  });
+
   describe("AsyncLocalStorage-scoped lookup cache (issue #176)", () => {
     it("runWithLookupCache scopes the cache so a reused Db sees fresh lookups per logical request", async () => {
       const lookup = makeFriendGrantsLookup([{ target: "friend-1" }]);

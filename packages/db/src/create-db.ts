@@ -242,6 +242,10 @@ function buildDb(
         }
       },
     },
+
+    clearLookupCache() {
+      lookupCache.clear();
+    },
   };
   return db;
 }
