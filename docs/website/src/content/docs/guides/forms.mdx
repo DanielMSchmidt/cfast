@@ -123,6 +123,38 @@ function MyForm() {
 }
 ```
 
+### Nested Forms
+
+Use the `nested` prop to render child records inline within a parent form. This is useful for one-to-many relationships like recipes with ingredients:
+
+```typescript
+<AutoForm
+  table={recipes}
+  mode="create"
+  nested={[
+    {
+      table: ingredients,
+      foreignKey: "recipeId",
+      min: 1,
+      max: 20,
+      reorderable: true,
+      exclude: ["id", "recipeId"],
+      fields: {
+        name: { component: IngredientAutocomplete },
+      },
+    },
+  ]}
+  onSubmit={handleSubmit}
+/>
+```
+
+Each nested entry supports:
+- **`table`** / **`foreignKey`** -- the child table and its FK column back to the parent
+- **`min`** / **`max`** -- minimum and maximum number of child rows
+- **`reorderable`** -- enables drag-to-reorder (adds a `sortOrder` field automatically)
+- **`exclude`** -- columns to hide (typically `id` and the FK itself)
+- **`fields`** -- per-field overrides, including custom `component` renderers, following the same API as the parent `fields` prop
+
 ### Building a Custom Plugin
 
 The rendering layer is pluggable. To use a different component library, create a plugin with `createFormPlugin` and wrap it with `createAutoForm`:

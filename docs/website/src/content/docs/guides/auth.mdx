@@ -212,3 +212,35 @@ const { stopImpersonating } = useAuth();
 await stopImpersonating();
 ```
 
+### Test Helpers for Passkeys
+
+`@cfast/auth` exports two helpers for testing passkey flows end-to-end. The workflow has two steps: seed a credential in your database, then register it as a virtual authenticator in Playwright.
+
+**Step 1 -- Seed a passkey credential:**
+
+```typescript
+import { generateTestPasskey } from "@cfast/auth/test";
+
+const fixture = generateTestPasskey({
+  userId: "test-user-id",
+  rpId: "localhost",
+});
+// fixture contains { credentialId, publicKey, ... } — insert into your DB seed script
+```
+
+**Step 2 -- Register the virtual authenticator in Playwright:**
+
+```typescript
+import { addPasskeyCredential } from "@cfast/auth/test";
+
+test("login with passkey", async ({ page }) => {
+  await addPasskeyCredential(page, fixture);
+  // The browser now has a virtual authenticator matching the seeded credential
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Sign in with passkey" }).click();
+  await expect(page).toHaveURL("/");
+});
+```
+
+`generateTestPasskey` creates a deterministic credential from the user ID and RP ID. `addPasskeyCredential` uses the CDP `WebAuthn` domain to register it as a virtual authenticator on the page, so the WebAuthn ceremony completes without real hardware.
+
