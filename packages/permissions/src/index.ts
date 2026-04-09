@@ -9,6 +9,7 @@ export { ForbiddenError, PermissionRegistrationError } from "./errors";
 export { CRUD_ACTIONS, getTableName } from "./types";
 export type {
   PermissionAction,
+  ColumnsOf,
   CrudAction,
   DrizzleTable,
   Grant,

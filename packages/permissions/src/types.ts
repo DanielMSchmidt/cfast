@@ -85,6 +85,32 @@ export type SubjectInput<TTables extends SchemaMap = SchemaMap> =
   | TableName<TTables>
   | "all";
 
+/**
+ * Structural shape of a Drizzle table that exposes its column map.
+ * @internal
+ */
+type TableWithColumns = { _: { columns: Record<string, unknown> } };
+
+/**
+ * Resolves the column map for a grant subject.
+ *
+ * - **Drizzle table object** — extracts `T["_"]["columns"]`.
+ * - **JS-key string** (`keyof TTables`) — schema lookup to extract columns.
+ * - **SQL-name string** / **`"all"`** — falls back to `Record<string, unknown>`.
+ */
+export type ColumnsOf<
+  TSubject,
+  TTables extends SchemaMap = SchemaMap,
+> = TSubject extends "all"
+  ? Record<string, unknown>
+  : TSubject extends TableWithColumns
+    ? TSubject["_"]["columns"]
+    : TSubject extends Extract<keyof TTables, string>
+      ? TTables[TSubject] extends TableWithColumns
+        ? TTables[TSubject]["_"]["columns"]
+        : Record<string, unknown>
+      : Record<string, unknown>;
+
 const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
 
 /**
@@ -279,10 +305,11 @@ export type Grant = {
  *   constrain string subjects to known table-name literals.
  */
 export type GrantFn<TUser, TTables extends SchemaMap = SchemaMap> = <
+  TSubject extends SubjectInput<TTables>,
   TWith extends WithLookups<TUser> = WithLookups<TUser>,
 >(
   action: PermissionAction,
-  subject: SubjectInput<TTables>,
+  subject: TSubject,
   options?: {
     /**
      * Prerequisite lookups whose resolved values are passed to {@link where}
@@ -295,7 +322,7 @@ export type GrantFn<TUser, TTables extends SchemaMap = SchemaMap> = <
      * omit it) when the filter does not need cross-table data.
      */
     where?: (
-      columns: Record<string, unknown>,
+      columns: ColumnsOf<TSubject, TTables>,
       user: TUser,
       lookups: { [K in keyof TWith]: Awaited<ReturnType<TWith[K]>> },
     ) => DrizzleSQL | undefined;
