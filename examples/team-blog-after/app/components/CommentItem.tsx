@@ -5,7 +5,6 @@ import Button from "@mui/joy/Button";
 import Stack from "@mui/joy/Stack";
 import { AvatarWithInitials } from "@cfast/joy";
 import type { AuthUser } from "~/permissions";
-import { hasAnyRole } from "~/permissions";
 
 interface CommentItemProps {
   comment: {
@@ -19,6 +18,8 @@ interface CommentItemProps {
     };
   };
   user: AuthUser | null;
+  /** Pre-computed on the server: user can delete any comment (editor/admin grant). */
+  canDeleteAny?: boolean;
 }
 
 const MONTHS_SHORT = [
@@ -35,10 +36,10 @@ function formatDate(date: Date): string {
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}, ${h12}:${m} ${period}`;
 }
 
-export function CommentItem({ comment, user }: CommentItemProps) {
+export function CommentItem({ comment, user, canDeleteAny = false }: CommentItemProps) {
   const canDelete =
     user &&
-    (user.id === comment.author.id || hasAnyRole(user, ["admin", "editor"]));
+    (user.id === comment.author.id || canDeleteAny);
 
   return (
     <Card variant="soft" sx={{ p: 2 }}>

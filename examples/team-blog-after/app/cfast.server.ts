@@ -27,10 +27,9 @@ const authPlugin = definePlugin({
 // Single source of truth for the per-request permission-aware Db. Reused by
 // admin.server.ts and any route handler that needs an ad-hoc Db -- previously
 // each call site had its own near-identical createDb factory (#149).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const appDb = createAppDb({
   d1: () => env.get().DB,
-  schema: schema as unknown as Record<string, any>,
+  schema,
   cache: false,
 });
 

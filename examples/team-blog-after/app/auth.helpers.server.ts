@@ -3,8 +3,6 @@ import { env } from "./env";
 import type { Grant } from "@cfast/permissions";
 import type { AuthUser } from "./permissions";
 
-// Re-export from shared module for convenience in server-only code
-export { hasRole, hasAnyRole } from "./permissions";
 export type { UserRole } from "./permissions";
 export type { AuthUser } from "./permissions";
 

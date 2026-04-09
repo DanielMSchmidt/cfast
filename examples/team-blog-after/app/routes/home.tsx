@@ -60,16 +60,24 @@ export const loader = app.loader(async (ctx, { request }) => {
     },
   }));
 
-  return { posts: formattedPosts, total, page, limit, user, canCreatePost: can(grants, "create", posts) };
+  return {
+    posts: formattedPosts,
+    total,
+    page,
+    limit,
+    user,
+    canCreatePost: can(grants, "create", posts),
+    canAdmin: can(grants, "manage", "all"),
+  };
 });
 
 export default function Home() {
-  const { posts: postList, total, page, limit, user, canCreatePost } = useLoaderData<typeof loader>();
+  const { posts: postList, total, page, limit, user, canCreatePost, canAdmin } = useLoaderData<typeof loader>();
   const totalPages = Math.ceil(total / limit);
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} canCreatePost={canCreatePost} canAdmin={canAdmin} />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Typography level="h2">Latest Posts</Typography>

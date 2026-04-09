@@ -10,11 +10,18 @@ import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import { AvatarWithInitials } from "@cfast/joy";
 import type { AuthUser } from "~/permissions";
-import { hasAnyRole } from "~/permissions";
 import { authClient } from "~/auth.client";
 import { ImpersonationBanner } from "./ImpersonationBanner";
 
-export function Header({ user }: { user: AuthUser | null }) {
+export function Header({
+  user,
+  canCreatePost = false,
+  canAdmin = false,
+}: {
+  user: AuthUser | null;
+  canCreatePost?: boolean;
+  canAdmin?: boolean;
+}) {
   return (
     <>
       {user?.isImpersonating && <ImpersonationBanner user={user} />}
@@ -51,7 +58,7 @@ export function Header({ user }: { user: AuthUser | null }) {
         </Stack>
 
         <Stack direction="row" spacing={2} alignItems="center">
-          {user && hasAnyRole(user, ["admin", "editor", "author"]) && (
+          {user && canCreatePost && (
             <Button component={Link} to="/posts/new" size="sm">
               New Post
             </Button>
@@ -73,7 +80,7 @@ export function Header({ user }: { user: AuthUser | null }) {
                 <MenuItem component={Link} to="/profile">
                   Profile
                 </MenuItem>
-                {hasAnyRole(user, ["admin"]) && (
+                {canAdmin && (
                   <MenuItem component={Link} to="/admin">
                     Admin
                   </MenuItem>

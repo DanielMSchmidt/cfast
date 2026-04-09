@@ -15,7 +15,6 @@ import { useActions, clientDescriptor } from "@cfast/actions/client";
 import { ActionForm } from "@cfast/actions/client";
 import { ActionButton } from "@cfast/joy";
 import { can } from "@cfast/permissions";
-import { hasAnyRole } from "~/permissions";
 import { app } from "~/cfast.server";
 import { posts, users, comments } from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
@@ -115,8 +114,25 @@ export const loader = app.loader(async (ctx, { params, request }) => {
   // table metadata intact. Grants don't survive serialization (Symbols are lost).
   const isAuthor = user?.id === post.authorId;
   const canEdit = isAuthor || can(grants, "update", posts);
-  const canDelete = isAuthor || can(grants, "delete", posts);
-  const canPublish = user ? hasAnyRole(user, ["editor", "admin"]) : false;
+  // Authors can delete own posts (isAuthor check). Editors/admins have
+  // unrestricted delete grants (no where clause).
+  const canDelete = isAuthor || grants.some(
+    (g) => (g.action === "delete" || g.action === "manage") &&
+           (g.subject === "all" || !g.where),
+  );
+  // Publishing is a content-moderation action — requires unrestricted
+  // update (editor+), not just "can update own posts" (author).
+  const canPublish = grants.some(
+    (g) => (g.action === "update" || g.action === "manage") && !g.where,
+  );
+  // "Can delete any comment" means unrestricted delete grant on comments
+  // (editor/admin), not "has some conditional delete-comments grant" (reader).
+  const canDeleteAnyComment = grants.some(
+    (g) => ((g.action === "delete" || g.action === "manage") &&
+           (g.subject === "all" || !g.where)),
+  );
+  const canCreatePost = can(grants, "create", posts);
+  const canAdmin = can(grants, "manage", "all");
 
   return {
     post,
@@ -129,6 +145,9 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     canEdit,
     canDelete,
     canPublish,
+    canDeleteAnyComment,
+    canCreatePost,
+    canAdmin,
   };
 });
 
@@ -198,8 +217,10 @@ function useInfiniteComments(
 }
 
 export default function PostDetail() {
-  const { post, author, comments: initialComments, nextCursor, user, canEdit, canDelete, canPublish } =
-    useLoaderData<typeof loader>();
+  const {
+    post, author, comments: initialComments, nextCursor, user,
+    canEdit, canDelete, canPublish, canDeleteAnyComment, canCreatePost, canAdmin,
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as
     | { success: boolean; action: string }
     | { error: string; action: string }
@@ -216,7 +237,7 @@ export default function PostDetail() {
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} canCreatePost={canCreatePost} canAdmin={canAdmin} />
       <Container maxWidth="md" sx={{ py: 4 }}>
         {/* Post Header */}
         <Stack spacing={2} sx={{ mb: 4 }}>
@@ -361,7 +382,7 @@ export default function PostDetail() {
             </Typography>
           ) : (
             allComments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} user={user} />
+              <CommentItem key={comment.id} comment={comment} user={user} canDeleteAny={canDeleteAnyComment} />
             ))
           )}
         </Stack>

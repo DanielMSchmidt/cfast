@@ -20,8 +20,13 @@ import { auditLog } from "~/utils.server";
 
 export const loader = app.loader(async (ctx) => {
   if (!ctx.auth.user) throw redirect("/login");
-  if (!can(ctx.auth.grants, "create", posts)) throw redirect("/");
-  return { user: ctx.auth.user };
+  const grants = ctx.auth.grants;
+  if (!can(grants, "create", posts)) throw redirect("/");
+  return {
+    user: ctx.auth.user,
+    canCreatePost: true, // guard above ensures this
+    canAdmin: can(grants, "manage", "all"),
+  };
 });
 
 export const action = app.action(async (ctx, { request }) => {
@@ -64,7 +69,7 @@ export const action = app.action(async (ctx, { request }) => {
 });
 
 export default function NewPost() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, canCreatePost, canAdmin } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
@@ -72,7 +77,7 @@ export default function NewPost() {
 
   return (
     <>
-      <Header user={user} />
+      <Header user={user} canCreatePost={canCreatePost} canAdmin={canAdmin} />
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Typography level="h2" sx={{ mb: 3 }}>
           New Post
