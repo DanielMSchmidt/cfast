@@ -532,6 +532,27 @@ prefer the scoped cache over the `Db`-owned fallback. Pass an explicit
 `LookupCache` instance as the second argument if you want to share a cache
 across multiple sibling `runWithLookupCache` calls.
 
+### db.clearLookupCache(): void
+
+Clears the per-instance cross-table `with` lookup cache on the `Db` instance. This is the imperative counterpart to `runWithLookupCache()` -- instead of scoping a fresh cache via ALS, it resets the instance-owned cache in place.
+
+The primary use case is tests that reuse a single `Db` across grant inserts. After modifying grants, call `db.clearLookupCache()` so subsequent queries re-run `with` lookups against the updated data:
+
+```typescript
+const db = createDb({ d1, schema, grants, user, cache: false });
+
+// Insert a new friend-grant.
+await db.unsafe().insert(friendGrants).values({ grantee: "u1", target: "u2" }).run();
+
+// Without this, the next query would use the stale cached lookup.
+db.clearLookupCache();
+
+const visible = await db.query(recipes).findMany().run();
+expect(visible).toContainEqual(expect.objectContaining({ authorId: "u2" }));
+```
+
+Prefer `runWithLookupCache()` in production code (ALS-scoped, automatic cleanup). Use `clearLookupCache()` when you need a quick manual reset in tests or long-lived workers that don't use the ALS pattern.
+
 ## Integration
 
 - **@cfast/permissions** -- `grants` come from `resolveGrants(permissions, user.roles)`. Permission WHERE clauses are defined via `grant()` in your permissions config.

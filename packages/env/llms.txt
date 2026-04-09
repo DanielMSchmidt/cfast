@@ -35,6 +35,23 @@ const env = defineEnv(schema);
 | `"secret"` | `string` | Non-empty string, no defaults |
 | `"var"` | `string` | String (empty OK), supports `default` and `validate` |
 
+### Optional Bindings
+
+Any binding type can be marked optional by adding `optional: true` to its definition. A missing optional binding resolves to `undefined` instead of causing an `EnvError` at startup. The inferred TypeScript type becomes `T | undefined`.
+
+```typescript
+const env = defineEnv({
+  DB: { type: "d1" },
+  NUTRITIONIX_API_KEY: { type: "secret", optional: true },
+  ANALYTICS: { type: "kv", optional: true },
+});
+
+// typeof env.get():
+// { DB: D1Database; NUTRITIONIX_API_KEY: string | undefined; ANALYTICS: KVNamespace | undefined }
+```
+
+Use optional bindings for integrations that are only available in some environments (e.g., a third-party API key that isn't set locally) or for graceful degradation when a binding is absent.
+
 **`var` options:**
 ```typescript
 {
