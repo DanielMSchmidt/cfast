@@ -14,5 +14,12 @@ export default defineConfig({
     // within a single file still run sequentially, so total runtime is
     // dominated by the import graph rather than the worker count.
     fileParallelism: false,
+    server: {
+      deps: {
+        // node:sqlite is experimental (Node 22+) and not in builtinModules,
+        // so vitest won't auto-externalise it.  See #189.
+        external: [/^node:sqlite$/],
+      },
+    },
   },
 });
