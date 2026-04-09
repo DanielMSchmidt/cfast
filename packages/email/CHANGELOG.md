@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/DanielMSchmidt/cfast/compare/@cfast/email-v0.1.2...@cfast/email-v0.1.3) (2026-04-09)
+
+
+### Bug Fixes
+
+* externalise node:sqlite in all vitest configs ([#222](https://github.com/DanielMSchmidt/cfast/issues/222)) ([f7e17bd](https://github.com/DanielMSchmidt/cfast/commit/f7e17bdde09a65d16b9416220b4dd5d9d27559a7))
+
 ## [0.1.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/email-v0.1.1...@cfast/email-v0.1.2) (2026-04-08)
 
 

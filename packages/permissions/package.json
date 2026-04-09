@@ -1,6 +1,6 @@
 {
   "name": "@cfast/permissions",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Isomorphic, composable permission system with Drizzle-native row-level access control",
   "keywords": [
     "cfast",

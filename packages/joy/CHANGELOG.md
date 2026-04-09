@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/joy-v0.2.0...@cfast/joy-v0.2.1) (2026-04-09)
+
+
+### Bug Fixes
+
+* externalise node:sqlite in all vitest configs ([#222](https://github.com/DanielMSchmidt/cfast/issues/222)) ([f7e17bd](https://github.com/DanielMSchmidt/cfast/commit/f7e17bdde09a65d16b9416220b4dd5d9d27559a7))
+* **joy:** deduplicate Emotion by removing @mui/material from dependencies ([#221](https://github.com/DanielMSchmidt/cfast/issues/221)) ([0eda778](https://github.com/DanielMSchmidt/cfast/commit/0eda778ae7fe3a0bde1855021d4681be020269c5))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/joy-v0.1.1...@cfast/joy-v0.2.0) (2026-04-08)
 
 
