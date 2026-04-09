@@ -200,6 +200,7 @@ export function mockDb(
       // the call surface, not true atomic semantics.
       return callback(db as unknown as Tx);
     },
+    clearLookupCache: vi.fn(),
     cache: {
       invalidate: vi.fn().mockResolvedValue(undefined),
     },
@@ -290,6 +291,7 @@ export function mockDbWithError(errorMessage: string): Db {
     async transaction<T>(_callback: (tx: Tx) => Promise<T>): Promise<T> {
       throw new Error(errorMessage);
     },
+    clearLookupCache: vi.fn(),
     cache: {
       invalidate: vi.fn().mockResolvedValue(undefined),
     },
