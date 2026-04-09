@@ -3,7 +3,7 @@
 export { createUIPlugin, UIPluginProvider, useUIPlugin, useComponent } from "./plugin.js";
 
 // Hooks
-export { useConfirm } from "./hooks/use-confirm.js";
+export { useConfirm, ConfirmContext } from "./hooks/use-confirm.js";
 export { useToast } from "./hooks/use-toast.js";
 export { useActionToast } from "./hooks/use-action-toast.js";
 

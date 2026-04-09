@@ -1,9 +1,12 @@
-import { type ReactElement } from "react";
+"use client";
+
+import { type ReactElement, type ReactNode, useContext } from "react";
 import { useLoaderData, useActionData, useSubmit } from "react-router";
+import { CssVarsProvider } from "@mui/joy/styles";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import Typography from "@mui/joy/Typography";
-import { ConfirmProvider } from "@cfast/ui";
+import { ConfirmProvider, ConfirmContext } from "@cfast/ui";
 import type { AdminActionResult, AdminLoaderData, AdminTableMeta } from "../types.js";
 import { Sidebar } from "./sidebar.js";
 import { Dashboard } from "./dashboard.js";
@@ -14,6 +17,24 @@ import { UserList } from "./user-list.js";
 import { UserDetail } from "./user-detail.js";
 
 /**
+ * Wraps children in a {@link ConfirmProvider} only when no parent provider exists.
+ *
+ * Consuming apps typically mount their own `ConfirmProvider` (and `UIPluginProvider`)
+ * at the root layout. Nesting a second `ConfirmProvider` inside the admin route is
+ * harmless in React 18, but under React 19's stricter hydration the duplicate
+ * context can cause spurious mismatch warnings. This wrapper detects an existing
+ * provider and skips the redundant layer.
+ */
+function SafeConfirmProvider({ children }: { children: ReactNode }): ReactElement {
+  const existing = useContext(ConfirmContext);
+  if (existing) {
+    // A ConfirmProvider is already mounted higher in the tree -- skip.
+    return <>{children}</>;
+  }
+  return <ConfirmProvider>{children}</ConfirmProvider>;
+}
+
+/**
  * Create the root admin React component from introspected table metadata.
  *
  * Returns a React component that reads {@link AdminLoaderData} from React Router's
@@ -21,7 +42,10 @@ import { UserDetail } from "./user-detail.js";
  * the appropriate admin view (dashboard, list, detail, create, edit, users, or error).
  *
  * The component includes a sidebar, impersonation banner, and wraps everything in
- * a `ConfirmProvider` from `@cfast/ui`.
+ * a `CssVarsProvider` (Joy UI theme) and a `ConfirmProvider` from `@cfast/ui`.
+ * Both providers are safe to nest -- if the consuming app already supplies them at
+ * the root layout (the recommended setup), the admin detects the existing contexts
+ * and avoids duplicating them, preventing React 19 hydration-mismatch warnings.
  *
  * Use this instead of {@link createAdmin} when you need server/client code splitting
  * (this function is safe for client bundles since it only depends on table metadata,
@@ -55,21 +79,23 @@ export function createAdminComponent(
     const actionData = useActionData<AdminActionResult | undefined>();
 
     return (
-      <ConfirmProvider>
-        {data.user.isImpersonating && (
-          <ImpersonationBar user={data.user} />
-        )}
-        <Box sx={{ display: "flex", minHeight: "100vh" }}>
-          <Sidebar tables={data.tables} />
-          <Box sx={{ flex: 1, p: 3, overflow: "auto" }}>
-            <AdminContent
-              data={data}
-              actionResult={actionData}
-              tableMetaMap={tableMetaMap}
-            />
+      <CssVarsProvider>
+        <SafeConfirmProvider>
+          {data.user.isImpersonating && (
+            <ImpersonationBar user={data.user} />
+          )}
+          <Box sx={{ display: "flex", minHeight: "100vh" }}>
+            <Sidebar tables={data.tables} />
+            <Box sx={{ flex: 1, p: 3, overflow: "auto" }}>
+              <AdminContent
+                data={data}
+                actionResult={actionData}
+                tableMetaMap={tableMetaMap}
+              />
+            </Box>
           </Box>
-        </Box>
-      </ConfirmProvider>
+        </SafeConfirmProvider>
+      </CssVarsProvider>
     );
   }
 
@@ -231,7 +257,7 @@ function ImpersonationBar({ user }: { user: AdminLoaderData["user"] }): ReactEle
     >
       <Typography level="body-sm" fontWeight="lg">
         Impersonating {user.name} ({user.email})
-        {user.realUser && ` — logged in as ${user.realUser.name}`}
+        {user.realUser && ` \u2014 logged in as ${user.realUser.name}`}
       </Typography>
       <Button
         size="sm"

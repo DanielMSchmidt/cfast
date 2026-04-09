@@ -1,3 +1,5 @@
+"use client";
+
 import { type ReactElement } from "react";
 import { Link, useSearchParams } from "react-router";
 import Sheet from "@mui/joy/Sheet";
