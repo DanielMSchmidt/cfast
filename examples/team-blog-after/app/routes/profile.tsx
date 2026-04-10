@@ -1,4 +1,5 @@
-import { useLoaderData, useActionData, Form } from "react-router";
+import { useActionData, Form } from "react-router";
+import { useCfastLoader } from "@cfast/actions/client";
 import { useState } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
@@ -121,7 +122,7 @@ export const action = app.action(async (ctx, { request }) => {
 });
 
 export default function Profile() {
-  const { user, passkeys: userPasskeys, canCreatePost, canAdmin } = useLoaderData<typeof loader>();
+  const { user, passkeys: userPasskeys, canCreatePost, canAdmin } = useCfastLoader<typeof loader>();
   const actionData = useActionData<typeof action>();
   const { registerPasskey, deletePasskey } = useAuth();
   const [name, setName] = useState(user.name);

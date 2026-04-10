@@ -1,4 +1,4 @@
-import { useLoaderData, useActionData, useFetcher } from "react-router";
+import { useActionData, useFetcher } from "react-router";
 import { useState, useEffect, useCallback, useRef } from "react";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
@@ -11,12 +11,14 @@ import Box from "@mui/joy/Box";
 import Avatar from "@mui/joy/Avatar";
 import Divider from "@mui/joy/Divider";
 import Chip from "@mui/joy/Chip";
-import { useActions, clientDescriptor } from "@cfast/actions/client";
+import { useActions, clientDescriptor, useCfastLoader } from "@cfast/actions/client";
 import { ActionForm } from "@cfast/actions/client";
 import { ActionButton } from "@cfast/joy";
+import { cfastJson } from "@cfast/actions";
 import { can } from "@cfast/permissions";
 import { app } from "~/cfast.server";
 import { posts, users, comments } from "~/db/schema";
+import * as schema from "~/db/schema";
 import { eq, desc, and, lt } from "drizzle-orm";
 import { Header } from "~/components/Header";
 import { CommentItem } from "~/components/CommentItem";
@@ -133,11 +135,11 @@ export const loader = app.loader(async (ctx, { params, request }) => {
   const canAdmin = can(grants, "manage", "all");
 
   return {
+    ...cfastJson(grants, schema, { comments: formattedComments }),
     post,
     author: author
       ? { id: author.id, name: author.name, avatarUrl: author.avatarUrl }
       : { id: post.authorId, name: "Unknown", avatarUrl: null },
-    comments: formattedComments,
     nextCursor,
     user,
     canEdit,
@@ -215,10 +217,18 @@ function useInfiniteComments(
 }
 
 export default function PostDetail() {
+  const data = useCfastLoader<typeof loader>();
   const {
-    post, author, comments: initialComments, nextCursor, user,
+    post, author, nextCursor, user,
     canEdit, canDelete, canPublish, canCreatePost, canAdmin,
-  } = useLoaderData<typeof loader>();
+  } = data;
+  const initialComments = data.comments as unknown as Array<{
+    id: string;
+    content: string;
+    createdAt: Date;
+    _can: Record<string, boolean>;
+    author: { id: string; name: string; avatarUrl: string | null };
+  }>;
   const actionData = useActionData<typeof action>() as
     | { success: boolean; action: string }
     | { error: string; action: string }
@@ -278,11 +288,15 @@ export default function PostDetail() {
 
         {/* Action Buttons */}
         <Stack direction="row" spacing={1} sx={{ mb: 4 }}>
-          {canEdit && (
-            <Button component={Link} to={`/posts/${post.slug}/edit`} variant="outlined" size="sm">
-              Edit
-            </Button>
-          )}
+          <ActionButton
+            action={{ permitted: canEdit, invisible: false, reason: null, submit: () => {}, pending: false, data: undefined, error: undefined }}
+            href={`/posts/${post.slug}/edit`}
+            whenForbidden="hide"
+            variant="outlined"
+            size="sm"
+          >
+            Edit
+          </ActionButton>
           {canPublish && !post.published && (
             <ActionButton
               action={actions.publishPost({ postId: post.id, title: post.title, slug: post.slug, authorId: post.authorId })}

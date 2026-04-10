@@ -51,7 +51,7 @@ useColumnInference(table: Record<string, unknown> | undefined, columns?: string[
 - `NavigationProgress` -- thin progress bar during React Router navigation.
 
 **Actions & feedback:**
-- `ActionButton` -- permission-aware button wrapping a `@cfast/actions` action. Props: `action`, `input`, `whenForbidden: "hide" | "disable" | "show"`, `confirmation`.
+- `ActionButton` -- permission-aware button wrapping a `@cfast/actions` action. Props: `action`, `whenForbidden: "hide" | "disable" | "show"`, `confirmation`, `href` (render as link), `input` (submit form data via fetcher).
 - `PermissionGate` -- conditional render based on action permissions. Props: `action`, `input`, `fallback`.
 - `ConfirmDialog` -- standalone confirmation dialog.
 - `ToastProvider` -- mount once in root layout for toast notifications.

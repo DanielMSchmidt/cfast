@@ -10,6 +10,15 @@ import type {
 // --- _can annotation ---
 
 /**
+ * The four CRUD actions used as keys in `_can` annotations.
+ *
+ * Matches the `CrudAction` type from `@cfast/permissions`. Redefined here
+ * so `@cfast/db` does not import a runtime dependency from permissions just
+ * for a type alias.
+ */
+export type CrudAction = "read" | "create" | "update" | "delete";
+
+/**
  * Augments a row type with a `_can` object containing per-action booleans.
  *
  * Every query result from `findMany` / `findFirst` includes `_can` when the
@@ -18,7 +27,7 @@ import type {
  * when the grant has a `where` clause.
  */
 export type WithCan<T> = T & {
-  _can: Record<string, boolean>;
+  _can: Record<CrudAction, boolean>;
 };
 
 // --- Row inference helpers ---
