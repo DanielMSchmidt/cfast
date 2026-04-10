@@ -152,10 +152,10 @@ export type QueryBuilder<
   TTable extends DrizzleTable = DrizzleTable,
   TSchema extends Record<string, unknown> = Record<string, never>,
 > = {
-  findMany: <TConfig extends FindManyOptions = {}, TRow = InferQueryResult<TSchema, TTable, TConfig>>(
+  findMany: <TConfig extends FindManyOptions = Record<string, never>, TRow = InferQueryResult<TSchema, TTable, TConfig>>(
     options?: TConfig,
   ) => Operation<TRow[]>;
-  findFirst: <TConfig extends FindFirstOptions = {}, TRow = InferQueryResult<TSchema, TTable, TConfig>>(
+  findFirst: <TConfig extends FindFirstOptions = Record<string, never>, TRow = InferQueryResult<TSchema, TTable, TConfig>>(
     options?: TConfig,
   ) => Operation<TRow | undefined>;
   paginate: <TRow = InferRow<TTable>>(

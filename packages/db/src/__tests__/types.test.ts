@@ -227,26 +227,26 @@ describe("types", () => {
     });
 
     // findMany with `with` -- relation type auto-inferred
-    const op = db.query(recipes).findMany({ with: { ingredients: true } });
-    type Result = Awaited<ReturnType<typeof op.run>>;
+    const _op = db.query(recipes).findMany({ with: { ingredients: true } });
+    type Result = Awaited<ReturnType<typeof _op.run>>;
     expectTypeOf<Result[0]["id"]>().toBeString();
     expectTypeOf<Result[0]["title"]>().toBeString();
     expectTypeOf<Result[0]["ingredients"]>().toBeArray();
 
     // findFirst with `with` -- relation type auto-inferred
-    const firstOp = db.query(recipes).findFirst({ with: { ingredients: true } });
-    type FirstResult = NonNullable<Awaited<ReturnType<typeof firstOp.run>>>;
+    const _firstOp = db.query(recipes).findFirst({ with: { ingredients: true } });
+    type FirstResult = NonNullable<Awaited<ReturnType<typeof _firstOp.run>>>;
     expectTypeOf<FirstResult["ingredients"]>().toBeArray();
 
     // Nested with -- ingredients -> recipe (One relation)
-    const nestedOp = db.query(ingredients).findFirst({ with: { recipe: true } });
-    type NestedResult = NonNullable<Awaited<ReturnType<typeof nestedOp.run>>>;
+    const _nestedOp = db.query(ingredients).findFirst({ with: { recipe: true } });
+    type NestedResult = NonNullable<Awaited<ReturnType<typeof _nestedOp.run>>>;
     expectTypeOf<NestedResult["name"]>().toBeString();
     expectTypeOf<NestedResult["recipe"]>().toMatchTypeOf<{ id: string; title: string }>();
 
     // Without `with` -- plain row type
-    const plainOp = db.query(recipes).findMany();
-    type PlainResult = Awaited<ReturnType<typeof plainOp.run>>;
+    const _plainOp = db.query(recipes).findMany();
+    type PlainResult = Awaited<ReturnType<typeof _plainOp.run>>;
     expectTypeOf<PlainResult[0]>().toEqualTypeOf<{ id: string; title: string }>();
   });
 
@@ -269,8 +269,8 @@ describe("types", () => {
     const schema = { posts, comments, postsRelations, commentsRelations };
     const db = createDb({ d1: createMockD1(), schema, grants: [], user: null, cache: false });
 
-    const unsafeOp = db.unsafe().query(posts).findMany({ with: { comments: true } });
-    type UnsafeResult = Awaited<ReturnType<typeof unsafeOp.run>>;
+    const _unsafeOp = db.unsafe().query(posts).findMany({ with: { comments: true } });
+    type UnsafeResult = Awaited<ReturnType<typeof _unsafeOp.run>>;
     expectTypeOf<UnsafeResult[0]["comments"]>().toBeArray();
   });
 });
