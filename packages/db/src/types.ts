@@ -122,6 +122,16 @@ export type PaginateOptions = {
   cache?: QueryCacheOptions;
 };
 
+// --- Transaction result ---
+
+export type TransactionResult<T> = {
+  result: T;
+  meta: {
+    changes: number;
+    writeResults: D1Result[];
+  };
+};
+
 // --- Transaction handle ---
 
 export type Tx<TSchema extends Record<string, unknown> = Record<string, never>> = {

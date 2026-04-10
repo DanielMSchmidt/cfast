@@ -225,8 +225,8 @@ function buildDb(
       };
     },
 
-    transaction<T>(callback: (tx: Tx) => Promise<T>): Promise<T> {
-      return runTransaction(db, callback);
+    transaction<T>(callback: (tx: Tx) => Promise<T>): Promise<import('./types').TransactionResult<T>> {
+      return runTransaction(db, callback, { d1: config.d1, schema: config.schema, grants: config.grants }, isUnsafe);
     },
 
     cache: {
