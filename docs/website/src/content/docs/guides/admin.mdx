@@ -184,3 +184,31 @@ export const action = adminAction;
 export default AdminComponent;
 ```
 
+### Simplified Auth Adapter with `createAdminAuthAdapter()`
+
+The `auth` config object passed to `createAdmin` requires six methods (`requireUser`, `hasRole`, `getRoles`, `setRole`, `removeRole`, `setRoles`). Most apps copy-paste ~50 identical lines to delegate each method to the auth instance. `createAdminAuthAdapter()` replaces all of it with a one-liner:
+
+```typescript
+import { createAdminAuthAdapter, createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
+import { initAuth } from "~/auth.setup.server";
+import { env } from "~/env";
+import * as schema from "~/db/schema";
+
+const auth = createAdminAuthAdapter({
+  getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+});
+
+const adminConfig = {
+  db: appDb,
+  auth,
+  schema: schema as Record<string, unknown>,
+  requiredRole: "admin",
+};
+
+const tableMetas = introspectSchema(adminConfig.schema);
+export const adminLoader = createAdminLoader(adminConfig, tableMetas);
+export const adminAction = createAdminAction(adminConfig, tableMetas);
+```
+
+The adapter accepts a `getAuth` factory (called on every admin operation for fresh env bindings) and returns a complete `AdminAuthConfig` object. It is equivalent to `createAdminAuth` from `@cfast/auth` -- the only difference is where you import from. Use whichever import is more convenient for your file.
+

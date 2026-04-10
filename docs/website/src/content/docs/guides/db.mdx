@@ -222,6 +222,43 @@ await op.run({}); // executes without any permission check
 
 `unsafe()` returns a scoped `Db` instance -- it does not affect the original. Use `git grep '.unsafe()'` to audit every permission bypass in your codebase.
 
+### Type-Safe `.with()` Relations
+
+When you pass a typed schema to `createDb()`, relation queries with `with` automatically infer the full result type -- including nested relations. You no longer need `as unknown as` casts:
+
+```typescript
+import { relations } from "drizzle-orm";
+
+const recipesRelations = relations(recipes, ({ many }) => ({
+  ingredients: many(ingredients),
+}));
+const schema = { recipes, ingredients, recipesRelations, ingredientsRelations };
+
+const db = createDb({ d1: env.DB, schema, grants, user });
+
+// Result type: { id: string; title: string; ingredients: { id: string; name: string }[] }[]
+const result = await db.query(recipes).findMany({ with: { ingredients: true } }).run({});
+```
+
+This works for `findMany`, `findFirst`, nested `with` (e.g., `ingredients -> recipe`), and through `db.unsafe()`. If you do not pass relations in the schema, the base row type is inferred as before.
+
+### Date Serialization with `toJSON()`
+
+React Router loaders must return JSON-serializable data. `toJSON()` recursively converts Date fields to ISO 8601 strings with correct types:
+
+```typescript
+import { toJSON } from "@cfast/db";
+
+export async function loader({ context }) {
+  const db = createDb({ ... });
+  const posts = await db.query(postsTable).findMany().run({});
+  return { posts: toJSON(posts) };
+  // Type: { createdAt: string; title: string; ... }[] -- Date fields become string
+}
+```
+
+Works on single objects, arrays, and nested structures. Non-Date primitives pass through unchanged.
+
 ### Clearing the Lookup Cache
 
 When you use `with` (relation lookups) on queries, `@cfast/db` caches the resolved lookup metadata per `Db` instance. In tests that reuse a single `Db` across multiple grant configurations or schema changes, stale cache entries can cause unexpected results.
@@ -236,4 +273,19 @@ const posts = await db.query(postsTable).findMany({ with: { comments: true } }).
 ```
 
 This is primarily useful in test suites. In production, each request creates a fresh `Db` instance, so the cache stays scoped to a single request lifecycle.
+
+### Seeding
+
+`@cfast/db` includes a schema-driven seed generator. See the full [Seeding guide](/cfast/guides/db/seeding/) for details. Quick overview:
+
+```typescript
+import { createSeedEngine, seedConfig, tableSeed } from "@cfast/db";
+import { faker } from "@faker-js/faker";
+import * as schema from "./schema";
+
+const engine = createSeedEngine(schema, faker);
+await engine.run(db);
+```
+
+The engine introspects your Drizzle schema to auto-generate realistic data, handling foreign keys, topological ordering, and many-to-many deduplication. `@faker-js/faker` is a peer dependency -- install it in your dev dependencies.
 

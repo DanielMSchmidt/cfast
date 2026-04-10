@@ -112,6 +112,7 @@ export function mockDb(
   const runFn = () => vi.fn().mockResolvedValue(undefined);
 
   const db: Db = {
+    _schema: {},
     query(table: DrizzleTable) {
       const rows = dataForTable(table);
       return {
@@ -218,6 +219,7 @@ export function mockDbWithError(errorMessage: string): Db {
   const errorFn = () => vi.fn().mockRejectedValue(new Error(errorMessage));
 
   const db: Db = {
+    _schema: {},
     query(_table: DrizzleTable) {
       return {
         findMany: () => ({

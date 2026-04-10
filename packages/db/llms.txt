@@ -431,19 +431,36 @@ cache: {
 Per-query: `db.query(t).findMany({ cache: false })` or `{ cache: { ttl: "5m", tags: ["posts"] } }`.
 Manual invalidation: `await db.cache.invalidate({ tags: ["posts"], tables: ["posts"] })`.
 
-### defineSeed
+### One-liner seed
 
-`defineSeed({ entries })` is the canonical way to seed a local D1 database.
-Accepts an ordered list of `{ table, rows }` entries — put parent tables
-before child tables to respect FK ordering. `seed.run(db)` hops through
-`db.unsafe()` internally so seeds never need their own grants. Empty `rows`
-arrays are skipped, so placeholder entries are safe.
+All seed functionality lives under the `@cfast/db/seed` entrypoint, which
+bundles `@faker-js/faker` so you never install or import it yourself. The
+simplest API is a one-liner:
 
 ```typescript
-import { createDb, defineSeed } from "@cfast/db";
+import { seed } from "@cfast/db/seed";
+import { createDb } from "@cfast/db";
 import * as schema from "~/db/schema";
 
-const seed = defineSeed({
+const db = createDb({ d1, schema, grants: [], user: null });
+await seed(db);
+```
+
+`seed(db)` introspects the schema from the Db instance, topologically sorts
+tables, generates realistic data via faker, and inserts it through
+`db.unsafe()`. Pass `{ transcript: "./seed.sql" }` as the second argument
+to also write the INSERT statements to a file.
+
+### defineSeed (static fixtures)
+
+For hand-authored fixture data (not generated), use `defineSeed`:
+
+```typescript
+import { defineSeed } from "@cfast/db/seed";
+import { createDb } from "@cfast/db";
+import * as schema from "~/db/schema";
+
+const mySeed = defineSeed({
   entries: [
     { table: schema.users, rows: [{ id: "u-1", email: "ada@example.com", name: "Ada" }] },
     { table: schema.posts, rows: [{ id: "p-1", title: "Hello", authorId: "u-1" }] },
@@ -451,14 +468,95 @@ const seed = defineSeed({
 });
 
 const db = createDb({ d1, schema, grants: [], user: null });
-await seed.run(db);
+await mySeed.run(db);
 ```
 
-Multi-row entries are flushed via `db.batch([...])` (atomic per table);
-single-row entries skip the batch path so Drizzle's non-empty tuple
-invariant holds. Use this from `scripts/seed.ts` and run it via
-`pnpm db:seed:local` (the scaffolded `create-cfast` package ships this
-script and command out of the box).
+### Schema-driven seed generation (createSeedEngine)
+
+`createSeedEngine(schema)` introspects Drizzle schema metadata to
+auto-generate realistic test data using the bundled faker. Handles FK
+resolution, topological ordering, `per` relational generation,
+many-to-many deduplication, and auth table detection.
+
+#### Column-level seed overrides
+
+`seedConfig(column, fn)` attaches a custom generator to a column:
+
+```typescript
+import { seedConfig, tableSeed } from "@cfast/db/seed";
+
+const posts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: seedConfig(text("title").notNull(), f => f.lorem.sentence()),
+  content: seedConfig(text("content"), f => f.lorem.paragraphs(3)),
+  authorId: text("author_id").references(() => users.id),
+});
+```
+
+Fields without `seedConfig()` are auto-inferred from column type:
+- `text` -> `faker.lorem.words()`
+- `integer`/`real` -> `faker.number.int()`/`faker.number.float()`
+- `timestamp` -> `faker.date.recent()`
+- `boolean` -> `faker.datatype.boolean()`
+- FK (`.references()`) -> random existing row from referenced table
+- Primary key -> auto-generated UUID
+- Nullable -> occasionally `null` (~10%)
+- Columns with `$defaultFn` or static defaults are skipped
+
+#### Table-level seed config
+
+`tableSeed(table, { count, per })` sets the row count and optional
+per-parent relationship:
+
+```typescript
+const users = tableSeed(sqliteTable("users", { ... }), { count: 10 });
+const posts = tableSeed(sqliteTable("posts", { ... }), { count: 5, per: users });
+// -> 5 per user = 50 total. authorId auto-filled with parent user's id.
+```
+
+#### Seed context (ctx)
+
+Column-level seed functions receive `(faker, ctx)` where `ctx` provides:
+
+- `ctx.parent` -- the parent row (from `per`), `undefined` for root tables
+- `ctx.ref(table)` -- pick a random existing row from any table
+- `ctx.index` -- zero-based position within current batch
+- `ctx.all(table)` -- all generated rows for a table
+
+```typescript
+authorId: seedConfig(text("author_id").references(() => users.id),
+  (faker, ctx) => ctx.parent?.id), // inherit from parent
+role: seedConfig(text("role"),
+  (f, ctx) => ctx.index === 0 ? "admin" : f.helpers.arrayElement(["member", "viewer"])),
+```
+
+#### Runtime API
+
+```typescript
+import { createSeedEngine, createSingleTableSeed } from "@cfast/db/seed";
+
+// Seed all tables from schema config
+const engine = createSeedEngine(schema);
+const generated = await engine.run(db);
+
+// Also write SQL transcript
+await engine.run(db, { transcript: "./seed.sql" });
+
+// Single-table override
+const singleTable = createSingleTableSeed(schema, posts, 5);
+await singleTable.run(db);
+```
+
+#### Many-to-many deduplication
+
+Tables with 2+ FK columns are auto-detected as join tables.
+Duplicate composite key combinations are silently skipped.
+
+#### Auth integration
+
+Tables named "users" get special handling: the first 5 rows use
+`admin@example.com`, `user@example.com`, etc., and names use
+`faker.person.fullName()`.
 
 ## Usage Examples
 

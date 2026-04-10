@@ -143,7 +143,50 @@ Use this shape whenever the decision is "did the row still satisfy this conditio
 
 Use `db.transaction` when you need **multiple** writes to commit atomically, or when you need read-modify-write across more than one row.
 
+## TransactionResult
+
+`db.transaction()` returns a `TransactionResult<T>` containing both the callback's return value and metadata about the writes that were flushed:
+
+```typescript
+const { result, meta } = await db.transaction(async (tx) => {
+  await tx
+    .update(products)
+    .set({ stock: sql`stock - ${qty}` })
+    .where(and(eq(products.id, pid), gte(products.stock, qty)))
+    .run({});
+
+  return { orderId: crypto.randomUUID() };
+});
+
+// result: { orderId: "..." }
+// meta.changes: total number of rows modified across all writes
+// meta.writeResults: array of raw D1Result objects, one per batched statement
+```
+
+### Using `meta.changes` for WHERE-guarded writes
+
+The `meta.changes` count tells you how many rows were actually affected. This is particularly useful with the stock-decrement pattern -- if the `WHERE stock >= ?` guard did not match, `meta.changes` is `0` and you know the write was a no-op:
+
+```typescript
+const { result, meta } = await db.transaction(async (tx) => {
+  await tx
+    .update(products)
+    .set({ stock: sql`stock - ${qty}` })
+    .where(and(eq(products.id, pid), gte(products.stock, qty)))
+    .run({});
+
+  return { pid, qty };
+});
+
+if (meta.changes === 0) {
+  throw new Error("out of stock — WHERE guard did not match");
+}
+```
+
+This replaces the pattern of issuing a separate read after the transaction to verify whether the update took effect.
+
 ## See also
 
 - [`@cfast/db`](/cfast/guides/db/) — full package reference
 - [`@cfast/permissions`](/cfast/guides/permissions/) — grant-level permission enforcement inside batches and transactions
+- [Seeding](/cfast/guides/db/seeding/) — schema-driven test data generation

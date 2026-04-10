@@ -278,6 +278,7 @@ function createTrackingDb(real: Db, perms: PermissionDescriptor[]): Db {
     },
     cache: real.cache,
     clearLookupCache: () => real.clearLookupCache(),
+    _schema: real._schema,
   };
   return trackingDb;
 }

@@ -246,6 +246,8 @@ function buildDb(
     clearLookupCache() {
       lookupCache.clear();
     },
+
+    _schema: config.schema as Record<string, unknown>,
   };
   return db;
 }

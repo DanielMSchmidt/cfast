@@ -338,17 +338,6 @@ import { CRUD_ACTIONS } from "@cfast/permissions";
 CRUD_ACTIONS; // ["read", "create", "update", "delete"]
 ```
 
-#### `getGrantedActions(grants, table): GrantedAction[]`
-
-```typescript
-import { getGrantedActions } from "@cfast/permissions";
-
-const actions = getGrantedActions(grants, posts);
-// [{ action: "read", grants: [...], unrestricted: true }, ...]
-```
-
-Returns the distinct CRUD actions granted for a table. `manage` grants are expanded into the four CRUD actions. Each result includes whether the action is unrestricted (no `where` clause). Used internally by `@cfast/db` to build row-level `_can` annotations.
-
 ### Client Entrypoint
 
 ```typescript
@@ -684,6 +673,59 @@ export async function loader({ context }) {
 ```
 
 The return type `DateToString<T>` maps every `Date` property to `string` at the type level, so the client sees accurate types without manual casting. Works on plain objects, arrays, nested structures, and single Date values. Non-Date primitives pass through unchanged.
+
+### Schema-driven seed generation (`@cfast/db/seed`)
+
+All seed functionality lives under `@cfast/db/seed` with bundled `@faker-js/faker` (no install needed). One-liner API:
+
+```typescript
+import { seed } from "@cfast/db/seed";
+await seed(db); // introspects schema, generates data, inserts
+```
+
+#### Column-level overrides
+
+`seedConfig(column, fn)` attaches a generator to a column (survives the builder-to-column transform):
+
+```typescript
+import { seedConfig, tableSeed } from "@cfast/db/seed";
+
+const posts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: seedConfig(text("title").notNull(), f => f.lorem.sentence()),
+  authorId: text("author_id").references(() => users.id),
+});
+```
+
+Auto-inferred defaults: text -> `lorem.words()`, integer -> `number.int()`, real -> `number.float()`, timestamp -> `date.recent()`, boolean -> `datatype.boolean()`, PK -> UUID, FK -> random parent, nullable -> ~10% null.
+
+#### Table-level config
+
+```typescript
+const users = tableSeed(sqliteTable("users", { ... }), { count: 10 });
+const posts = tableSeed(sqliteTable("posts", { ... }), { count: 5, per: users });
+// 5 per user = 50 total, authorId auto-filled
+```
+
+#### Seed context
+
+`(faker, ctx)` where `ctx.parent` is the parent row (from `per`), `ctx.ref(table)` picks a random row, `ctx.index` is position, `ctx.all(table)` returns all rows.
+
+#### Runtime
+
+```typescript
+import { createSeedEngine, createSingleTableSeed } from "@cfast/db/seed";
+
+const engine = createSeedEngine(schema);
+await engine.run(db);                              // seed all tables
+await engine.run(db, { transcript: "./seed.sql" }); // also write SQL file
+
+// Single table
+const single = createSingleTableSeed(schema, posts, 5);
+await single.run(db);
+```
+
+Many-to-many tables (2+ FKs) are auto-deduplicated. Tables named "users" get `role@example.com` emails.
 
 ### Known Limitations
 

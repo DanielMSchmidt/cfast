@@ -237,6 +237,12 @@ export type Db<TSchema extends Record<string, unknown> = Record<string, never>> 
    * ```
    */
   clearLookupCache: () => void;
+  /**
+   * The Drizzle schema this Db was created with. Exposed for the seed engine
+   * so `seed(db)` can introspect tables without a separate schema import.
+   * @internal
+   */
+  readonly _schema: Record<string, unknown>;
 };
 
 // --- QueryBuilder ---
