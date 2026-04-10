@@ -58,32 +58,48 @@ IntelliSense on `(row) => row.title` without any cast.
 FindManyOptions: `{ columns?, where?, orderBy?, limit?, offset?, with?, cache? }`
 FindFirstOptions: same without `limit`/`offset`.
 
-#### Relations escape hatch (#158)
+#### Auto-inferred `.with()` relations (#240)
 
 When you pass `with: { relation: true }`, Drizzle's relational query builder
-embeds the joined rows into the result. `@cfast/db` cannot statically infer
-that shape from the `Record<string, unknown>` schema we accept on `createDb`,
-so the default row type does not include the relation. Override the row type
-via the `findMany`/`findFirst`/`paginate` generic to claim the shape you know
-the query will produce, instead of `as any`-casting the result downstream:
+embeds the joined rows into the result. As of `@cfast/db@0.5`, the result
+type is **automatically inferred** from the schema -- no type cast needed.
+`createDb` captures the full schema type via a generic, and `findMany`/
+`findFirst` thread the `with` config through Drizzle's `BuildQueryResult`
+to compute the exact result shape including nested relations.
 
 ```typescript
-type RecipeWithIngredients = Recipe & { ingredients: Ingredient[] };
+import { createDb } from "@cfast/db";
+import * as schema from "./schema";   // includes relations()
 
+const db = createDb({ d1, schema, grants, user });
+
+// Auto-inferred -- no cast, no manual generic
+const recipes = await db
+  .query(schema.recipesTable)
+  .findMany({ with: { ingredients: true } })
+  .run();
+// recipes is { id: string; title: string; ingredients: Ingredient[] }[]
+
+// Nested relations work too
+const plan = await db
+  .query(schema.mealPlans)
+  .findFirst({
+    with: { entries: { with: { recipe: { with: { ingredients: true } } } } },
+  })
+  .run();
+// plan.entries[0].recipe.ingredients is fully typed
+```
+
+**Manual override:** pass `<TConfig, TRow>` to override when needed:
+
+```typescript
+type Custom = Recipe & { ingredients: Ingredient[] };
 const recipes = await db
   .query(recipesTable)
-  .findMany<RecipeWithIngredients>({ with: { ingredients: true } })
-  .run();
-// recipes is RecipeWithIngredients[], no cast needed.
-
-const recipe = await db
-  .query(recipesTable)
-  .findFirst<RecipeWithIngredients>({
-    where: eq(recipesTable.id, id),
+  .findMany<{ with: { ingredients: true } }, Custom>({
     with: { ingredients: true },
   })
   .run();
-// recipe is RecipeWithIngredients | undefined.
 ```
 
 ### Writes

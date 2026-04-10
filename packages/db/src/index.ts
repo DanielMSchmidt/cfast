@@ -32,5 +32,6 @@ export type {
   DeleteBuilder,
   DeleteReturningBuilder,
   InferRow,
+  InferQueryResult,
   Tx,
 } from "./types";

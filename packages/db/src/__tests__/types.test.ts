@@ -123,7 +123,9 @@ describe("types", () => {
 
     const op = db
       .query(recipes)
-      .findMany<RecipeWithIngredients>({ with: { ingredients: true } });
+      .findMany<{ with: { ingredients: true } }, RecipeWithIngredients>({
+        with: { ingredients: true },
+      });
     expectTypeOf(op).toEqualTypeOf<Operation<RecipeWithIngredients[]>>();
 
     // Default (no generic) still infers from the table.
@@ -155,7 +157,9 @@ describe("types", () => {
 
     const op = db
       .query(recipes)
-      .findFirst<RecipeWithIngredients>({ with: { ingredients: true } });
+      .findFirst<{ with: { ingredients: true } }, RecipeWithIngredients>({
+        with: { ingredients: true },
+      });
     expectTypeOf(op).toEqualTypeOf<
       Operation<RecipeWithIngredients | undefined>
     >();
@@ -191,5 +195,82 @@ describe("types", () => {
     });
     expectTypeOf(db).toHaveProperty("query");
     expectTypeOf(config).toHaveProperty("schema");
+  });
+
+  it("auto-infers .with() relation result types from typed schema (#240)", () => {
+    const recipes = sqliteTable("recipes", {
+      id: text("id").primaryKey(),
+      title: text("title").notNull(),
+    });
+    const ingredients = sqliteTable("ingredients", {
+      id: text("id").primaryKey(),
+      recipeId: text("recipe_id").notNull(),
+      name: text("name").notNull(),
+    });
+    const recipesRelations = relations(recipes, ({ many }) => ({
+      ingredients: many(ingredients),
+    }));
+    const ingredientsRelations = relations(ingredients, ({ one }) => ({
+      recipe: one(recipes, {
+        fields: [ingredients.recipeId],
+        references: [recipes.id],
+      }),
+    }));
+    const schema = { recipes, ingredients, recipesRelations, ingredientsRelations };
+
+    const db = createDb({
+      d1: createMockD1(),
+      schema,
+      grants: [],
+      user: null,
+      cache: false,
+    });
+
+    // findMany with `with` -- relation type auto-inferred
+    const op = db.query(recipes).findMany({ with: { ingredients: true } });
+    type Result = Awaited<ReturnType<typeof op.run>>;
+    expectTypeOf<Result[0]["id"]>().toBeString();
+    expectTypeOf<Result[0]["title"]>().toBeString();
+    expectTypeOf<Result[0]["ingredients"]>().toBeArray();
+
+    // findFirst with `with` -- relation type auto-inferred
+    const firstOp = db.query(recipes).findFirst({ with: { ingredients: true } });
+    type FirstResult = NonNullable<Awaited<ReturnType<typeof firstOp.run>>>;
+    expectTypeOf<FirstResult["ingredients"]>().toBeArray();
+
+    // Nested with -- ingredients -> recipe (One relation)
+    const nestedOp = db.query(ingredients).findFirst({ with: { recipe: true } });
+    type NestedResult = NonNullable<Awaited<ReturnType<typeof nestedOp.run>>>;
+    expectTypeOf<NestedResult["name"]>().toBeString();
+    expectTypeOf<NestedResult["recipe"]>().toMatchTypeOf<{ id: string; title: string }>();
+
+    // Without `with` -- plain row type
+    const plainOp = db.query(recipes).findMany();
+    type PlainResult = Awaited<ReturnType<typeof plainOp.run>>;
+    expectTypeOf<PlainResult[0]>().toEqualTypeOf<{ id: string; title: string }>();
+  });
+
+  it("Db<TSchema> propagates through unsafe()", () => {
+    const posts = sqliteTable("posts_typed", {
+      id: text("id").primaryKey(),
+      title: text("title").notNull(),
+    });
+    const comments = sqliteTable("comments_typed", {
+      id: text("id").primaryKey(),
+      postId: text("post_id").notNull(),
+      body: text("body").notNull(),
+    });
+    const postsRelations = relations(posts, ({ many }) => ({
+      comments: many(comments),
+    }));
+    const commentsRelations = relations(comments, ({ one }) => ({
+      post: one(posts, { fields: [comments.postId], references: [posts.id] }),
+    }));
+    const schema = { posts, comments, postsRelations, commentsRelations };
+    const db = createDb({ d1: createMockD1(), schema, grants: [], user: null, cache: false });
+
+    const unsafeOp = db.unsafe().query(posts).findMany({ with: { comments: true } });
+    type UnsafeResult = Awaited<ReturnType<typeof unsafeOp.run>>;
+    expectTypeOf<UnsafeResult[0]["comments"]>().toBeArray();
   });
 });
