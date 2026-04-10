@@ -138,6 +138,50 @@ with it slot into existing `app.use()` calls without further changes. If you
 prefer to type a single plugin in-place without a factory, import the
 `PluginContext<Env, TRequires>` helper and annotate the parameter directly.
 
+### Presets (`@cfast/core/presets`)
+
+```typescript
+import { createDefaultPlugins } from "@cfast/core/presets";
+
+function createDefaultPlugins(config: {
+  initAuth: (env: Record<string, unknown>) => AuthInstanceLike;
+  createDb: (grants: Grant[], user: { id: string } | null) => Db;
+}): { authPlugin, dbPlugin }
+```
+
+Creates the standard auth + db plugin pair that every cfast app uses. Replaces ~50 lines of identical plugin definitions across `cfast.server.ts` in every demo app.
+
+The auth plugin calls `initAuth(ctx.env)` per-request and returns `{ user, grants, instance }` under `ctx.auth`. The db plugin depends on the auth plugin and calls `createDb(grants, user)` to return `{ client }` under `ctx.db`.
+
+```typescript
+import { createApp } from "@cfast/core";
+import { createDefaultPlugins } from "@cfast/core/presets";
+import { envSchema } from "./env";
+import { permissions } from "./permissions";
+import { initAuth } from "./auth.setup.server";
+import { appDb } from "./db/client";
+
+const { authPlugin, dbPlugin } = createDefaultPlugins({
+  initAuth: (env) => initAuth({
+    d1: env.DB as D1Database,
+    appUrl: env.APP_URL as string,
+  }),
+  createDb: (grants, user) => appDb(grants, user),
+});
+
+export const app = createApp({ env: envSchema, permissions })
+  .use(authPlugin)
+  .use(dbPlugin);
+// Add app-specific plugins after the defaults:
+//  .use(storagePlugin)
+//  .use(emailPlugin);
+```
+
+Also re-exported from `@cfast/core` main entry for convenience:
+```typescript
+import { createDefaultPlugins } from "@cfast/core";
+```
+
 ### Client (`@cfast/core/client`)
 
 ```typescript
