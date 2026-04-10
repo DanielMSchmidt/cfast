@@ -10,7 +10,8 @@ import {
   extractForeignKeys,
   findPrimaryKeyColumn,
   isTable,
-} from "../seed-generator";
+  table,
+} from "../seed";
 import type { SeedContext } from "../seed-generator";
 import { createDb } from "../create-db";
 import { createMockD1, schema as testSchema, grantsForRole } from "./helpers";
@@ -544,6 +545,154 @@ describe("seed-generator", () => {
         c.sql.toLowerCase().includes("insert into"),
       );
       expect(insertCalls.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // .seed() method API tests
+  // -------------------------------------------------------------------------
+
+  describe(".seed() method API (column builder)", () => {
+    it("column .seed() works the same as seedConfig()", () => {
+      const methodTable = sqliteTable("method_posts", {
+        id: text("id").primaryKey(),
+        title: text("title").notNull().seed(() => "Method Title"),
+      });
+
+      const engine = createSeedEngine({ methodTable });
+      const generated = engine.generate();
+      const rows = generated.get(methodTable)!;
+      for (const row of rows) {
+        expect(row.title).toBe("Method Title");
+      }
+    });
+
+    it("column .seed() passes faker and ctx", () => {
+      const seedFn = vi.fn((_f: unknown, ctx: SeedContext) => `item-${ctx.index}`);
+      const methodTable = sqliteTable("method_ctx", {
+        id: text("id").primaryKey(),
+        value: text("value").notNull().seed(seedFn),
+      });
+
+      tableSeed(methodTable, { count: 3 });
+      const engine = createSeedEngine({ methodTable });
+      const generated = engine.generate();
+
+      expect(seedFn).toHaveBeenCalledTimes(3);
+      const rows = generated.get(methodTable)!;
+      expect(rows[0]!.value).toBe("item-0");
+      expect(rows[1]!.value).toBe("item-1");
+      expect(rows[2]!.value).toBe("item-2");
+    });
+
+    it("column .seed() chains with other builder methods", () => {
+      // .seed() must return `this` so chaining continues to work
+      const t = sqliteTable("chain_test", {
+        id: text("id").primaryKey(),
+        name: text("name").notNull().seed(() => "chained"),
+      });
+
+      const engine = createSeedEngine({ t });
+      const generated = engine.generate();
+      expect(generated.get(t)![0]!.name).toBe("chained");
+    });
+  });
+
+  describe("table() wrapper with .seed()", () => {
+    it("table().seed() sets count", () => {
+      const t = table("table_seed_count", {
+        id: text("id").primaryKey(),
+        name: text("name").notNull(),
+      }).seed({ count: 7 });
+
+      const engine = createSeedEngine({ t });
+      const generated = engine.generate();
+      expect(generated.get(t)!.length).toBe(7);
+    });
+
+    it("table().seed() with per generates relational data", () => {
+      const parents = table("ts_parents", {
+        id: text("id").primaryKey(),
+        name: text("name").notNull(),
+      }).seed({ count: 2 });
+
+      const children = table("ts_children", {
+        id: text("id").primaryKey(),
+        parentId: text("parent_id").notNull().references(() => parents.id),
+        label: text("label").notNull(),
+      }).seed({ count: 3, per: parents });
+
+      const engine = createSeedEngine({ parents, children });
+      const generated = engine.generate();
+
+      expect(generated.get(parents)!.length).toBe(2);
+      // 3 per parent * 2 parents = 6 total
+      expect(generated.get(children)!.length).toBe(6);
+    });
+
+    it("table().seed() is chainable (returns the table)", () => {
+      const t = table("chain_table", {
+        id: text("id").primaryKey(),
+      }).seed({ count: 1 });
+
+      // Should still be usable as a Drizzle table
+      expect(isTable(t)).toBe(true);
+    });
+
+    it("combines column .seed() with table().seed()", () => {
+      const t = table("combined_api", {
+        id: text("id").primaryKey(),
+        title: text("title").notNull().seed(() => "Combined"),
+      }).seed({ count: 4 });
+
+      const engine = createSeedEngine({ t });
+      const generated = engine.generate();
+      const rows = generated.get(t)!;
+      expect(rows.length).toBe(4);
+      for (const row of rows) {
+        expect(row.title).toBe("Combined");
+      }
+    });
+  });
+
+  describe("backward compatibility", () => {
+    it("seedConfig() and .seed() write to the same registry", () => {
+      // seedConfig wrapper style
+      const wrapperTable = sqliteTable("compat_wrapper", {
+        id: text("id").primaryKey(),
+        title: seedConfig(text("title").notNull(), () => "wrapper"),
+      });
+
+      // .seed() method style
+      const methodTable = sqliteTable("compat_method", {
+        id: text("id").primaryKey(),
+        title: text("title").notNull().seed(() => "method"),
+      });
+
+      const engine = createSeedEngine({ wrapperTable, methodTable });
+      const generated = engine.generate();
+
+      // Both should work
+      expect(generated.get(wrapperTable)![0]!.title).toBe("wrapper");
+      expect(generated.get(methodTable)![0]!.title).toBe("method");
+    });
+
+    it("tableSeed() and table().seed() are interchangeable", () => {
+      // tableSeed wrapper style
+      const wrapperTable = tableSeed(sqliteTable("compat_ts_wrapper", {
+        id: text("id").primaryKey(),
+      }), { count: 3 });
+
+      // table().seed() method style
+      const methodTable = table("compat_ts_method", {
+        id: text("id").primaryKey(),
+      }).seed({ count: 5 });
+
+      const engine = createSeedEngine({ wrapperTable, methodTable });
+      const generated = engine.generate();
+
+      expect(generated.get(wrapperTable)!.length).toBe(3);
+      expect(generated.get(methodTable)!.length).toBe(5);
     });
   });
 });

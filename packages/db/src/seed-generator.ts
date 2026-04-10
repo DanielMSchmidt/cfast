@@ -94,9 +94,13 @@ export type SeedRunOptions = {
  * (what the user passes to `sqliteTable(...)`) and the built column (what
  * `getTableColumns()` returns), so we can look up the seed fn from either
  * side. This avoids the builder-vs-column identity mismatch.
+ *
+ * Exported so the `.seed()` prototype patches in `seed.ts` can write to
+ * the same registries. Application code should use `.seed()` or
+ * `seedConfig()`/`tableSeed()` rather than accessing these directly.
  */
-const columnSeedMap = new WeakMap<object, ColumnSeedFn>();
-const tableSeedMap = new WeakMap<DrizzleTable, TableSeedConfig>();
+export const columnSeedMap = new WeakMap<object, ColumnSeedFn>();
+export const tableSeedMap = new WeakMap<DrizzleTable, TableSeedConfig>();
 
 /**
  * Resolves the seed function for a built column by checking the shared
@@ -121,6 +125,11 @@ function getColumnSeedFn(
  * The column object is returned unmodified so this can be used inline in
  * schema definitions without breaking Drizzle types.
  *
+ * @deprecated Use the `.seed()` method on column builders instead:
+ * ```ts
+ * text("title").seed(f => f.lorem.sentence())
+ * ```
+ *
  * @example
  * ```ts
  * const posts = sqliteTable("posts", {
@@ -142,6 +151,12 @@ export function seedConfig<T>(column: T, fn: ColumnSeedFn): T {
 
 /**
  * Attaches table-level seed config (count, per) to a Drizzle table.
+ *
+ * @deprecated Use `table()` from `@cfast/db/seed` with `.seed()` instead:
+ * ```ts
+ * import { table } from "@cfast/db/seed";
+ * const posts = table("posts", { ... }).seed({ count: 5, per: users });
+ * ```
  *
  * @example
  * ```ts

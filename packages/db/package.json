@@ -33,7 +33,10 @@
     "dist",
     "llms.txt"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/seed.js",
+    "./src/seed.ts"
+  ],
   "publishConfig": {
     "access": "public"
   },
