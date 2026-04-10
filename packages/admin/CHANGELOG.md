@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.4.0...@cfast/admin-v0.5.0) (2026-04-10)
+
+
+### Features
+
+* **db:** schema-driven db.seed() with relational generation ([#279](https://github.com/DanielMSchmidt/cfast/issues/279)) ([4eca18d](https://github.com/DanielMSchmidt/cfast/commit/4eca18da050962d144a09c49eb9a9e183f3317fc))
+
 ## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.3.2...@cfast/admin-v0.4.0) (2026-04-10)
 
 

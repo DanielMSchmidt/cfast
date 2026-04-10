@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.5.0...@cfast/db-v0.6.0) (2026-04-10)
+
+
+### Features
+
+* **db:** add row-level _can annotations ([#270](https://github.com/DanielMSchmidt/cfast/issues/270)) ([#280](https://github.com/DanielMSchmidt/cfast/issues/280)) ([2c570df](https://github.com/DanielMSchmidt/cfast/commit/2c570dfdda5323dff8ccf57ca0c579d7b7bc2dfd))
+* **db:** schema-driven db.seed() with relational generation ([#279](https://github.com/DanielMSchmidt/cfast/issues/279)) ([4eca18d](https://github.com/DanielMSchmidt/cfast/commit/4eca18da050962d144a09c49eb9a9e183f3317fc))
+
 ## [0.5.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.4.1...@cfast/db-v0.5.0) (2026-04-10)
 
 

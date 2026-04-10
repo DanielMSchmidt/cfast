@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.5.1...@cfast/permissions-v0.6.0) (2026-04-10)
+
+
+### Features
+
+* **db:** add row-level _can annotations ([#270](https://github.com/DanielMSchmidt/cfast/issues/270)) ([#280](https://github.com/DanielMSchmidt/cfast/issues/280)) ([2c570df](https://github.com/DanielMSchmidt/cfast/commit/2c570dfdda5323dff8ccf57ca0c579d7b7bc2dfd))
+
 ## [0.5.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/permissions-v0.5.0...@cfast/permissions-v0.5.1) (2026-04-09)
 
 
