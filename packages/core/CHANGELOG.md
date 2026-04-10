@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.2.0...@cfast/core-v0.3.0) (2026-04-10)
+
+
+### Features
+
+* **core:** add createDefaultPlugins preset for auth + db plugin chain ([#268](https://github.com/DanielMSchmidt/cfast/issues/268)) ([d49fc9a](https://github.com/DanielMSchmidt/cfast/commit/d49fc9af2a692812aa6fbe6ee82abd527c4404f6)), closes [#244](https://github.com/DanielMSchmidt/cfast/issues/244)
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/core-v0.1.4...@cfast/core-v0.2.0) (2026-04-09)
 
 

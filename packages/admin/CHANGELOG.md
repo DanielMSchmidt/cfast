@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.3.2...@cfast/admin-v0.4.0) (2026-04-10)
+
+
+### Features
+
+* **admin:** add createAdminAuthAdapter to eliminate per-app boilerplate ([#266](https://github.com/DanielMSchmidt/cfast/issues/266)) ([1186296](https://github.com/DanielMSchmidt/cfast/commit/1186296726b8e296ad0f719961a1160f4f4dd6e7)), closes [#241](https://github.com/DanielMSchmidt/cfast/issues/241)
+* **db:** expose meta.changes on transaction result after commit ([#272](https://github.com/DanielMSchmidt/cfast/issues/272)) ([326223d](https://github.com/DanielMSchmidt/cfast/commit/326223d18db96d62d7b8da0d224080b2ddb31337))
+
 ## [0.3.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/admin-v0.3.1...@cfast/admin-v0.3.2) (2026-04-09)
 
 
