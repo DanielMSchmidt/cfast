@@ -239,13 +239,21 @@ sequential execution (and loses the atomicity guarantee). For pure compose
 workflows that need atomicity, build the underlying ops with `db.insert/update/
 delete` directly and pass them straight to `db.batch([...])`.
 
-### db.transaction(async tx => ...): Promise<T>
+### db.transaction(async tx => ...): Promise<TransactionResult<T>>
 
 Runs a callback inside a transaction. Writes (`tx.insert`, `tx.update`,
 `tx.delete`) are **recorded** as the callback runs and flushed together as a
 single atomic `db.batch([...])` when the callback returns successfully. If the
 callback throws, the pending writes are discarded and the error is re-thrown —
 nothing reaches D1.
+
+Returns a `TransactionResult<T>` with:
+- `result: T` — the callback's return value
+- `meta.changes: number` — total rows affected across all writes
+- `meta.writeResults: D1Result[]` — per-statement D1 results
+
+Use `meta.changes` to detect whether a WHERE-guarded UPDATE actually matched
+any rows (the "out of stock" signal) without falling back to raw SQL.
 
 Use `db.transaction` whenever the set of writes depends on logic inside the
 callback (read-modify-write, conditional inserts, state machines):
@@ -254,11 +262,7 @@ callback (read-modify-write, conditional inserts, state machines):
 import { and, eq, gte, sql } from "drizzle-orm";
 
 // Oversell-safe checkout: atomic + guarded against concurrent decrements.
-const order = await db.transaction(async (tx) => {
-  // Reads execute eagerly against the underlying db. They see whatever is
-  // committed right now — D1 does NOT provide snapshot isolation across
-  // async code, so another request can modify the row between read and
-  // write. The WHERE guard on the update is what keeps us concurrency-safe.
+const { result: order, meta } = await db.transaction(async (tx) => {
   const product = await tx.query(products).findFirst({
     where: eq(products.id, pid),
   }).run();
@@ -266,24 +270,22 @@ const order = await db.transaction(async (tx) => {
     throw new Error("out of stock"); // rolls back, nothing is written
   }
 
-  // Guarded decrement: relative SQL + WHERE stock >= qty. The guard is
-  // re-evaluated by D1 at commit time, so two concurrent transactions
-  // cannot BOTH decrement past zero. Either one succeeds and the other
-  // is a no-op (0 rows matched), or the application-level check above
-  // rejects the second one first.
+  // Guarded decrement: relative SQL + WHERE stock >= qty.
   await tx.update(products)
     .set({ stock: sql`stock - ${qty}` })
     .where(and(eq(products.id, pid), gte(products.stock, qty)))
     .run();
 
-  // Generate the order id client-side so we don't need `.returning()`
-  // inside the transaction (see "Returning inside a transaction" below).
   const orderId = crypto.randomUUID();
   await tx.insert(orders).values({ id: orderId, productId: pid, qty }).run();
 
-  // Whatever the callback returns becomes the transaction's return value.
   return { orderId, productId: pid, qty };
 });
+
+// Check if the guarded decrement actually matched any rows.
+if (meta.changes === 0) {
+  throw new Error("out of stock — concurrent decrement won");
+}
 ```
 
 **`tx` is a `Pick<Db, "query" | "insert" | "update" | "delete">`** plus a
