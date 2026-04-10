@@ -2,7 +2,7 @@ import { describe, it, expectTypeOf } from "vitest";
 import { relations } from "drizzle-orm";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { createDb } from "../create-db";
-import type { Operation, Db, DbConfig, InferRow } from "../types";
+import type { Operation, Db, DbConfig, InferRow, WithCan } from "../types";
 import { createMockD1 } from "./helpers";
 
 describe("types", () => {
@@ -54,7 +54,7 @@ describe("types", () => {
 
     const op = db.query(products).findMany();
     expectTypeOf(op).toEqualTypeOf<
-      Operation<{ id: string; name: string; price: number }[]>
+      Operation<WithCan<{ id: string; name: string; price: number }>[]>
     >();
   });
 
@@ -74,7 +74,7 @@ describe("types", () => {
 
     const op = db.query(products).findFirst();
     expectTypeOf(op).toEqualTypeOf<
-      Operation<{ id: string; name: string } | undefined>
+      Operation<WithCan<{ id: string; name: string }> | undefined>
     >();
   });
 
@@ -126,12 +126,12 @@ describe("types", () => {
       .findMany<{ with: { ingredients: true } }, RecipeWithIngredients>({
         with: { ingredients: true },
       });
-    expectTypeOf(op).toEqualTypeOf<Operation<RecipeWithIngredients[]>>();
+    expectTypeOf(op).toEqualTypeOf<Operation<WithCan<RecipeWithIngredients>[]>>();
 
     // Default (no generic) still infers from the table.
     const plain = db.query(recipes).findMany();
     expectTypeOf(plain).toEqualTypeOf<
-      Operation<{ id: string; title: string }[]>
+      Operation<WithCan<{ id: string; title: string }>[]>
     >();
   });
 
@@ -161,7 +161,7 @@ describe("types", () => {
         with: { ingredients: true },
       });
     expectTypeOf(op).toEqualTypeOf<
-      Operation<RecipeWithIngredients | undefined>
+      Operation<WithCan<RecipeWithIngredients> | undefined>
     >();
   });
 
@@ -247,7 +247,7 @@ describe("types", () => {
     // Without `with` -- plain row type
     const _plainOp = db.query(recipes).findMany();
     type PlainResult = Awaited<ReturnType<typeof _plainOp.run>>;
-    expectTypeOf<PlainResult[0]>().toEqualTypeOf<{ id: string; title: string }>();
+    expectTypeOf<PlainResult[0]>().toEqualTypeOf<WithCan<{ id: string; title: string }>>();
   });
 
   it("Db<TSchema> propagates through unsafe()", () => {

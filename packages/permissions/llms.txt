@@ -209,6 +209,21 @@ can<typeof schema>(grants, "create", "posts")        // ✓ string form, type-ch
 // can<typeof schema>(grants, "create", "unknownTable")  // ✗ TypeScript error
 ```
 
+### `getGrantedActions(grants, table): GrantedAction[]`
+```typescript
+import { getGrantedActions } from "@cfast/permissions";
+function getGrantedActions(grants: Grant[], table: DrizzleTable): GrantedAction[]
+
+type GrantedAction = {
+  action: CrudAction;         // "read" | "create" | "update" | "delete"
+  grants: Grant[];            // the matching grants
+  unrestricted: boolean;      // true if any grant has no `where` clause
+};
+```
+Returns the distinct CRUD actions that are granted for a given table. `manage` grants are expanded into the four CRUD actions. For each action, the result includes the matching grants and whether any of them is unrestricted (no `where` clause). Actions with no matching grant are excluded.
+
+Used internally by `@cfast/db` to build row-level `_can` annotations on query results.
+
 ### `CRUD_ACTIONS`
 ```typescript
 const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", "delete"];

@@ -47,8 +47,8 @@ type Operation<TResult> = {
 ### Reads
 
 ```typescript
-db.query(table).findMany(options?): Operation<Row[]>
-db.query(table).findFirst(options?): Operation<Row | undefined>
+db.query(table).findMany(options?): Operation<WithCan<Row>[]>
+db.query(table).findFirst(options?): Operation<WithCan<Row> | undefined>
 db.query(table).paginate(params, options?): Operation<CursorPage<Row> | OffsetPage<Row>>
 ```
 
@@ -101,6 +101,34 @@ const recipes = await db
   })
   .run();
 ```
+
+#### Row-level `_can` annotations (#270)
+
+Every `findMany` and `findFirst` result includes a `_can` object with per-action
+booleans, evaluated from the user's grants at query time. No opt-in required --
+permissions are first-class on every row.
+
+```typescript
+const comments = await db.query(commentsTable).findMany().run();
+// comments[0]._can -> { read: true, create: true, update: true, delete: false }
+
+// Type: WithCan<Comment>[] -- each row has _can: Record<string, boolean>
+type WithCan<T> = T & { _can: Record<string, boolean> };
+```
+
+How `_can` is computed for each CRUD action:
+- **Unrestricted grant** (no `where` clause): `_can.action = true` for every row (literal `1` in SQL, no CASE needed).
+- **Restricted grant** (has `where` clause): `_can.action` varies per row via a SQL `CASE WHEN <condition> THEN 1 ELSE 0 END` computed column.
+- **No grant**: `_can.action = false` for every row.
+- **`manage` grant**: expands to all four CRUD actions (`read`, `create`, `update`, `delete`).
+
+The `read` action is always `true` on returned rows because the permission WHERE
+clause already filters out rows the user cannot read.
+
+`_can` is **not** added in `unsafe()` mode or when `user` is `null`.
+
+Performance: adds N computed columns per query (where N = distinct granted CRUD
+actions, typically 3-5). Unrestricted grants are free (literal `1`).
 
 ### Writes
 

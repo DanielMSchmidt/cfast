@@ -200,6 +200,76 @@ grant("read", posts, {
 
 This means you get type safety for the common case (table references and JS-key strings) without breaking the escape hatches (`"all"` and raw SQL names).
 
+### Row-Level `_can` Annotations
+
+Every row returned by `findMany` and `findFirst` includes a `_can` object -- a `Record<string, boolean>` that tells you, for each CRUD action, whether the current user is allowed to perform it **on that specific row**.
+
+```typescript
+const posts = await db.query(postsTable).findMany().run({});
+
+posts[0]._can;
+// { read: true, create: true, update: true, delete: false }
+```
+
+#### How `_can` Is Computed
+
+`_can` is derived from the user's grants at query time via SQL `CASE` expressions:
+
+| Grant shape | SQL | `_can` value |
+|---|---|---|
+| Unrestricted (no `where`) | Literal `1` | `true` for every row |
+| Restricted (has `where`) | `CASE WHEN <condition> THEN 1 ELSE 0 END` | Varies per row |
+| No grant | Not queried | `false` |
+| `manage` grant | Expanded | `{ read: true, create: true, update: true, delete: true }` |
+
+The `read` action is always `true` on returned rows because the permission WHERE clause already filters out rows the user cannot read.
+
+#### Difference from `can()`
+
+| | `can()` | `_can` |
+|---|---|---|
+| **Scope** | Table-level | Row-level |
+| **Input** | Grants array + action + table | Automatic on every query row |
+| **Where it runs** | Client or server, no DB needed | Server, evaluated in SQL |
+| **Use case** | "Show or hide the Create button" | "Show or hide the Edit button on *this* row" |
+
+`can(grants, "update", posts)` answers "does the user have **any** update grant on posts?" -- a structural check. `post._can.update` answers "does the grant's WHERE clause match **this row**?" -- a row-level truth.
+
+#### UI Patterns
+
+Use `_can` to conditionally render actions per row:
+
+```tsx
+function PostRow({ post }: { post: WithCan<Post> }) {
+  return (
+    <tr>
+      <td>{post.title}</td>
+      <td>
+        {post._can.update && <button>Edit</button>}
+        {post._can.delete && <button>Delete</button>}
+      </td>
+    </tr>
+  );
+}
+```
+
+For column visibility, check `_can` across all rows:
+
+```tsx
+const anyCanDelete = posts.some((p) => p._can.delete);
+// Only render the "Actions" column if at least one row is deletable
+```
+
+#### When `_can` Is Not Present
+
+`_can` is **not** added when:
+- The `Db` was created via `db.unsafe()` (no permission context)
+- The `user` passed to `createDb()` is `null`
+
+#### Performance
+
+`_can` adds N computed columns per query, where N is the number of distinct granted CRUD actions (typically 3--5). Unrestricted grants use literal `1` and are essentially free. There is no opt-in required and no opt-out -- permissions are first-class on every row.
+
 ### Client-Side Imports
 
 Import from `@cfast/permissions/client` in client bundles to avoid pulling in server-only code. The client entrypoint exports only types and the `ForbiddenError` class:
