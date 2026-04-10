@@ -46,7 +46,7 @@ import type {
  * const posts = await db.query(postsTable).findMany().run();
  * ```
  */
-export function createDb(config: DbConfig): Db {
+export function createDb<TSchema extends Record<string, unknown>>(config: DbConfig<TSchema>): Db<TSchema> {
   // Each `createDb()` call (typically per request) gets its own lookup cache.
   // The cache is shared between the safe Db and its unsafe sibling so a
   // grant's `with` lookups still hit the cache when the safe Db delegates the
@@ -56,10 +56,10 @@ export function createDb(config: DbConfig): Db {
 }
 
 function buildDb(
-  config: DbConfig,
+  config: DbConfig<Record<string, unknown>>,
   isUnsafe: boolean,
   lookupCache: LookupCache,
-): Db {
+): Db<any> {
   const cacheManager: CacheManager | null =
     config.cache === false
       ? null
@@ -85,8 +85,8 @@ function buildDb(
     return lookupDbCache;
   };
 
-  const db: Db = {
-    query<TTable extends DrizzleTable>(table: TTable): QueryBuilder<TTable> {
+  const db: Db<any> = {
+    query<TTable extends DrizzleTable>(table: TTable): QueryBuilder<TTable, any> {
       // The runtime builder is row-type-erased; the generic on `query` exists
       // purely to propagate `InferRow<TTable>` to callers.
       return createQueryBuilder({
@@ -98,7 +98,7 @@ function buildDb(
         unsafe: isUnsafe,
         lookupCache,
         getLookupDb,
-      }) as unknown as QueryBuilder<TTable>;
+      }) as unknown as QueryBuilder<TTable, any>;
     },
 
     insert<TTable extends DrizzleTable>(table: TTable): InsertBuilder<TTable> {
@@ -257,7 +257,7 @@ function buildDb(
  * Returned by {@link createAppDb}, called per-request with the user's
  * resolved grants and identity to produce a fresh permission-aware {@link Db}.
  */
-export type AppDbConfig = {
+export type AppDbConfig<TSchema extends Record<string, unknown> = Record<string, unknown>> = {
   /**
    * The Cloudflare D1 database binding. Pass either the binding directly
    * (for tests, where the mock D1 is in scope at module load) or a
@@ -273,7 +273,7 @@ export type AppDbConfig = {
    * Drizzle schema. Same shape as {@link DbConfig.schema} -- pass
    * `import * as schema from "./schema"`.
    */
-  schema: Record<string, unknown>;
+  schema: TSchema;
   /**
    * Cache configuration shared across every per-request `Db`. Defaults to
    * `{ backend: "cache-api" }` to match `createDb`. Pass `false` to opt out.
@@ -290,10 +290,10 @@ export type AppDbConfig = {
  * `@cfast/core`'s `dbPlugin`, route loaders) can pass the factory around
  * without re-deriving its signature.
  */
-export type AppDbFactory = (
+export type AppDbFactory<TSchema extends Record<string, unknown> = Record<string, never>> = (
   grants: Grant[],
   user: { id: string } | null,
-) => Db;
+) => Db<TSchema>;
 
 /**
  * Consolidates the three near-identical `createDb` factories that every
@@ -344,7 +344,7 @@ export type AppDbFactory = (
  * };
  * ```
  */
-export function createAppDb(config: AppDbConfig): AppDbFactory {
+export function createAppDb<TSchema extends Record<string, unknown>>(config: AppDbConfig<TSchema>): AppDbFactory<TSchema> {
   const { d1, schema, cache } = config;
   // Resolve the D1 binding lazily so callers can pass a `() => env.get().DB`
   // getter when running on Workers (where the binding isn't available at
