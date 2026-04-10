@@ -189,7 +189,7 @@ export type Db<TSchema extends Record<string, unknown> = Record<string, never>> 
    *   and transaction metadata (`meta.changes`, `meta.writeResults`), or rejects
    *   with whatever the callback threw (after rolling back pending writes).
    */
-  transaction: <T>(callback: (tx: Tx) => Promise<T>) => Promise<TransactionResult<T>>;
+  transaction: <T>(callback: (tx: Tx<TSchema>) => Promise<T>) => Promise<TransactionResult<T>>;
   /** Cache control methods for manual invalidation. */
   cache: {
     /** Invalidate cached queries by tag names and/or table names. */
