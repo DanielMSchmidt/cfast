@@ -33,10 +33,11 @@ export const appDb = createAppDb({
   cache: false,
 });
 
-// Inline db plugin — exposes both permission-aware client and raw Drizzle
-type AuthProvides = { auth: { user: AuthUser | null; grants: Grant[] } };
-const dbPlugin = definePlugin<AuthProvides>()({
-  name: "db",
+// db plugin — uses `requires` inference (no curried form) to depend on authPlugin.
+// Exposes both the permission-aware client and raw Drizzle.
+const dbPlugin = definePlugin({
+  name: "db" as const,
+  requires: [authPlugin],
   setup(ctx) {
     const client = appDb(
       ctx.auth.grants,
