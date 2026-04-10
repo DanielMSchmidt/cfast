@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.2.0...@cfast/actions-v0.3.0) (2026-04-10)
+
+
+### Features
+
+* unified permission UI -- cfastJson, useCfastLoader, ActionButton href/input ([#298](https://github.com/DanielMSchmidt/cfast/issues/298)) ([7bc146b](https://github.com/DanielMSchmidt/cfast/commit/7bc146b9133c2087882d36f849a204283572bf77))
+
 ## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.1.3...@cfast/actions-v0.2.0) (2026-04-10)
 
 
