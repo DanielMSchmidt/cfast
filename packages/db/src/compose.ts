@@ -256,7 +256,7 @@ function createTrackingDb(real: Db, perms: PermissionDescriptor[]): Db {
         },
       };
     },
-    transaction: async <T>(callback: (tx: import("./types").Tx) => Promise<T>): Promise<T> => {
+    transaction: async <T>(callback: (tx: import("./types").Tx) => Promise<T>): Promise<import("./types").TransactionResult<T>> => {
       // Dry-run pass through transactions: the callback is invoked against a
       // tx handle that simply delegates to the tracking db's builder methods,
       // so every sub-op's permissions still flow into `perms`. The callback's
@@ -267,14 +267,14 @@ function createTrackingDb(real: Db, perms: PermissionDescriptor[]): Db {
         insert: trackingDb.insert,
         update: trackingDb.update,
         delete: trackingDb.delete,
-        transaction: (cb) => trackingDb.transaction(cb),
+        transaction: (cb) => trackingDb.transaction(cb).then((txr) => txr.result),
       };
       try {
         await callback(trackingTx);
       } catch {
         // Swallow dry-run errors — the real run will surface them.
       }
-      return createSentinel() as T;
+      return createSentinel() as import("./types").TransactionResult<T>;
     },
     cache: real.cache,
     clearLookupCache: () => real.clearLookupCache(),

@@ -98,7 +98,7 @@ export function createMockD1(): D1Database & {
   const mockResults = {
     results: [] as unknown[],
     success: true,
-    meta: {},
+    meta: { changes: 1 },
   };
 
   // Each prepared statement remembers its SQL and the bound parameters so the
