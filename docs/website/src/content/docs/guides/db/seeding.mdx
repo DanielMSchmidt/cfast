@@ -1,35 +1,22 @@
 ---
 title: "Seeding"
-description: "Schema-driven seed generation with faker, relational data, and SQL transcripts."
+description: "Schema-driven seed generation with bundled faker, relational data, and SQL transcripts."
 ---
 
-`@cfast/db` includes a schema-driven seed generator that introspects your Drizzle schema to produce realistic test data. Instead of hand-writing INSERT scripts, you annotate columns and tables in your schema and let the engine handle foreign keys, topological ordering, and deduplication.
+`@cfast/db` includes a schema-driven seed generator that introspects your Drizzle schema to produce realistic test data. `@faker-js/faker` is bundled -- you never need to install or import it. All seed functionality lives under the `@cfast/db/seed` entrypoint so tree-shaking keeps faker out of your production bundle.
 
 ## Quick start
 
-Install `@faker-js/faker` as a dev dependency — the seed engine accepts any faker instance but does not bundle one:
-
-```bash
-pnpm add -D @faker-js/faker
-```
-
-Define your schema with optional seed hints, then create and run the engine:
-
 ```ts
-import { createSeedEngine, seedConfig, tableSeed } from "@cfast/db";
+import { seed } from "@cfast/db/seed";
 import { createDb } from "@cfast/db";
-import { faker } from "@faker-js/faker";
 import * as schema from "./schema";
 
-// 1. Create the engine from your full schema + faker
-const engine = createSeedEngine(schema, faker);
-
-// 2. Generate and insert into D1
 const db = createDb({ d1: env.DB, schema, grants: [], user: null });
-await engine.run(db);
+await seed(db);
 ```
 
-The engine discovers every Drizzle table in your schema module, topologically sorts them by foreign key dependencies, and inserts rows in the correct order. It calls `db.unsafe()` internally — seeding is a system task with no authenticated user.
+That's it. `seed(db)` introspects the schema from the Db instance, topologically sorts tables by FK dependencies, generates realistic data, and inserts rows in the correct order via `db.unsafe()`.
 
 ## Column-level overrides with `seedConfig()`
 
@@ -37,7 +24,7 @@ Wrap any column builder with `seedConfig()` to replace the auto-inferred generat
 
 ```ts
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import { seedConfig } from "@cfast/db";
+import { seedConfig } from "@cfast/db/seed";
 
 export const posts = sqliteTable("posts", {
   id: text("id").primaryKey(),
@@ -55,7 +42,7 @@ The first argument is the column builder (returned unmodified so Drizzle types a
 Control how many rows a table gets and whether generation is per-parent:
 
 ```ts
-import { tableSeed } from "@cfast/db";
+import { tableSeed } from "@cfast/db/seed";
 
 export const users = tableSeed(
   sqliteTable("users", {
@@ -93,7 +80,7 @@ When no `seedConfig()` is present, the engine picks a generator based on the Dri
 | `blob` / buffer | `faker.string.alphanumeric(16)` |
 | Nullable column | `null` ~10% of the time |
 
-Columns with `.$defaultFn()` or a static `.default()` are skipped entirely — Drizzle fills them at insert time.
+Columns with `.$defaultFn()` or a static `.default()` are skipped entirely -- Drizzle fills them at insert time.
 
 ### Auth table detection
 
@@ -203,20 +190,21 @@ const users = sqliteTable("users", {
 Seed a single table without running the full engine. This is useful for quick one-off data in tests:
 
 ```ts
-import { createSingleTableSeed } from "@cfast/db";
+import { createSingleTableSeed } from "@cfast/db/seed";
 
-const seed = createSingleTableSeed(schema, faker, posts, 5);
-await seed.run(db);
+const tableSeed = createSingleTableSeed(schema, posts, 5);
+await tableSeed.run(db);
 ```
 
 Other tables in the schema get zero rows. Foreign key parents are still generated if needed for referential integrity.
 
 ## SQL transcript output
 
-Pass `{ transcript: "/path/to/seed.sql" }` to `.run()` to write the generated INSERT statements to a file. This is useful for debugging or sharing seed data as plain SQL:
+Pass `{ transcript: "/path/to/seed.sql" }` to `seed()` or `.run()` to write the generated INSERT statements to a file:
 
 ```ts
-await engine.run(db, { transcript: "./seed-transcript.sql" });
+import { seed } from "@cfast/db/seed";
+await seed(db, { transcript: "./seed-transcript.sql" });
 ```
 
 The transcript file contains one `INSERT INTO` statement per row, in topological order. In Workers environments where `node:fs` is unavailable, the transcript write is silently skipped.
@@ -226,10 +214,11 @@ The transcript file contains one `INSERT INTO` statement per row, in topological
 For hand-authored fixture data (not generated), use `defineSeed()` with explicit row arrays:
 
 ```ts
-import { defineSeed, createDb } from "@cfast/db";
+import { defineSeed } from "@cfast/db/seed";
+import { createDb } from "@cfast/db";
 import * as schema from "./schema";
 
-const seed = defineSeed({
+const mySeed = defineSeed({
   entries: [
     {
       table: schema.users,
@@ -248,22 +237,12 @@ const seed = defineSeed({
 });
 
 const db = createDb({ d1, schema, grants: [], user: null });
-await seed.run(db);
+await mySeed.run(db);
 ```
 
-Row types are inferred from the Drizzle table, so typos in column names are caught by `tsc`. Entries are inserted in list order — place parent tables before children.
-
-## faker as a peer dependency
-
-The seed engine accepts any object that matches the `@faker-js/faker` API shape. It is not bundled — you install it yourself:
-
-```bash
-pnpm add -D @faker-js/faker
-```
-
-This keeps the production bundle small and lets you pin a specific faker version. In tests, you can pass a mock faker object to make generated data deterministic.
+Row types are inferred from the Drizzle table, so typos in column names are caught by `tsc`. Entries are inserted in list order -- place parent tables before children.
 
 ## See also
 
-- [`@cfast/db`](/cfast/guides/db/) — full package reference
-- [Transactions vs Batch](/cfast/guides/db/transactions/) — atomic writes and read-modify-write patterns
+- [`@cfast/db`](/cfast/guides/db/) -- full package reference
+- [Transactions vs Batch](/cfast/guides/db/transactions/) -- atomic writes and read-modify-write patterns

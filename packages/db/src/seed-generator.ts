@@ -2,8 +2,8 @@
  * Schema-driven seed generator for `@cfast/db`.
  *
  * Introspects Drizzle schema metadata (column types, foreign keys, primary keys)
- * to auto-generate realistic test data using `@faker-js/faker` as a peer
- * dependency. Supports:
+ * to auto-generate realistic test data using the bundled `@faker-js/faker`.
+ * Supports:
  *
  * - Column-level `.seed()` overrides via `seedConfig()` wrapper
  * - Table-level `.seed()` overrides via `tableSeed()` wrapper (count, per)
@@ -18,6 +18,7 @@
  * @module seed-generator
  */
 
+import { faker } from "@faker-js/faker";
 import { getTableColumns, getTableName } from "drizzle-orm";
 import type { Table, Column } from "drizzle-orm";
 import type { DrizzleTable } from "@cfast/permissions";
@@ -221,7 +222,6 @@ function findPrimaryKeyColumn(
 /** Generate a value based on column type when no seed function is provided. */
 function generateDefaultValue(
   col: AnyColumn,
-  faker: Faker,
   isPk: boolean,
   isNullable: boolean,
 ): unknown {
@@ -267,7 +267,7 @@ function isAuthUsersTable(table: DrizzleTable): boolean {
   return getTableName(asTable(table)) === AUTH_TABLE_NAME;
 }
 
-function generateAuthEmail(faker: Faker, index: number): string {
+function generateAuthEmail(index: number): string {
   const roles = ["admin", "user", "editor", "viewer", "moderator"];
   if (index < roles.length) {
     return `${roles[index]}@example.com`;
@@ -369,15 +369,13 @@ function getDeduplicationKeys(
 
 /**
  * Generates seed data for all tables in a schema using Drizzle column metadata
- * and a `@faker-js/faker` instance.
+ * and the bundled `@faker-js/faker` instance.
  *
  * @param schema - The full Drizzle schema (`import * as schema from "./schema"`).
- * @param faker - A `@faker-js/faker` Faker instance.
  * @returns An engine with `generate()` and `run(db)` methods.
  */
 export function createSeedEngine(
   schema: Record<string, unknown>,
-  faker: Faker,
 ) {
   // Discover all Drizzle tables in the schema
   const tables: DrizzleTable[] = [];
@@ -494,7 +492,7 @@ export function createSeedEngine(
 
               // Auth users get special email handling
               if (isAuth && key === "email") {
-                row[key] = generateAuthEmail(faker, globalIndex);
+                row[key] = generateAuthEmail(globalIndex);
                 continue;
               }
               if (isAuth && key === "name") {
@@ -514,7 +512,7 @@ export function createSeedEngine(
                 continue;
               }
 
-              row[key] = generateDefaultValue(colObj, faker, isPk, isNullable);
+              row[key] = generateDefaultValue(colObj, isPk, isNullable);
             }
 
             // Many-to-many deduplication
@@ -615,11 +613,10 @@ export function createSeedEngine(
  */
 export function createSingleTableSeed(
   schema: Record<string, unknown>,
-  faker: Faker,
   table: DrizzleTable,
   count: number,
 ) {
-  const engine = createSeedEngine(schema, faker);
+  const engine = createSeedEngine(schema);
   const overrides = new Map<DrizzleTable, { count: number }>();
   overrides.set(table, { count });
 

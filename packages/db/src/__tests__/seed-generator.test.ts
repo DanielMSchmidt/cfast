@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { getTableName, type Table } from "drizzle-orm";
 import {
@@ -68,55 +68,10 @@ const postTags = sqliteTable("post_tags", {
 const schema = { users, posts, comments, tags, postTags };
 
 // ---------------------------------------------------------------------------
-// Minimal faker mock — enough to exercise all code paths
-// ---------------------------------------------------------------------------
-
-let uuidCounter = 0;
-
-function createFakerMock() {
-  uuidCounter = 0;
-  return {
-    string: {
-      uuid: () => `uuid-${++uuidCounter}`,
-      alphanumeric: (n: number) => "a".repeat(n),
-    },
-    lorem: {
-      words: (n: number) => Array.from({ length: n }, (_, i) => `word${i + 1}`).join(" "),
-      sentence: () => "A generated sentence.",
-      paragraphs: (n: number) => Array.from({ length: n }, () => "A paragraph.").join("\n\n"),
-    },
-    number: {
-      int: ({ min, max: _max }: { min: number; max: number }) => min,
-      float: ({ min, max: _max, fractionDigits: _fd }: { min: number; max: number; fractionDigits?: number }) => min,
-    },
-    datatype: {
-      boolean: () => true,
-    },
-    date: {
-      recent: () => new Date("2025-01-01T00:00:00Z"),
-    },
-    person: {
-      fullName: () => "Test User",
-    },
-    internet: {
-      email: () => "test@example.com",
-    },
-    helpers: {
-      arrayElement: (arr: unknown[]) => arr[0],
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 describe("seed-generator", () => {
-  let faker: ReturnType<typeof createFakerMock>;
-
-  beforeEach(() => {
-    faker = createFakerMock();
-  });
 
   describe("isTable", () => {
     it("returns true for Drizzle tables", () => {
@@ -197,7 +152,7 @@ describe("seed-generator", () => {
   describe("createSeedEngine", () => {
     describe("basic generation", () => {
       it("generates rows for all tables", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
 
         for (const table of engine.tables) {
@@ -209,13 +164,13 @@ describe("seed-generator", () => {
 
       it("generates correct count of rows", () => {
         tableSeed(users, { count: 5 });
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = engine.generate();
         expect(generated.get(users)!.length).toBe(5);
       });
 
       it("generates UUIDs for primary keys", () => {
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = engine.generate();
         const rows = generated.get(users)!;
         // All PKs should be unique UUIDs
@@ -223,12 +178,13 @@ describe("seed-generator", () => {
         expect(ids.size).toBe(rows.length);
         for (const row of rows) {
           expect(typeof row.id).toBe("string");
-          expect((row.id as string).startsWith("uuid-")).toBe(true);
+          expect(typeof row.id).toBe("string");
+          expect((row.id as string).length).toBeGreaterThan(0);
         }
       });
 
       it("respects column type inference for text columns", () => {
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = engine.generate();
         const row = generated.get(users)![0]!;
         // name is text -> should be string
@@ -236,7 +192,7 @@ describe("seed-generator", () => {
       });
 
       it("respects column type inference for integer columns", () => {
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = engine.generate();
         const row = generated.get(users)![0]!;
         // age is integer, nullable -> could be null or number
@@ -245,7 +201,7 @@ describe("seed-generator", () => {
 
       it("respects column type inference for real columns", () => {
         // Need users first for FK so use full schema
-        const fullEngine = createSeedEngine(schema, faker);
+        const fullEngine = createSeedEngine(schema);
         const generated = fullEngine.generate();
         const postRow = generated.get(posts)![0]!;
         // rating is real, nullable
@@ -253,7 +209,7 @@ describe("seed-generator", () => {
       });
 
       it("respects column type inference for boolean columns", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
         // active has a default, should be skipped (uses Drizzle default)
         // published has a default, should be skipped
@@ -261,7 +217,7 @@ describe("seed-generator", () => {
       });
 
       it("skips columns with $defaultFn", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
         const row = generated.get(users)![0]!;
         // createdAt has $defaultFn — should not be in the generated row
@@ -269,7 +225,7 @@ describe("seed-generator", () => {
       });
 
       it("skips columns with static defaults", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
         const row = generated.get(users)![0]!;
         // active has default(true) — should not be in the generated row
@@ -279,7 +235,7 @@ describe("seed-generator", () => {
 
     describe("FK auto-fill", () => {
       it("fills FK columns from generated parent rows", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
 
         const userRows = generated.get(users)!;
@@ -292,7 +248,7 @@ describe("seed-generator", () => {
       });
 
       it("fills deep FK chains (comments -> posts -> users)", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
 
         const postRows = generated.get(posts)!;
@@ -314,7 +270,7 @@ describe("seed-generator", () => {
         tableSeed(users, { count: 3 });
         tableSeed(posts, { count: 2, per: users });
 
-        const engine = createSeedEngine({ users, posts }, faker);
+        const engine = createSeedEngine({ users, posts });
         const generated = engine.generate();
 
         expect(generated.get(users)!.length).toBe(3);
@@ -326,19 +282,20 @@ describe("seed-generator", () => {
         tableSeed(users, { count: 2 });
         tableSeed(posts, { count: 3, per: users });
 
-        const engine = createSeedEngine({ users, posts }, faker);
+        const engine = createSeedEngine({ users, posts });
         const generated = engine.generate();
 
         const userRows = generated.get(users)!;
         const postRows = generated.get(posts)!;
+        const userIds = new Set(userRows.map((r) => r.id));
 
-        // First 3 posts should reference user 0, next 3 should reference user 1
-        for (let i = 0; i < 3; i++) {
-          expect(postRows[i]!.authorId).toBe(userRows[0]!.id);
+        // Every post's authorId should be a valid user ID
+        for (const post of postRows) {
+          expect(userIds.has(post.authorId as string)).toBe(true);
         }
-        for (let i = 3; i < 6; i++) {
-          expect(postRows[i]!.authorId).toBe(userRows[1]!.id);
-        }
+        // First 3 posts belong to the first parent, next 3 to the second
+        expect(postRows[0]!.authorId).toBe(userRows[0]!.id);
+        expect(postRows[3]!.authorId).toBe(userRows[1]!.id);
       });
     });
 
@@ -349,7 +306,7 @@ describe("seed-generator", () => {
           title: seedConfig(text("title").notNull(), () => "Custom Title"),
         });
 
-        const engine = createSeedEngine({ customTitle }, faker);
+        const engine = createSeedEngine({ customTitle });
         const generated = engine.generate();
         const rows = generated.get(customTitle)!;
         for (const row of rows) {
@@ -365,7 +322,7 @@ describe("seed-generator", () => {
         });
 
         tableSeed(custom, { count: 3 });
-        const engine = createSeedEngine({ custom }, faker);
+        const engine = createSeedEngine({ custom });
         const generated = engine.generate();
 
         expect(seedFn).toHaveBeenCalledTimes(3);
@@ -391,7 +348,7 @@ describe("seed-generator", () => {
         tableSeed(parents, { count: 2 });
         tableSeed(children, { count: 1, per: parents });
 
-        const engine = createSeedEngine({ parents, children }, faker);
+        const engine = createSeedEngine({ parents, children });
         const generated = engine.generate();
 
         const parentRows = generated.get(parents)!;
@@ -419,7 +376,7 @@ describe("seed-generator", () => {
         tableSeed(orgs, { count: 3 });
         tableSeed(employees, { count: 2 });
 
-        const engine = createSeedEngine({ orgs, employees }, faker);
+        const engine = createSeedEngine({ orgs, employees });
         const generated = engine.generate();
 
         const orgIds = new Set(generated.get(orgs)!.map((r) => r.id));
@@ -444,7 +401,7 @@ describe("seed-generator", () => {
         tableSeed(items, { count: 5 });
         tableSeed(summary, { count: 1 });
 
-        const engine = createSeedEngine({ items, summary }, faker);
+        const engine = createSeedEngine({ items, summary });
         const generated = engine.generate();
 
         const summaryRows = generated.get(summary)!;
@@ -454,14 +411,13 @@ describe("seed-generator", () => {
 
     describe("many-to-many deduplication", () => {
       it("deduplicates rows based on FK composite keys", () => {
-        // With only 3 tags and 10 post_tags per post, duplicates will occur
-        // because faker.number.int always returns min (0) in our mock
+        // With only 2 tags, duplicates are likely; the engine deduplicates them
         tableSeed(users, { count: 1 });
         tableSeed(posts, { count: 1 });
         tableSeed(tags, { count: 2 });
         tableSeed(postTags, { count: 5 }); // 5 requested but only 2 unique combos possible
 
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const generated = engine.generate();
         const ptRows = generated.get(postTags)!;
 
@@ -475,7 +431,7 @@ describe("seed-generator", () => {
     describe("auth table detection", () => {
       it("generates role-based emails for users table", () => {
         tableSeed(users, { count: 6 });
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = engine.generate();
         const rows = generated.get(users)!;
 
@@ -490,15 +446,16 @@ describe("seed-generator", () => {
 
       it("generates names via faker.person.fullName for users table", () => {
         tableSeed(users, { count: 1 });
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = engine.generate();
-        expect(generated.get(users)![0]!.name).toBe("Test User");
+        expect(typeof generated.get(users)![0]!.name).toBe("string");
+        expect((generated.get(users)![0]!.name as string).length).toBeGreaterThan(0);
       });
     });
 
     describe("table count overrides", () => {
       it("respects per-table count overrides", () => {
-        const engine = createSeedEngine(schema, faker);
+        const engine = createSeedEngine(schema);
         const overrides = new Map();
         overrides.set(users, { count: 3 });
         overrides.set(posts, { count: 2 });
@@ -525,7 +482,7 @@ describe("seed-generator", () => {
         });
 
         tableSeed(users, { count: 2 });
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
         const generated = await engine.run(db);
 
         expect(generated.get(users)!.length).toBe(2);
@@ -546,7 +503,7 @@ describe("seed-generator", () => {
         });
 
         tableSeed(users, { count: 1 });
-        const engine = createSeedEngine({ users }, faker);
+        const engine = createSeedEngine({ users });
 
         // Since we can't write to fs in test, just verify the engine runs
         // without error when transcript is set to a dummy path
@@ -563,7 +520,7 @@ describe("seed-generator", () => {
 
   describe("createSingleTableSeed", () => {
     it("generates rows for a single table only", () => {
-      const engine = createSingleTableSeed(schema, faker, users, 5);
+      const engine = createSingleTableSeed(schema, users, 5);
       const generated = engine.generate();
       expect(generated.get(users)!.length).toBe(5);
       // Other tables should have 0 rows
@@ -580,7 +537,7 @@ describe("seed-generator", () => {
         user: null,
       });
 
-      const engine = createSingleTableSeed(schema, faker, users, 3);
+      const engine = createSingleTableSeed(schema, users, 3);
       await engine.run(db);
 
       const insertCalls = d1._calls.filter((c) =>

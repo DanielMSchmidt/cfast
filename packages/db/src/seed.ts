@@ -1,5 +1,7 @@
 import type { DrizzleTable } from "@cfast/permissions";
 import type { Db, InferRow } from "./types";
+import { createSeedEngine } from "./seed-generator";
+import type { SeedRunOptions } from "./seed-generator";
 
 // Re-export everything from the schema-driven seed generator
 export {
@@ -19,6 +21,27 @@ export type {
   TableSeedConfig,
   SeedRunOptions,
 } from "./seed-generator";
+
+/**
+ * One-liner seed: introspects the schema from the `db` instance, generates
+ * realistic data via the bundled `@faker-js/faker`, and inserts it.
+ *
+ * @example
+ * ```ts
+ * import { seed } from "@cfast/db/seed";
+ * await seed(db);
+ * ```
+ *
+ * @param db - A {@link Db} instance created via `createDb()`.
+ * @param options - Optional {@link SeedRunOptions} (e.g. `{ transcript: "./seed.sql" }`).
+ */
+export async function seed(
+  db: Db,
+  options?: SeedRunOptions,
+): Promise<void> {
+  const engine = createSeedEngine(db._schema);
+  await engine.run(db, options);
+}
 
 /**
  * A single seed entry — every row in `rows` is inserted into `table` at seed

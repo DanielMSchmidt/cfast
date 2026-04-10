@@ -674,17 +674,21 @@ export async function loader({ context }) {
 
 The return type `DateToString<T>` maps every `Date` property to `string` at the type level, so the client sees accurate types without manual casting. Works on plain objects, arrays, nested structures, and single Date values. Non-Date primitives pass through unchanged.
 
-### Schema-driven seed generation
+### Schema-driven seed generation (`@cfast/db/seed`)
 
-`createSeedEngine(schema, faker)` introspects Drizzle schema metadata to auto-generate realistic test data. Requires `@faker-js/faker` as a peer dependency.
+All seed functionality lives under `@cfast/db/seed` with bundled `@faker-js/faker` (no install needed). One-liner API:
+
+```typescript
+import { seed } from "@cfast/db/seed";
+await seed(db); // introspects schema, generates data, inserts
+```
 
 #### Column-level overrides
 
 `seedConfig(column, fn)` attaches a generator to a column (survives the builder-to-column transform):
 
 ```typescript
-import { seedConfig, tableSeed, createSeedEngine } from "@cfast/db";
-import { faker } from "@faker-js/faker";
+import { seedConfig, tableSeed } from "@cfast/db/seed";
 
 const posts = sqliteTable("posts", {
   id: text("id").primaryKey(),
@@ -710,13 +714,14 @@ const posts = tableSeed(sqliteTable("posts", { ... }), { count: 5, per: users })
 #### Runtime
 
 ```typescript
-const engine = createSeedEngine(schema, faker);
+import { createSeedEngine, createSingleTableSeed } from "@cfast/db/seed";
+
+const engine = createSeedEngine(schema);
 await engine.run(db);                              // seed all tables
 await engine.run(db, { transcript: "./seed.sql" }); // also write SQL file
 
 // Single table
-import { createSingleTableSeed } from "@cfast/db";
-const single = createSingleTableSeed(schema, faker, posts, 5);
+const single = createSingleTableSeed(schema, posts, 5);
 await single.run(db);
 ```
 
