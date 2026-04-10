@@ -10,10 +10,18 @@ import type {
  * Creates a ClientDescriptor for use in client code without importing
  * server modules. The action names must match the keys passed to
  * `composeActions` or the single action name from `createAction`.
+ *
+ * Pass a `readonly` tuple (`as const`) to get compile-time type-checking
+ * of action names throughout the client code:
+ *
+ * ```ts
+ * const client = clientDescriptor(["create", "delete"] as const);
+ * // client is ClientDescriptor<readonly ["create", "delete"]>
+ * ```
  */
-export function clientDescriptor(
-  actionNames: readonly string[],
-): ClientDescriptor {
+export function clientDescriptor<const TNames extends readonly string[]>(
+  actionNames: TNames,
+): ClientDescriptor<TNames> {
   return {
     _brand: "ActionClientDescriptor",
     actionNames,
@@ -73,9 +81,9 @@ function extractPermissions(loaderData: Record<string, unknown>): ActionPermissi
   return map;
 }
 
-export function useActions(
-  descriptor: ClientDescriptor,
-): Record<string, (input?: Serializable) => ActionHookResult> {
+export function useActions<const TNames extends readonly string[]>(
+  descriptor: ClientDescriptor<TNames>,
+): { [K in TNames[number]]: (input?: Serializable) => ActionHookResult } {
   const loaderData = asRecord(useLoaderData());
   const permissions = extractPermissions(loaderData);
 
@@ -116,5 +124,5 @@ export function useActions(
     });
   }
 
-  return result;
+  return result as { [K in TNames[number]]: (input?: Serializable) => ActionHookResult };
 }
