@@ -18,56 +18,65 @@ await seed(db);
 
 That's it. `seed(db)` introspects the schema from the Db instance, topologically sorts tables by FK dependencies, generates realistic data, and inserts rows in the correct order via `db.unsafe()`.
 
-## Column-level overrides with `seedConfig()`
+## Column-level `.seed()` method
 
-Wrap any column builder with `seedConfig()` to replace the auto-inferred generator:
+Chain `.seed(fn)` on any Drizzle column builder to replace the auto-inferred generator:
 
 ```ts
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import { seedConfig } from "@cfast/db/seed";
+import { text, integer } from "drizzle-orm/sqlite-core";
+import { table } from "@cfast/db/seed";
 
-export const posts = sqliteTable("posts", {
+export const posts = table("posts", {
   id: text("id").primaryKey(),
-  title: seedConfig(text("title").notNull(), (f) => f.lorem.sentence()),
-  slug: seedConfig(text("slug").notNull(), (f) => f.lorem.slug()),
-  views: seedConfig(integer("views").notNull(), (f) => f.number.int({ min: 0, max: 10000 })),
+  title: text("title").notNull().seed((f) => f.lorem.sentence()),
+  slug: text("slug").notNull().seed((f) => f.lorem.slug()),
+  views: integer("views").notNull().seed((f) => f.number.int({ min: 0, max: 10000 })),
   authorId: text("author_id").notNull().references(() => users.id),
-});
+}).seed({ count: 10 });
 ```
 
-The first argument is the column builder (returned unmodified so Drizzle types are preserved). The second is a `(faker, ctx) => value` function called once per generated row.
+The `.seed()` method is available on every SQLite column builder (`text()`, `integer()`, `real()`, `blob()`). It accepts a `(faker, ctx) => value` function called once per generated row and returns `this` for chaining.
 
-## Table-level config with `tableSeed()`
+## Table-level `.seed()` method
 
-Control how many rows a table gets and whether generation is per-parent:
+Use `table()` from `@cfast/db/seed` instead of `sqliteTable()` to get a `.seed()` method on the table:
 
 ```ts
-import { tableSeed } from "@cfast/db/seed";
+import { table } from "@cfast/db/seed";
+import { text } from "drizzle-orm/sqlite-core";
 
-export const users = tableSeed(
-  sqliteTable("users", {
-    id: text("id").primaryKey(),
-    email: text("email").notNull(),
-    name: text("name").notNull(),
-  }),
-  { count: 5 },
-);
+export const users = table("users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  name: text("name").notNull(),
+}).seed({ count: 5 });
 
-export const posts = tableSeed(
-  sqliteTable("posts", {
-    id: text("id").primaryKey(),
-    title: text("title").notNull(),
-    authorId: text("author_id").notNull().references(() => users.id),
-  }),
-  { count: 3, per: users },
-);
+export const posts = table("posts", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  authorId: text("author_id").notNull().references(() => users.id),
+}).seed({ count: 3, per: users });
 ```
 
-With `{ count: 3, per: users }`, the engine generates 3 posts per user. If there are 5 users, you get 15 posts total, each with `authorId` automatically set to the parent user's id.
+`table()` is a drop-in replacement for `sqliteTable()` -- the returned table is a standard Drizzle table in every way. With `{ count: 3, per: users }`, the engine generates 3 posts per user. If there are 5 users, you get 15 posts total, each with `authorId` automatically set to the parent user's id.
+
+## Deprecated wrapper functions
+
+The older `seedConfig()` and `tableSeed()` wrapper functions still work and write to the same internal registries. They are interchangeable with the `.seed()` methods but considered deprecated:
+
+```ts
+// Deprecated -- prefer .seed() method API above
+import { seedConfig, tableSeed } from "@cfast/db/seed";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+const posts = tableSeed(sqliteTable("posts", {
+  title: seedConfig(text("title"), f => f.lorem.sentence()),
+}), { count: 5 });
+```
 
 ## Column type auto-inference
 
-When no `seedConfig()` is present, the engine picks a generator based on the Drizzle column type:
+When no `.seed()` is present, the engine picks a generator based on the Drizzle column type:
 
 | Column type | Generated value |
 |---|---|
@@ -88,36 +97,36 @@ Tables named `users` get special handling: the first five rows receive determini
 
 ## Relational generation with `per`
 
-The `per` option on `tableSeed()` creates one-to-many relationships automatically. The engine resolves the foreign key between the child table and the `per` parent, filling it with the parent row's primary key.
+The `per` option on `.seed()` creates one-to-many relationships automatically. The engine resolves the foreign key between the child table and the `per` parent, filling it with the parent row's primary key.
 
 ### Grandchild chains
 
 Chain `per` across multiple levels for deep hierarchies:
 
 ```ts
-export const users = tableSeed(usersTable, { count: 3 });
-export const posts = tableSeed(postsTable, { count: 2, per: users });
-export const comments = tableSeed(commentsTable, { count: 4, per: posts });
+export const users = table("users", { ... }).seed({ count: 3 });
+export const posts = table("posts", { ... }).seed({ count: 2, per: users });
+export const comments = table("comments", { ... }).seed({ count: 4, per: posts });
 ```
 
 This produces 3 users, 6 posts (2 per user), and 24 comments (4 per post). The topological sort ensures users are seeded before posts, and posts before comments.
 
 ## Parent context: `ctx`
 
-The second argument to a `seedConfig()` function is a `SeedContext` with four properties:
+The second argument to a `.seed()` function is a `SeedContext` with four properties:
 
 ### `ctx.parent`
 
 The parent row when the table uses `per`. `undefined` for root tables:
 
 ```ts
-const children = sqliteTable("children", {
+const children = table("children", {
   id: text("id").primaryKey(),
   parentId: text("parent_id").notNull().references(() => parents.id),
-  label: seedConfig(text("label"), (_f, ctx) =>
+  label: text("label").seed((_f, ctx) =>
     `Child of ${ctx.parent?.name}`,
   ),
-});
+}).seed({ count: 2, per: parents });
 ```
 
 ### `ctx.ref(table)`
@@ -125,14 +134,14 @@ const children = sqliteTable("children", {
 Pick a random already-generated row from any table. Useful for cross-references that are not direct FKs:
 
 ```ts
-const reviews = sqliteTable("reviews", {
+const reviews = table("reviews", {
   id: text("id").primaryKey(),
   productId: text("product_id").notNull().references(() => products.id),
-  reviewerNote: seedConfig(text("reviewer_note"), (_f, ctx) => {
+  reviewerNote: text("reviewer_note").seed((_f, ctx) => {
     const product = ctx.ref(products);
     return `Review for ${product.name}`;
   }),
-});
+}).seed({ count: 10 });
 ```
 
 ### `ctx.index`
@@ -140,7 +149,7 @@ const reviews = sqliteTable("reviews", {
 Zero-based position within the current batch (per-parent or global):
 
 ```ts
-seedConfig(text("slug").notNull(), (_f, ctx) => `post-${ctx.index}`);
+text("slug").notNull().seed((_f, ctx) => `post-${ctx.index}`);
 ```
 
 ### `ctx.all(table)`
@@ -148,7 +157,7 @@ seedConfig(text("slug").notNull(), (_f, ctx) => `post-${ctx.index}`);
 Returns all generated rows for a table (available after that table has been seeded). Useful for summary or aggregate seed data:
 
 ```ts
-seedConfig(integer("total_items").notNull(), (_f, ctx) => ctx.all(items).length);
+integer("total_items").notNull().seed((_f, ctx) => ctx.all(items).length);
 ```
 
 ## Many-to-many with deduplication
@@ -156,33 +165,31 @@ seedConfig(integer("total_items").notNull(), (_f, ctx) => ctx.all(items).length)
 Join tables (tables with 2+ foreign keys) are automatically deduplicated. If the engine would generate a duplicate `(postId, tagId)` combination for a `postTags` table, the duplicate row is silently dropped:
 
 ```ts
-export const postTags = sqliteTable("post_tags", {
+export const postTags = table("post_tags", {
   id: text("id").primaryKey(),
   postId: text("post_id").notNull().references(() => posts.id),
   tagId: text("tag_id").notNull().references(() => tags.id),
-});
-
-tableSeed(postTags, { count: 5 });
+}).seed({ count: 5 });
 // If only 3 unique (post, tag) combos exist, you get 3 rows, not 5.
 ```
 
 ## Conditional seeding
 
-Use `seedConfig()` with `ctx.index` or `ctx.parent` for role-based or conditional data:
+Use `.seed()` with `ctx.index` or `ctx.parent` for role-based or conditional data:
 
 ```ts
-const users = sqliteTable("users", {
+const users = table("users", {
   id: text("id").primaryKey(),
-  email: seedConfig(text("email").notNull(), (f, ctx) => {
+  email: text("email").notNull().seed((f, ctx) => {
     const roles = ["admin", "editor", "viewer"];
     if (ctx.index < roles.length) return `${roles[ctx.index]}@example.com`;
     return f.internet.email();
   }),
-  role: seedConfig(text("role").notNull(), (_f, ctx) => {
+  role: text("role").notNull().seed((_f, ctx) => {
     const roles = ["admin", "editor", "viewer"];
     return roles[ctx.index % roles.length];
   }),
-});
+}).seed({ count: 5 });
 ```
 
 ## Single-table override
@@ -192,8 +199,8 @@ Seed a single table without running the full engine. This is useful for quick on
 ```ts
 import { createSingleTableSeed } from "@cfast/db/seed";
 
-const tableSeed = createSingleTableSeed(schema, posts, 5);
-await tableSeed.run(db);
+const singleSeed = createSingleTableSeed(schema, posts, 5);
+await singleSeed.run(db);
 ```
 
 Other tables in the schema get zero rows. Foreign key parents are still generated if needed for referential integrity.

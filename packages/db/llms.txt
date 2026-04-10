@@ -478,22 +478,23 @@ auto-generate realistic test data using the bundled faker. Handles FK
 resolution, topological ordering, `per` relational generation,
 many-to-many deduplication, and auth table detection.
 
-#### Column-level seed overrides
+#### Column-level `.seed()` method
 
-`seedConfig(column, fn)` attaches a custom generator to a column:
+Chain `.seed(fn)` on any column builder to attach a custom generator:
 
 ```typescript
-import { seedConfig, tableSeed } from "@cfast/db/seed";
+import { table } from "@cfast/db/seed";
+import { text, integer, real } from "drizzle-orm/sqlite-core";
 
-const posts = sqliteTable("posts", {
+const posts = table("posts", {
   id: text("id").primaryKey(),
-  title: seedConfig(text("title").notNull(), f => f.lorem.sentence()),
-  content: seedConfig(text("content"), f => f.lorem.paragraphs(3)),
+  title: text("title").notNull().seed(f => f.lorem.sentence()),
+  content: text("content").seed(f => f.lorem.paragraphs(3)),
   authorId: text("author_id").references(() => users.id),
-});
+}).seed({ count: 10 });
 ```
 
-Fields without `seedConfig()` are auto-inferred from column type:
+Fields without `.seed()` are auto-inferred from column type:
 - `text` -> `faker.lorem.words()`
 - `integer`/`real` -> `faker.number.int()`/`faker.number.float()`
 - `timestamp` -> `faker.date.recent()`
@@ -503,15 +504,35 @@ Fields without `seedConfig()` are auto-inferred from column type:
 - Nullable -> occasionally `null` (~10%)
 - Columns with `$defaultFn` or static defaults are skipped
 
-#### Table-level seed config
+#### Table-level `.seed()` method
 
-`tableSeed(table, { count, per })` sets the row count and optional
-per-parent relationship:
+Chain `.seed({ count, per })` on a table created with `table()` to set
+the row count and optional per-parent relationship:
 
 ```typescript
-const users = tableSeed(sqliteTable("users", { ... }), { count: 10 });
-const posts = tableSeed(sqliteTable("posts", { ... }), { count: 5, per: users });
+import { table } from "@cfast/db/seed";
+
+const users = table("users", { ... }).seed({ count: 10 });
+const posts = table("posts", { ... }).seed({ count: 5, per: users });
 // -> 5 per user = 50 total. authorId auto-filled with parent user's id.
+```
+
+`table()` is a drop-in replacement for `sqliteTable()` from
+`drizzle-orm/sqlite-core` that adds the `.seed()` method. The returned
+table is a standard Drizzle table in every way.
+
+#### Deprecated wrapper functions
+
+The older `seedConfig()` and `tableSeed()` wrapper functions still work
+and write to the same internal registries. They are interchangeable with
+the `.seed()` methods but considered deprecated:
+
+```typescript
+// Deprecated -- prefer .seed() method API above
+import { seedConfig, tableSeed } from "@cfast/db/seed";
+const posts = tableSeed(sqliteTable("posts", {
+  title: seedConfig(text("title"), f => f.lorem.sentence()),
+}), { count: 5 });
 ```
 
 #### Seed context (ctx)
@@ -524,10 +545,10 @@ Column-level seed functions receive `(faker, ctx)` where `ctx` provides:
 - `ctx.all(table)` -- all generated rows for a table
 
 ```typescript
-authorId: seedConfig(text("author_id").references(() => users.id),
-  (faker, ctx) => ctx.parent?.id), // inherit from parent
-role: seedConfig(text("role"),
-  (f, ctx) => ctx.index === 0 ? "admin" : f.helpers.arrayElement(["member", "viewer"])),
+authorId: text("author_id").references(() => users.id)
+  .seed((faker, ctx) => ctx.parent?.id), // inherit from parent
+role: text("role")
+  .seed((f, ctx) => ctx.index === 0 ? "admin" : f.helpers.arrayElement(["member", "viewer"])),
 ```
 
 #### Runtime API

@@ -71,7 +71,9 @@ export const loader = app.loader(async (ctx, { params, request }) => {
   // Get author info
   const author = await db.select().from(users).where(eq(users.id, post.authorId)).get();
 
-  // Cursor-based comments — use @cfast/db for row-level _can annotations
+  // Cursor-based comments — use @cfast/db for row-level _can annotations.
+  // Anonymous users have no grants, so use unsafe() to bypass permission checks;
+  // comments on a published post are publicly visible.
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
 
@@ -88,7 +90,8 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     author: { id: string; name: string; avatarUrl: string | null } | null;
   };
 
-  const rawComments = await cfDb.query(comments).findMany({
+  const commentDb = user ? cfDb : cfDb.unsafe();
+  const rawComments = await commentDb.query(comments).findMany({
     where: commentWhere,
     with: { author: true },
     orderBy: desc(comments.createdAt),
@@ -103,7 +106,7 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     id: c.id,
     content: c.content,
     createdAt: c.createdAt,
-    _can: c._can,
+    _can: c._can ?? { read: false, create: false, update: false, delete: false },
     author: {
       id: c.author?.id ?? c.authorId,
       name: c.author?.name ?? "Unknown",

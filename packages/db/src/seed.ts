@@ -1,9 +1,120 @@
 import type { DrizzleTable } from "@cfast/permissions";
 import type { Db, InferRow } from "./types";
 import { createSeedEngine } from "./seed-generator";
-import type { SeedRunOptions } from "./seed-generator";
+import type { SeedRunOptions, ColumnSeedFn, TableSeedConfig } from "./seed-generator";
+import { columnSeedMap, tableSeedMap } from "./seed-generator";
 
-// Re-export everything from the schema-driven seed generator
+// ---------------------------------------------------------------------------
+// Module augmentation: add `.seed()` to Drizzle column builders
+// ---------------------------------------------------------------------------
+
+declare module "drizzle-orm/sqlite-core" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface SQLiteColumnBuilder<T, TRuntimeConfig, TTypeConfig, TExtraConfig> {
+    /**
+     * Attaches a seed generator function to this column.
+     *
+     * @example
+     * ```ts
+     * title: text("title").seed(f => f.lorem.sentence()),
+     * ```
+     */
+    seed(fn: ColumnSeedFn): this;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Prototype patching: `.seed()` on column builders
+// ---------------------------------------------------------------------------
+//
+// This side-effect runs when `@cfast/db/seed` is imported. It patches
+// `SQLiteColumnBuilder.prototype` so every SQLite column builder instance
+// gains a `.seed()` method that writes to the shared `columnSeedMap`.
+
+import { SQLiteColumnBuilder } from "drizzle-orm/sqlite-core/columns/common";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(SQLiteColumnBuilder.prototype as any).seed = function (fn: ColumnSeedFn) {
+  // Store on the builder's config object (survives the builder->column transform)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const config = (this as any).config;
+  if (config && typeof config === "object") {
+    columnSeedMap.set(config as object, fn);
+  }
+  // Also store on the object itself as fallback
+  columnSeedMap.set(this as object, fn);
+  return this;
+};
+
+// ---------------------------------------------------------------------------
+// Table-level `.seed()` via `table()` wrapper
+// ---------------------------------------------------------------------------
+//
+// Drizzle tables are plain objects (not class instances), so we can't patch
+// a prototype. Instead we export a `table()` wrapper that calls
+// `sqliteTable()` and adds a `.seed()` method to the returned object.
+
+import { sqliteTable } from "drizzle-orm/sqlite-core";
+import type {
+  SQLiteColumnBuilderBase,
+  SQLiteTableExtraConfigValue,
+} from "drizzle-orm/sqlite-core";
+import type { BuildColumns } from "drizzle-orm/column-builder";
+import type { SQLiteTableWithColumns } from "drizzle-orm/sqlite-core/table";
+
+/**
+ * Type representing a Drizzle table with an added `.seed()` method.
+ * The `.seed()` method returns the same table reference for chaining.
+ */
+export type SeedableTable<T> = T & {
+  seed(config: TableSeedConfig): SeedableTable<T>;
+};
+
+/**
+ * Creates a SQLite table with a `.seed()` method for configuring
+ * seed generation. Drop-in replacement for `sqliteTable()` from
+ * `drizzle-orm/sqlite-core`.
+ *
+ * @example
+ * ```ts
+ * import { table } from "@cfast/db/seed";
+ *
+ * const posts = table("posts", {
+ *   title: text("title").seed(f => f.lorem.sentence()),
+ *   authorId: text("author_id").references(() => users.id),
+ * }).seed({ count: 5, per: users });
+ * ```
+ */
+export function table<
+  TTableName extends string,
+  TColumnsMap extends Record<string, SQLiteColumnBuilderBase>,
+>(
+  name: TTableName,
+  columns: TColumnsMap,
+  extraConfig?: (
+    self: BuildColumns<TTableName, TColumnsMap, "sqlite">,
+  ) => SQLiteTableExtraConfigValue[],
+): SeedableTable<
+  SQLiteTableWithColumns<{
+    name: TTableName;
+    schema: undefined;
+    columns: BuildColumns<TTableName, TColumnsMap, "sqlite">;
+    dialect: "sqlite";
+  }>
+> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t = sqliteTable(name, columns, extraConfig as any) as any;
+  t.seed = (config: TableSeedConfig) => {
+    tableSeedMap.set(t as DrizzleTable, config);
+    return t;
+  };
+  return t;
+}
+
+// ---------------------------------------------------------------------------
+// Re-exports from seed-generator
+// ---------------------------------------------------------------------------
+
 export {
   seedConfig,
   tableSeed,
@@ -13,6 +124,8 @@ export {
   topologicalSort,
   findPrimaryKeyColumn,
   isTable,
+  columnSeedMap,
+  tableSeedMap,
 } from "./seed-generator";
 export type {
   Faker,
@@ -44,7 +157,7 @@ export async function seed(
 }
 
 /**
- * A single seed entry — every row in `rows` is inserted into `table` at seed
+ * A single seed entry -- every row in `rows` is inserted into `table` at seed
  * time. Row shape is inferred from the Drizzle table so typos in column names
  * are caught by `tsc` instead of failing at runtime when `INSERT` rejects
  * the statement.
@@ -61,7 +174,7 @@ export type SeedEntry<TTable extends DrizzleTable = DrizzleTable> = {
   table: TTable;
   /**
    * Rows to insert. The row shape is inferred from the table's
-   * `$inferSelect` — making a typo in a column name is a compile-time error.
+   * `$inferSelect` -- making a typo in a column name is a compile-time error.
    *
    * Entries are inserted in the order they appear, which lets you control
    * foreign-key ordering just by ordering your `entries` array
@@ -95,7 +208,7 @@ export type Seed = {
   /**
    * Executes every entry against the given {@link Db} in the order they were
    * declared. Uses `db.unsafe()` internally so seed scripts don't need
-   * their own grants plumbing — seeding is a system task by definition.
+   * their own grants plumbing -- seeding is a system task by definition.
    *
    * Entries with an empty `rows` array are skipped so callers can leave
    * placeholder entries in the config without crashing the seed.
@@ -157,7 +270,7 @@ export function defineSeed(config: SeedConfig): Seed {
   return {
     entries,
     async run(db: Db): Promise<void> {
-      // Seeding is a system task — there is no authenticated user and no
+      // Seeding is a system task -- there is no authenticated user and no
       // grants to apply. Hop through `db.unsafe()` so permission checks
       // don't reject `INSERT` statements that would otherwise need a
       // write grant for the anonymous role.

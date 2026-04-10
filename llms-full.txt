@@ -683,29 +683,38 @@ import { seed } from "@cfast/db/seed";
 await seed(db); // introspects schema, generates data, inserts
 ```
 
-#### Column-level overrides
+#### Column-level `.seed()` method
 
-`seedConfig(column, fn)` attaches a generator to a column (survives the builder-to-column transform):
+Chain `.seed(fn)` on any column builder to attach a custom generator:
 
 ```typescript
-import { seedConfig, tableSeed } from "@cfast/db/seed";
+import { table } from "@cfast/db/seed";
+import { text } from "drizzle-orm/sqlite-core";
 
-const posts = sqliteTable("posts", {
+const posts = table("posts", {
   id: text("id").primaryKey(),
-  title: seedConfig(text("title").notNull(), f => f.lorem.sentence()),
+  title: text("title").notNull().seed(f => f.lorem.sentence()),
   authorId: text("author_id").references(() => users.id),
-});
+}).seed({ count: 10 });
 ```
 
 Auto-inferred defaults: text -> `lorem.words()`, integer -> `number.int()`, real -> `number.float()`, timestamp -> `date.recent()`, boolean -> `datatype.boolean()`, PK -> UUID, FK -> random parent, nullable -> ~10% null.
 
-#### Table-level config
+#### Table-level `.seed()` method
+
+`table()` is a drop-in replacement for `sqliteTable()` that adds a `.seed()` method:
 
 ```typescript
-const users = tableSeed(sqliteTable("users", { ... }), { count: 10 });
-const posts = tableSeed(sqliteTable("posts", { ... }), { count: 5, per: users });
+import { table } from "@cfast/db/seed";
+
+const users = table("users", { ... }).seed({ count: 10 });
+const posts = table("posts", { ... }).seed({ count: 5, per: users });
 // 5 per user = 50 total, authorId auto-filled
 ```
+
+#### Deprecated wrapper functions
+
+`seedConfig(column, fn)` and `tableSeed(table, config)` still work and write to the same internal registries. Prefer the `.seed()` method API above.
 
 #### Seed context
 

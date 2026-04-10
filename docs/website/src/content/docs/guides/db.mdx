@@ -276,16 +276,12 @@ This is primarily useful in test suites. In production, each request creates a f
 
 ### Seeding
 
-`@cfast/db` includes a schema-driven seed generator. See the full [Seeding guide](/cfast/guides/db/seeding/) for details. Quick overview:
+`@cfast/db` includes a schema-driven seed generator with bundled faker. See the full [Seeding guide](/cfast/guides/db/seeding/) for details. Quick overview:
 
 ```typescript
-import { createSeedEngine, seedConfig, tableSeed } from "@cfast/db";
-import { faker } from "@faker-js/faker";
-import * as schema from "./schema";
-
-const engine = createSeedEngine(schema, faker);
-await engine.run(db);
+import { seed } from "@cfast/db/seed";
+await seed(db); // introspects schema, generates data, inserts
 ```
 
-The engine introspects your Drizzle schema to auto-generate realistic data, handling foreign keys, topological ordering, and many-to-many deduplication. `@faker-js/faker` is a peer dependency -- install it in your dev dependencies.
+The engine introspects your Drizzle schema to auto-generate realistic data, handling foreign keys, topological ordering, and many-to-many deduplication. Use `.seed()` methods on columns and tables for fine-grained control.
 
