@@ -30,8 +30,10 @@
  */
 export { createAdminLoader } from "./loader.js";
 export { createAdminAction } from "./action.js";
+export { createAdminAuthAdapter } from "./admin-auth-adapter.js";
 export { introspectSchema } from "./introspect.js";
 
+export type { AdminAuthAdapterOptions } from "./admin-auth-adapter.js";
 export type {
   AdminConfig,
   AdminAuthConfig,

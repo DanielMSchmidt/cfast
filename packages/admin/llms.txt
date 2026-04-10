@@ -55,6 +55,45 @@ type AdminAuthConfig = {
 };
 ```
 
+### createAdminAuthAdapter(options): AdminAuthConfig
+
+```typescript
+import { createAdminAuthAdapter } from "@cfast/admin";
+
+function createAdminAuthAdapter(options: {
+  getAuth: () => AuthInstanceLike;
+}): AdminAuthConfig
+```
+
+Creates a complete `AdminAuthConfig` from a single auth-instance factory. Replaces ~50 lines of manual adapter boilerplate that every cfast app copy-pastes in `admin.server.ts`. The factory is called per-operation to ensure fresh env bindings on Workers.
+
+```typescript
+import { createAdminAuthAdapter, createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
+import { initAuth } from "~/auth.setup.server";
+import { env } from "~/env";
+import { appDb } from "~/db/client";
+import * as schema from "~/db/schema";
+
+const auth = createAdminAuthAdapter({
+  getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+});
+
+const adminConfig = {
+  db: appDb,
+  auth,
+  schema: schema as Record<string, unknown>,
+  requiredRole: "admin",
+};
+
+const tableMetas = await introspectSchema(adminConfig.schema);
+export const adminLoader = createAdminLoader(adminConfig, tableMetas);
+export const adminAction = createAdminAction(adminConfig, tableMetas);
+```
+
+Also available from the server entry: `import { createAdminAuthAdapter } from "@cfast/admin/server"`.
+
+Note: `createAdminAuth(getAuth)` from `@cfast/auth` produces the same result. Use whichever import is more convenient for your file.
+
 ### TableOverrides
 
 ```typescript
