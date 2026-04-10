@@ -114,6 +114,50 @@ const auth = createAdminAuth(() =>
 const admin = createAdmin({ auth, db: createDbForAdmin, schema });
 ```
 
+### Auth helpers (`@cfast/auth/helpers`)
+
+```typescript
+import { createAuthHelpers } from "@cfast/auth/helpers";
+
+function createAuthHelpers<TUser extends AuthUser = AuthUser>(options: {
+  getAuth: () => AuthInstance;
+  enrichUser?: (user: AuthUser) => Promise<TUser> | TUser;
+}): AuthHelpers<TUser>
+```
+
+Replaces ~35 lines of identical `auth.helpers.server.ts` boilerplate that every cfast app copy-pastes. Returns `{ getAuthContext, requireAuthContext, getUser, requireUser }`.
+
+The optional `enrichUser` hook lets apps extend the base `AuthUser` with custom fields (e.g., `vendorId` in a marketplace). When provided, every helper passes the user through `enrichUser` before returning.
+
+```typescript
+// Basic usage (tracker, wiki, meals)
+import { createAuthHelpers } from "@cfast/auth/helpers";
+import { initAuth } from "./auth.setup.server";
+import { env } from "./env";
+
+export const { getAuthContext, requireAuthContext, getUser, requireUser } =
+  createAuthHelpers({
+    getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+  });
+```
+
+```typescript
+// With enrichUser (store app)
+export const { getAuthContext, requireAuthContext, getUser, requireUser } =
+  createAuthHelpers<StoreUser>({
+    getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+    enrichUser: async (user) => {
+      const vendor = await lookupVendor(user.id);
+      return { ...user, vendorId: vendor?.id ?? null };
+    },
+  });
+```
+
+Also re-exported from `@cfast/auth` main entry for convenience:
+```typescript
+import { createAuthHelpers } from "@cfast/auth";
+```
+
 ### Client exports (`@cfast/auth/client`)
 
 ```typescript
