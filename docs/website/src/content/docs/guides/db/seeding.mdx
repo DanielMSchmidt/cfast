@@ -1,0 +1,269 @@
+---
+title: "Seeding"
+description: "Schema-driven seed generation with faker, relational data, and SQL transcripts."
+---
+
+`@cfast/db` includes a schema-driven seed generator that introspects your Drizzle schema to produce realistic test data. Instead of hand-writing INSERT scripts, you annotate columns and tables in your schema and let the engine handle foreign keys, topological ordering, and deduplication.
+
+## Quick start
+
+Install `@faker-js/faker` as a dev dependency — the seed engine accepts any faker instance but does not bundle one:
+
+```bash
+pnpm add -D @faker-js/faker
+```
+
+Define your schema with optional seed hints, then create and run the engine:
+
+```ts
+import { createSeedEngine, seedConfig, tableSeed } from "@cfast/db";
+import { createDb } from "@cfast/db";
+import { faker } from "@faker-js/faker";
+import * as schema from "./schema";
+
+// 1. Create the engine from your full schema + faker
+const engine = createSeedEngine(schema, faker);
+
+// 2. Generate and insert into D1
+const db = createDb({ d1: env.DB, schema, grants: [], user: null });
+await engine.run(db);
+```
+
+The engine discovers every Drizzle table in your schema module, topologically sorts them by foreign key dependencies, and inserts rows in the correct order. It calls `db.unsafe()` internally — seeding is a system task with no authenticated user.
+
+## Column-level overrides with `seedConfig()`
+
+Wrap any column builder with `seedConfig()` to replace the auto-inferred generator:
+
+```ts
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { seedConfig } from "@cfast/db";
+
+export const posts = sqliteTable("posts", {
+  id: text("id").primaryKey(),
+  title: seedConfig(text("title").notNull(), (f) => f.lorem.sentence()),
+  slug: seedConfig(text("slug").notNull(), (f) => f.lorem.slug()),
+  views: seedConfig(integer("views").notNull(), (f) => f.number.int({ min: 0, max: 10000 })),
+  authorId: text("author_id").notNull().references(() => users.id),
+});
+```
+
+The first argument is the column builder (returned unmodified so Drizzle types are preserved). The second is a `(faker, ctx) => value` function called once per generated row.
+
+## Table-level config with `tableSeed()`
+
+Control how many rows a table gets and whether generation is per-parent:
+
+```ts
+import { tableSeed } from "@cfast/db";
+
+export const users = tableSeed(
+  sqliteTable("users", {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+  }),
+  { count: 5 },
+);
+
+export const posts = tableSeed(
+  sqliteTable("posts", {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    authorId: text("author_id").notNull().references(() => users.id),
+  }),
+  { count: 3, per: users },
+);
+```
+
+With `{ count: 3, per: users }`, the engine generates 3 posts per user. If there are 5 users, you get 15 posts total, each with `authorId` automatically set to the parent user's id.
+
+## Column type auto-inference
+
+When no `seedConfig()` is present, the engine picks a generator based on the Drizzle column type:
+
+| Column type | Generated value |
+|---|---|
+| `text` (PK) | `faker.string.uuid()` |
+| `text` | `faker.lorem.words(3)` |
+| `integer` | `faker.number.int({ min: 0, max: 10000 })` |
+| `real` | `faker.number.float({ min: 0, max: 1000 })` |
+| `integer` (boolean mode) | `faker.datatype.boolean()` |
+| `integer` (timestamp mode) | `faker.date.recent()` |
+| `blob` / buffer | `faker.string.alphanumeric(16)` |
+| Nullable column | `null` ~10% of the time |
+
+Columns with `.$defaultFn()` or a static `.default()` are skipped entirely — Drizzle fills them at insert time.
+
+### Auth table detection
+
+Tables named `users` get special handling: the first five rows receive deterministic emails (`admin@example.com`, `user@example.com`, `editor@example.com`, `viewer@example.com`, `moderator@example.com`), and the `name` column uses `faker.person.fullName()`. This makes it easy to log in as different roles during development.
+
+## Relational generation with `per`
+
+The `per` option on `tableSeed()` creates one-to-many relationships automatically. The engine resolves the foreign key between the child table and the `per` parent, filling it with the parent row's primary key.
+
+### Grandchild chains
+
+Chain `per` across multiple levels for deep hierarchies:
+
+```ts
+export const users = tableSeed(usersTable, { count: 3 });
+export const posts = tableSeed(postsTable, { count: 2, per: users });
+export const comments = tableSeed(commentsTable, { count: 4, per: posts });
+```
+
+This produces 3 users, 6 posts (2 per user), and 24 comments (4 per post). The topological sort ensures users are seeded before posts, and posts before comments.
+
+## Parent context: `ctx`
+
+The second argument to a `seedConfig()` function is a `SeedContext` with four properties:
+
+### `ctx.parent`
+
+The parent row when the table uses `per`. `undefined` for root tables:
+
+```ts
+const children = sqliteTable("children", {
+  id: text("id").primaryKey(),
+  parentId: text("parent_id").notNull().references(() => parents.id),
+  label: seedConfig(text("label"), (_f, ctx) =>
+    `Child of ${ctx.parent?.name}`,
+  ),
+});
+```
+
+### `ctx.ref(table)`
+
+Pick a random already-generated row from any table. Useful for cross-references that are not direct FKs:
+
+```ts
+const reviews = sqliteTable("reviews", {
+  id: text("id").primaryKey(),
+  productId: text("product_id").notNull().references(() => products.id),
+  reviewerNote: seedConfig(text("reviewer_note"), (_f, ctx) => {
+    const product = ctx.ref(products);
+    return `Review for ${product.name}`;
+  }),
+});
+```
+
+### `ctx.index`
+
+Zero-based position within the current batch (per-parent or global):
+
+```ts
+seedConfig(text("slug").notNull(), (_f, ctx) => `post-${ctx.index}`);
+```
+
+### `ctx.all(table)`
+
+Returns all generated rows for a table (available after that table has been seeded). Useful for summary or aggregate seed data:
+
+```ts
+seedConfig(integer("total_items").notNull(), (_f, ctx) => ctx.all(items).length);
+```
+
+## Many-to-many with deduplication
+
+Join tables (tables with 2+ foreign keys) are automatically deduplicated. If the engine would generate a duplicate `(postId, tagId)` combination for a `postTags` table, the duplicate row is silently dropped:
+
+```ts
+export const postTags = sqliteTable("post_tags", {
+  id: text("id").primaryKey(),
+  postId: text("post_id").notNull().references(() => posts.id),
+  tagId: text("tag_id").notNull().references(() => tags.id),
+});
+
+tableSeed(postTags, { count: 5 });
+// If only 3 unique (post, tag) combos exist, you get 3 rows, not 5.
+```
+
+## Conditional seeding
+
+Use `seedConfig()` with `ctx.index` or `ctx.parent` for role-based or conditional data:
+
+```ts
+const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
+  email: seedConfig(text("email").notNull(), (f, ctx) => {
+    const roles = ["admin", "editor", "viewer"];
+    if (ctx.index < roles.length) return `${roles[ctx.index]}@example.com`;
+    return f.internet.email();
+  }),
+  role: seedConfig(text("role").notNull(), (_f, ctx) => {
+    const roles = ["admin", "editor", "viewer"];
+    return roles[ctx.index % roles.length];
+  }),
+});
+```
+
+## Single-table override
+
+Seed a single table without running the full engine. This is useful for quick one-off data in tests:
+
+```ts
+import { createSingleTableSeed } from "@cfast/db";
+
+const seed = createSingleTableSeed(schema, faker, posts, 5);
+await seed.run(db);
+```
+
+Other tables in the schema get zero rows. Foreign key parents are still generated if needed for referential integrity.
+
+## SQL transcript output
+
+Pass `{ transcript: "/path/to/seed.sql" }` to `.run()` to write the generated INSERT statements to a file. This is useful for debugging or sharing seed data as plain SQL:
+
+```ts
+await engine.run(db, { transcript: "./seed-transcript.sql" });
+```
+
+The transcript file contains one `INSERT INTO` statement per row, in topological order. In Workers environments where `node:fs` is unavailable, the transcript write is silently skipped.
+
+## Static seed with `defineSeed()`
+
+For hand-authored fixture data (not generated), use `defineSeed()` with explicit row arrays:
+
+```ts
+import { defineSeed, createDb } from "@cfast/db";
+import * as schema from "./schema";
+
+const seed = defineSeed({
+  entries: [
+    {
+      table: schema.users,
+      rows: [
+        { id: "u-1", email: "ada@example.com", name: "Ada" },
+        { id: "u-2", email: "grace@example.com", name: "Grace" },
+      ],
+    },
+    {
+      table: schema.posts,
+      rows: [
+        { id: "p-1", authorId: "u-1", title: "Hello" },
+      ],
+    },
+  ],
+});
+
+const db = createDb({ d1, schema, grants: [], user: null });
+await seed.run(db);
+```
+
+Row types are inferred from the Drizzle table, so typos in column names are caught by `tsc`. Entries are inserted in list order — place parent tables before children.
+
+## faker as a peer dependency
+
+The seed engine accepts any object that matches the `@faker-js/faker` API shape. It is not bundled — you install it yourself:
+
+```bash
+pnpm add -D @faker-js/faker
+```
+
+This keeps the production bundle small and lets you pin a specific faker version. In tests, you can pass a mock faker object to make generated data deterministic.
+
+## See also
+
+- [`@cfast/db`](/cfast/guides/db/) — full package reference
+- [Transactions vs Batch](/cfast/guides/db/transactions/) — atomic writes and read-modify-write patterns

@@ -244,3 +244,44 @@ test("login with passkey", async ({ page }) => {
 
 `generateTestPasskey` creates a deterministic credential from the user ID and RP ID. `addPasskeyCredential` uses the CDP `WebAuthn` domain to register it as a virtual authenticator on the page, so the WebAuthn ceremony completes without real hardware.
 
+### Auth Helpers with `createAuthHelpers()`
+
+Every cfast app copy-pastes the same ~35 lines of `auth.helpers.server.ts` boilerplate: get the auth instance, call `createContext`, extract the user, redirect if missing. `createAuthHelpers()` replaces all of it with a single factory:
+
+```typescript
+// app/auth.helpers.server.ts
+import { createAuthHelpers } from "@cfast/auth/helpers";
+import { initAuth } from "./auth.setup.server";
+import { env } from "./env";
+
+const { getAuthContext, requireAuthContext, getUser, requireUser } =
+  createAuthHelpers({
+    getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+  });
+
+export { getAuthContext, requireAuthContext, getUser, requireUser };
+```
+
+The returned helpers are:
+
+- **`getAuthContext(request)`** -- Returns `{ user, grants }` where `user` is `null` if unauthenticated.
+- **`requireAuthContext(request)`** -- Same, but throws a 302 redirect to the login page if the user is not authenticated.
+- **`getUser(request)`** -- Returns the user or `null`.
+- **`requireUser(request)`** -- Returns the user or redirects.
+
+#### Extending the user with `enrichUser`
+
+Apps that need custom fields on the user object (e.g., `vendorId` for a store app) pass an `enrichUser` hook. The enriched type flows through to all return types:
+
+```typescript
+const { requireUser } = createAuthHelpers({
+  getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+  enrichUser: async (user) => {
+    const vendor = await lookupVendor(user.id);
+    return { ...user, vendorId: vendor?.id ?? null };
+  },
+});
+
+// requireUser now returns { id, email, name, vendorId: string | null, ... }
+```
+

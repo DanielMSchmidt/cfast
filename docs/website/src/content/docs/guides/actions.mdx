@@ -182,3 +182,25 @@ import { ActionButton } from "@cfast/joy";
 </ActionButton>
 ```
 
+### Type-Safe `clientDescriptor()`
+
+When you need `useActions()` in client code without importing server modules, use `clientDescriptor()` to create a type-safe descriptor. Pass a `readonly` tuple to get compile-time checking of action names:
+
+```typescript
+import { clientDescriptor } from "@cfast/actions/client";
+
+const client = clientDescriptor(["create", "delete"] as const);
+// client is ClientDescriptor<readonly ["create", "delete"]>
+```
+
+`useActions(client)` then returns a mapped type where each key is a known action name with full `ActionHookResult` typing:
+
+```typescript
+const actions = useActions(client);
+// actions.create: (input?) => ActionHookResult
+// actions.delete: (input?) => ActionHookResult
+// actions.typo  -- compile error
+```
+
+This replaces the pattern of importing `composed.client` from a `.server` module, which breaks React Router's server/client code splitting. See [the server/client boundary notes](/cfast/guides/actions/#dual-input-formats) for why this matters.
+

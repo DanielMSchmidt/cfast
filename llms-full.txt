@@ -338,17 +338,6 @@ import { CRUD_ACTIONS } from "@cfast/permissions";
 CRUD_ACTIONS; // ["read", "create", "update", "delete"]
 ```
 
-#### `getGrantedActions(grants, table): GrantedAction[]`
-
-```typescript
-import { getGrantedActions } from "@cfast/permissions";
-
-const actions = getGrantedActions(grants, posts);
-// [{ action: "read", grants: [...], unrestricted: true }, ...]
-```
-
-Returns the distinct CRUD actions granted for a table. `manage` grants are expanded into the four CRUD actions. Each result includes whether the action is unrestricted (no `where` clause). Used internally by `@cfast/db` to build row-level `_can` annotations.
-
 ### Client Entrypoint
 
 ```typescript

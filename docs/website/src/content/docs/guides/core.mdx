@@ -183,3 +183,25 @@ import type { PluginProvides } from "@cfast/core";
 export type AnalyticsPluginProvides = PluginProvides<ReturnType<typeof analyticsPlugin>>;
 ```
 
+### Default Plugin Preset with `createDefaultPlugins()`
+
+Most cfast apps use the same two-plugin chain: auth then db. `createDefaultPlugins()` bundles them into a single call:
+
+```typescript
+import { createApp } from "@cfast/core";
+import { createDefaultPlugins } from "@cfast/core/presets";
+import { initAuth } from "./auth.setup.server";
+import { createDb } from "@cfast/db";
+
+const { authPlugin, dbPlugin } = createDefaultPlugins({
+  initAuth: (env) => initAuth({ d1: env.DB, appUrl: env.APP_URL }),
+  createDb: (grants, user) => createDb({ d1: env.DB, schema, grants, user }),
+});
+
+export const app = createApp({ env: envSchema, permissions })
+  .use(authPlugin)
+  .use(dbPlugin);
+```
+
+The auth plugin calls `initAuth(env).createContext(request)` and provides `{ user, grants, instance }` under `ctx.auth`. The db plugin consumes `ctx.auth.grants` and `ctx.auth.user` and provides `{ client }` under `ctx.db`. This replaces the manual `definePlugin` boilerplate for the standard auth-then-db chain.
+
