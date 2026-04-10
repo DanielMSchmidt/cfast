@@ -110,6 +110,26 @@ const post = db.query(posts).findFirst({
 await post.run({}); // returns TResult | undefined
 ```
 
+### Row-Level `_can` Annotations
+
+Every `findMany` and `findFirst` result includes a `_can: Record<string, boolean>` object with per-action booleans, evaluated from the user's grants at query time. No opt-in required -- permissions are first-class on every row.
+
+```typescript
+const posts = await db.query(postsTable).findMany().run({});
+
+posts[0]._can;
+// { read: true, create: true, update: true, delete: false }
+
+// Type: WithCan<Post>[]
+type WithCan<T> = T & { _can: Record<string, boolean> };
+```
+
+Use `_can` in your UI to show or hide per-row actions (edit buttons, delete links) without a separate permission check. See the [permissions guide](../permissions/#row-level-_can-annotations) for the full semantics, the difference from `can()`, and UI patterns.
+
+`_can` is not added in `unsafe()` mode or when `user` is `null`.
+
+**Performance:** adds 3--5 computed SQL columns per query (one per granted CRUD action). Unrestricted grants are literal `1` and essentially free.
+
 ### Writing Data
 
 ```typescript
