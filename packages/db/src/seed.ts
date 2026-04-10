@@ -1,6 +1,25 @@
 import type { DrizzleTable } from "@cfast/permissions";
 import type { Db, InferRow } from "./types";
 
+// Re-export everything from the schema-driven seed generator
+export {
+  seedConfig,
+  tableSeed,
+  createSeedEngine,
+  createSingleTableSeed,
+  extractForeignKeys,
+  topologicalSort,
+  findPrimaryKeyColumn,
+  isTable,
+} from "./seed-generator";
+export type {
+  Faker,
+  SeedContext,
+  ColumnSeedFn,
+  TableSeedConfig,
+  SeedRunOptions,
+} from "./seed-generator";
+
 /**
  * A single seed entry — every row in `rows` is inserted into `table` at seed
  * time. Row shape is inferred from the Drizzle table so typos in column names
