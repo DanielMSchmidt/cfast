@@ -7,6 +7,7 @@ export { resolveGrants } from "./resolve-grants";
 export type { UserWithRoles } from "./resolve-grants";
 export { getGrantedActions } from "./granted-actions";
 export type { GrantedAction } from "./granted-actions";
+export { resolveTablePermissions } from "./resolve-table-permissions";
 export { ForbiddenError, PermissionRegistrationError } from "./errors";
 export { CRUD_ACTIONS, getTableName } from "./types";
 export type {

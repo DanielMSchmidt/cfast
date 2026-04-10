@@ -1168,6 +1168,16 @@ export type ActionButtonProps = {
   whenForbidden?: WhenForbidden;
   /** Confirmation message or options shown before executing the action. */
   confirmation?: string | ConfirmOptions;
+  /**
+   * When provided, renders a permission-gated link instead of a form button.
+   * The link navigates to `href` when the action is permitted.
+   */
+  href?: string;
+  /**
+   * When provided, submits a form with these values as hidden fields via
+   * `action.submit()`. Eliminates manual `<Form>` + `<input type="hidden">`.
+   */
+  input?: Record<string, string | number | boolean | null | undefined>;
 } & Omit<ButtonSlotProps, ActionButtonControlledProps>;
 
 // --- PermissionGate ---

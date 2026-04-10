@@ -1,11 +1,14 @@
-import { useLoaderData, Link } from "react-router";
+import { Link } from "react-router";
 import Container from "@mui/joy/Container";
 import Stack from "@mui/joy/Stack";
 import Typography from "@mui/joy/Typography";
-import Button from "@mui/joy/Button";
 import { can } from "@cfast/permissions";
+import { cfastJson } from "@cfast/actions";
+import { useCfastLoader } from "@cfast/actions/client";
+import { ActionButton } from "@cfast/joy";
 import { app } from "~/cfast.server";
 import { posts, users } from "~/db/schema";
+import * as schema from "~/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { Header } from "~/components/Header";
 import { PostCard } from "~/components/PostCard";
@@ -61,18 +64,20 @@ export const loader = app.loader(async (ctx, { request }) => {
   }));
 
   return {
-    posts: formattedPosts,
+    ...cfastJson(grants, schema, { posts: formattedPosts }),
     total,
     page,
     limit,
     user,
+    // Server-side booleans still needed for Header (which doesn't use useCfastLoader)
     canCreatePost: can(grants, "create", posts),
     canAdmin: can(grants, "manage", "all"),
   };
 });
 
 export default function Home() {
-  const { posts: postList, total, page, limit, user, canCreatePost, canAdmin } = useLoaderData<typeof loader>();
+  const data = useCfastLoader<typeof loader>();
+  const { posts: postList, total, page, limit, user, canCreatePost, canAdmin } = data;
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -82,9 +87,12 @@ export default function Home() {
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
           <Typography level="h2">Latest Posts</Typography>
           {user && canCreatePost && (
-            <Button component={Link} to="/posts/new">
+            <ActionButton
+              action={{ permitted: canCreatePost, invisible: false, reason: null, submit: () => {}, pending: false, data: undefined, error: undefined }}
+              href="/posts/new"
+            >
               New Post
-            </Button>
+            </ActionButton>
           )}
         </Stack>
 

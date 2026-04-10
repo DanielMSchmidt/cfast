@@ -76,6 +76,10 @@ These principles are non-negotiable — all code, examples, and tests must follo
 | Custom file upload endpoints | `@cfast/storage` with schema-defined file types |
 | `compose` with no data dependencies | `composeSequential(ops)` |
 | `composed.client` from `.server` import | `clientDescriptor()` from `@cfast/actions/client` |
+| Manual `can()` + boolean passing in loaders | `cfastJson(grants, schema, data)` from `@cfast/actions` |
+| `useLoaderData` + manual `_can` checks | `useCfastLoader()` from `@cfast/actions/client` |
+| `{canX && <Button component={Link}>}` | `<ActionButton action={x.canAdd()} href={...}>` |
+| `<Form> + <input type="hidden">` for deletes | `<ActionButton action={x.canDelete()} input={{...}}>` |
 
 ## React Router Server/Client Boundary
 

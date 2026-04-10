@@ -16,6 +16,21 @@ Use this package when you need React Router route actions that automatically che
 
 ### Server (`@cfast/actions`)
 
+#### `cfastJson(grants, schema, data)`
+Server-side loader helper that wraps data with table-level permission metadata and serializes dates. Replaces the manual pattern of calling `can()` per table and `toJSON()` separately.
+
+```typescript
+import { cfastJson } from "@cfast/actions";
+import * as schema from "../db/schema";
+
+export async function loader({ context }) {
+  const documents = await db.query(documentsTable).findMany().run();
+  return cfastJson(ctx.auth.grants, schema, { documents });
+}
+```
+
+Returns the data with `_tablePerms` embedded and dates serialized. Arrays whose keys match schema table names are annotated with a non-enumerable `_tableName` property so `useCfastLoader` can resolve `canAdd()` for the correct table.
+
 ```typescript
 function createActions<TUser>(config: ActionsConfig<TUser>): {
   createAction: <TInput, TResult>(
@@ -111,6 +126,36 @@ type ActionFormProps = Omit<ComponentProps<typeof Form>, "children" | "action"> 
   children: ReactNode;
 };
 ```
+
+#### `useCfastLoader<T>()`
+Client hook that replaces `useLoaderData()` for routes using `cfastJson()`. Returns the same data but wraps arrays and objects that have `_can` with permission helper methods.
+
+```typescript
+import { useCfastLoader } from "@cfast/actions/client";
+
+const { documents } = useCfastLoader<typeof loader>();
+
+// Collection-level: "can I add to this table?"
+documents.canAdd()          // -> ActionHookResult
+
+// Row fields accessible directly (no .data wrapper)
+documents[0].title          // "Hello World"
+
+// Row-level: "can I edit THIS item?"
+documents[0].canEdit()      // -> ActionHookResult
+documents[0].canDelete()    // -> ActionHookResult
+
+// Single items work too
+const { document } = useCfastLoader<typeof loader>();
+document.canEdit()          // -> ActionHookResult
+```
+
+Wrapping rules:
+- Array where items have `_can` -> collection: array + `canAdd()`, each item has `canEdit()`, `canDelete()`, `canRead()`, `canCreate()`
+- Object with `_can` -> item: row properties directly accessible + `can*()` methods
+- Otherwise -> pass through unchanged
+
+All `can*()` methods return `ActionHookResult` with `permitted`, `invisible`, `reason`, `submit` (no-op), `pending` (false), `data`, `error`.
 
 `ActionForm` is a form wrapper that auto-injects hidden fields from an action descriptor object. Replaces manual `<input type="hidden">` patterns when using `composeActions`.
 

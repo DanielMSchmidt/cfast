@@ -98,7 +98,18 @@ export async function loader({ request, context }) {
   return { posts, canCreate }; // run() params optional
 }
 
-// 3. Permission-aware UI (client)
+// 2b. Or use cfastJson() for automatic table permissions + date serialization
+import { cfastJson } from "@cfast/actions";
+import * as schema from "./db/schema";
+
+export async function loader({ request, context }) {
+  const posts = await db.query(postsTable).findMany().run();
+  return cfastJson(ctx.auth.grants, schema, { posts });
+  // Embeds _tablePerms for every table, serializes dates, annotates arrays
+}
+
+// 3. Permission-aware UI (client) — two approaches
+// Approach A: useActions for action-level permissions
 import { useActions } from "@cfast/actions/client";
 
 function PostActions({ postId }) {
@@ -109,6 +120,27 @@ function PostActions({ postId }) {
     <button onClick={remove.submit} disabled={!remove.permitted}>
       Delete
     </button>
+  );
+}
+
+// Approach B: useCfastLoader for row/table-level permissions (with cfastJson)
+import { useCfastLoader } from "@cfast/actions/client";
+import { ActionButton } from "@cfast/joy";
+
+function PostList() {
+  const { posts } = useCfastLoader<typeof loader>();
+  // posts[0].title      — direct field access
+  // posts[0].canEdit()  — ActionHookResult from _can
+  // posts.canAdd()      — ActionHookResult from _tablePerms
+  return (
+    <>
+      <ActionButton action={posts.canAdd()} href="/posts/new">New Post</ActionButton>
+      {posts.map(post => (
+        <ActionButton action={post.canDelete()} input={{ _action: "delete", id: post.id }}>
+          Delete {post.title}
+        </ActionButton>
+      ))}
+    </>
   );
 }
 ```

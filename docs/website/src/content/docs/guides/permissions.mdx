@@ -235,9 +235,43 @@ The `read` action is always `true` on returned rows because the permission WHERE
 
 `can(grants, "update", posts)` answers "does the user have **any** update grant on posts?" -- a structural check. `post._can.update` answers "does the grant's WHERE clause match **this row**?" -- a row-level truth.
 
+#### `resolveTablePermissions()`
+
+For batch table-level checks, `resolveTablePermissions()` evaluates all four CRUD actions for every table in the schema at once:
+
+```typescript
+import { resolveTablePermissions } from "@cfast/permissions";
+import * as schema from "../db/schema";
+
+const perms = resolveTablePermissions(grants, schema);
+// { posts: { read: true, create: true, update: false, delete: false }, ... }
+```
+
+This is used internally by `cfastJson()` from `@cfast/actions` to embed table permissions in loader data. You rarely need to call it directly.
+
 #### UI Patterns
 
-Use `_can` to conditionally render actions per row:
+**With `useCfastLoader()` (recommended)** -- wraps `_can` into permission methods:
+
+```tsx
+import { useCfastLoader } from "@cfast/actions/client";
+import { ActionButton } from "@cfast/joy";
+
+function PostList() {
+  const { posts } = useCfastLoader<typeof loader>();
+  return posts.map((post) => (
+    <tr key={post.id}>
+      <td>{post.title}</td>
+      <td>
+        <ActionButton action={post.canEdit()} href={`/posts/${post.id}/edit`} whenForbidden="hide">Edit</ActionButton>
+        <ActionButton action={post.canDelete()} input={{ _action: "delete", id: post.id }} whenForbidden="hide">Delete</ActionButton>
+      </td>
+    </tr>
+  ));
+}
+```
+
+**Manual `_can` checks** -- use `_can` to conditionally render actions per row:
 
 ```tsx
 function PostRow({ post }: { post: WithCan<Post> }) {

@@ -51,7 +51,7 @@
     "@faker-js/faker": "^9.0.0"
   },
   "peerDependencies": {
-    "@cfast/permissions": ">=0.3.0 <0.6.0",
+    "@cfast/permissions": ">=0.3.0 <0.7.0",
     "drizzle-orm": ">=0.35"
   },
   "peerDependenciesMeta": {

@@ -1392,11 +1392,41 @@ type ClientDescriptor<TNames extends readonly string[] = readonly string[]> = {
 };
 ```
 
+### `cfastJson(grants, schema, data)` (server)
+
+Wraps loader data with table-level permission metadata and serializes dates. Replaces manual `can()` per table + `toJSON()`.
+
+```typescript
+import { cfastJson } from "@cfast/actions";
+import * as schema from "../db/schema";
+
+return cfastJson(ctx.auth.grants, schema, { documents });
+// Returns { documents, _tablePerms: { documents: { read, create, update, delete } } }
+```
+
+### `useCfastLoader<T>()` (client)
+
+Replaces `useLoaderData()` for routes using `cfastJson()`. Wraps `_can` arrays/objects with permission methods.
+
+```typescript
+import { useCfastLoader } from "@cfast/actions/client";
+
+const { documents } = useCfastLoader<typeof loader>();
+documents.canAdd()          // ActionHookResult (from _tablePerms)
+documents[0].title          // direct field access
+documents[0].canEdit()      // ActionHookResult (from _can.update)
+documents[0].canDelete()    // ActionHookResult (from _can.delete)
+```
+
+### `resolveTablePermissions(grants, schema)` (from @cfast/permissions)
+
+Returns `Record<tableName, Record<CrudAction, boolean>>` for every table in the schema. Used internally by `cfastJson()`.
+
 ### Exports
 
 ```
-@cfast/actions         -> createActions, checkPermissionStatus
-@cfast/actions/client  -> useActions, clientDescriptor, ActionForm
+@cfast/actions         -> createActions, checkPermissionStatus, cfastJson
+@cfast/actions/client  -> useActions, useCfastLoader, clientDescriptor, ActionForm
 ```
 
 ---
@@ -1827,13 +1857,28 @@ Shows avatar, name, email, role badge, impersonation indicator, sign out.
 #### `<ActionButton>`
 
 ```typescript
+// Form submission (default)
 <ActionButton
   action={publishPost}
-  input={{ postId }}
   whenForbidden="disable"    // "hide" | "disable" | "show"
   confirmation="Publish this post?"
 >
   Publish
+</ActionButton>
+
+// Navigation link (permission-gated, renders as link instead of form button)
+<ActionButton action={documents.canAdd()} href="/documents/new">
+  New Document
+</ActionButton>
+
+// Form data via input prop (submits hidden fields via fetcher)
+<ActionButton
+  action={recipe.canDelete()}
+  input={{ _action: "deleteRecipe", id: recipe.id }}
+  whenForbidden="hide"
+  confirmation="Delete this recipe?"
+>
+  Delete
 </ActionButton>
 ```
 

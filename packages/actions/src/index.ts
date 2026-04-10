@@ -1,5 +1,6 @@
 /** @module actions */
 export { createActions, checkPermissionStatus } from "./create-actions.js";
+export { cfastJson } from "./cfast-json.js";
 export {
   defineInput,
   InvalidInputError,

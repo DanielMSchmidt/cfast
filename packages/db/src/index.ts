@@ -36,4 +36,5 @@ export type {
   TransactionResult,
   Tx,
   WithCan,
+  CrudAction,
 } from "./types";

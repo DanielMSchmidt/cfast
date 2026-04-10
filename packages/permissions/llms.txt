@@ -229,6 +229,18 @@ Used internally by `@cfast/db` to build row-level `_can` annotations on query re
 const CRUD_ACTIONS: readonly CrudAction[] = ["read", "create", "update", "delete"];
 ```
 
+### `resolveTablePermissions(grants, schema): Record<string, Record<CrudAction, boolean>>`
+```typescript
+import { resolveTablePermissions } from "@cfast/permissions";
+import * as schema from "../db/schema";
+
+const perms = resolveTablePermissions(grants, schema);
+// { posts: { read: true, create: true, update: false, delete: false }, ... }
+```
+Pure grant-structural check for every table in the schema. No DB, no SQL. Returns a serializable map. Skips non-table entries (e.g. relation objects) and deduplicates when multiple JS keys map to the same SQL name.
+
+Used internally by `cfastJson()` from `@cfast/actions` to embed table permissions in loader data.
+
 ### Client entrypoint
 ```typescript
 import { ForbiddenError, can } from "@cfast/permissions/client";
