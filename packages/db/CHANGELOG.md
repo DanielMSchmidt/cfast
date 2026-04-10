@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.6.0...@cfast/db-v0.7.0) (2026-04-10)
+
+
+### Features
+
+* **db:** add .seed() method API on column builders and table wrapper ([#285](https://github.com/DanielMSchmidt/cfast/issues/285)) ([88c7788](https://github.com/DanielMSchmidt/cfast/commit/88c778891a00d647089eeec8188ea1cdc3c5687f))
+
 ## [0.6.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.5.0...@cfast/db-v0.6.0) (2026-04-10)
 
 
