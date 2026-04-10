@@ -1,5 +1,5 @@
 import { type ReactElement } from "react";
-import { useFetcher, useNavigate } from "react-router";
+import { useFetcher } from "react-router";
 import JoyButton from "@mui/joy/Button";
 import type { ButtonProps as JoyButtonProps } from "@mui/joy/Button";
 import JoyTooltip from "@mui/joy/Tooltip";
@@ -46,7 +46,6 @@ export function ActionButton({
   ...buttonProps
 }: JoyActionButtonProps): ReactElement | null {
   const fetcher = useFetcher();
-  const navigate = useNavigate();
 
   if (action.invisible) {
     return null;
@@ -86,15 +85,16 @@ export function ActionButton({
     }
 
     return (
-      <JoyButton
-        {...buttonProps}
-        onClick={() => navigate(href)}
-        variant={variant}
-        color={color}
-        size={size}
-      >
-        {children}
-      </JoyButton>
+      <a href={href} style={{ textDecoration: "none" }}>
+        <JoyButton
+          {...buttonProps}
+          variant={variant}
+          color={color}
+          size={size}
+        >
+          {children}
+        </JoyButton>
+      </a>
     );
   }
 
