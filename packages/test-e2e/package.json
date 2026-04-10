@@ -1,6 +1,6 @@
 {
   "name": "@cfast/test-e2e",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared Playwright config, helpers, and smoke tests for cfast apps",
   "keywords": [
     "cfast",

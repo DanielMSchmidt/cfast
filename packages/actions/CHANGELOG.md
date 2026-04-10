@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.1.3...@cfast/actions-v0.2.0) (2026-04-10)
+
+
+### Features
+
+* **actions:** type-safe clientDescriptor and useActions ([#246](https://github.com/DanielMSchmidt/cfast/issues/246)) ([#267](https://github.com/DanielMSchmidt/cfast/issues/267)) ([906f8e1](https://github.com/DanielMSchmidt/cfast/commit/906f8e1f2376d141c582a1aa138919748e7647fa))
+
 ## [0.1.3](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.1.2...@cfast/actions-v0.1.3) (2026-04-09)
 
 

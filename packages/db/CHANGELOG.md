@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.4.1...@cfast/db-v0.5.0) (2026-04-10)
+
+
+### Features
+
+* **@cfast/db:** auto-infer .with() result types ([#271](https://github.com/DanielMSchmidt/cfast/issues/271)) ([8d90d3c](https://github.com/DanielMSchmidt/cfast/commit/8d90d3caa492871743efcbfd11cb802c4eaa5bd7))
+* **db:** add toJSON() for automatic Date-to-ISO-string conversion ([#273](https://github.com/DanielMSchmidt/cfast/issues/273)) ([ffe1399](https://github.com/DanielMSchmidt/cfast/commit/ffe1399c8fd7de6a6254447143d671aa910cf173)), closes [#242](https://github.com/DanielMSchmidt/cfast/issues/242)
+* **db:** expose meta.changes on transaction result after commit ([#272](https://github.com/DanielMSchmidt/cfast/issues/272)) ([326223d](https://github.com/DanielMSchmidt/cfast/commit/326223d18db96d62d7b8da0d224080b2ddb31337))
+
 ## [0.4.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/db-v0.4.0...@cfast/db-v0.4.1) (2026-04-09)
 
 

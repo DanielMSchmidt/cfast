@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.4.2...@cfast/auth-v0.5.0) (2026-04-10)
+
+
+### Features
+
+* **auth:** add createAuthHelpers to eliminate per-app boilerplate ([#265](https://github.com/DanielMSchmidt/cfast/issues/265)) ([eb11bed](https://github.com/DanielMSchmidt/cfast/commit/eb11bed81fe0b7793ba3270582f7bf1cd024a9ff)), closes [#243](https://github.com/DanielMSchmidt/cfast/issues/243)
+
 ## [0.4.2](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.4.1...@cfast/auth-v0.4.2) (2026-04-09)
 
 
