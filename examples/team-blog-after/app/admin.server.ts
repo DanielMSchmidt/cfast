@@ -1,5 +1,4 @@
-import { createAdminLoader, createAdminAction, introspectSchema } from "@cfast/admin";
-import { createAdminAuth } from "@cfast/auth";
+import { createAdminLoader, createAdminAction, createAdminAuthAdapter, introspectSchema } from "@cfast/admin";
 import { initAuth } from "~/auth.setup.server";
 import { env } from "~/env";
 import { appDb } from "~/cfast.server";
@@ -9,9 +8,9 @@ import * as schema from "~/db/schema";
 // Admin auth adapter — one line instead of ~150
 // ---------------------------------------------------------------------------
 
-const auth = createAdminAuth(() =>
-  initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL })
-);
+const auth = createAdminAuthAdapter({
+  getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+});
 
 // ---------------------------------------------------------------------------
 // DB factory — reused from cfast.server.ts
