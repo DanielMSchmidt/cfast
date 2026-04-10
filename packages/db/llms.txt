@@ -631,6 +631,30 @@ export default defineConfig({
 });
 ```
 
+### toJSON(value): DateToString<T>
+
+Recursively converts `Date` fields to ISO 8601 strings for JSON serialization.
+React Router loaders must return JSON-serializable data; `toJSON()` makes the
+Date-to-string conversion explicit so every loader doesn't need manual
+`.toISOString()` calls.
+
+```typescript
+import { toJSON } from "@cfast/db";
+
+export async function loader({ context }) {
+  const db = createDb({ ... });
+  const posts = await db.query(postsTable).findMany().run();
+  // Date fields (createdAt, updatedAt, etc.) become ISO strings automatically.
+  return { posts: toJSON(posts) };
+}
+```
+
+The return type `DateToString<T>` maps every `Date` property to `string` at the
+type level, so the client sees accurate types without manual casting.
+
+Works on plain objects, arrays, nested structures, and single Date values.
+Non-Date primitives pass through unchanged.
+
 ## Common Mistakes
 
 - **Forgetting `.run()`** -- Operations are lazy. `db.query(t).findMany()` returns an Operation, not results. You must call `.run()`.
