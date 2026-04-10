@@ -49,6 +49,7 @@ export const action = composeActions({
 
 export const loader = app.loader(async (ctx, { params, request }) => {
   const db = ctx.db.raw;
+  const cfDb = ctx.db.client;
   const user = ctx.auth.user;
   const grants = ctx.auth.grants;
 
@@ -70,30 +71,29 @@ export const loader = app.loader(async (ctx, { params, request }) => {
   // Get author info
   const author = await db.select().from(users).where(eq(users.id, post.authorId)).get();
 
-  // Cursor-based comments
+  // Cursor-based comments — use @cfast/db for row-level _can annotations
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
 
-  const commentQuery = db
-    .select({
-      id: comments.id,
-      content: comments.content,
-      createdAt: comments.createdAt,
-      authorId: comments.authorId,
-      authorName: users.name,
-      authorAvatarUrl: users.avatarUrl,
-    })
-    .from(comments)
-    .leftJoin(users, eq(comments.authorId, users.id))
-    .where(
-      cursor
-        ? and(eq(comments.postId, post.id), lt(comments.id, cursor))
-        : eq(comments.postId, post.id)
-    )
-    .orderBy(desc(comments.createdAt))
-    .limit(21);
+  const commentWhere = cursor
+    ? and(eq(comments.postId, post.id), lt(comments.id, cursor))
+    : eq(comments.postId, post.id);
 
-  const rawComments = await commentQuery;
+  type CommentRow = {
+    id: string;
+    content: string;
+    createdAt: Date;
+    authorId: string;
+    _can: Record<string, boolean>;
+    author: { id: string; name: string; avatarUrl: string | null } | null;
+  };
+
+  const rawComments = await cfDb.query(comments).findMany({
+    where: commentWhere,
+    with: { author: true },
+    orderBy: desc(comments.createdAt),
+    limit: 21,
+  }).run() as unknown as CommentRow[];
 
   const hasMore = rawComments.length > 20;
   const displayComments = rawComments.slice(0, 20);
@@ -103,10 +103,11 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     id: c.id,
     content: c.content,
     createdAt: c.createdAt,
+    _can: c._can,
     author: {
-      id: c.authorId,
-      name: c.authorName ?? "Unknown",
-      avatarUrl: c.authorAvatarUrl ?? null,
+      id: c.author?.id ?? c.authorId,
+      name: c.author?.name ?? "Unknown",
+      avatarUrl: c.author?.avatarUrl ?? null,
     },
   }));
 
@@ -125,12 +126,6 @@ export const loader = app.loader(async (ctx, { params, request }) => {
   const canPublish = grants.some(
     (g) => (g.action === "update" || g.action === "manage") && !g.where,
   );
-  // "Can delete any comment" means unrestricted delete grant on comments
-  // (editor/admin), not "has some conditional delete-comments grant" (reader).
-  const canDeleteAnyComment = grants.some(
-    (g) => ((g.action === "delete" || g.action === "manage") &&
-           (g.subject === "all" || !g.where)),
-  );
   const canCreatePost = can(grants, "create", posts);
   const canAdmin = can(grants, "manage", "all");
 
@@ -145,7 +140,6 @@ export const loader = app.loader(async (ctx, { params, request }) => {
     canEdit,
     canDelete,
     canPublish,
-    canDeleteAnyComment,
     canCreatePost,
     canAdmin,
   };
@@ -156,6 +150,7 @@ function useInfiniteComments(
     id: string;
     content: string;
     createdAt: Date;
+    _can: Record<string, boolean>;
     author: { id: string; name: string; avatarUrl: string | null };
   }>,
   initialCursor: string | null,
@@ -219,7 +214,7 @@ function useInfiniteComments(
 export default function PostDetail() {
   const {
     post, author, comments: initialComments, nextCursor, user,
-    canEdit, canDelete, canPublish, canDeleteAnyComment, canCreatePost, canAdmin,
+    canEdit, canDelete, canPublish, canCreatePost, canAdmin,
   } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as
     | { success: boolean; action: string }
@@ -382,7 +377,7 @@ export default function PostDetail() {
             </Typography>
           ) : (
             allComments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} user={user} canDeleteAny={canDeleteAnyComment} />
+              <CommentItem key={comment.id} comment={comment} user={user} />
             ))
           )}
         </Stack>

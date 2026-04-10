@@ -11,6 +11,8 @@ interface CommentItemProps {
     id: string;
     content: string;
     createdAt: Date;
+    /** Row-level permission annotations from @cfast/db. */
+    _can: Record<string, boolean>;
     author: {
       id: string;
       name: string;
@@ -18,8 +20,6 @@ interface CommentItemProps {
     };
   };
   user: AuthUser | null;
-  /** Pre-computed on the server: user can delete any comment (editor/admin grant). */
-  canDeleteAny?: boolean;
 }
 
 const MONTHS_SHORT = [
@@ -36,10 +36,8 @@ function formatDate(date: Date): string {
   return `${MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}, ${h12}:${m} ${period}`;
 }
 
-export function CommentItem({ comment, user, canDeleteAny = false }: CommentItemProps) {
-  const canDelete =
-    user &&
-    (user.id === comment.author.id || canDeleteAny);
+export function CommentItem({ comment, user }: CommentItemProps) {
+  const canDelete = user && comment._can?.delete;
 
   return (
     <Card variant="soft" sx={{ p: 2 }}>
