@@ -7,6 +7,20 @@ import type {
   Table,
 } from "drizzle-orm";
 
+// --- _can annotation ---
+
+/**
+ * Augments a row type with a `_can` object containing per-action booleans.
+ *
+ * Every query result from `findMany` / `findFirst` includes `_can` when the
+ * `Db` was created with grants and a user. Each CRUD action maps to `true`
+ * (permitted for this row), `false` (denied), or a row-dependent boolean
+ * when the grant has a `where` clause.
+ */
+export type WithCan<T> = T & {
+  _can: Record<string, boolean>;
+};
+
 // --- Row inference helpers ---
 
 export type InferRow<TTable> = TTable extends { $inferSelect: infer R }
@@ -233,10 +247,10 @@ export type QueryBuilder<
 > = {
   findMany: <TConfig extends FindManyOptions = Record<string, never>, TRow = InferQueryResult<TSchema, TTable, TConfig>>(
     options?: TConfig,
-  ) => Operation<TRow[]>;
+  ) => Operation<WithCan<TRow>[]>;
   findFirst: <TConfig extends FindFirstOptions = Record<string, never>, TRow = InferQueryResult<TSchema, TTable, TConfig>>(
     options?: TConfig,
-  ) => Operation<TRow | undefined>;
+  ) => Operation<WithCan<TRow> | undefined>;
   paginate: <TRow = InferRow<TTable>>(
     params: CursorParams | OffsetParams,
     options?: PaginateOptions,

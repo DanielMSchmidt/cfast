@@ -1,10 +1,12 @@
-import { count } from "drizzle-orm";
+import { count, sql, or as drizzleOr } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import type { Column, SQL } from "drizzle-orm";
+import type { Column, SQL, SQLWrapper } from "drizzle-orm";
 import type { SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { Grant, DrizzleTable, LookupDb } from "@cfast/permissions";
+import { getGrantedActions } from "@cfast/permissions";
+import type { GrantedAction } from "@cfast/permissions";
 import { checkOperationPermissions } from "./permissions";
-import { buildPermissionFilter, combineWhere, makePermissions } from "./utils";
+import { buildPermissionFilter, combineWhere, makePermissions, resolveGrantLookups } from "./utils";
 import type { LookupCache, User } from "./utils";
 import { decodeCursor, encodeCursor, buildCursorWhere, getPrimaryKeyColumns } from "./paginate";
 import type { Operation, FindManyOptions, FindFirstOptions, CursorPage, OffsetPage, PaginateOptions } from "./types";
@@ -57,6 +59,96 @@ function getQueryTable(
   return (db.query as DrizzleQueryMap)[key];
 }
 
+/** Prefix used for _can computed SQL column aliases. */
+const CAN_PREFIX = "_can_";
+
+/**
+ * Builds the `extras` record for `_can` annotations.
+ *
+ * For each granted action:
+ * - The queried action (e.g. "read") -> literal `1` (WHERE already filters)
+ * - Unrestricted grants -> literal `1`
+ * - Restricted grants -> `CASE WHEN <where1 OR where2> THEN 1 ELSE 0 END`
+ */
+async function buildCanExtras(
+  config: QueryBuilderConfig,
+  grantedActions: GrantedAction[],
+  queriedAction: string,
+): Promise<Record<string, unknown>> {
+  const extras: Record<string, unknown> = {};
+
+  for (const ga of grantedActions) {
+    const alias = `${CAN_PREFIX}${ga.action}`;
+
+    // The queried action already has its WHERE filter applied, so every
+    // returned row satisfies it. Use literal true.
+    if (ga.action === queriedAction) {
+      extras[alias] = sql<number>`1`.as(alias);
+      continue;
+    }
+
+    if (ga.unrestricted) {
+      extras[alias] = sql<number>`1`.as(alias);
+      continue;
+    }
+
+    // Restricted: resolve lookups and build CASE WHEN from the where clauses.
+    const needsLookupDb = ga.grants.some((g) => g.with !== undefined);
+    const lookupDb = needsLookupDb
+      ? config.getLookupDb()
+      : (undefined as unknown as LookupDb);
+
+    const lookupSets = await Promise.all(
+      ga.grants.map((g) => resolveGrantLookups(g, config.user, lookupDb, config.lookupCache)),
+    );
+
+    const columns = config.table as Record<string, unknown>;
+    const clauses = ga.grants
+      .map((g, i) =>
+        g.where ? (g.where(columns, config.user, lookupSets[i]) as SQLWrapper | undefined) : undefined,
+      )
+      .filter((c): c is SQLWrapper => c !== undefined);
+
+    if (clauses.length === 0) {
+      extras[alias] = sql<number>`1`.as(alias);
+      continue;
+    }
+
+    const combined = clauses.length === 1
+      ? clauses[0]
+      : drizzleOr(...clauses)!;
+    extras[alias] = sql<number>`CASE WHEN ${combined} THEN 1 ELSE 0 END`.as(alias);
+  }
+
+  return extras;
+}
+
+/**
+ * Collects `_can_*` columns from a row into a `_can: Record<string, boolean>`
+ * object, adding `false` for any CRUD action not in the granted set.
+ */
+function attachCan(
+  row: Record<string, unknown>,
+  grantedActions: GrantedAction[],
+): Record<string, unknown> {
+  const can: Record<string, boolean> = {};
+  const grantedSet = new Set(grantedActions.map((ga) => ga.action));
+  const allActions = ["read", "create", "update", "delete"] as const;
+
+  for (const action of allActions) {
+    const key = `${CAN_PREFIX}${action}`;
+    if (key in row) {
+      can[action] = row[key] === 1 || row[key] === true;
+      delete row[key];
+    } else if (!grantedSet.has(action)) {
+      can[action] = false;
+    }
+  }
+
+  row._can = can;
+  return row;
+}
+
 function buildQueryOperation<TResult>(
   config: QueryBuilderConfig,
   db: ReturnType<typeof drizzle>,
@@ -91,8 +183,42 @@ function buildQueryOperation<TResult>(
       }
       delete queryOptions.cache;
 
+      // Build _can annotation extras (skip in unsafe mode or when no user).
+      const grantedActions = (!config.unsafe && config.user)
+        ? getGrantedActions(config.grants, config.table)
+        : [];
+      if (grantedActions.length > 0) {
+        const canExtras = await buildCanExtras(config, grantedActions, "read");
+        const userExtras = queryOptions.extras as Record<string, unknown> | undefined;
+        queryOptions.extras = userExtras
+          ? { ...userExtras, ...canExtras }
+          : canExtras;
+      }
+
       const queryTable = getQueryTable(db, tableKey);
       const result = await queryTable[method](queryOptions);
+
+      // Post-process: collect _can_* keys into a _can object.
+      if (grantedActions.length > 0) {
+        if (method === "findFirst" && result != null) {
+          attachCan(result as Record<string, unknown>, grantedActions);
+        } else if (method === "findMany" && Array.isArray(result)) {
+          for (const row of result) {
+            attachCan(row as Record<string, unknown>, grantedActions);
+          }
+        }
+      } else if (!config.unsafe && config.user) {
+        // No granted actions at all -- add empty _can with all false.
+        const emptyCan = { read: false, create: false, update: false, delete: false };
+        if (method === "findFirst" && result != null) {
+          (result as Record<string, unknown>)._can = { ...emptyCan };
+        } else if (method === "findMany" && Array.isArray(result)) {
+          for (const row of result) {
+            (row as Record<string, unknown>)._can = { ...emptyCan };
+          }
+        }
+      }
+
       return (method === "findFirst" ? result ?? undefined : result) as TResult;
     },
   };

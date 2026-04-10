@@ -37,4 +37,5 @@ export type {
   InferQueryResult,
   TransactionResult,
   Tx,
+  WithCan,
 } from "./types";

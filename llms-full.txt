@@ -338,6 +338,17 @@ import { CRUD_ACTIONS } from "@cfast/permissions";
 CRUD_ACTIONS; // ["read", "create", "update", "delete"]
 ```
 
+#### `getGrantedActions(grants, table): GrantedAction[]`
+
+```typescript
+import { getGrantedActions } from "@cfast/permissions";
+
+const actions = getGrantedActions(grants, posts);
+// [{ action: "read", grants: [...], unrestricted: true }, ...]
+```
+
+Returns the distinct CRUD actions granted for a table. `manage` grants are expanded into the four CRUD actions. Each result includes whether the action is unrestricted (no `where` clause). Used internally by `@cfast/db` to build row-level `_can` annotations.
+
 ### Client Entrypoint
 
 ```typescript
@@ -417,6 +428,27 @@ const post = await singleOp.run(); // TResult | undefined
 2. If any grant has no `where` -> unrestricted (no filter added)
 3. If all grants have `where` -> combine with `OR`
 4. Result: `user_filter AND (perm_filter_1 OR perm_filter_2)`
+
+#### Row-level `_can` annotations
+
+Every `findMany` and `findFirst` result includes `_can: Record<string, boolean>` with per-action booleans evaluated from the user's grants:
+
+```typescript
+const posts = await db.query(postsTable).findMany().run();
+// posts[0]._can -> { read: true, create: true, update: false, delete: false }
+
+// Type: WithCan<Post>[]
+type WithCan<T> = T & { _can: Record<string, boolean> };
+```
+
+How each CRUD action is computed:
+- **Unrestricted grant** (no `where`): literal `true`, no SQL CASE needed
+- **Restricted grant** (has `where`): SQL `CASE WHEN <condition> THEN 1 ELSE 0 END` per row
+- **No grant**: `false`
+- **`manage` grant**: expands to `{ read: true, create: true, update: true, delete: true }`
+- **`read` on returned rows**: always `true` (the permission WHERE already filtered unreadable rows)
+
+Not added in `unsafe()` mode or when `user` is `null`. Performance: N extra computed SQL columns per query (N = distinct granted actions, typically 3-5).
 
 #### Writes: `db.insert(table)`
 
