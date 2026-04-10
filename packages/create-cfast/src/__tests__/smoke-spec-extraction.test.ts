@@ -176,7 +176,7 @@ describe("scaffold ships e2e infrastructure", () => {
     const targetDir = scaffoldFixture("docs");
     const claudeMd = fs.readFileSync(path.join(targetDir, "CLAUDE.md"), "utf-8");
     expect(claudeMd).toContain("E2E Tests Are Local-First");
-    expect(claudeMd).toContain("baseURL` MUST default to `http://localhost:5173`");
+    expect(claudeMd).toContain("defaults to `http://localhost:5173`");
     expect(claudeMd).toContain("webServer");
     expect(claudeMd).toContain("smoke.spec.ts");
     expect(claudeMd).toContain("gotoOk");
