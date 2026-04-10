@@ -1274,6 +1274,24 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0(@types/node@24.12.0)(jsdom@28.1.0(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@24.12.0)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
 
+  packages/test-e2e:
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.52.0
+        version: 1.58.2
+      '@types/node':
+        specifier: ^22
+        version: 22.19.13
+      tsup:
+        specifier: ^8
+        version: 8.5.1(postcss@8.5.8)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+      typescript:
+        specifier: ^5.7
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.0
+        version: 4.1.0(@types/node@22.19.13)(jsdom@29.0.1(@noble/hashes@2.0.1))(vite@8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2))
+
   packages/ui:
     devDependencies:
       '@cfast/actions':
@@ -9894,7 +9912,6 @@ snapshots:
       magic-string: 0.30.21
     optionalDependencies:
       vite: 8.0.0(@types/node@22.19.13)(esbuild@0.27.3)(tsx@4.21.0)(yaml@2.8.2)
-    optional: true
 
   '@vitest/mocker@4.1.0(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
@@ -13622,7 +13639,6 @@ snapshots:
       jsdom: 29.0.1(@noble/hashes@2.0.1)
     transitivePeerDependencies:
       - msw
-    optional: true
 
   vitest@4.1.0(@types/node@24.12.0)(jsdom@26.1.0)(vite@8.0.0(@types/node@24.12.0)(esbuild@0.25.12)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
