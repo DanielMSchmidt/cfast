@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.3.2...create-cfast-v0.3.3) (2026-04-10)
+
+
+### Bug Fixes
+
+* update create-cfast test snapshots ([#276](https://github.com/DanielMSchmidt/cfast/issues/276)) ([d4a4c34](https://github.com/DanielMSchmidt/cfast/commit/d4a4c34fff4f4cf518c0247a220deaa149b93972))
+
 ## [0.3.2](https://github.com/DanielMSchmidt/cfast/compare/create-cfast-v0.3.1...create-cfast-v0.3.2) (2026-04-09)
 
 
