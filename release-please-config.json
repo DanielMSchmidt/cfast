@@ -17,6 +17,7 @@
     "packages/pagination": { "component": "@cfast/pagination" },
     "packages/permissions": { "component": "@cfast/permissions" },
     "packages/storage": { "component": "@cfast/storage" },
+    "packages/test-e2e": { "component": "@cfast/test-e2e" },
     "packages/ui": { "component": "@cfast/ui" }
   }
 }
