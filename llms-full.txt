@@ -588,6 +588,71 @@ await db.cache.invalidate({ tables: ["posts"] });
 
 Clears the per-instance cross-table `with` lookup cache. Use in tests that reuse a `Db` across grant inserts -- call after modifying grants so subsequent queries re-run `with` lookups. Prefer `runWithLookupCache()` in production; use `clearLookupCache()` for quick manual resets in tests.
 
+### Auto-Inferred `.with()` Relations
+
+When you pass `with: { relation: true }`, Drizzle's relational query builder embeds the joined rows into the result. As of `@cfast/db@0.5`, the result type is **automatically inferred** from the schema -- no type cast needed. `createDb` captures the full schema type via a generic, and `findMany`/`findFirst` thread the `with` config through Drizzle's `BuildQueryResult` to compute the exact result shape including nested relations.
+
+```typescript
+const db = createDb({ d1, schema, grants, user });
+
+// Auto-inferred -- no cast, no manual generic
+const recipes = await db
+  .query(schema.recipesTable)
+  .findMany({ with: { ingredients: true } })
+  .run();
+// recipes is { id: string; title: string; ingredients: Ingredient[] }[]
+
+// Nested relations work too
+const plan = await db
+  .query(schema.mealPlans)
+  .findFirst({
+    with: { entries: { with: { recipe: { with: { ingredients: true } } } } },
+  })
+  .run();
+// plan.entries[0].recipe.ingredients is fully typed
+```
+
+**Manual override:** pass `<TConfig, TRow>` to override when needed:
+
+```typescript
+type Custom = Recipe & { ingredients: Ingredient[] };
+const recipes = await db
+  .query(recipesTable)
+  .findMany<{ with: { ingredients: true } }, Custom>({
+    with: { ingredients: true },
+  })
+  .run();
+```
+
+### `toJSON(value): DateToString<T>`
+
+```typescript
+import { toJSON } from "@cfast/db";
+
+function toJSON<T>(value: T): DateToString<T>
+
+type DateToString<T> = T extends Date
+  ? string
+  : T extends Array<infer U>
+    ? DateToString<U>[]
+    : T extends Record<string, unknown>
+      ? { [K in keyof T]: DateToString<T[K]> }
+      : T;
+```
+
+Recursively converts `Date` fields to ISO 8601 strings for JSON serialization. React Router loaders must return JSON-serializable data; `toJSON()` makes the Date-to-string conversion explicit so every loader doesn't need manual `.toISOString()` calls.
+
+```typescript
+export async function loader({ context }) {
+  const db = createDb({ ... });
+  const posts = await db.query(postsTable).findMany().run();
+  // Date fields (createdAt, updatedAt) become ISO strings automatically.
+  return { posts: toJSON(posts) };
+}
+```
+
+The return type `DateToString<T>` maps every `Date` property to `string` at the type level, so the client sees accurate types without manual casting. Works on plain objects, arrays, nested structures, and single Date values. Non-Date primitives pass through unchanged.
+
 ### Known Limitations
 
 1. **`.run()` params not type-safe** -- `Record<string, unknown>` (optional, defaults to `{}`), Drizzle validates at runtime
@@ -807,10 +872,58 @@ const admin = await createAdmin({
 
 The factory pattern (`getAuth` instead of a static instance) ensures each operation gets fresh Cloudflare Workers bindings, avoiding stale references after cold starts.
 
+### `createAuthHelpers(options)`
+
+```typescript
+import { createAuthHelpers } from "@cfast/auth/helpers";
+// Also re-exported from "@cfast/auth" main entry
+
+function createAuthHelpers<TUser extends AuthUser = AuthUser>(options: {
+  getAuth: () => AuthInstance;
+  enrichUser?: (user: AuthUser) => Promise<TUser> | TUser;
+}): {
+  getAuthContext: (request: Request) => Promise<{ user: TUser | null; grants: Grant[] }>;
+  requireAuthContext: (request: Request) => Promise<{ user: TUser; grants: Grant[] }>;
+  getUser: (request: Request) => Promise<TUser | null>;
+  requireUser: (request: Request) => Promise<TUser>;
+}
+```
+
+Replaces the ~35-line `auth.helpers.server.ts` boilerplate every cfast app copy-pastes. The `getAuth` factory is called per-request to get fresh Workers env bindings.
+
+The optional `enrichUser` hook lets apps extend the base `AuthUser` with custom fields (e.g., `vendorId` in a marketplace). When provided, every helper passes the user through `enrichUser` before returning.
+
+**Basic usage (most apps):**
+
+```typescript
+import { createAuthHelpers } from "@cfast/auth/helpers";
+import { initAuth } from "./auth.setup.server";
+import { env } from "./env";
+
+export const { getAuthContext, requireAuthContext, getUser, requireUser } =
+  createAuthHelpers({
+    getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+  });
+```
+
+**With enrichUser (marketplace / multi-tenant apps):**
+
+```typescript
+export const { getAuthContext, requireAuthContext, getUser, requireUser } =
+  createAuthHelpers<StoreUser>({
+    getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+    enrichUser: async (user) => {
+      const vendor = await lookupVendor(user.id);
+      return { ...user, vendorId: vendor?.id ?? null };
+    },
+  });
+```
+
 ### Package Exports
 
 ```
-@cfast/auth          -> createAuth, createAdminAuth, createRoleManager, createImpersonationManager, createAuthRouteHandlers
+@cfast/auth          -> createAuth, createAdminAuth, createAuthHelpers, createRoleManager, createImpersonationManager, createAuthRouteHandlers
+@cfast/auth/helpers  -> createAuthHelpers
 @cfast/auth/client   -> AuthProvider, AuthClientProvider, AuthGuard, LoginPage, useCurrentUser, useAuth, createAuthClient
 @cfast/auth/plugin   -> authRoutes() for routes.ts
 @cfast/auth/schema   -> Drizzle auth tables for migrations
@@ -1164,11 +1277,43 @@ await createRow.dispatch({
 
 Permission checks still run on the sub-action's operation. Use `forwardRequest()` only when you must go through the full HTTP handler (e.g., cross-Worker calls).
 
+### Type-Safe `clientDescriptor()` and `useActions()`
+
+`clientDescriptor()` now uses `const` type parameters to infer the literal tuple type from the action names array. `useActions()` returns a mapped type keyed by those literal names instead of `Record<string, ...>`.
+
+```typescript
+import { clientDescriptor, useActions } from "@cfast/actions/client";
+
+// Type-safe: autocomplete and typo-checking on action names
+const client = clientDescriptor(["create", "delete"]);
+// client is ClientDescriptor<readonly ["create", "delete"]>
+
+const actions = useActions(client);
+// actions is { create: (input?) => ActionHookResult; delete: (input?) => ActionHookResult }
+// actions.creat → TypeScript error (caught at compile time)
+```
+
+```typescript
+function clientDescriptor<const TNames extends readonly string[]>(
+  actionNames: TNames,
+): ClientDescriptor<TNames>;
+
+function useActions<const TNames extends readonly string[]>(
+  descriptor: ClientDescriptor<TNames>,
+): { [K in TNames[number]]: (input?: Serializable) => ActionHookResult };
+
+type ClientDescriptor<TNames extends readonly string[] = readonly string[]> = {
+  _brand: "ActionClientDescriptor";
+  actionNames: TNames;
+  permissionsKey: string;
+};
+```
+
 ### Exports
 
 ```
 @cfast/actions         -> createActions, checkPermissionStatus
-@cfast/actions/client  -> useActions, ActionForm
+@cfast/actions/client  -> useActions, clientDescriptor, ActionForm
 ```
 
 ---
@@ -1851,7 +1996,7 @@ const auth: AdminAuthConfig = {
 };
 ```
 
-**Or use `createAdminAuth()` (recommended):**
+**Or use `createAdminAuth()` from `@cfast/auth` (recommended):**
 
 ```typescript
 import { createAdminAuth } from "@cfast/auth";
@@ -1859,6 +2004,25 @@ import { createAdminAuth } from "@cfast/auth";
 const auth = createAdminAuth(() => initAuth({ d1: env.DB, appUrl: env.APP_URL }));
 // Implements all AdminAuthConfig methods automatically
 ```
+
+**Or use `createAdminAuthAdapter()` from `@cfast/admin` (same result, different import):**
+
+```typescript
+import { createAdminAuthAdapter } from "@cfast/admin";
+
+const auth = createAdminAuthAdapter({
+  getAuth: () => initAuth({ d1: env.get().DB, appUrl: env.get().APP_URL }),
+});
+// Also available from: import { createAdminAuthAdapter } from "@cfast/admin/server"
+```
+
+`createAdminAuthAdapter({ getAuth })` creates a complete `AdminAuthConfig` from a single auth-instance factory. Replaces ~50 lines of manual adapter boilerplate per app. The factory is called per-operation to ensure fresh env bindings on Workers.
+
+| Param | Type | Description |
+|---|---|---|
+| `options.getAuth` | `() => AuthInstanceLike` | Factory called per-operation for fresh Workers env bindings |
+
+**Returns:** `AdminAuthConfig` with `requireUser`, `hasRole`, `getRoles`, `setRole`, `removeRole`, `setRoles`.
 
 ### Server/Client Splitting
 
@@ -2304,6 +2468,43 @@ export const rateLimitPlugin = (config: { kv: string; maxRequests: number; windo
   });
 ```
 
+### `createDefaultPlugins(config)` (Presets)
+
+```typescript
+import { createDefaultPlugins } from "@cfast/core/presets";
+// Also re-exported from "@cfast/core" main entry
+
+function createDefaultPlugins(config: {
+  initAuth: (env: Record<string, unknown>) => AuthInstanceLike;
+  createDb: (grants: Grant[], user: { id: string } | null) => Db;
+}): { authPlugin: CfastPlugin; dbPlugin: CfastPlugin }
+```
+
+Creates the standard auth + db plugin pair that every cfast app uses. Replaces ~50 lines of identical plugin definitions across `cfast.server.ts` in every app.
+
+The auth plugin calls `initAuth(ctx.env)` per-request and returns `{ user, grants, instance }` under `ctx.auth`. The db plugin depends on the auth plugin and calls `createDb(grants, user)` to return `{ client }` under `ctx.db`.
+
+```typescript
+import { createApp } from "@cfast/core";
+import { createDefaultPlugins } from "@cfast/core/presets";
+import { envSchema } from "./env";
+import { permissions } from "./permissions";
+import { initAuth } from "./auth.setup.server";
+import { appDb } from "./db/client";
+
+const { authPlugin, dbPlugin } = createDefaultPlugins({
+  initAuth: (env) => initAuth({
+    d1: env.DB as D1Database,
+    appUrl: env.APP_URL as string,
+  }),
+  createDb: (grants, user) => appDb(grants, user),
+});
+
+export const app = createApp({ env: envSchema, permissions })
+  .use(authPlugin)
+  .use(dbPlugin);
+```
+
 ### Startup Validation
 
 - Duplicate plugin names -> `CfastConfigError` thrown at `.use()` time
@@ -2313,8 +2514,9 @@ export const rateLimitPlugin = (config: { kv: string; maxRequests: number; windo
 ### Exports
 
 ```
-@cfast/core         -> createApp, definePlugin, CfastPluginError, CfastConfigError
-@cfast/core/client  -> useApp, createCoreProvider, CoreContext
+@cfast/core          -> createApp, definePlugin, createDefaultPlugins, CfastPluginError, CfastConfigError
+@cfast/core/presets  -> createDefaultPlugins
+@cfast/core/client   -> useApp, createCoreProvider, CoreContext
 ```
 
 ### Known Limitations
@@ -2375,6 +2577,102 @@ pnpm deploy:production
 - Multi-action route (create + delete)
 - Auto-generated form from Drizzle schema
 - Welcome email sent after registration
+
+---
+
+## @cfast/test-e2e
+
+Shared Playwright configuration and test utilities for cfast apps.
+
+### `createPlaywrightConfig(options?)`
+
+```typescript
+import { createPlaywrightConfig } from "@cfast/test-e2e";
+
+function createPlaywrightConfig(options?: CfastPlaywrightConfigOptions): PlaywrightTestConfig
+```
+
+Creates a shared Playwright config with cfast conventions: local-first baseURL, auto-start dev server, Chromium-only, traces on first retry, screenshots on failure.
+
+```typescript
+type CfastPlaywrightConfigOptions = {
+  port?: number;           // default: 5173
+  command?: string;        // default: "pnpm dev"
+  testDir?: string;        // default: "."
+  timeout?: number;        // default: 30_000
+  serverTimeout?: number;  // default: 120_000
+  overrides?: Partial<PlaywrightTestConfig>;  // merged into the final config
+};
+```
+
+```typescript
+// e2e/playwright.config.ts
+import { createPlaywrightConfig } from "@cfast/test-e2e";
+export default createPlaywrightConfig();
+
+// With custom port
+export default createPlaywrightConfig({ port: 3000 });
+```
+
+When `E2E_BASE_URL` is set, the dev server is not started (for CI against deployed environments).
+
+### `gotoOk(page, path)`
+
+```typescript
+import { gotoOk } from "@cfast/test-e2e";
+
+async function gotoOk(page: Page, path: string): Promise<Response>
+```
+
+Like `page.goto()` but throws if the response is 4xx/5xx (except 401/403 which mean "route exists, not authorized"). Use in feature specs to fail loudly on routing regressions.
+
+```typescript
+test("dashboard loads", async ({ page }) => {
+  await gotoOk(page, "/dashboard");
+  await expect(page.locator("h1")).toHaveText("Dashboard");
+});
+```
+
+### `registerSmokeTests(options)`
+
+```typescript
+import { registerSmokeTests } from "@cfast/test-e2e";
+
+function registerSmokeTests(options: SmokeTestOptions): void
+
+type SmokeTestOptions = {
+  projectRoot: string;  // absolute path to project root (contains app/routes.ts)
+};
+```
+
+Auto-discovers routes from `app/routes.ts` and registers a Playwright test for each that verifies:
+- HTTP status < 400 (or 401/403 for protected routes)
+- Body does not contain scaffold placeholder strings
+- Body does not leak absolute filesystem paths (`/Users/`, `/home/`)
+
+```typescript
+// e2e/smoke.spec.ts
+import { registerSmokeTests } from "@cfast/test-e2e";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+registerSmokeTests({ projectRoot: join(HERE, "..") });
+```
+
+### `discoverRoutes(projectRoot)`
+
+```typescript
+function discoverRoutes(projectRoot: string): string[]
+```
+
+Reads `app/routes.ts` and returns static route paths. Matches `index(...)` as `"/"` and `route("path", ...)` as `"/path"`. Skips dynamic routes (`:id`, `*`).
+
+### Exports
+
+```
+@cfast/test-e2e  -> createPlaywrightConfig, gotoOk, registerSmokeTests, discoverRoutes
+```
 
 ---
 

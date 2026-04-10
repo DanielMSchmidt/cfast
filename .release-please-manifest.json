@@ -12,5 +12,6 @@
   "packages/pagination": "0.2.0",
   "packages/permissions": "0.5.1",
   "packages/storage": "0.2.1",
+  "packages/test-e2e": "0.1.0",
   "packages/ui": "0.3.1"
 }

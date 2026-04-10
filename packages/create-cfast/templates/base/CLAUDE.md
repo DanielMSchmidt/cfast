@@ -107,10 +107,9 @@ Use field overrides when calling the form generator:
 
 ## E2E Tests Are Local-First
 
-- `playwright.config.ts` `baseURL` MUST default to `http://localhost:5173`. Pointing the default at a deployed URL is forbidden — it makes passes meaningless on a fresh checkout.
-- `playwright.config.ts` MUST include a `webServer` block with `reuseExistingServer: !process.env.CI`.
-- Every new route MUST be implicitly covered by `e2e/smoke.spec.ts` (which auto-discovers routes from `app/routes.ts`). Do not delete this spec.
-- For feature specs, use `gotoOk(page, path)` from `e2e/helpers.ts` instead of raw `page.goto()` so 4xx surfaces as a routing failure, not a selector timeout.
+- Use `createPlaywrightConfig()` from `@cfast/test-e2e` for the Playwright config. It defaults to `http://localhost:5173` with a `webServer` block that auto-starts `pnpm dev`. Override with `E2E_BASE_URL` for deployed environments.
+- Every new route MUST be implicitly covered by `e2e/smoke.spec.ts` (which uses `registerSmokeTests()` from `@cfast/test-e2e` to auto-discover routes from `app/routes.ts`). Do not delete this spec.
+- For feature specs, use `gotoOk(page, path)` from `@cfast/test-e2e` instead of raw `page.goto()` so 4xx surfaces as a routing failure, not a selector timeout.
 - `test.skip(...)` is only acceptable for tests requiring external services (real email, real OAuth). It is NOT a substitute for a fixture; authenticated tests should use the test helpers from `@cfast/auth/test-helpers`.
 
 ## Anti-Patterns — Do NOT Do These
@@ -190,4 +189,4 @@ For detailed API reference on any cfast package, check:
 
 Available packages: `@cfast/env`, `@cfast/permissions`, `@cfast/auth`, `@cfast/db`,
 `@cfast/actions`, `@cfast/ui`, `@cfast/forms`, `@cfast/pagination`, `@cfast/storage`,
-`@cfast/email`, `@cfast/admin`.
+`@cfast/email`, `@cfast/admin`, `@cfast/test-e2e`.
