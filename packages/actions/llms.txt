@@ -68,9 +68,31 @@ type ActionPermissionsMap = Record<string, ActionPermissionStatus>;
 
 ### Client (`@cfast/actions/client`)
 
+#### Type-safe `clientDescriptor()` and `useActions()`
+
+`clientDescriptor()` now uses `const` type parameters to infer the literal tuple
+type from the action names array. `useActions()` returns a mapped type keyed by
+those literal names instead of `Record<string, ...>`, giving compile-time
+autocomplete and error checking on action names.
+
 ```typescript
-function useActions(descriptor: ClientDescriptor): Record<string, (input?: Serializable) => ActionHookResult>;
-function clientDescriptor(actionNames: readonly string[]): ClientDescriptor;
+// Type-safe: actions.create and actions.delete are typed, typos are caught
+const client = clientDescriptor(["create", "delete"]);
+// client is ClientDescriptor<readonly ["create", "delete"]>
+
+const actions = useActions(client);
+// actions is { create: (input?) => ActionHookResult; delete: (input?) => ActionHookResult }
+// actions.creat → TypeScript error (typo caught at compile time)
+```
+
+```typescript
+function useActions<const TNames extends readonly string[]>(
+  descriptor: ClientDescriptor<TNames>,
+): { [K in TNames[number]]: (input?: Serializable) => ActionHookResult };
+
+function clientDescriptor<const TNames extends readonly string[]>(
+  actionNames: TNames,
+): ClientDescriptor<TNames>;
 
 function ActionForm(props: ActionFormProps): JSX.Element;
 

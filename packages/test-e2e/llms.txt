@@ -1,0 +1,152 @@
+# @cfast/test-e2e
+
+> Shared Playwright configuration and test utilities for cfast apps. Convention-driven: local-first, Chromium-only, auto-discovers routes for smoke tests.
+
+## When to use
+
+Use `@cfast/test-e2e` in any cfast app that has end-to-end tests with Playwright. It provides a shared config factory, a navigation helper that surfaces routing regressions early, and an auto-discovery smoke test runner.
+
+## Key concepts
+
+- **Local-first.** `createPlaywrightConfig()` defaults to `http://localhost:5173` with a `webServer` block that auto-starts `pnpm dev`. Override with `E2E_BASE_URL` for CI against deployed environments.
+- **Route auto-discovery.** `discoverRoutes()` reads `app/routes.ts` and extracts static route paths. `registerSmokeTests()` registers a Playwright test for each discovered route.
+- **Fail-fast navigation.** `gotoOk()` throws on 4xx/5xx (except 401/403) instead of letting the test silently proceed to a confusing locator timeout.
+
+## API Reference
+
+### createPlaywrightConfig(options?)
+
+```typescript
+import { createPlaywrightConfig } from "@cfast/test-e2e";
+
+function createPlaywrightConfig(options?: CfastPlaywrightConfigOptions): PlaywrightTestConfig
+```
+
+Creates a shared Playwright config with cfast conventions: local-first baseURL, auto-start dev server, Chromium-only, traces on first retry, screenshots on failure.
+
+```typescript
+type CfastPlaywrightConfigOptions = {
+  port?: number;           // default: 5173
+  command?: string;        // default: "pnpm dev"
+  testDir?: string;        // default: "."
+  timeout?: number;        // default: 30_000
+  serverTimeout?: number;  // default: 120_000
+  overrides?: Partial<PlaywrightTestConfig>;
+};
+```
+
+```typescript
+// e2e/playwright.config.ts
+import { createPlaywrightConfig } from "@cfast/test-e2e";
+export default createPlaywrightConfig();
+
+// With custom port
+export default createPlaywrightConfig({ port: 3000 });
+```
+
+When `E2E_BASE_URL` is set, the dev server is not started (for CI against deployed environments).
+
+### gotoOk(page, path)
+
+```typescript
+import { gotoOk } from "@cfast/test-e2e";
+
+async function gotoOk(page: Page, path: string): Promise<Response>
+```
+
+Like `page.goto()` but throws if the response is 4xx/5xx (except 401/403 which mean "route exists, not authorized"). Use in feature specs to fail on routing regressions instead of getting confusing locator timeouts.
+
+```typescript
+test("dashboard loads", async ({ page }) => {
+  await gotoOk(page, "/dashboard");
+  await expect(page.locator("h1")).toHaveText("Dashboard");
+});
+```
+
+### registerSmokeTests(options)
+
+```typescript
+import { registerSmokeTests } from "@cfast/test-e2e";
+
+function registerSmokeTests(options: SmokeTestOptions): void
+```
+
+Auto-discovers routes from `app/routes.ts` and registers a Playwright test for each that verifies:
+- HTTP status < 400 (or 401/403 for protected routes)
+- Body does not contain scaffold placeholders or leaked filesystem paths
+
+```typescript
+type SmokeTestOptions = {
+  projectRoot: string;  // absolute path to project root (contains app/routes.ts)
+};
+```
+
+```typescript
+// e2e/smoke.spec.ts
+import { registerSmokeTests } from "@cfast/test-e2e";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+registerSmokeTests({ projectRoot: join(HERE, "..") });
+```
+
+### discoverRoutes(projectRoot)
+
+```typescript
+import { discoverRoutes } from "@cfast/test-e2e";
+
+function discoverRoutes(projectRoot: string): string[]
+```
+
+Reads `app/routes.ts` and returns an array of static route paths. Matches `index(...)` as `"/"` and `route("path", ...)` as `"/path"`. Skips dynamic routes (`:id`, `*`) that cannot be resolved for smoke tests.
+
+## Usage Examples
+
+### Minimal Playwright config
+
+```typescript
+// e2e/playwright.config.ts
+import { createPlaywrightConfig } from "@cfast/test-e2e";
+export default createPlaywrightConfig();
+```
+
+### Smoke tests with auto-discovery
+
+```typescript
+// e2e/smoke.spec.ts
+import { registerSmokeTests } from "@cfast/test-e2e";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+registerSmokeTests({ projectRoot: join(HERE, "..") });
+```
+
+### Feature spec with gotoOk
+
+```typescript
+import { test, expect } from "@playwright/test";
+import { gotoOk } from "@cfast/test-e2e";
+
+test("projects page renders", async ({ page }) => {
+  await gotoOk(page, "/projects");
+  await expect(page.locator("h1")).toContainText("Projects");
+});
+```
+
+## Integration
+
+- **@cfast/auth/test-helpers** -- Use auth test helpers to get authenticated cookies, then pass them to Playwright pages for testing protected routes.
+- **@cfast/auth/test-helpers/passkey** -- Use passkey test helpers for browser-based auth in E2E tests (Chromium-only, same constraint as this package).
+
+## Common Mistakes
+
+- **Not registering routes in `app/routes.ts`** -- React Router v7 has no auto-discovery. `discoverRoutes()` reads `app/routes.ts`, so unregistered routes won't be smoke tested.
+- **Pointing `baseURL` at a deployed URL by default** -- Keep the default local; use `E2E_BASE_URL` env var for deployed environments.
+- **Using `page.goto()` instead of `gotoOk()`** -- Raw `page.goto()` silently proceeds on 404s, causing confusing locator timeouts instead of clear routing failures.
+
+## See Also
+
+- `@cfast/auth/test-helpers` -- Real-workflow helpers for driving the magic-link flow from tests.
+- `@cfast/auth/test-helpers/passkey` -- Passkey test helpers for Playwright E2E tests.

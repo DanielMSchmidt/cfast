@@ -132,7 +132,14 @@ This repo uses **release-please** with conventional commits. The commit prefix d
 
 Fix all CI failures including unrelated ones — do not leave the build broken.
 
-## LLM Documentation
+## Documentation
+
+Every PR that adds or changes public APIs MUST update documentation as part of the same PR:
+
+1. Update the affected package's `packages/*/llms.txt`
+2. Update root `llms.txt` and `llms-full.txt` if cross-package patterns change
+3. Update the CLAUDE.md template in `packages/create-cfast/templates/base/CLAUDE.md` if conventions change
+4. Update `docs/` site content if user-facing guides are affected
 
 This project ships `llms.txt` files for LLM consumption:
 - Root `llms.txt` — concise project overview
@@ -140,7 +147,4 @@ This project ships `llms.txt` files for LLM consumption:
 - Per-package `packages/*/llms.txt` — focused per-package docs
 - Scaffolded `CLAUDE.md` — template in `packages/create-cfast/templates/base/CLAUDE.md`
 
-When adding or changing public APIs:
-1. Update the affected package's `llms.txt`
-2. Update root `llms.txt` and `llms-full.txt` if cross-package patterns change
-3. Update the CLAUDE.md template if conventions change
+Do not create separate "docs update" PRs — documentation changes ship with the code they describe.
