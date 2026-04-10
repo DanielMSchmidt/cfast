@@ -1,6 +1,6 @@
 {
   "name": "@cfast/auth",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Authentication for Cloudflare Workers: magic email, passkeys, roles, and impersonation",
   "keywords": [
     "cfast",
