@@ -241,11 +241,11 @@ export type ActionPermissionsMap = Record<string, ActionPermissionStatus>;
  * Created by {@link ActionDefinition.client} or {@link ComposedActions.client}.
  * Contains the action names and the key used to read permission data from loader results.
  */
-export type ClientDescriptor = {
+export type ClientDescriptor<TNames extends readonly string[] = readonly string[]> = {
   /** Brand field to distinguish this type at the type level. */
   _brand: "ActionClientDescriptor";
   /** The list of action names this descriptor covers. */
-  actionNames: readonly string[];
+  actionNames: TNames;
   /** The loader-data key where {@link ActionPermissionsMap} is stored. */
   permissionsKey: string;
 };
