@@ -6,6 +6,8 @@ export { parseCursorParams, parseOffsetParams } from "./paginate";
 export { TransactionError } from "./transaction";
 export { defineSeed } from "./seed";
 export type { Seed, SeedConfig, SeedEntry } from "./seed";
+export { toJSON } from "./json";
+export type { DateToString } from "./json";
 export { runWithLookupCache, createLookupCache } from "./utils";
 export type { LookupCache } from "./utils";
 export type {
