@@ -58,7 +58,8 @@ export function ActionButton({
   const disabled = !action.permitted && whenForbidden === "disable";
   const pending = action.pending || fetcher.state !== "idle";
 
-  // Navigation mode: render as a Link
+  // Navigation mode: render the Button as an anchor element to avoid
+  // invalid <a><button></button></a> nesting that causes hydration errors.
   if (href) {
     if (disabled) {
       const disabledButton = (
@@ -85,16 +86,15 @@ export function ActionButton({
     }
 
     return (
-      <a href={href} style={{ textDecoration: "none" }}>
-        <JoyButton
-          {...buttonProps}
-          variant={variant}
-          color={color}
-          size={size}
-        >
-          {children}
-        </JoyButton>
-      </a>
+      <JoyButton
+        {...buttonProps}
+        {...({ component: "a", href } as Record<string, unknown>)}
+        variant={variant}
+        color={color}
+        size={size}
+      >
+        {children}
+      </JoyButton>
     );
   }
 

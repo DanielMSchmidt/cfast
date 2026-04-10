@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useLoaderData } from "react-router";
 import type { ActionHookResult } from "./use-actions.js";
 
@@ -183,46 +184,52 @@ export function useCfastLoader<
   T extends (...args: any[]) => any = () => Record<string, unknown>,
 >(): ReturnType<T> extends Promise<infer R> ? R : ReturnType<T> {
   const raw = useLoaderData() as Record<string, unknown>;
-  const tablePerms = (raw._tablePerms ?? {}) as Record<
-    string,
-    Record<CrudAction, boolean>
-  >;
 
-  const result: Record<string, unknown> = {};
+  // Memoize the wrapped result so that consumers receive stable references
+  // between renders. useLoaderData() returns the same object reference until
+  // the route's loader data is revalidated, so `raw` is a safe dependency.
+  return useMemo(() => {
+    const tablePerms = (raw._tablePerms ?? {}) as Record<
+      string,
+      Record<CrudAction, boolean>
+    >;
 
-  for (const [key, value] of Object.entries(raw)) {
-    if (key === "_tablePerms") {
-      // Don't expose _tablePerms to the consumer directly
-      continue;
-    }
+    const result: Record<string, unknown> = {};
 
-    if (Array.isArray(value)) {
-      // Check if items have _can — wrap as collection
-      const hasCanItems =
-        value.length > 0 &&
-        value[0] !== null &&
-        typeof value[0] === "object" &&
-        "_can" in value[0];
+    for (const [key, value] of Object.entries(raw)) {
+      if (key === "_tablePerms") {
+        // Don't expose _tablePerms to the consumer directly
+        continue;
+      }
 
-      if (hasCanItems) {
-        result[key] = wrapCollection(value as Record<string, unknown>[], tablePerms);
+      if (Array.isArray(value)) {
+        // Check if items have _can — wrap as collection
+        const hasCanItems =
+          value.length > 0 &&
+          value[0] !== null &&
+          typeof value[0] === "object" &&
+          "_can" in value[0];
+
+        if (hasCanItems) {
+          result[key] = wrapCollection(value as Record<string, unknown>[], tablePerms);
+        } else {
+          result[key] = value;
+        }
+      } else if (
+        value !== null &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        "_can" in value
+      ) {
+        // Single item with _can — wrap as item
+        result[key] = wrapItem(value as Record<string, unknown>);
       } else {
+        // Pass through
         result[key] = value;
       }
-    } else if (
-      value !== null &&
-      typeof value === "object" &&
-      !Array.isArray(value) &&
-      "_can" in value
-    ) {
-      // Single item with _can — wrap as item
-      result[key] = wrapItem(value as Record<string, unknown>);
-    } else {
-      // Pass through
-      result[key] = value;
     }
-  }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return result as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return result as any;
+  }, [raw]);
 }

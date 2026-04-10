@@ -7,6 +7,15 @@ vi.mock("react-router", () => ({
   useLoaderData: () => mockLoaderData,
 }));
 
+// Mock useMemo to just execute the factory immediately (no React context needed)
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+  return {
+    ...actual,
+    useMemo: <T>(factory: () => T, _deps: unknown[]): T => factory(),
+  };
+});
+
 // Import after mocks are set up
 const { useCfastLoader } = await import("../client/use-cfast-loader.js");
 
