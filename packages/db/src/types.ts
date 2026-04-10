@@ -151,8 +151,77 @@ export type Db<TSchema extends Record<string, unknown> = Record<string, never>> 
   delete: <TTable extends DrizzleTable>(table: TTable) => DeleteBuilder<TTable>;
   unsafe: () => Db<TSchema>;
   batch: (operations: Operation<unknown>[]) => Operation<unknown[]>;
-  transaction: <T>(callback: (tx: Tx<TSchema>) => Promise<T>) => Promise<T>;
-  cache: { invalidate: (options: { tags?: string[]; tables?: string[] }) => Promise<void> };
+  /**
+   * Runs a callback inside a transaction with atomic commit-or-rollback semantics.
+   *
+   * All writes (`tx.insert`/`tx.update`/`tx.delete`) recorded inside the callback
+   * are deferred and flushed together as a single atomic `db.batch([...])` when
+   * the callback returns successfully. If the callback throws, pending writes are
+   * discarded and the error is re-thrown — nothing reaches D1.
+   *
+   * Reads (`tx.query(...)`) execute eagerly so the caller can branch on their
+   * results. **D1 does not provide snapshot isolation across async code**, so
+   * reads inside a transaction can see concurrent writes. For concurrency-safe
+   * read-modify-write (e.g. stock decrement), combine the transaction with a
+   * relative SQL update and a WHERE guard:
+   *
+   * ```ts
+   * await db.transaction(async (tx) => {
+   *   // The WHERE guard ensures the decrement only applies when stock is
+   *   // still >= qty at commit time. Two concurrent transactions cannot
+   *   // both oversell because D1's atomic batch re-evaluates the WHERE.
+   *   await tx.update(products)
+   *     .set({ stock: sql`stock - ${qty}` })
+   *     .where(and(eq(products.id, pid), gte(products.stock, qty)))
+   *     .run();
+   *   return tx.insert(orders).values({ productId: pid, qty }).returning().run();
+   * });
+   * ```
+   *
+   * Nested `db.transaction()` calls inside the callback are flattened into the
+   * parent's pending queue so everything still commits atomically.
+   *
+   * @typeParam T - The return type of the callback.
+   * @param callback - The transaction body. Receives a `tx` handle with
+   *   `query`/`insert`/`update`/`delete` methods (no `unsafe`, `batch`, or
+   *   `cache` — those are intentionally off-limits inside a transaction).
+   * @returns A {@link TransactionResult} containing the callback's return value
+   *   and transaction metadata (`meta.changes`, `meta.writeResults`), or rejects
+   *   with whatever the callback threw (after rolling back pending writes).
+   */
+  transaction: <T>(callback: (tx: Tx) => Promise<T>) => Promise<TransactionResult<T>>;
+  /** Cache control methods for manual invalidation. */
+  cache: {
+    /** Invalidate cached queries by tag names and/or table names. */
+    invalidate: (options: {
+      /** Tag names to invalidate (from {@link QueryCacheOptions} `tags`). */
+      tags?: string[];
+      /** Table names to invalidate (bumps their version counters). */
+      tables?: string[];
+    }) => Promise<void>;
+  };
+  /**
+   * Clears the per-instance `with` lookup cache so that the next query
+   * re-runs every grant lookup function.
+   *
+   * In production this is rarely needed because each request gets a fresh
+   * `Db` via `createDb()`. In tests that reuse a single `Db` across grant
+   * mutations (e.g. inserting a new friendship and then querying recipes),
+   * call this after the mutation to avoid stale lookup results.
+   *
+   * For finer-grained control, wrap each logical request in
+   * {@link runWithLookupCache} instead -- that scopes the cache via
+   * `AsyncLocalStorage` so it is automatically discarded at scope exit.
+   *
+   * @example
+   * ```ts
+   * const db = createDb({ ... });
+   * await db.query(recipes).findMany().run(); // populates lookup cache
+   * await db.insert(friendGrants).values({ ... }).run(); // adds new grant
+   * db.clearLookupCache(); // drop stale lookups
+   * await db.query(recipes).findMany().run(); // sees new grant
+   * ```
+   */
   clearLookupCache: () => void;
 };
 
