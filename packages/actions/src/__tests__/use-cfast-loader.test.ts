@@ -1,4 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, expectTypeOf } from "vitest";
+import type {
+  CfastItem,
+  CfastCollection,
+  CfastItemMethods,
+  CfastLoaderData,
+} from "../client/use-cfast-loader.js";
+import type { ActionHookResult } from "../client/use-actions.js";
 
 // Mock state
 let mockLoaderData: Record<string, unknown> = {};
@@ -266,6 +273,86 @@ describe("useCfastLoader", () => {
       const posts = result.posts as unknown[];
       expect(posts.length).toBe(0);
       // Empty arrays don't have _can items, so they pass through
+    });
+  });
+
+  describe("mapped types", () => {
+    it("CfastItem adds permission methods to an object type", () => {
+      type Post = { id: string; title: string };
+      type Wrapped = CfastItem<Post>;
+
+      expectTypeOf<Wrapped>().toHaveProperty("id");
+      expectTypeOf<Wrapped>().toHaveProperty("title");
+      expectTypeOf<Wrapped>().toHaveProperty("canRead");
+      expectTypeOf<Wrapped>().toHaveProperty("canEdit");
+      expectTypeOf<Wrapped>().toHaveProperty("canDelete");
+      expectTypeOf<Wrapped>().toHaveProperty("canCreate");
+
+      // canEdit returns ActionHookResult
+      expectTypeOf<Wrapped["canEdit"]>().returns.toEqualTypeOf<ActionHookResult>();
+    });
+
+    it("CfastCollection is an array of CfastItem with canAdd()", () => {
+      type Post = { id: string; title: string };
+      type Col = CfastCollection<Post>;
+
+      // canAdd exists on the collection
+      expectTypeOf<Col>().toHaveProperty("canAdd");
+      expectTypeOf<Col["canAdd"]>().returns.toEqualTypeOf<ActionHookResult>();
+
+      // Indexing yields a CfastItem
+      expectTypeOf<Col[number]>().toHaveProperty("canEdit");
+      expectTypeOf<Col[number]>().toHaveProperty("id");
+    });
+
+    it("CfastItemMethods contains all four permission helpers", () => {
+      expectTypeOf<CfastItemMethods>().toHaveProperty("canRead");
+      expectTypeOf<CfastItemMethods>().toHaveProperty("canCreate");
+      expectTypeOf<CfastItemMethods>().toHaveProperty("canEdit");
+      expectTypeOf<CfastItemMethods>().toHaveProperty("canDelete");
+    });
+
+    it("CfastLoaderData transforms loader return shape", () => {
+      type LoaderReturn = {
+        posts: { id: string; title: string }[];
+        post: { id: string; title: string };
+        count: number;
+      };
+      type Transformed = CfastLoaderData<LoaderReturn>;
+
+      // Array of objects -> CfastCollection
+      expectTypeOf<Transformed["posts"]>().toHaveProperty("canAdd");
+      expectTypeOf<Transformed["posts"][number]>().toHaveProperty("canEdit");
+
+      // Single object -> CfastItem
+      expectTypeOf<Transformed["post"]>().toHaveProperty("canEdit");
+      expectTypeOf<Transformed["post"]>().toHaveProperty("id");
+
+      // Primitive -> unchanged
+      expectTypeOf<Transformed["count"]>().toEqualTypeOf<number>();
+    });
+
+    it("useCfastLoader return type includes permission methods", () => {
+      type MockLoader = () => Promise<{
+        documents: { id: string; name: string }[];
+        document: { id: string; name: string };
+        total: number;
+      }>;
+
+      // This verifies that useCfastLoader's generic produces CfastLoaderData
+      type Result = ReturnType<typeof useCfastLoader<MockLoader>>;
+
+      // Collection
+      expectTypeOf<Result["documents"]>().toHaveProperty("canAdd");
+      expectTypeOf<Result["documents"][number]>().toHaveProperty("canEdit");
+      expectTypeOf<Result["documents"][number]>().toHaveProperty("id");
+
+      // Single item
+      expectTypeOf<Result["document"]>().toHaveProperty("canEdit");
+      expectTypeOf<Result["document"]>().toHaveProperty("name");
+
+      // Primitive passthrough
+      expectTypeOf<Result["total"]>().toEqualTypeOf<number>();
     });
   });
 });

@@ -8,6 +8,42 @@ import type { ActionHookResult } from "./use-actions.js";
  */
 type CrudAction = "read" | "create" | "update" | "delete";
 
+// ---------------------------------------------------------------------------
+// Exported mapped types -- give consumers proper TS types for wrapped data
+// ---------------------------------------------------------------------------
+
+/** Permission methods added to items with `_can`. */
+export type CfastItemMethods = {
+  canRead: () => ActionHookResult;
+  canCreate: () => ActionHookResult;
+  canEdit: () => ActionHookResult;
+  canDelete: () => ActionHookResult;
+};
+
+/** An item with `_can` gets permission methods mixed in. */
+export type CfastItem<T> = T & CfastItemMethods;
+
+/** A collection gets `canAdd()` plus each item gets permission methods. */
+export type CfastCollection<T> = CfastItem<T>[] & {
+  canAdd: () => ActionHookResult;
+};
+
+/**
+ * Transforms a loader return type:
+ * - Arrays of objects with `_can` -> {@link CfastCollection}
+ * - Objects with `_can` -> {@link CfastItem}
+ * - Other values -> unchanged
+ */
+export type CfastLoaderData<T> = {
+  [K in keyof T]: T[K] extends (infer U)[]
+    ? U extends Record<string, unknown>
+      ? CfastCollection<U>
+      : T[K]
+    : T[K] extends Record<string, unknown>
+      ? CfastItem<T[K]>
+      : T[K];
+};
+
 /**
  * Creates an {@link ActionHookResult} from a boolean permission value.
  *
@@ -182,7 +218,7 @@ function wrapCollection<T extends Record<string, unknown>>(
 export function useCfastLoader<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends (...args: any[]) => any = () => Record<string, unknown>,
->(): ReturnType<T> extends Promise<infer R> ? R : ReturnType<T> {
+>(): CfastLoaderData<ReturnType<T> extends Promise<infer R> ? R : ReturnType<T>> {
   const raw = useLoaderData() as Record<string, unknown>;
 
   // Memoize the wrapped result so that consumers receive stable references
