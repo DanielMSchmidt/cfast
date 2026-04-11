@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.3.0...@cfast/actions-v0.3.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **actions:** add proper TypeScript types for useCfastLoader return value ([#300](https://github.com/DanielMSchmidt/cfast/issues/300)) ([ebaa961](https://github.com/DanielMSchmidt/cfast/commit/ebaa961d7b2d718b1e290160fe659a2dda6c4f38))
+
 ## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/actions-v0.2.0...@cfast/actions-v0.3.0) (2026-04-10)
 
 
