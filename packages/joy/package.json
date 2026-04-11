@@ -35,9 +35,9 @@
     "build-storybook": "storybook build"
   },
   "peerDependencies": {
-    "@cfast/actions": ">=0.1.0 <0.3.0",
-    "@cfast/auth": ">=0.3.0 <0.5.0",
-    "@cfast/ui": ">=0.2.0 <0.4.0",
+    "@cfast/actions": ">=0.1.0 <1.0.0",
+    "@cfast/auth": ">=0.1.0 <1.0.0",
+    "@cfast/ui": ">=0.1.0 <1.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/joy": ">=5.0.0-beta.0",
