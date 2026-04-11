@@ -44,11 +44,11 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@cfast/db": ">=0.3.0 <0.5.0",
-    "@cfast/forms": ">=0.2.0 <0.4.0",
-    "@cfast/joy": ">=0.1.0 <0.3.0",
-    "@cfast/permissions": ">=0.3.0 <0.7.0",
-    "@cfast/ui": ">=0.2.0 <0.4.0",
+    "@cfast/db": ">=0.1.0 <1.0.0",
+    "@cfast/forms": ">=0.1.0 <1.0.0",
+    "@cfast/joy": ">=0.1.0 <1.0.0",
+    "@cfast/permissions": ">=0.1.0 <1.0.0",
+    "@cfast/ui": ">=0.1.0 <1.0.0",
     "@mui/joy": ">=5.0.0-beta.0",
     "react": ">=19",
     "react-dom": ">=19",

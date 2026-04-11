@@ -45,8 +45,8 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@cfast/db": ">=0.3.0 <0.5.0",
-    "@cfast/permissions": ">=0.3.0 <0.7.0",
+    "@cfast/db": ">=0.1.0 <1.0.0",
+    "@cfast/permissions": ">=0.1.0 <1.0.0",
     "react": "^19.0.0",
     "react-router": "^7.0.0"
   },
