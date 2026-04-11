@@ -1,6 +1,6 @@
 {
   "name": "@cfast/admin",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Auto-generated admin UI from your Drizzle schema with role management and impersonation",
   "keywords": [
     "cfast",
