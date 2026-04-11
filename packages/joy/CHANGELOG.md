@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/joy-v0.3.0...@cfast/joy-v0.3.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* widen @cfast/* peer dependency ranges to &lt;1.0.0 ([#303](https://github.com/DanielMSchmidt/cfast/issues/303)) ([defcda3](https://github.com/DanielMSchmidt/cfast/commit/defcda3881c07f27e373e7cfd96da359d695ef7a)), closes [#302](https://github.com/DanielMSchmidt/cfast/issues/302)
+
 ## [0.3.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/joy-v0.2.1...@cfast/joy-v0.3.0) (2026-04-10)
 
 

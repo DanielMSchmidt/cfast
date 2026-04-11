@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.6.0...@cfast/auth-v0.6.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* widen @cfast/* peer dependency ranges to &lt;1.0.0 ([#303](https://github.com/DanielMSchmidt/cfast/issues/303)) ([defcda3](https://github.com/DanielMSchmidt/cfast/commit/defcda3881c07f27e373e7cfd96da359d695ef7a)), closes [#302](https://github.com/DanielMSchmidt/cfast/issues/302)
+
 ## [0.6.0](https://github.com/DanielMSchmidt/cfast/compare/@cfast/auth-v0.5.0...@cfast/auth-v0.6.0) (2026-04-10)
 
 
